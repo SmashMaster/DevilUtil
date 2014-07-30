@@ -29,12 +29,12 @@ public class Camera3D
         res = new Vector2i(Display.getWidth(), Display.getHeight());
         mid = res.as2f().div(2f);
         
-        proj = Matrix4f.perspective(fov, res.x/(float)res.y, near, far);
+        proj = Matrix4f.perspective(fov, res.y/(float)res.x, near, far);
     }
     
     public float getAspectRatio()
     {
-        return res.x/(float)res.y;
+        return res.y/(float)res.x;
     }
     
     public Matrix4f getProj()
@@ -60,8 +60,8 @@ public class Camera3D
     
     public Matrix4f getView()
     {
-        Matrix4f out = Matrix4f.translate(pos.cnegate());
-        out.multRotate(rot);
+        Matrix4f out = rot.clone().invert().toMatrix4f();
+        out.multTranslate(pos.cnegate());
         return out;
     }
 }
