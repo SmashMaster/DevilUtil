@@ -11,7 +11,7 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
-public class VertexPool
+public class GLVertexPool
 {
     private FloatBuffer vertices;
     private int vertexSize;
@@ -24,7 +24,7 @@ public class VertexPool
     private int stride = 0;
     private int polyMode;
     
-    public VertexPool(GLShader shader, int vertCapacity, int indCapacity, int vertexSize, int polyMode)
+    public GLVertexPool(GLShader shader, int vertCapacity, int indCapacity, int vertexSize, int polyMode)
     {
         if (shader == null) throw new NullPointerException();
         this.shader = shader;

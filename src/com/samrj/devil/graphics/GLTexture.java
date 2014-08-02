@@ -23,7 +23,7 @@ import org.lwjgl.opengl.GL30;
  * @author Samuel Johnson (SmashMaster)
  */
 
-public class Texture
+public class GLTexture
 {
     // <editor-fold defaultstate="collapsed" desc="Static Methods">
     /**
@@ -178,13 +178,13 @@ public class Texture
     private int id = -1;
     
     // <editor-fold defaultstate="collapsed" desc="Constructors">
-    public Texture(int format, ByteBuffer b, int width, int height)
+    public GLTexture(int format, ByteBuffer b, int width, int height)
     {
         this.width = width; this.height = height;
         load(format, b);
     }
     
-    public Texture(int format, int width, int height)
+    public GLTexture(int format, int width, int height)
     {
         this.width = width; this.height = height;
         int length = width*height*getBands(getBaseFormat(format));
@@ -194,7 +194,7 @@ public class Texture
         load(format, b);
     }
     
-    public Texture(int format, Raster raster)
+    public GLTexture(int format, Raster raster)
     {
         width = raster.getWidth(); height = raster.getHeight();
         
@@ -208,7 +208,7 @@ public class Texture
         load(format, bands, raster);
     }
     
-    public Texture(Raster raster)
+    public GLTexture(Raster raster)
     {
         width = raster.getWidth(); height = raster.getHeight();
         
@@ -220,56 +220,56 @@ public class Texture
         load(format, bands, raster);
     }
     
-    public Texture(int format, BufferedImage image)
+    public GLTexture(int format, BufferedImage image)
     {
         this(format, image.getRaster());
     }
     
-    public Texture(BufferedImage image)
+    public GLTexture(BufferedImage image)
     {
         this(image.getRaster());
     }
     
-    public Texture(int format, InputStream in) throws IOException
+    public GLTexture(int format, InputStream in) throws IOException
     {
         this(format, ImageIO.read(in));
         in.close();
     }
     
-    public Texture(InputStream in) throws IOException
+    public GLTexture(InputStream in) throws IOException
     {
         this(ImageIO.read(in));
         in.close();
     }
     
-    public Texture(int format, Resource path) throws IOException
+    public GLTexture(int format, Resource path) throws IOException
     {
         this(format, path.open());
         this.path = path;
     }
     
-    public Texture(Resource path) throws IOException
+    public GLTexture(Resource path) throws IOException
     {
         this(path.open());
         this.path = path;
     }
     
-    public Texture(int format, File f) throws IOException
+    public GLTexture(int format, File f) throws IOException
     {
         this(format, FileRes.find(f));
     }
     
-    public Texture(File f) throws IOException
+    public GLTexture(File f) throws IOException
     {
         this(FileRes.find(f));
     }
     
-    public Texture(int format, String path) throws IOException
+    public GLTexture(int format, String path) throws IOException
     {
         this(format, Resource.find(path));
     }
     
-    public Texture(String path) throws IOException
+    public GLTexture(String path) throws IOException
     {
         this(Resource.find(path));
     }
