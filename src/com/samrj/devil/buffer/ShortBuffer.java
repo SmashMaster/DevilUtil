@@ -6,8 +6,9 @@ import static com.samrj.devil.math.Util.PrimType.SHORT;
  * Implementation of Buffer, using java.nio.ShortBuffer.
  * 
  * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-
 public class ShortBuffer extends Buffer<java.nio.ShortBuffer>
                          implements Bufferable<ShortBuffer>
 {

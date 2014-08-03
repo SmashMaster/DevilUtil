@@ -3,6 +3,11 @@ package com.samrj.devil.math;
 import com.samrj.devil.buffer.Bufferable;
 import com.samrj.devil.buffer.FloatBuffer;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public final class Matrix2f implements Bufferable<FloatBuffer>, Matrix<Matrix2f>
 {
     // <editor-fold defaultstate="collapsed" desc="Factory Methods">

@@ -4,6 +4,11 @@ import com.samrj.devil.buffer.Bufferable;
 import com.samrj.devil.buffer.FloatBuffer;
 import org.lwjgl.opengl.GL11;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public final class Color4f implements Bufferable<FloatBuffer>
 {
     // <editor-fold defaultstate="collapsed" desc="Factory Methods">

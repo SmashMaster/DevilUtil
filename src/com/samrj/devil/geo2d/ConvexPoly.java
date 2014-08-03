@@ -3,6 +3,11 @@ package com.samrj.devil.geo2d;
 import com.samrj.devil.math.Range;
 import com.samrj.devil.math.Vector2f;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public class ConvexPoly
 {
     /**

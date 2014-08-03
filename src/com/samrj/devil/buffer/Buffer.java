@@ -9,9 +9,10 @@ import org.lwjgl.BufferUtils;
  * write state, and allows for easy overwriting, resizing, and instantiation.
  * 
  * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  * @param <TYPE> the java.nio buffer type to wrap.
  */
-
 public abstract class Buffer<TYPE extends java.nio.Buffer>
 {
     private java.nio.ByteBuffer buffer;

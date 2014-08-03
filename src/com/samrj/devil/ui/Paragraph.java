@@ -4,6 +4,11 @@ import com.samrj.devil.math.Vector2f;
 import java.util.ArrayList;
 import org.lwjgl.opengl.GL11;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public class Paragraph
 {
     private float width;

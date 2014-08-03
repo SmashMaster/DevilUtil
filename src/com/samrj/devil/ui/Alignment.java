@@ -2,6 +2,11 @@ package com.samrj.devil.ui;
 
 import com.samrj.devil.math.Vector2f;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public enum Alignment
 {
     NW(-1f,  1f), N(0f,  1f), NE(1f,  1f),

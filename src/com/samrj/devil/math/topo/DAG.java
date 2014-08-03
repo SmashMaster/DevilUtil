@@ -6,9 +6,11 @@ import java.util.*;
  * Hash-map based directed acyclic graph. To be used mainly for topological
  * sorting.
  * 
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  * @param <TYPE> The kind of data to store in the node.
  */
-
 public class DAG<TYPE>
 {
     private final Map<TYPE, Vertex> vertices = new LinkedHashMap<>();

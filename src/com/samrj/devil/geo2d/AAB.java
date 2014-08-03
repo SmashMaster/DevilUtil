@@ -5,6 +5,10 @@ import org.lwjgl.opengl.GL11;
 
 /**
  * 2D Axis-aligned box.
+ * 
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class AAB
 {

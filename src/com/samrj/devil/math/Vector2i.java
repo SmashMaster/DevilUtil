@@ -4,6 +4,11 @@ import com.samrj.devil.buffer.Bufferable;
 import com.samrj.devil.buffer.IntBuffer;
 import org.lwjgl.opengl.GL11;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public final class Vector2i implements Bufferable<IntBuffer>
 {
     public int x, y;

@@ -2,6 +2,11 @@ package com.samrj.devil.geo2d;
 
 import com.samrj.devil.math.Vector2f;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public class Seg extends Line
 {
     public Seg(Vector2f a, Vector2f b)

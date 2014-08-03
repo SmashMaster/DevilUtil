@@ -2,6 +2,11 @@ package com.samrj.devil.util;
 
 import java.util.*;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public class IdentitySet<T> extends AbstractSet<T>
 {
     public static final int DEFAULT_CAPACITY = 16;

@@ -21,8 +21,9 @@ import org.lwjgl.opengl.GL30;
  * objects. Provides an object-oriented view of OpenGL's state-based textures.
  * 
  * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-
 public class GLTexture
 {
     // <editor-fold defaultstate="collapsed" desc="Static Methods">

@@ -6,6 +6,8 @@ import static com.samrj.devil.math.Util.PrimType.FLOAT;
  * Implementation of Buffer, using java.nio.FloatBuffer.
  * 
  * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 
 public class FloatBuffer extends Buffer<java.nio.FloatBuffer>

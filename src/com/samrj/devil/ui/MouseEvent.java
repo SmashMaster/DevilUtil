@@ -2,6 +2,11 @@ package com.samrj.devil.ui;
 
 import com.samrj.devil.math.Vector2f;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public class MouseEvent
 {
     public final Vector2f pos = new Vector2f();

@@ -6,8 +6,9 @@ import static com.samrj.devil.math.Util.PrimType.INT;
  * Implementation of Buffer, using java.nio.IntBuffer.
  * 
  * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-
 public class IntBuffer extends Buffer<java.nio.IntBuffer>
                        implements Bufferable<IntBuffer>
 {

@@ -3,6 +3,11 @@ package com.samrj.devil.res;
 import java.io.*;
 import java.net.URI;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public class FileRes extends Resource
 {
     public static FileRes find(String path) throws IOException

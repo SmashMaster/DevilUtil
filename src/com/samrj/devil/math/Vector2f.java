@@ -5,6 +5,11 @@ import com.samrj.devil.buffer.FloatBuffer;
 import com.samrj.devil.math.Util.Axis;
 import org.lwjgl.opengl.GL11;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public final class Vector2f implements Bufferable<FloatBuffer>
 {
     // <editor-fold defaultstate="collapsed" desc="Static Factories">

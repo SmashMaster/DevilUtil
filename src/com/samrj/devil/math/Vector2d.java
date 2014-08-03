@@ -3,6 +3,11 @@ package com.samrj.devil.math;
 import static com.samrj.devil.math.Util.Axis.X;
 import static com.samrj.devil.math.Util.Axis.Y;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public class Vector2d
 {
     // <editor-fold defaultstate="collapsed" desc="Static Factories">

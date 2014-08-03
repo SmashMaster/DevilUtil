@@ -1,5 +1,10 @@
 package com.samrj.devil.ui;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public class KeyEvent
 {
     public int key;

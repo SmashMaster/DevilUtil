@@ -4,6 +4,11 @@ import static com.samrj.devil.buffer.PublicBuffers.fbuffer;
 import com.samrj.devil.math.Vector3f;
 import org.lwjgl.openal.EFX10;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public class EAXReverb extends Reverb
 {
     public float    gainLF              = EFX10.AL_EAXREVERB_DEFAULT_GAINLF                ,
