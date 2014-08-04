@@ -23,7 +23,6 @@ public class Camera3D
     public final Quat4f rot;
     private Matrix4f proj;
     private Vector2i res;
-    private Vector2f mid;
     
     public Camera3D(float fov, float near, float far)
     {
@@ -32,7 +31,6 @@ public class Camera3D
         pos = new Vector3f();
         rot = new Quat4f();
         res = new Vector2i(Display.getWidth(), Display.getHeight());
-        mid = res.as2f().div(2f);
         
         proj = Matrix4f.perspective(fov, res.y/(float)res.x, near, far);
     }
