@@ -238,21 +238,21 @@ public class GLShader
     {
         fbuffer.clear();
         m.putIn(fbuffer);
-        GL20.glUniformMatrix2(getUniLoc(name), true, fbuffer.get());
+        GL20.glUniformMatrix2(getUniLoc(name), false, fbuffer.get());
     }
     
     public void glUniform(String name, Matrix3f m)
     {
         fbuffer.clear();
         m.putIn(fbuffer);
-        GL20.glUniformMatrix3(getUniLoc(name), true, fbuffer.get());
+        GL20.glUniformMatrix3(getUniLoc(name), false, fbuffer.get());
     }
     
     public void glUniform(String name, Matrix4f m)
     {
         fbuffer.clear();
         m.putIn(fbuffer);
-        GL20.glUniformMatrix4(getUniLoc(name), true, fbuffer.get());
+        GL20.glUniformMatrix4(getUniLoc(name), false, fbuffer.get());
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Attribute Methods">
