@@ -342,6 +342,7 @@ public class GLTexture
     
     public void glParam(int name, float value)
     {
+        if (!glIsBound()) throw new IllegalStateException();
         GL11.glTexParameterf(GL11.GL_TEXTURE_2D, name, value);
     }
     
