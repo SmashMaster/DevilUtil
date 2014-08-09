@@ -2,27 +2,46 @@ package com.samrj.devil.graphics;
 
 import org.lwjgl.opengl.*;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public class GLCubeMap
 {
     private int id = -1;
     
-    public GLCubeMap()
+    private GLCubeMap(RasterBuffer[] rasterBuffers)
     {
         id = GL11.glGenTextures();
+        glDefaultParams();
         
-        load();
+        for (int i=0; i<6; i++)
+        {
+            RasterBuffer rb = rasterBuffers[i];
+            
+            GL11.glTexImage2D(GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0,
+                    rb.format, rb.width, rb.height, 0, rb.baseFormat,
+                    GL11.GL_UNSIGNED_BYTE, rb.read());
+        }
     }
     
-    private void load()
+    public GLCubeMap(RasterBuffer posX, RasterBuffer negX,
+                     RasterBuffer posY, RasterBuffer negY,
+                     RasterBuffer posZ, RasterBuffer negZ)
     {
+        this(new RasterBuffer[]{posX, negX, posY, negY, posZ, negZ});
+    }
+    
+    private void glDefaultParams()
+    {
+        glBind();
         glParam(GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         glParam(GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
         glParam(GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
         glParam(GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
         glParam(GL12.GL_TEXTURE_WRAP_R, GL12.GL_CLAMP_TO_EDGE);
     }
-    
-    //TODO: set up actual face texture loading for all 6 faces
     
     public void glBind()
     {
