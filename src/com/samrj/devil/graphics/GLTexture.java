@@ -17,7 +17,7 @@ public class GLTexture
     public final int width, height;
     private int id = -1;
     
-    public GLTexture(RasterBuffer rb)
+    public GLTexture(TextureData rb)
     {
         id = GL11.glGenTextures();
         glDefaultParams();

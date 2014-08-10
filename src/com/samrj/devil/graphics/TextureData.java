@@ -19,7 +19,7 @@ import org.lwjgl.opengl.*;
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class RasterBuffer
+public class TextureData
 {
     // <editor-fold defaultstate="collapsed" desc="Static Methods">
     /**
@@ -162,7 +162,7 @@ public class RasterBuffer
     private ByteBuffer buffer;
     
     // <editor-fold defaultstate="collapsed" desc="Constructors">
-    public RasterBuffer(int width, int height, int format, ByteBuffer b)
+    public TextureData(int width, int height, int format, ByteBuffer b)
     {
         this.width = width;
         this.height = height;
@@ -177,7 +177,7 @@ public class RasterBuffer
         buffer.put(b);
     }
     
-    public RasterBuffer(int width, int height, int format)
+    public TextureData(int width, int height, int format)
     {
         this.width = width;
         this.height = height;
@@ -191,7 +191,7 @@ public class RasterBuffer
         buffer.put(new byte[length]);
     }
     
-    public RasterBuffer(int format, Raster raster)
+    public TextureData(int format, Raster raster)
     {
         width = raster.getWidth();
         height = raster.getHeight();
@@ -208,7 +208,7 @@ public class RasterBuffer
         load(raster);
     }
     
-    public RasterBuffer(Raster raster)
+    public TextureData(Raster raster)
     {
         width = raster.getWidth();
         height = raster.getHeight();
@@ -220,54 +220,54 @@ public class RasterBuffer
         load(raster);
     }
     
-    public RasterBuffer(int format, BufferedImage image)
+    public TextureData(int format, BufferedImage image)
     {
         this(image.getRaster());
     }
     
-    public RasterBuffer(BufferedImage image)
+    public TextureData(BufferedImage image)
     {
         this(image.getRaster());
     }
     
-    public RasterBuffer(int format, InputStream in) throws IOException
+    public TextureData(int format, InputStream in) throws IOException
     {
         this(format, ImageIO.read(in));
         in.close();
     }
     
-    public RasterBuffer(InputStream in) throws IOException
+    public TextureData(InputStream in) throws IOException
     {
         this(ImageIO.read(in));
         in.close();
     }
     
-    public RasterBuffer(int format, Resource path) throws IOException
+    public TextureData(int format, Resource path) throws IOException
     {
         this(format, path.open());
     }
     
-    public RasterBuffer(Resource path) throws IOException
+    public TextureData(Resource path) throws IOException
     {
         this(path.open());
     }
     
-    public RasterBuffer(int format, File f) throws IOException
+    public TextureData(int format, File f) throws IOException
     {
         this(format, FileRes.find(f));
     }
     
-    public RasterBuffer(File f) throws IOException
+    public TextureData(File f) throws IOException
     {
         this(FileRes.find(f));
     }
     
-    public RasterBuffer(int format, String path) throws IOException
+    public TextureData(int format, String path) throws IOException
     {
         this(format, Resource.find(path));
     }
     
-    public RasterBuffer(String path) throws IOException
+    public TextureData(String path) throws IOException
     {
         this(Resource.find(path));
     }
