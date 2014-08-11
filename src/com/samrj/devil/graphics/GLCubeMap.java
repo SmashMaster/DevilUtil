@@ -11,18 +11,18 @@ public class GLCubeMap
 {
     private int id = -1;
     
-    private GLCubeMap(TextureData[] rasterBuffers)
+    private GLCubeMap(TextureData[] textures)
     {
         id = GL11.glGenTextures();
         glDefaultParams();
         
         for (int i=0; i<6; i++)
         {
-            TextureData rb = rasterBuffers[i];
+            TextureData data = textures[i];
             
             GL11.glTexImage2D(GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0,
-                    rb.format, rb.width, rb.height, 0, rb.baseFormat,
-                    GL11.GL_UNSIGNED_BYTE, rb.read());
+                    data.format, data.width, data.height, 0, data.baseFormat,
+                    GL11.GL_UNSIGNED_BYTE, data.read());
         }
     }
     

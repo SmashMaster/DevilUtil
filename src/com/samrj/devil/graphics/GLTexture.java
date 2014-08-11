@@ -17,16 +17,16 @@ public class GLTexture
     public final int width, height;
     private int id = -1;
     
-    public GLTexture(TextureData rb)
+    public GLTexture(TextureData data)
     {
         id = GL11.glGenTextures();
         glDefaultParams();
         
-        this.width = rb.width;
-        this.height = rb.height;
+        this.width = data.width;
+        this.height = data.height;
         
-        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, rb.format, width, height, 0,
-                rb.baseFormat, GL11.GL_UNSIGNED_BYTE, rb.read());
+        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, data.format, width, height, 0,
+                data.baseFormat, GL11.GL_UNSIGNED_BYTE, data.read());
     }
     
     private void glDefaultParams()
