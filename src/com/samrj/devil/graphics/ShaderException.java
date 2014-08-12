@@ -5,24 +5,24 @@ package com.samrj.devil.graphics;
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class ShaderCompileException extends Exception
+public class ShaderException extends Exception
 {
-    public ShaderCompileException()
+    public ShaderException()
     {
         super();
     }
     
-    public ShaderCompileException(String message)
+    public ShaderException(String message)
     {
         super(message);
     }
 
-    public ShaderCompileException(Throwable cause)
+    public ShaderException(Throwable cause)
     {
         super(cause);
     }
 
-    public ShaderCompileException(String message, Throwable cause)
+    public ShaderException(String message, Throwable cause)
     {
         super(message, cause);
     }

@@ -54,7 +54,7 @@ public class GLShader
         this.fragid = fragid;
     }
     
-    public GLShader(Resource vert, Resource frag, boolean shouldComplete) throws IOException, ShaderCompileException
+    public GLShader(Resource vert, Resource frag, boolean shouldComplete) throws IOException, ShaderException
     {
         if (vert == null || frag == null) throw new NullPointerException();
         id = GL20.glCreateProgram();
@@ -67,32 +67,32 @@ public class GLShader
         if (shouldComplete) glComplete();
     }
     
-    public GLShader(Resource vert, Resource frag) throws IOException, ShaderCompileException
+    public GLShader(Resource vert, Resource frag) throws IOException, ShaderException
     {
         this(vert, frag, true);
     }
     
-    public GLShader(String vertPath, String fragPath, boolean shouldComplete) throws IOException, ShaderCompileException
+    public GLShader(String vertPath, String fragPath, boolean shouldComplete) throws IOException, ShaderException
     {
         this(Resource.find(vertPath), Resource.find(fragPath), shouldComplete);
     }
     
-    public GLShader(String vertPath, String fragPath) throws IOException, ShaderCompileException
+    public GLShader(String vertPath, String fragPath) throws IOException, ShaderException
     {
         this(vertPath, fragPath, true);
     }
     
-    public GLShader(String path, boolean shouldComplete) throws IOException, ShaderCompileException
+    public GLShader(String path, boolean shouldComplete) throws IOException, ShaderException
     {
         this(path + ".vert", path + ".frag", shouldComplete);
     }
     
-    public GLShader(String path) throws IOException, ShaderCompileException
+    public GLShader(String path) throws IOException, ShaderException
     {
         this(path, true);
     }
     
-    public void glComplete() throws ShaderCompileException
+    public void glComplete() throws ShaderException
     {
         GL20.glLinkProgram(id);
         checkProgramStatus(GL20.GL_LINK_STATUS);
@@ -100,16 +100,16 @@ public class GLShader
         checkProgramStatus(GL20.GL_VALIDATE_STATUS);
     }
     
-    private void checkProgramStatus(int type) throws ShaderCompileException
+    private void checkProgramStatus(int type) throws ShaderException
     {
         if (GL20.glGetProgrami(id, type) != GL11.GL_TRUE)
         {
             String log = GL20.glGetProgramInfoLog(id, GL20.glGetProgrami(id, GL20.GL_INFO_LOG_LENGTH));
-            throw new ShaderCompileException(log);
+            throw new ShaderException(log);
         }
     }
     
-    private int loadShader(Resource path, int type) throws IOException, ShaderCompileException
+    private int loadShader(Resource path, int type) throws IOException, ShaderException
     {
         InputStream in = path.open();
         if (in == null) throw new FileNotFoundException(path.path);
@@ -130,7 +130,7 @@ public class GLShader
         if (GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) != GL11.GL_TRUE)
         {
             String log = GL20.glGetShaderInfoLog(shader, GL20.glGetShaderi(shader, GL20.GL_INFO_LOG_LENGTH));
-            throw new ShaderCompileException(log);
+            throw new ShaderException(log);
         }
         
         return shader;
