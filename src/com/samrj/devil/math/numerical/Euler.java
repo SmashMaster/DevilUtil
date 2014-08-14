@@ -10,8 +10,8 @@ package com.samrj.devil.math.numerical;
 public class Euler implements Integrator
 {
     @Override
-    public <T extends NumState<T>> NumState<T>
-        integrate(float t0, float dt, NumState<T> s0, Derivative<T> ds)
+    public <T extends NumState<T>> T
+        integrate(float t0, float dt, T s0, Derivative<T> ds)
     {
         return ds.getSlope(t0, s0).mult(dt).add(s0);
     }

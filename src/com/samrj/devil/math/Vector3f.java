@@ -4,6 +4,7 @@ package com.samrj.devil.math;
 import com.samrj.devil.buffer.Bufferable;
 import com.samrj.devil.buffer.FloatBuffer;
 import com.samrj.devil.math.Util.Axis;
+import com.samrj.devil.math.numerical.NumState;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -11,7 +12,7 @@ import org.lwjgl.opengl.GL11;
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class Vector3f implements Bufferable<FloatBuffer>
+public final class Vector3f implements Bufferable<FloatBuffer>, NumState<Vector3f>
 {
     /*
      * Sources of information, code, or algorithms:

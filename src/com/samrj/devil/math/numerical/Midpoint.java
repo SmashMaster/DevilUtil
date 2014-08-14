@@ -10,13 +10,13 @@ package com.samrj.devil.math.numerical;
 public class Midpoint implements Integrator
 {
     @Override
-    public <T extends NumState<T>> NumState<T>
-        integrate(float t0, float dt, NumState<T> s0, Derivative<T> ds)
+    public <T extends NumState<T>> T
+        integrate(float t0, float dt, T s0, Derivative<T> ds)
     {
         float halfdt = dt*.5f;
         
-        NumState<T> s1 = ds.getSlope(t0, s0).mult(halfdt).add(s0);
-        NumState<T> s2 = ds.getSlope(t0 + halfdt, s1).mult(dt).add(s0);
+        T s1 = ds.getSlope(t0, s0).mult(halfdt).add(s0);
+        T s2 = ds.getSlope(t0 + halfdt, s1).mult(dt).add(s0);
         
         return s2;
     }
