@@ -1,7 +1,7 @@
 package com.samrj.devil.math.numerical;
 
 /**
- * Interface for a derivative function.
+ * Interface for a derivative function, for use by integrators.
  * 
  * @author Samuel Johnson (SmashMaster)
  * @param <STATE_TYPE> The type of numerical state this derivative handles.
