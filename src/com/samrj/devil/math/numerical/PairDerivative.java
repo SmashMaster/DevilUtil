@@ -10,6 +10,6 @@ package com.samrj.devil.math.numerical;
  */
 public interface PairDerivative<STATE_TYPE extends NumState<STATE_TYPE>>
 {
-    public STATE_TYPE getMomentum(float t, StatePair<STATE_TYPE> state);
-    public STATE_TYPE getForce(float t, StatePair<STATE_TYPE> state);
+    public STATE_TYPE getForce(float t, STATE_TYPE q);
+    public STATE_TYPE getMomentum(float t, STATE_TYPE p);
 }
