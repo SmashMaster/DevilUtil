@@ -13,13 +13,13 @@ public class RK4 implements Integrator
     public <T extends NumState<T>> T
         integrate(float t0, float dt, T s0, Derivative<T> ds)
     {
-        float halfdt = dt*.5f;
+        float hdt = dt*.5f;
         
-        T k1 = ds.getSlope(t0, s0).mult(dt);
-        T k2 = ds.getSlope(halfdt, k1.clone().mult(.5f).add(s0)).mult(dt);
-        T k3 = ds.getSlope(halfdt, k2.clone().mult(.5f).add(s0)).mult(dt);
-        T k4 = ds.getSlope(t0 + dt, k3.clone().add(s0)).mult(dt);
+        T k1 = ds.getSlope(t0, s0);
+        T k2 = ds.getSlope(t0 + hdt, k1.clone().mult(hdt).add(s0));
+        T k3 = ds.getSlope(t0 + hdt, k2.clone().mult(hdt).add(s0));
+        T k4 = ds.getSlope(t0 + dt, k3.clone().mult(dt).add(s0));
         
-        return k1.add(k2.add(k3).mult(2f)).add(k4).div(6f).add(s0);
+        return k1.add(k2.add(k3).mult(2f)).add(k4).mult(dt/6f).add(s0);
     }
 }

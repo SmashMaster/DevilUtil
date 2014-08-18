@@ -13,10 +13,10 @@ public class Midpoint implements Integrator
     public <T extends NumState<T>> T
         integrate(float t0, float dt, T s0, Derivative<T> ds)
     {
-        float halfdt = dt*.5f;
+        float hdt = dt*.5f;
         
-        T s1 = ds.getSlope(t0, s0).mult(halfdt).add(s0);
-        T s2 = ds.getSlope(t0 + halfdt, s1).mult(dt).add(s0);
+        T s1 = ds.getSlope(t0, s0).mult(hdt).add(s0);
+        T s2 = ds.getSlope(t0 + hdt, s1).mult(dt).add(s0);
         
         return s2;
     }
