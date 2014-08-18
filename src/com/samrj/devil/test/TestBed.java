@@ -28,6 +28,7 @@ public class TestBed
         while (running)
         {
             Display.processMessages();
+            if (Display.isCloseRequested()) running = false;
             
             Input.step(test);
             test.step(1f/60f);

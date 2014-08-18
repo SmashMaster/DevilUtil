@@ -22,9 +22,9 @@ import org.lwjgl.opengl.GL11;
 public class IntegrationTest implements Test
 {
     private final Derivative<FloatNum> derv = new TestDerivative();
-    private final float start = -25f, end = 25f;
-    private final float min = -50f, max = 50f;
-    private final float dx = 1f/256f;
+    private final float start = -360f, end = 360f;
+    private final float min = -2f, max = 2f;
+    private final float dx = 1f;
     
     public IntegrationTest()
     {
@@ -41,8 +41,8 @@ public class IntegrationTest implements Test
      */
     private float f(float t)
     {
-        return t;
-//        return Util.sin(t);
+//        return t;
+        return Util.sin(t);
     }
     
     /**
@@ -50,8 +50,8 @@ public class IntegrationTest implements Test
      */
     private float F(float t)
     {
-        return t*t*.5f;
-//        return -Util.cos(t);
+//        return t*t*.5f;
+        return -Util.cos(t);
     }
     
     @Override
@@ -85,8 +85,8 @@ public class IntegrationTest implements Test
         for (float x = start; x <= end; x += dx) GL11.glVertex2f(x, F(x));
         GL11.glEnd();
         
-//        Integrator integrator = new Euler();
-        Integrator integrator = new Midpoint();
+        Integrator integrator = new Euler();
+//        Integrator integrator = new Midpoint();
 //        Integrator integrator = new RK4();
         
         float y = F(start);
@@ -95,7 +95,7 @@ public class IntegrationTest implements Test
         for (float x = start; x <= end; x += dx)
         {
             GL11.glVertex2f(x, y);
-            y = integrator.integrate(x, dx, new FloatNum(y), derv).f;
+            y = integrator.integrate(x, dx/56f, new FloatNum(y), derv).f;
         }
         GL11.glEnd();
     }
