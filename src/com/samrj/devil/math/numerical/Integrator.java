@@ -13,10 +13,10 @@ public interface Integrator
      * @param <T> The type of numerical state to use.
      * @param t0 The variable of integration.
      * @param dt The time-step over which to integrate.
-     * @param s0 The starting state.
-     * @param ds The derivative of the state with respect to t.
-     * @return The state at t0 + dt.
+     * @param y0 The starting state.
+     * @param dydt The derivative of y with respect to t.
+     * @return y at t + dt.
      */
     public <T extends NumState<T>> T
-        integrate(float t0, float dt, T s0, Derivative<T> ds);
+        integrate(float t0, float dt, T y0, Derivative<T> dydt);
 }

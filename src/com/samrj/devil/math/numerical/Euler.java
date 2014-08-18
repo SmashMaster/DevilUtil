@@ -11,8 +11,8 @@ public class Euler implements Integrator
 {
     @Override
     public <T extends NumState<T>> T
-        integrate(float t0, float dt, T s0, Derivative<T> ds)
+        integrate(float t0, float dt, T y0, Derivative<T> dydt)
     {
-        return ds.getSlope(t0, s0).mult(dt).add(s0);
+        return dydt.getSlope(t0, y0).mult(dt).add(y0);
     }
 }
