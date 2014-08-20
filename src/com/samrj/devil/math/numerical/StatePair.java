@@ -1,7 +1,7 @@
 package com.samrj.devil.math.numerical;
 
 /**
- * Canonical coordinates, for use by a symplectic integrator.
+ * Canonical coordinates, used and returned by a symplectic integrator.
  * 
  * @author Samuel Johnson (SmashMaster)
  * @param <STATE_TYPE> The type of NumState this pair contains.
@@ -10,13 +10,10 @@ package com.samrj.devil.math.numerical;
  */
 public class StatePair<STATE_TYPE extends NumState<STATE_TYPE>>
 {
-    /**
-     * p is the position; q is the momentum.
-     */
-    public final STATE_TYPE p, q;
+    public final STATE_TYPE p, v;
     
-    public StatePair(STATE_TYPE p, STATE_TYPE q)
+    public StatePair(STATE_TYPE p, STATE_TYPE v)
     {
-        this.p = p; this.q = q;
+        this.p = p; this.v = v;
     }
 }

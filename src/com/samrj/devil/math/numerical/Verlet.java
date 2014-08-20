@@ -11,13 +11,13 @@ public class Verlet implements SymplecticIntegrator
 {
     @Override
     public <T extends NumState<T>> StatePair<T>
-        integrate(float t0, float dt, StatePair<T> s0, PairDerivative<T> ds)
+        integrate(float t0, float dt, StatePair<T> s0, Derivative<T> dv)
     {
         float hdt = dt*.5f;
         
-        T qMid = ds.getForce(t0, s0.q).mult(hdt).add(s0.q);
+        T qMid = dv.getSlope(t0, s0.v).mult(hdt).add(s0.v);
         T p1 = qMid.clone().mult(dt).add(s0.p);
-        T q1 = ds.getForce(t0 + dt, s0.q).mult(hdt).add(qMid);
-        return new StatePair<>(p1, q1);
+        T v1 = dv.getSlope(t0 + dt, s0.v).mult(hdt).add(qMid);
+        return new StatePair<>(p1, v1);
     }
 }
