@@ -10,5 +10,5 @@ package com.samrj.devil.math.numerical;
 public interface SymplecticIntegrator
 {
     public <T extends NumState<T>> StatePair<T>
-        integrate(float t0, float dt, StatePair<T> s0, Derivative<T> dv);
+        integrate(float t0, float dt, T p0, T v0, Derivative<T> dvdt);
 }
