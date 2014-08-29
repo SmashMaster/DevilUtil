@@ -292,4 +292,9 @@ public class TextureData
     {
         return buffer.get();
     }
+    
+    public GLTexture makeTexture()
+    {
+        return new GLTexture(this);
+    }
 }
