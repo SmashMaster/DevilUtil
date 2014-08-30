@@ -3,7 +3,12 @@ package com.samrj.devil.util;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Task
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
+public class Task implements Runnable
 {
     private Thread runningThread = null;
     private final List<Object> blockers = new LinkedList<>();
@@ -18,6 +23,7 @@ public class Task
     /**
      * Runs this task on the calling thread.
      */
+    @Override
     public final void run()
     {
         if (running) throw new IllegalStateException("Task already running.");
@@ -45,8 +51,9 @@ public class Task
     }
     
     /**
-     * Blocks the calling thread until the task is complete. Throws an exception
-     * if called on the currently executing thread.
+     * Blocks the calling thread until the task is complete.
+     * @throws java.lang.InterruptedException if called on the currently
+     *        executing thread.
      */
     public final void block() throws InterruptedException
     {
