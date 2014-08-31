@@ -26,10 +26,21 @@ public class GLVertexPool
     private GLShader shader;
     private int vao, vbo, ibo;
     private ArrayList<Attribute> attribs;
+    /**
+     * The VBO stride length, in bytes.
+     */
     private int stride = 0;
     private int polyMode;
     
-    public GLVertexPool(GLShader shader, int vertCapacity, int indCapacity, int vertexSize, int polyMode)
+    /**
+     * @param shader The shader that will be used when drawing this pool.
+     * @param vertCapacity The maximum number of vertices this pool can contain.
+     * @param indCapacity The maximum number of indices this pool can contain.
+     * @param vertexSize The data size of each vertex in floats.
+     * @param polyMode The OpenGL polygon mode enum.
+     * @param usage The OpenGL buffer usage enum.
+     */
+    public GLVertexPool(GLShader shader, int vertCapacity, int indCapacity, int vertexSize, int polyMode, int usage)
     {
         if (shader == null) throw new NullPointerException();
         this.shader = shader;
@@ -47,20 +58,31 @@ public class GLVertexPool
         indices = new IntBuffer(indCapacity);
         
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertices.capacity()*sizeof(FLOAT), GL15.GL_DYNAMIC_DRAW);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertices.capacity()*sizeof(FLOAT), usage);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ibo);
-        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indices.capacity()*sizeof(INT), GL15.GL_DYNAMIC_DRAW);
+        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indices.capacity()*sizeof(INT), usage);
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
     }
     
+    public GLVertexPool(GLShader shader, int vertCapacity, int indCapacity, int vertexSize, int polyMode)
+    {
+        this(shader, vertCapacity, indCapacity, vertexSize, polyMode, GL15.GL_DYNAMIC_DRAW);
+    }
+    
+    /**
+     * 
+     * @param name The name of this attribute in the shader.
+     * @param normalized Whether this attribute is normalized.
+     * @param size The size of this attribute, in floats.
+     */
     public void addAttribute(String name, boolean normalized, int size)
     {
-        int loc = GL20.glGetAttribLocation(shader.id(), name);
-        if (loc < 0) return;
+        int loc = shader.glGetAttribLocation(name);
         
         Attribute attrib = new Attribute();
+        attrib.name = name;
         attrib.loc = loc;
         attrib.normalized = normalized;
         attrib.size = size;
@@ -106,6 +128,7 @@ public class GLVertexPool
     
     private class Attribute
     {
+        private String name;
         private int loc;
         private boolean normalized;
         private int size, offset;
@@ -114,6 +137,10 @@ public class GLVertexPool
     public void setShader(GLShader shader)
     {
         this.shader = shader;
+        shader.glUse();
+        for (Attribute attrib : attribs)
+            attrib.loc = shader.glGetAttribLocation(attrib.name);
+        shader.glUnuse();
     }
     
     public void draw()
@@ -143,10 +170,17 @@ public class GLVertexPool
         GL30.glBindVertexArray(0);
     }
     
-    public void delete()
+    public void glDelete()
     {
         GL30.glDeleteVertexArrays(vao);
         GL15.glDeleteBuffers(vbo);
         GL15.glDeleteBuffers(ibo);
+        
+        vao = -1; vbo = -1; ibo = -1;
+    }
+    
+    public boolean isDeleted()
+    {
+        return vao == -1;
     }
 }
