@@ -1,6 +1,5 @@
 package com.samrj.devil.graphics;
 
-import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
@@ -27,7 +26,7 @@ public class FullScreenQuad
                                -1f, 1f,
                                1f, 1f,
                                1f, -1f);
-        vertexPool.addIndices(0, 1, 2, 3);
+        vertexPool.addIndices(0, 1, 2, 0, 2, 3);
         shader.glUnuse();
     }
     
