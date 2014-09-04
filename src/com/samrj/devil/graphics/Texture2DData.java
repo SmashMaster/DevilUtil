@@ -19,7 +19,7 @@ import org.lwjgl.opengl.*;
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class TextureData
+public class Texture2DData
 {
     // <editor-fold defaultstate="collapsed" desc="Static Methods">
     /**
@@ -156,13 +156,30 @@ public class TextureData
             default: return null;
         }
     }
+    
+    /**
+     * @param filter an OpenGL texture minify filter.
+     * @return whether or not the given filter is a mipmap filter.
+     */
+    public static boolean isMipmapFilter(int filter)
+    {
+        switch (filter)
+        {
+            case GL11.GL_NEAREST_MIPMAP_NEAREST:
+            case GL11.GL_LINEAR_MIPMAP_NEAREST:
+            case GL11.GL_NEAREST_MIPMAP_LINEAR:
+            case GL11.GL_LINEAR_MIPMAP_LINEAR: return true;
+                
+            default: return false;
+        }
+    }
     // </editor-fold>
     
     public final int width, height, format, baseFormat, bands;
     private ByteBuffer buffer;
     
     // <editor-fold defaultstate="collapsed" desc="Constructors">
-    public TextureData(int width, int height, int format, ByteBuffer b)
+    public Texture2DData(int width, int height, int format, ByteBuffer b)
     {
         this.width = width;
         this.height = height;
@@ -177,7 +194,7 @@ public class TextureData
         buffer.put(b);
     }
     
-    public TextureData(int width, int height, int format)
+    public Texture2DData(int width, int height, int format)
     {
         this.width = width;
         this.height = height;
@@ -191,7 +208,7 @@ public class TextureData
         buffer.put(new byte[length]);
     }
     
-    public TextureData(int format, Raster raster)
+    public Texture2DData(int format, Raster raster)
     {
         width = raster.getWidth();
         height = raster.getHeight();
@@ -208,7 +225,7 @@ public class TextureData
         load(raster);
     }
     
-    public TextureData(Raster raster)
+    public Texture2DData(Raster raster)
     {
         width = raster.getWidth();
         height = raster.getHeight();
@@ -220,54 +237,54 @@ public class TextureData
         load(raster);
     }
     
-    public TextureData(int format, BufferedImage image)
+    public Texture2DData(int format, BufferedImage image)
     {
         this(image.getRaster());
     }
     
-    public TextureData(BufferedImage image)
+    public Texture2DData(BufferedImage image)
     {
         this(image.getRaster());
     }
     
-    public TextureData(int format, InputStream in) throws IOException
+    public Texture2DData(int format, InputStream in) throws IOException
     {
         this(format, ImageIO.read(in));
         in.close();
     }
     
-    public TextureData(InputStream in) throws IOException
+    public Texture2DData(InputStream in) throws IOException
     {
         this(ImageIO.read(in));
         in.close();
     }
     
-    public TextureData(int format, Resource path) throws IOException
+    public Texture2DData(int format, Resource path) throws IOException
     {
         this(format, path.open());
     }
     
-    public TextureData(Resource path) throws IOException
+    public Texture2DData(Resource path) throws IOException
     {
         this(path.open());
     }
     
-    public TextureData(int format, File f) throws IOException
+    public Texture2DData(int format, File f) throws IOException
     {
         this(format, FileRes.find(f));
     }
     
-    public TextureData(File f) throws IOException
+    public Texture2DData(File f) throws IOException
     {
         this(FileRes.find(f));
     }
     
-    public TextureData(int format, String path) throws IOException
+    public Texture2DData(int format, String path) throws IOException
     {
         this(format, Resource.find(path));
     }
     
-    public TextureData(String path) throws IOException
+    public Texture2DData(String path) throws IOException
     {
         this(Resource.find(path));
     }
@@ -293,8 +310,13 @@ public class TextureData
         return buffer.get();
     }
     
-    public GLTexture makeTexture()
+    public GLTexture2D makeTexture2D(Texture2DParams params)
     {
-        return new GLTexture(this);
+        return new GLTexture2D(this, params);
+    }
+    
+    public GLTexture2D makeTexture2D()
+    {
+        return new GLTexture2D(this);
     }
 }

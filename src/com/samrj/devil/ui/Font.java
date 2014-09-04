@@ -1,6 +1,6 @@
 package com.samrj.devil.ui;
 
-import com.samrj.devil.graphics.GLTexture;
+import com.samrj.devil.graphics.GLTexture2D;
 import com.samrj.devil.math.Vector2f;
 import com.samrj.devil.res.Resource;
 import java.io.*;
@@ -13,11 +13,11 @@ import org.lwjgl.opengl.GL11;
  */
 public class Font
 {
-    private GLTexture tex;
+    private GLTexture2D tex;
     private float[] widths;
     private float height;
     
-    public Font(GLTexture tex, Resource wPath, float height) throws IOException
+    public Font(GLTexture2D tex, Resource wPath, float height) throws IOException
     {
         if (height <= 0f) throw new IllegalArgumentException();
         if (tex == null) throw new NullPointerException();
@@ -49,12 +49,12 @@ public class Font
         reader.close();
     }
     
-    public Font(GLTexture tex, String wPath, float height) throws IOException
+    public Font(GLTexture2D tex, String wPath, float height) throws IOException
     {
         this(tex, Resource.find(wPath), height);
     }
     
-    public GLTexture getTexture()
+    public GLTexture2D getTexture()
     {
         return tex;
     }

@@ -9,38 +9,58 @@ import org.lwjgl.opengl.*;
  */
 public class GLCubeMap
 {
+    public static void glUnbind()
+    {
+        GL11.glBindTexture(GL13.GL_TEXTURE_CUBE_MAP, 0);
+    }
+    
+    public static void glUnbind(int i)
+    {
+        GL13.glActiveTexture(GL13.GL_TEXTURE0 + i);
+        glUnbind();
+    }
+    
+    public static void glUnbind(int... iArray)
+    {
+        for (int i : iArray) glUnbind(i);
+    }
+    
     private int id = -1;
     
-    private GLCubeMap(TextureData[] textures)
+    private GLCubeMap(Texture2DData[] dataArray, CubeMapParams params)
     {
         id = GL11.glGenTextures();
-        glDefaultParams();
+        glBind();
         
         for (int i=0; i<6; i++)
         {
-            TextureData data = textures[i];
+            Texture2DData data = dataArray[i];
             
             GL11.glTexImage2D(GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0,
                     data.format, data.width, data.height, 0, data.baseFormat,
                     GL11.GL_UNSIGNED_BYTE, data.read());
+            
+            if (Texture2DData.isMipmapFilter(params.minFilter))
+                GL30.glGenerateMipmap(GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
         }
+        
+        params.glApply(this);
     }
     
-    public GLCubeMap(TextureData posX, TextureData negX,
-                     TextureData posY, TextureData negY,
-                     TextureData posZ, TextureData negZ)
+    public GLCubeMap(Texture2DData posX, Texture2DData negX,
+                     Texture2DData posY, Texture2DData negY,
+                     Texture2DData posZ, Texture2DData negZ,
+                     CubeMapParams params)
     {
-        this(new TextureData[]{posX, negX, posY, negY, posZ, negZ});
+        this(new Texture2DData[]{posX, negX, posY, negY, posZ, negZ}, params);
     }
     
-    private void glDefaultParams()
+    public GLCubeMap(Texture2DData posX, Texture2DData negX,
+                     Texture2DData posY, Texture2DData negY,
+                     Texture2DData posZ, Texture2DData negZ)
     {
-        glBind();
-        glParam(GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-        glParam(GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-        glParam(GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-        glParam(GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
-        glParam(GL12.GL_TEXTURE_WRAP_R, GL12.GL_CLAMP_TO_EDGE);
+        this(new Texture2DData[]{posX, negX, posY, negY, posZ, negZ},
+                new CubeMapParams());
     }
     
     public void glBind()

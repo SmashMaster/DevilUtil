@@ -3,6 +3,7 @@ package com.samrj.devil.graphics;
 import com.samrj.devil.math.Vector2f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GL30;
 
 /**
  * Handles the allocation, loading, manipulation, and deletion of OpenGL texture
@@ -12,7 +13,7 @@ import org.lwjgl.opengl.GL13;
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class GLTexture
+public class GLTexture2D
 {
     public static void glUnbind()
     {
@@ -33,25 +34,29 @@ public class GLTexture
     public final int width, height;
     private int id = -1;
     
-    public GLTexture(TextureData data)
+    public GLTexture2D(Texture2DData data, Texture2DParams params)
     {
+        if (data == null || params == null) throw new NullPointerException();
+        
+        GL11.glEnable(GL11.GL_TEXTURE_2D);
         id = GL11.glGenTextures();
-        glDefaultParams();
+        glBind();
         
         this.width = data.width;
         this.height = data.height;
         
         GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, data.format, width, height, 0,
                 data.baseFormat, GL11.GL_UNSIGNED_BYTE, data.read());
+        
+        if (Texture2DData.isMipmapFilter(params.minFilter))
+            GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
+        
+        params.glApply(this);
     }
     
-    private void glDefaultParams()
+    public GLTexture2D(Texture2DData data)
     {
-        glBind();
-        glParam(GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
-        glParam(GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
-        glParam(GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-        glParam(GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+        this(data, new Texture2DParams());
     }
     
     public void glBind()
