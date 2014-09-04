@@ -48,7 +48,7 @@ public class GLCubeMap
         GL11.glBindTexture(GL13.GL_TEXTURE_CUBE_MAP, id);
     }
     
-    public void glMultiBind(int i)
+    public void glBind(int i)
     {
         GL13.glActiveTexture(GL13.GL_TEXTURE0 + i);
         glBind();

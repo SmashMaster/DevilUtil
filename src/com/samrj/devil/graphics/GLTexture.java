@@ -14,30 +14,20 @@ import org.lwjgl.opengl.GL13;
  */
 public class GLTexture
 {
-    public static void glUnbind(int target)
+    public static void glUnbind()
     {
-        GL11.glBindTexture(target, 0);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
     }
     
-    public static void gUnbind()
-    {
-        glUnbind(GL11.GL_TEXTURE_2D);
-    }
-    
-    public static void glMultiUnbind(int target, int i)
+    public static void glUnbind(int i)
     {
         GL13.glActiveTexture(GL13.GL_TEXTURE0 + i);
-        glUnbind(target);
+        glUnbind();
     }
     
-    public static void glMultiUnbind(int i)
+    public static void glUnbind(int... iArray)
     {
-        glMultiUnbind(GL11.GL_TEXTURE_2D, i);
-    }
-    
-    public static void glMultiUnbindArray(int... iArray)
-    {
-        for (int i : iArray) glMultiUnbind(GL11.GL_TEXTURE_2D, i);
+        for (int i : iArray) glUnbind(i);
     }
     
     public final int width, height;
@@ -64,26 +54,16 @@ public class GLTexture
         glParam(GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
     }
     
-    public void glBind(int target)
-    {
-        if (isDeleted()) throw new IllegalStateException("Cannot bind deleted texture.");
-        GL11.glBindTexture(target, id);
-    }
-    
     public void glBind()
     {
-        glBind(GL11.GL_TEXTURE_2D);
+        if (isDeleted()) throw new IllegalStateException("Cannot bind deleted texture.");
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, id);
     }
     
-    public void glMultiBind(int target, int i)
+    public void glBind(int i)
     {
         GL13.glActiveTexture(GL13.GL_TEXTURE0 + i);
-        glBind(target);
-    }
-    
-    public void glMultiBind(int i)
-    {
-        glMultiBind(GL11.GL_TEXTURE_2D, i);
+        glBind();
     }
     
     public void glParam(int name, int value)
