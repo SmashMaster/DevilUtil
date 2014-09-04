@@ -126,6 +126,12 @@ public class GLVertexPool
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
     }
     
+    public void clear()
+    {
+        vertices.clear();
+        indices.clear();
+    }
+    
     private class Attribute
     {
         private String name;

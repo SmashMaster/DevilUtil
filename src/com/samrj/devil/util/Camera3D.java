@@ -67,4 +67,9 @@ public class Camera3D
         out.multTranslate(pos.cnegate());
         return out;
     }
+    
+    public Matrix4f getViewProj()
+    {
+        return proj.clone().mult(getView());
+    }
 }
