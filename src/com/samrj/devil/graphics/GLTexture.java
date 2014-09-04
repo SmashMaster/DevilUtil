@@ -14,6 +14,32 @@ import org.lwjgl.opengl.GL13;
  */
 public class GLTexture
 {
+    public static void glUnbind(int target)
+    {
+        GL11.glBindTexture(target, 0);
+    }
+    
+    public static void gUnbind()
+    {
+        glUnbind(GL11.GL_TEXTURE_2D);
+    }
+    
+    public static void glMultiUnbind(int target, int i)
+    {
+        GL13.glActiveTexture(GL13.GL_TEXTURE0 + i);
+        glUnbind(target);
+    }
+    
+    public static void glMultiUnbind(int i)
+    {
+        glMultiUnbind(GL11.GL_TEXTURE_2D, i);
+    }
+    
+    public static void glMultiUnbindArray(int... iArray)
+    {
+        for (int i : iArray) glMultiUnbind(GL11.GL_TEXTURE_2D, i);
+    }
+    
     public final int width, height;
     private int id = -1;
     
