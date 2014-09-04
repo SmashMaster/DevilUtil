@@ -12,6 +12,26 @@ import org.lwjgl.opengl.GL30;
  */
 public class GLFrameBuffer
 {
+    public static String glStatusName(int statusEnum)
+    {
+        switch (statusEnum)
+        {
+            case GL30.GL_FRAMEBUFFER_COMPLETE​:
+                return "GL_FRAMEBUFFER_COMPLETE​";
+            case GL30.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+                return "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
+            case GL30.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+                return "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT";
+            case GL30.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+                return "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER";
+            case GL30.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+                return "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER";
+            case GL30.GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+                return "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE";
+            default: return null;
+        }
+    }
+    
     private int id, target = -1;
     
     public GLFrameBuffer()
@@ -59,6 +79,17 @@ public class GLFrameBuffer
     {
         GL30.glDeleteFramebuffers(id);
         id = -1;
+    }
+    
+    public int glGetStatus()
+    {
+        if (!isBound()) throw new IllegalStateException();
+        return GL30.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER);
+    }
+    
+    public String glGetStatusString()
+    {
+        return glStatusName(glGetStatus());
     }
     
     public boolean isDeleted()
