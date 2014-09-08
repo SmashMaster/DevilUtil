@@ -195,6 +195,27 @@ public final class Vector3f implements Bufferable<FloatBuffer>, NumState<Vector3
                    z*v.x - x*v.z,
                    x*v.y - y*v.x);
     }
+    
+    public Vector3f floor()
+    {
+        return set(Util.floor(x),
+                   Util.floor(y),
+                   Util.floor(z));
+    }
+    
+    public Vector3f ceil()
+    {
+        return set(Util.ceil(x),
+                   Util.ceil(y),
+                   Util.ceil(z));
+    }
+    
+    public Vector3f round()
+    {
+        return set(Util.round(x),
+                   Util.round(y),
+                   Util.round(z));
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Nonlocal Mutators">
     public Vector3f cadd(float x, float y, float z)  {return clone().add(x, y, z);}

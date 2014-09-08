@@ -138,6 +138,24 @@ public class Vector2d
     {
         return set(x/s, y/s);
     }
+    
+    public Vector2d floor()
+    {
+        return set(Math.floor(x),
+                   Math.floor(y));
+    }
+    
+    public Vector2d ceil()
+    {
+        return set(Math.ceil(x),
+                   Math.ceil(y));
+    }
+    
+    public Vector2d round()
+    {
+        return set(Math.round(x),
+                   Math.round(y));
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Nonlocal Mutators">
     public Vector2d cadd(float x, float y)

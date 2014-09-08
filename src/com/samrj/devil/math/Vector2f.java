@@ -251,6 +251,24 @@ public final class Vector2f implements Bufferable<FloatBuffer>, NumState<Vector2
     public Vector2f flipX()     {return set(-x, y);}
     public Vector2f flipY()     {return set(x, -y);}
     public Vector2f negate()    {return set(-x, -y);}
+    
+    public Vector2f floor()
+    {
+        return set(Util.floor(x),
+                   Util.floor(y));
+    }
+    
+    public Vector2f ceil()
+    {
+        return set(Util.ceil(x),
+                   Util.ceil(y));
+    }
+    
+    public Vector2f round()
+    {
+        return set(Util.round(x),
+                   Util.round(y));
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Nonlocal Mutators">
     public Vector2f cadd(float x, float y)  {return clone().add(x, y);}
@@ -354,21 +372,6 @@ public final class Vector2f implements Bufferable<FloatBuffer>, NumState<Vector2
     {
         return Util.epsEqual(v.x, x, tolerance) &&
                Util.epsEqual(v.y, y, tolerance);
-    }
-    
-    public Vector2i floor()
-    {
-        return new Vector2i(Util.floor(x), Util.floor(y));
-    }
-    
-    public Vector2i round()
-    {
-        return new Vector2i(Math.round(x), Math.round(y));
-    }
-    
-    public Vector2i ceil()
-    {
-        return new Vector2i(Util.ceil(x), Util.ceil(y));
     }
     
     public void glVertex()
