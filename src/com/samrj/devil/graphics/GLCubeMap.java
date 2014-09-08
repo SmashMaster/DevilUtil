@@ -27,7 +27,7 @@ public class GLCubeMap
     
     private int id = -1;
     
-    private GLCubeMap(Texture2DData[] dataArray, CubeMapParams params)
+    public GLCubeMap(Texture2DData[] dataArray, CubeMapParams params)
     {
         id = GL11.glGenTextures();
         glBind();
@@ -45,6 +45,11 @@ public class GLCubeMap
                 GL30.glGenerateMipmap(GL13.GL_TEXTURE_CUBE_MAP);
         
         params.glApply(this);
+    }
+    
+    public GLCubeMap(Texture2DData[] dataArray)
+    {
+        this(dataArray, new CubeMapParams());
     }
     
     public GLCubeMap(Texture2DData posX, Texture2DData negX,
