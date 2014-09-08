@@ -1,6 +1,8 @@
 package com.samrj.devil.math.proc;
 
 import com.samrj.devil.math.Util;
+import com.samrj.devil.math.Vector2f;
+import com.samrj.devil.math.Vector3f;
 
 /**
  * A speed-improved simplex noise algorithm for 2D, 3D and 4D in Java.
@@ -100,18 +102,18 @@ public class SimplexNoise
     }
 
     // 2D simplex noise
-    public static float noise(float xin, float yin)
+    public static float noise(float x, float y)
     {
         float n0, n1, n2; // Noise contributions from the three corners
         // Skew the input space to determine which simplex cell we're in
-        float s = (xin + yin) * F2; // Hairy factor for 2D
-        int i = fastfloor(xin + s);
-        int j = fastfloor(yin + s);
+        float s = (x + y) * F2; // Hairy factor for 2D
+        int i = fastfloor(x + s);
+        int j = fastfloor(y + s);
         float t = (i + j) * G2;
         float X0 = i - t; // Unskew the cell origin back to (x,y) space
         float Y0 = j - t;
-        float x0 = xin - X0; // The x,y distances from the cell origin
-        float y0 = yin - Y0;
+        float x0 = x - X0; // The x,y distances from the cell origin
+        float y0 = y - Y0;
         // For the 2D case, the simplex shape is an equilateral triangle.
         // Determine which simplex we are in.
         int i1, j1; // Offsets for second (middle) corner of simplex in (i,j) coords
@@ -173,23 +175,28 @@ public class SimplexNoise
         // The result is scaled to return values in the interval [-1,1].
         return 70f * (n0 + n1 + n2);
     }
+    
+    public static float noise(Vector2f v)
+    {
+        return noise(v.x, v.y);
+    }
 
     // 3D simplex noise
-    public static float noise(float xin, float yin, float zin)
+    public static float noise(float x, float y, float z)
     {
         float n0, n1, n2, n3; // Noise contributions from the four corners
         // Skew the input space to determine which simplex cell we're in
-        float s = (xin + yin + zin) * F3; // Very nice and simple skew factor for 3D
-        int i = fastfloor(xin + s);
-        int j = fastfloor(yin + s);
-        int k = fastfloor(zin + s);
+        float s = (x + y + z) * F3; // Very nice and simple skew factor for 3D
+        int i = fastfloor(x + s);
+        int j = fastfloor(y + s);
+        int k = fastfloor(z + s);
         float t = (i + j + k) * G3;
         float X0 = i - t; // Unskew the cell origin back to (x,y,z) space
         float Y0 = j - t;
         float Z0 = k - t;
-        float x0 = xin - X0; // The x,y,z distances from the cell origin
-        float y0 = yin - Y0;
-        float z0 = zin - Z0;
+        float x0 = x - X0; // The x,y,z distances from the cell origin
+        float y0 = y - Y0;
+        float z0 = z - Z0;
         // For the 3D case, the simplex shape is a slightly irregular tetrahedron.
         // Determine which simplex we are in.
         int i1, j1, k1; // Offsets for second corner of simplex in (i,j,k) coords
@@ -319,6 +326,11 @@ public class SimplexNoise
     // Add contributions from each corner to get the final noise value.
         // The result is scaled to stay just inside [-1,1]
         return 32f * (n0 + n1 + n2 + n3);
+    }
+    
+    public static float noise(Vector3f v)
+    {
+        return noise(v.x, v.y, v.z);
     }
 
     // 4D simplex noise, better simplex rank ordering method 2012-03-09
