@@ -1,5 +1,6 @@
 package com.samrj.devil.buffer;
 
+import com.samrj.devil.math.Util;
 import static com.samrj.devil.math.Util.PrimType.SHORT;
 
 /**
@@ -38,6 +39,12 @@ public class ShortBuffer extends Buffer<java.nio.ShortBuffer>
     java.nio.ShortBuffer buffer()
     {
         return byteBuffer().asShortBuffer();
+    }
+    
+    @Override
+    public Util.PrimType getType()
+    {
+        return Util.PrimType.SHORT;
     }
     
     @Override

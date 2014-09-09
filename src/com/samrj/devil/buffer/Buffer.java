@@ -137,10 +137,12 @@ public abstract class Buffer<TYPE extends java.nio.Buffer>
      */
     abstract TYPE buffer();
     
+    public abstract PrimType getType();
+    
     /**
      * Returns the ByteBuffer holding this buffer's data.
      */
-    final java.nio.ByteBuffer byteBuffer()
+    public final java.nio.ByteBuffer byteBuffer()
     {
         return buffer;
     }

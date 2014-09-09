@@ -1,5 +1,6 @@
 package com.samrj.devil.buffer;
 
+import com.samrj.devil.math.Util;
 import static com.samrj.devil.math.Util.PrimType.FLOAT;
 
 /**
@@ -53,6 +54,12 @@ public class FloatBuffer extends Buffer<java.nio.FloatBuffer>
         return byteBuffer().asFloatBuffer();
     }
 
+    @Override
+    public Util.PrimType getType()
+    {
+        return Util.PrimType.FLOAT;
+    }
+    
     @Override
     public void putIn(FloatBuffer buf)
     {

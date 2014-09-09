@@ -19,6 +19,9 @@ public class Util
         BOOLEAN(                Boolean.TYPE),
         CHAR   (Character.SIZE, Character.TYPE);
         
+        /**
+         * The size of this primitive, in bytes.
+         */
         public final int size;
         private final Class type;
         

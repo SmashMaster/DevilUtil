@@ -1,5 +1,6 @@
 package com.samrj.devil.graphics;
 
+import com.samrj.devil.buffer.Buffer;
 import com.samrj.devil.buffer.ByteBuffer;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.res.FileRes;
@@ -179,7 +180,7 @@ public class Texture2DData
     private ByteBuffer buffer;
     
     // <editor-fold defaultstate="collapsed" desc="Constructors">
-    public Texture2DData(int width, int height, int format, ByteBuffer b)
+    public Texture2DData(int width, int height, int format, Buffer b)
     {
         this.width = width;
         this.height = height;
@@ -188,10 +189,11 @@ public class Texture2DData
         bands = getBands(baseFormat);
         if (bands == -1) throw new IllegalArgumentException("Illegal format specified.");
         
-        int length = width*height*bands;
+        int length = width*height*bands*b.getType().size;
         if (b.size() != length) throw new IllegalArgumentException("Illegal input buffer size " + b.size() + ", expected size " + length);
         buffer = new ByteBuffer(length);
-        buffer.put(b);
+        b.get();
+        buffer.put(b.byteBuffer());
     }
     
     public Texture2DData(int width, int height, int format)

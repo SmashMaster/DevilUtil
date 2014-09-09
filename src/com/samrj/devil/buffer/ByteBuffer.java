@@ -1,5 +1,6 @@
 package com.samrj.devil.buffer;
 
+import com.samrj.devil.math.Util;
 import static com.samrj.devil.math.Util.PrimType.BYTE;
 
 /**
@@ -31,6 +32,12 @@ public class ByteBuffer extends Buffer<java.nio.ByteBuffer>
         buffer().put(data.get());
     }
     
+    public void put(java.nio.ByteBuffer data)
+    {
+        write(data.remaining());
+        buffer().put(data);
+    }
+    
     public void put(Bufferable<ByteBuffer> data)
     {
         data.putIn(this);
@@ -40,6 +47,12 @@ public class ByteBuffer extends Buffer<java.nio.ByteBuffer>
     java.nio.ByteBuffer buffer()
     {
         return byteBuffer();
+    }
+    
+    @Override
+    public Util.PrimType getType()
+    {
+        return Util.PrimType.BYTE;
     }
 
     @Override

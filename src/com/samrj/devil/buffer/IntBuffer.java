@@ -1,5 +1,6 @@
 package com.samrj.devil.buffer;
 
+import com.samrj.devil.math.Util;
 import static com.samrj.devil.math.Util.PrimType.INT;
 
 /**
@@ -38,6 +39,12 @@ public class IntBuffer extends Buffer<java.nio.IntBuffer>
     java.nio.IntBuffer buffer()
     {
         return byteBuffer().asIntBuffer();
+    }
+    
+    @Override
+    public Util.PrimType getType()
+    {
+        return Util.PrimType.INT;
     }
     
     @Override
