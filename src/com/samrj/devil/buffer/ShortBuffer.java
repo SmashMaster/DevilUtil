@@ -13,6 +13,13 @@ import static com.samrj.devil.math.Util.PrimType.SHORT;
 public class ShortBuffer extends Buffer<java.nio.ShortBuffer>
                          implements Bufferable<ShortBuffer>
 {
+    public static ShortBuffer wrap(short... data)
+    {
+        ShortBuffer out = new ShortBuffer(data.length);
+        out.put(data);
+        return out;
+    }
+    
     public ShortBuffer(int capacity)
     {
         super(capacity, SHORT);

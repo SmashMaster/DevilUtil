@@ -13,6 +13,13 @@ import static com.samrj.devil.math.Util.PrimType.INT;
 public class IntBuffer extends Buffer<java.nio.IntBuffer>
                        implements Bufferable<IntBuffer>
 {
+    public static IntBuffer wrap(int... data)
+    {
+        IntBuffer out = new IntBuffer(data.length);
+        out.put(data);
+        return out;
+    }
+    
     public IntBuffer(int capacity)
     {
         super(capacity, INT);

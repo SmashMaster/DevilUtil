@@ -2,7 +2,6 @@ package com.samrj.devil.graphics;
 
 import com.samrj.devil.buffer.Buffer;
 import com.samrj.devil.buffer.ByteBuffer;
-import java.awt.image.Raster;
 
 /**
  * 3D texture data class for OpenGL.
