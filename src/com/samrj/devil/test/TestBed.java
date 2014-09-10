@@ -22,7 +22,7 @@ public class TestBed
         Display.setVSyncEnabled(false);
         Display.create(new PixelFormat(0, 0, 0));
         
-        Test test = new IntegrationTest();//Your desired test here.
+        Test test = new RoundingTest();//Your desired test here.
         
         running = true;
         while (running)

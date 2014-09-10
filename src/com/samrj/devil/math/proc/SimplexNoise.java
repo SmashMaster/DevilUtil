@@ -79,13 +79,6 @@ public class SimplexNoise
     private static final float F4 = (Util.sqrt(5f) - 1f) / 4f;
     private static final float G4 = (5f - Util.sqrt(5f)) / 20f;
 
-    // This method is a *lot* faster than using (int)Math.floor(x)
-    private static int fastfloor(float x)
-    {
-        int xi = (int) x;
-        return x < xi ? xi - 1 : xi;
-    }
-
     private static float dot(Grad g, float x, float y)
     {
         return g.x * x + g.y * y;
@@ -107,8 +100,8 @@ public class SimplexNoise
         float n0, n1, n2; // Noise contributions from the three corners
         // Skew the input space to determine which simplex cell we're in
         float s = (x + y) * F2; // Hairy factor for 2D
-        int i = fastfloor(x + s);
-        int j = fastfloor(y + s);
+        int i = Util.floor(x + s);
+        int j = Util.floor(y + s);
         float t = (i + j) * G2;
         float X0 = i - t; // Unskew the cell origin back to (x,y) space
         float Y0 = j - t;
@@ -187,9 +180,9 @@ public class SimplexNoise
         float n0, n1, n2, n3; // Noise contributions from the four corners
         // Skew the input space to determine which simplex cell we're in
         float s = (x + y + z) * F3; // Very nice and simple skew factor for 3D
-        int i = fastfloor(x + s);
-        int j = fastfloor(y + s);
-        int k = fastfloor(z + s);
+        int i = Util.floor(x + s);
+        int j = Util.floor(y + s);
+        int k = Util.floor(z + s);
         float t = (i + j + k) * G3;
         float X0 = i - t; // Unskew the cell origin back to (x,y,z) space
         float Y0 = j - t;
@@ -340,10 +333,10 @@ public class SimplexNoise
         float n0, n1, n2, n3, n4; // Noise contributions from the five corners
         // Skew the (x,y,z,w) space to determine which cell of 24 simplices we're in
         float s = (x + y + z + w) * F4; // Factor for 4D skewing
-        int i = fastfloor(x + s);
-        int j = fastfloor(y + s);
-        int k = fastfloor(z + s);
-        int l = fastfloor(w + s);
+        int i = Util.floor(x + s);
+        int j = Util.floor(y + s);
+        int k = Util.floor(z + s);
+        int l = Util.floor(w + s);
         float t = (i + j + k + l) * G4; // Factor for 4D unskewing
         float X0 = i - t; // Unskew the cell origin back to (x,y,z,w) space
         float Y0 = j - t;

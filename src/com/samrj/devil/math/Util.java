@@ -80,19 +80,21 @@ public class Util
         return -1;
     }
     
-    public static int round(float v)
-    {
-        return Math.round(v);
-    }
-
     public static int floor(float v)
     {
-        return (int)Math.floor(v);
+        int vi = (int) v;
+        return v < vi ? vi - 1 : vi;
     }
     
     public static int ceil(float v)
     {
-        return (int)Math.ceil(v);
+        int vi = (int) v;
+        return v < vi ? vi : vi + 1;
+    }
+    
+    public static int round(float v)
+    {
+        return floor(v + .5f);
     }
     
     public static float pow(float v, float p)
