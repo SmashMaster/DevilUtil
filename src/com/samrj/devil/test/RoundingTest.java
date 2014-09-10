@@ -24,10 +24,15 @@ public class RoundingTest implements Test
         System.out.println("round(" + f1 + ") = " + Util.round(f1) + " = " + Math.round(f1));
         System.out.println("round(" + f2 + ") = " + Util.round(f2) + " = " + Math.round(f2));
         
-        float f3 = 1.75f;
-        float f4 = -1.75f;
+        float f3 = 1.5f;
+        float f4 = -1.5f;
         System.out.println("round(" + f3 + ") = " + Util.round(f3) + " = " + Math.round(f3));
         System.out.println("round(" + f4 + ") = " + Util.round(f4) + " = " + Math.round(f4));
+        
+        float f5 = 1.75f;
+        float f6 = -1.75f;
+        System.out.println("round(" + f5 + ") = " + Util.round(f5) + " = " + Math.round(f5));
+        System.out.println("round(" + f6 + ") = " + Util.round(f6) + " = " + Math.round(f6));
     }
 
     @Override
