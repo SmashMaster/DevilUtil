@@ -48,7 +48,7 @@ public class GLTexture2D
         GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, data.format, width, height, 0,
                 data.baseFormat, GL11.GL_UNSIGNED_BYTE, data.read());
         
-        if (Texture2DData.isMipmapFilter(params.minFilter))
+        if (TexUtil.isMipmapFilter(params.minFilter))
             GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
         
         params.glApply(this);

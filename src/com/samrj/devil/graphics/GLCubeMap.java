@@ -41,7 +41,7 @@ public class GLCubeMap
                     GL11.GL_UNSIGNED_BYTE, data.read());
         }
         
-        if (Texture2DData.isMipmapFilter(params.minFilter))
+        if (TexUtil.isMipmapFilter(params.minFilter))
                 GL30.glGenerateMipmap(GL13.GL_TEXTURE_CUBE_MAP);
         
         params.glApply(this);
