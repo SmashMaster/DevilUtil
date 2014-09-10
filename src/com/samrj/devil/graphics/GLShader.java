@@ -1,6 +1,7 @@
 package com.samrj.devil.graphics;
 
 import com.samrj.devil.buffer.IntBuffer;
+import com.samrj.devil.buffer.PublicBuffers;
 import static com.samrj.devil.buffer.PublicBuffers.fbuffer;
 import static com.samrj.devil.buffer.PublicBuffers.ibuffer;
 import com.samrj.devil.math.Matrix2f;
@@ -94,8 +95,18 @@ public class GLShader
     
     public void glComplete() throws ShaderException
     {
+        glLink();
+        glValidate();
+    }
+    
+    public void glLink() throws ShaderException
+    {
         GL20.glLinkProgram(id);
         checkProgramStatus(GL20.GL_LINK_STATUS);
+    }
+    
+    public void glValidate() throws ShaderException
+    {
         GL20.glValidateProgram(id);
         checkProgramStatus(GL20.GL_VALIDATE_STATUS);
     }
