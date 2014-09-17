@@ -79,15 +79,16 @@ public class Camera3D
      * @param pos A world position.
      * @return pos in screen coordinates.
      */
-    public Vector2f toScreen(Vector3f pos)
+    public Vector3f toScreen(Vector3f pos)
     {
         float midx = Display.getWidth()*.5f;
         float midy = Display.getHeight()*.5f;
         pos = pos.clone();
         pos.mult(getView());
         pos.mult(proj);
-        pos.div(pos.z);
-        return new Vector2f(pos.x*midx + midx , pos.y*midy + midy);
+        pos.x = pos.x*midx/pos.z + midx;
+        pos.y = pos.y*midy/pos.z + midy;
+        return pos;
     }
     
     /**
@@ -96,14 +97,15 @@ public class Camera3D
      * @param dir A world position.
      * @return dir in screen coordinates.
      */
-    public Vector2f dirToScreen(Vector3f dir)
+    public Vector3f dirToScreen(Vector3f dir)
     {
         float midx = Display.getWidth()*.5f;
         float midy = Display.getHeight()*.5f;
         dir = dir.clone();
         dir.mult(getView().toMatrix3f());
         dir.mult(proj.toMatrix3f());
-        dir.div(dir.z);
-        return new Vector2f(dir.x*midx + midx , dir.y*midy + midy);
+        dir.x = dir.x*midx/dir.z + midx;
+        dir.y = dir.y*midy/dir.z + midy;
+        return dir;
     }
 }
