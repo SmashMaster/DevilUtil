@@ -16,9 +16,7 @@ public final class Matrix3f implements Bufferable<FloatBuffer>, Matrix<Matrix3f>
     // <editor-fold defaultstate="collapsed" desc="Factory Methods">
     public static Matrix3f identity()
     {
-        return new Matrix3f(1, 0, 0,
-                            0, 1, 0,
-                            0, 0, 1);
+        return new Matrix3f();
     }
     
     public static Matrix3f translate(float x, float y)
@@ -97,6 +95,11 @@ public final class Matrix3f implements Bufferable<FloatBuffer>, Matrix<Matrix3f>
     {
         set(z);
     }
+    
+    public Matrix3f()
+    {
+        set();
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Mutator Methods">
     public Matrix3f set(float a, float b, float c,
@@ -115,6 +118,14 @@ public final class Matrix3f implements Bufferable<FloatBuffer>, Matrix<Matrix3f>
         return set(z.a, z.b, z.c,
                    z.d, z.e, z.f,
                    z.g, z.h, z.i);
+    }
+    
+    @Override
+    public Matrix3f set()
+    {
+        return set(1f, 0f, 0f,
+                   0f, 1f, 0f,
+                   0f, 0f, 1f);
     }
     
     @Override

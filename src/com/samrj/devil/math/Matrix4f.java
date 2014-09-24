@@ -14,6 +14,11 @@ import org.lwjgl.opengl.GL11;
 public final class Matrix4f implements Bufferable<FloatBuffer>, Matrix<Matrix4f>
 {
     // <editor-fold defaultstate="collapsed" desc="Factory Methods">
+    public static Matrix4f identity()
+    {
+        return new Matrix4f();
+    }
+    
     /**
      * Returns a 4x4 orthogonal translation matrix from the specified
      * coordinates.
@@ -268,6 +273,7 @@ public final class Matrix4f implements Bufferable<FloatBuffer>, Matrix<Matrix4f>
                    z.m, z.n, z.o, z.p);
     }
     
+    @Override
     public Matrix4f set()
     {
         return set(1, 0, 0, 0,

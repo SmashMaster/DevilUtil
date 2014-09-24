@@ -13,8 +13,7 @@ public final class Matrix2f implements Bufferable<FloatBuffer>, Matrix<Matrix2f>
     // <editor-fold defaultstate="collapsed" desc="Factory Methods">
     public static Matrix2f identity()
     {
-        return new Matrix2f(1, 0,
-                            0, 1);
+        return new Matrix2f();
     }
     
     public static Matrix2f scale(float x, float y)
@@ -49,6 +48,11 @@ public final class Matrix2f implements Bufferable<FloatBuffer>, Matrix<Matrix2f>
     {
         set(z);
     }
+    
+    public Matrix2f()
+    {
+        set();
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Mutator Methods">
     public Matrix2f set(float a, float b,
@@ -66,6 +70,7 @@ public final class Matrix2f implements Bufferable<FloatBuffer>, Matrix<Matrix2f>
                    z.c, z.d);
     }
     
+    @Override
     public Matrix2f set()
     {
         return set(1, 0,
