@@ -33,6 +33,13 @@ public final class Quat4f
         return new Quat4f(cos, axis.x, axis.y, axis.z);
     }
     
+    public static Quat4f axisAngle(Vector3f axisAngle)
+    {
+        float angle = axisAngle.length();
+        Vector3f axis = axisAngle.cdiv(angle);
+        return axisAngle(axis, angle);
+    }
+    
     public static Quat4f axisAngle(Axis axis, float angle)
     {
         return axisAngle(axis.versor(), angle);

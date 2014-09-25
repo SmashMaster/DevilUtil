@@ -19,15 +19,22 @@ public class MOI
      * @param d the depth of the cuboid.
      * @return the moment of inertia tensor of the given cuboid.
      */
-    public static Matrix3f cuboid(float w, float h, float d)
+    public static MOI cuboid(float w, float h, float d)
     {
-        float x = w*w/12f;
-        float y = h*h/12f;
-        float z = d*d/12f;
+        float cx = w*w/12f;
+        float cy = h*h/12f;
+        float cz = d*d/12f;
         
-        return new Matrix3f(y + z, 0f, 0f,
-                            0f, x + z, 0f,
-                            0f, 0f, x + y);
+        float x = cy + cz;
+        float y = cx + cz;
+        float z = cx + cy;
+        
+        return new MOI(new Matrix3f(x,    0f,   0f,
+                                    0f,   y,    0f,
+                                    0f,   0f,   z),
+                       new Matrix3f(1f/x, 0f,   0f,
+                                    0f,   1f/y, 0f,
+                                    0f,   0f,   1f/z));
     }
     
     /**
@@ -36,29 +43,58 @@ public class MOI
      * @param c the radius along the z axis.
      * @return the moment of inertia tensor of the given ellipsoid.
      */
-    public static Matrix3f ellipsoid(float a, float b, float c)
+    public static MOI ellipsoid(float a, float b, float c)
     {
-        float x = a*a/5f;
-        float y = b*b/5f;
-        float z = c*c/5f;
+        float cx = a*a/5f;
+        float cy = b*b/5f;
+        float cz = c*c/5f;
         
-        return new Matrix3f(y + z, 0f, 0f,
-                            0f, x + z, 0f,
-                            0f, 0f, x + y);
+        float x = cy + cz;
+        float y = cx + cz;
+        float z = cx + cy;
+        
+        return new MOI(new Matrix3f(x,    0f,   0f,
+                                    0f,   y,    0f,
+                                    0f,   0f,   z),
+                       new Matrix3f(1f/x, 0f,   0f,
+                                    0f,   1f/y, 0f,
+                                    0f,   0f,   1f/z));
     }
     
     /**
      * @param r the radius along the x axis.
      * @return the moment of inertia tensor of the given sphere.
      */
-    public static Matrix3f sphere(float r)
+    public static MOI sphere(float r)
     {
         float m = r*r*(2f/5f);
+        float i = 1f/m;
         
-        return new Matrix3f(m, 0f, 0f,
-                            0f, m, 0f,
-                            0f, 0f, m);
+        return new MOI(new Matrix3f(m,  0f, 0f,
+                                    0f, m,  0f,
+                                    0f, 0f, m),
+                       new Matrix3f(i,  0f, 0f,
+                                    0f, i,  0f,
+                                    0f, 0f, i));
     }
     
-    private MOI() {}
+    public final Matrix3f mat, inv;
+    
+    private MOI(Matrix3f mat, Matrix3f inv)
+    {
+        this.mat = mat;
+        this.inv = inv;
+    }
+    
+    public MOI()
+    {
+        this(new Matrix3f(), new Matrix3f());
+    }
+    
+    public MOI set(MOI moi)
+    {
+        mat.set(moi.mat);
+        inv.set(moi.inv);
+        return this;
+    }
 }
