@@ -26,7 +26,7 @@ public class Camera3D
     
     public Camera3D(float fov, float near, float far)
     {
-        if (fov <= 0f || fov >= 180f) throw new IllegalArgumentException();
+        if (fov <= 0f || fov >= Util.PI) throw new IllegalArgumentException();
         if (far <= near || near <= 0f) throw new IllegalArgumentException();
         pos = new Vector3f();
         rot = new Quat4f();

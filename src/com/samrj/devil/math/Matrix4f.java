@@ -161,7 +161,7 @@ public final class Matrix4f implements Bufferable<FloatBuffer>, Matrix<Matrix4f>
      */
     public static Matrix4f perspective(float fov, float aspect, float near, float far)
     {
-        if (fov <= 0f || fov >= 180f) throw new IllegalArgumentException();
+        if (fov <= 0f || fov >= Util.PI) throw new IllegalArgumentException();
         if (aspect <= 0) throw new IllegalArgumentException();
         
         float greaterDimension = Math.abs(near) * Util.tan(fov/2f);

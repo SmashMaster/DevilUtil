@@ -119,32 +119,32 @@ public class Util
     
     public static float sin(float a)
     {
-        return (float)Math.sin(toRadians(a));
+        return (float)Math.sin(a);
     }
     
     public static float asin(float v)
     {
-        return toDegrees((float)Math.asin(v));
+        return (float)Math.asin(v);
     }
     
     public static float cos(float a)
     {
-        return (float)Math.cos(toRadians(a));
+        return (float)Math.cos(a);
     }
     
     public static float acos(float v)
     {
-        return toDegrees((float)Math.acos(v));
+        return (float)Math.acos(v);
     }
     
     public static float tan(float a)
     {
-        return (float)Math.tan(toRadians(a));
+        return (float)Math.tan(a);
     }
     
     public static float atan2(float y, float x)
     {
-        return toDegrees((float)Math.atan2(y, x));
+        return (float)Math.atan2(y, x);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Float Math">
@@ -545,7 +545,7 @@ public class Util
     }
     
     /**
-     * Returns, in degrees, the signed angle between two normalized vectors.
+     * Returns, in radians, the signed angle between two normalized vectors.
      */
     public static float angleNrm(Vector2f a, Vector2f b)
     {
@@ -555,7 +555,7 @@ public class Util
     }
     
     /**
-     * Returns, in degrees, the signed angle between two vectors.
+     * Returns, in radians, the signed angle between two vectors.
      */
     public static float angle(Vector2f a, Vector2f b)
     {
