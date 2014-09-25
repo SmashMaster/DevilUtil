@@ -14,11 +14,11 @@ public class RigidBody3D
 {
     public final Vector3f pos = new Vector3f();
     public final Vector3f vel = new Vector3f();
-    private float mass = 0f;
+    public float mass = 0f;
     
     public final Quat4f orient = new Quat4f();
     public final Vector3f angVel = new Vector3f();
-    private final MOI moi = new MOI();
+    public final MOI moi = new MOI();
     
     public final Matrix4f worldToLocal = new Matrix4f();
     public final Matrix3f worldDirToLocal = new Matrix3f();

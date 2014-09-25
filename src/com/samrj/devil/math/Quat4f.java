@@ -36,6 +36,8 @@ public final class Quat4f
     public static Quat4f axisAngle(Vector3f axisAngle)
     {
         float angle = axisAngle.length();
+        if (angle == 0f) return new Quat4f();
+        
         Vector3f axis = axisAngle.cdiv(angle);
         return axisAngle(axis, angle);
     }
