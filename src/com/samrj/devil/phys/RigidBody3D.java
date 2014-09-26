@@ -52,12 +52,17 @@ public class RigidBody3D
         return new Vector3f();
     }
     
+    private Matrix3f rotatedInvMOI()
+    {
+        return localDirToWorld.clone().mult(moi.inv).mult(worldDirToLocal);
+    }
+    
     public void step(float dt)
     {
         float hdt = dt*.5f;
         
         Vector3f acc0 = getForce().div(mass); //Initial acceleration
-        Vector3f angAcc0 = getTorque().mult(moi.inv);
+        Vector3f angAcc0 = getTorque().mult(rotatedInvMOI());
         
         Vector3f velh = acc0.cmult(hdt).add(vel); //Half-step velocity
         Vector3f angVelh = angAcc0.cmult(hdt).add(angVel);
@@ -71,7 +76,7 @@ public class RigidBody3D
         updateMatrices();
         
         Vector3f acc1 = getForce().div(mass); //Final acceleration
-        Vector3f angAcc1 = getTorque().mult(moi.inv);
+        Vector3f angAcc1 = getTorque().mult(rotatedInvMOI());
         
         vel.set(acc1).mult(hdt).add(velh); //Final velocity
         angVel.set(angAcc1).mult(hdt).add(angVelh);
