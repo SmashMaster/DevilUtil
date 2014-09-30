@@ -99,4 +99,15 @@ public class RigidBody3D
     {
         angVel.add(angImp.cmult(moi.inv));
     }
+    
+    public Vector3f getPointVelocity(Vector3f point)
+    {
+        return angVel.clone().cross(point).add(vel);
+    }
+    
+    public Vector3f getLocalPointVelocity(Vector3f localPoint)
+    {
+        Vector3f point = localPoint.cmult(localDirToWorld);
+        return getPointVelocity(point);
+    }
 }
