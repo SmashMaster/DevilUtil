@@ -33,8 +33,9 @@ public class Texture2DData
         bands = TexUtil.getBands(baseFormat);
         if (bands == -1) throw new IllegalArgumentException("Illegal format specified.");
         
-        int length = width*height*bands*b.getType().size;
-        if (b.size() != length) throw new IllegalArgumentException("Illegal input buffer size " + b.size() + ", expected size " + length);
+        int elemSize = b.getType().size;
+        int length = width*height*bands*elemSize;
+        if (b.size()*elemSize != length) throw new IllegalArgumentException("Illegal input buffer size " + b.size() + ", expected size " + length/elemSize);
         buffer = new ByteBuffer(length);
         b.get();
         buffer.put(b.byteBuffer());
