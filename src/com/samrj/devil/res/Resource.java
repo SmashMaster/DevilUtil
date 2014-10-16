@@ -59,6 +59,11 @@ public abstract class Resource
         this.path = path;
     }
     
+    public String name()
+    {
+        return path.substring(path.lastIndexOf('/'));
+    }
+    
     public abstract boolean canOpen();
     public abstract InputStream open() throws IOException;
 }
