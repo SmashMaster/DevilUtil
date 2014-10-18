@@ -6,6 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -24,16 +27,19 @@ class ShaderSource
         STATIC_HASH = 0;
     }
     
+    final String name;
     private final int id;
     private int incLine = -1;
-    private final List<String> lines = new LinkedList<>();
-    private final List<String> dependencies = new LinkedList<>();
+    private final LinkedList<String> lines = new LinkedList<>();
+    private final LinkedList<String> dependencies = new LinkedList<>();
     
-    ShaderSource(Resource res) throws IOException
+    ShaderSource(String name, Resource res) throws IOException
     {
         if (STATIC_HASH == -1) throw new IllegalStateException(
                 "How did you manage to load 2^32 shader sources? Seriously, let me know.");
         id = STATIC_HASH++;
+        
+        this.name = name;
         
         InputStream in = res.open();
         if (in == null) throw new FileNotFoundException(res.path);
@@ -51,6 +57,28 @@ class ShaderSource
             }
             else lines.add(line);
         }
+    }
+    
+    /**
+     * Must insert in reverse order! Also, probably need to store original raw
+     * source AND current full source.
+     */
+    void insert(ShaderSource source)
+    {
+        Iterator<String> i = source.lines.descendingIterator();
+        while (i.hasNext()) lines.add(incLine, i.next());
+    }
+    
+    String getSource()
+    {
+        String out = "";
+        for (String line : lines) out += line + '\n';
+        return out;
+    }
+    
+    List<String> getDependencies()
+    {
+        return Collections.unmodifiableList(dependencies);
     }
     
     @Override

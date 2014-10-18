@@ -1,7 +1,6 @@
 package com.samrj.devil.graphics;
 
 import com.samrj.devil.buffer.IntBuffer;
-import com.samrj.devil.buffer.PublicBuffers;
 import static com.samrj.devil.buffer.PublicBuffers.fbuffer;
 import static com.samrj.devil.buffer.PublicBuffers.ibuffer;
 import com.samrj.devil.math.Matrix2f;
@@ -61,6 +60,19 @@ public class GLShader
         id = GL20.glCreateProgram();
         vertid = loadShader(vert, GL20.GL_VERTEX_SHADER);
         fragid = loadShader(frag, GL20.GL_FRAGMENT_SHADER);
+        
+        GL20.glAttachShader(id, vertid);
+        GL20.glAttachShader(id, fragid);
+
+        if (shouldComplete) glComplete();
+    }
+    
+    public GLShader(ShaderSource vert, ShaderSource frag, boolean shouldComplete) throws IOException, ShaderException
+    {
+        if (vert == null || frag == null) throw new NullPointerException();
+        id = GL20.glCreateProgram();
+        vertid = loadShader(vert.getSource(), GL20.GL_VERTEX_SHADER);
+        fragid = loadShader(frag.getSource(), GL20.GL_FRAGMENT_SHADER);
         
         GL20.glAttachShader(id, vertid);
         GL20.glAttachShader(id, fragid);
@@ -131,6 +143,13 @@ public class GLShader
         while ((line=reader.readLine()) != null) source += line + '\n';
         reader.close();
         in.close();
+        
+        return loadShader(source, type);
+    }
+    
+    private int loadShader(String source, int type) throws ShaderException
+    {
+        if (source == null) throw new NullPointerException();
         
         int shader = GL20.glCreateShader(type);
         if (shader == 0) return 0;
