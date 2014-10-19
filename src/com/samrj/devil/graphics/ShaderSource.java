@@ -75,6 +75,11 @@ class ShaderSource
         return out;
     }
     
+    List<String> getLines()
+    {
+        return Collections.unmodifiableList(lines);
+    }
+    
     List<String> getDependencies()
     {
         return Collections.unmodifiableList(dependencies);

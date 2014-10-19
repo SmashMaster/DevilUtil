@@ -16,7 +16,7 @@ import java.util.Map;
 public class ShaderProcessor
 {
     private static final Map<String, ShaderSource> sources = new LinkedHashMap<>();
-    private static final DAG<ShaderSource> graph = new DAG<>();
+    private static final DAG<String> graph = new DAG<>();
     
     public static void preload(String filePath) throws IOException
     {
@@ -26,30 +26,29 @@ public class ShaderProcessor
         
         ShaderSource source = new ShaderSource(name, res);
         sources.put(name, source);
-        graph.add(source);
     }
     
     public static void process()
     {
         //Construct dependency graph
-        for (ShaderSource source : sources.values())
-            for (String depName : source.getDependencies())
-                graph.addEdge(sources.get(depName), source);
+        for (String srcName : sources.keySet())
+            for (String depName : loudGet(srcName).getDependencies())
+                graph.addEdge(depName, srcName);
         
         //Iterate through vertices in reverse topological order
-        ListIterator<ShaderSource> i1 = graph.sort().listIterator(graph.size());
+        ListIterator<String> i1 = graph.sort().listIterator(graph.size());
         while (i1.hasPrevious())
         {
-            ShaderSource source = i1.previous();
-            DAG<ShaderSource> subgraph = graph.subgraph(source);
+            String srcName = i1.previous();
+            DAG<String> subgraph = graph.subgraph(srcName);
             
             //Insert code into dependant source in correct order
-            ListIterator<ShaderSource> i2 = subgraph.sort().listIterator(subgraph.size());
+            ListIterator<String> i2 = subgraph.sort().listIterator(subgraph.size());
             while (i2.hasPrevious())
             {
-                ShaderSource dependency = i2.previous();
-                if (dependency == source) continue;
-                source.insert(dependency);
+                String depName = i2.previous();
+                if (depName == srcName) continue;
+                loudGet(srcName).insert(loudGet(depName));
             }
         }
     }
@@ -60,6 +59,14 @@ public class ShaderProcessor
         ShaderSource out = sources.get(name);
         if (out == null) throw new IllegalArgumentException("No such source '" + name + "'");
         return out;
+    }
+    
+    public static void printSource(String name)
+    {
+        ShaderSource source = loudGet(name);
+        int i = 1;
+        for (String line : source.getLines())
+            System.out.println(i++ + ": " + line);
     }
     
     public static GLShader makeShader(String vertName, String fragName, boolean shouldComplete) throws ShaderException

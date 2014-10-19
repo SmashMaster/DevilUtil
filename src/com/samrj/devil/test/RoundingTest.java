@@ -48,6 +48,7 @@ public class RoundingTest implements Test
     @Override
     public void step(float dt)
     {
+        TestBed.stop();
     }
 
     @Override

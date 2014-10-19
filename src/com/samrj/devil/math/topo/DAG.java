@@ -324,7 +324,7 @@ public class DAG<TYPE>
     
     private void trimVisit(Vertex v, DAG<TYPE> graph)
     {
-        if (!graph.add(v.data)) return;
+        graph.add(v.data);
         
         for (Vertex in : v.in) trimVisit(in, graph);
     }
