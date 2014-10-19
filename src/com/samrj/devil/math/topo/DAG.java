@@ -306,6 +306,31 @@ public class DAG<TYPE>
         out.add(v.data);
     }
     
+    /**
+     * Returns a new DAG with the given node as the only sink; all others are
+     * ignored.
+     */
+    public DAG<TYPE> subgraph(TYPE sink)
+    {
+        DAG<TYPE> graph = new DAG<>();
+        trimVisit(vertices.get(sink), graph);
+        
+        for (TYPE vert : graph.getAll())
+            for (TYPE in : getIn(vert))
+                if (graph.contains(in)) graph.addEdge(in, vert);
+        
+        return graph;
+    }
+    
+    private void trimVisit(Vertex v, DAG<TYPE> graph)
+    {
+        for (Vertex in : v.in)
+        {
+            if (!graph.add(in.data)) return;
+            trimVisit(in, graph);
+        }
+    }
+    
     public void clear()
     {
         vertices.clear();

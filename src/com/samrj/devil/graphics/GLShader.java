@@ -67,7 +67,7 @@ public class GLShader
         if (shouldComplete) glComplete();
     }
     
-    public GLShader(ShaderSource vert, ShaderSource frag, boolean shouldComplete) throws IOException, ShaderException
+    GLShader(ShaderSource vert, ShaderSource frag, boolean shouldComplete) throws ShaderException
     {
         if (vert == null || frag == null) throw new NullPointerException();
         id = GL20.glCreateProgram();

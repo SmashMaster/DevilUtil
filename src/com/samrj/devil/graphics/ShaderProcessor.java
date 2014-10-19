@@ -4,6 +4,7 @@ import com.samrj.devil.math.topo.DAG;
 import com.samrj.devil.res.Resource;
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.ListIterator;
 import java.util.Map;
 
 /**
@@ -29,15 +30,43 @@ public class ShaderProcessor
     
     public static void process()
     {
-        //construct dependency graph
-        //end is dependant source, start is dependency
+        //Construct dependency graph
         for (ShaderSource source : sources.values())
             for (String depName : source.getDependencies())
                 graph.addEdge(sources.get(depName), source);
-        //construct full sources
         
-        //Need to write algorithm for DAG that creates 'trimmed' graph, with the
-        //given node as the only sink.
+        //Iterate through vertices in reverse topological order
+        ListIterator<ShaderSource> i1 = graph.sort().listIterator(graph.size());
+        while (i1.hasPrevious())
+        {
+            ShaderSource source = i1.previous();
+            DAG<ShaderSource> subgraph = graph.subgraph(source);
+            
+            //Insert code into dependant source in correct order
+            ListIterator<ShaderSource> i2 = subgraph.sort().listIterator(subgraph.size());
+            while (i2.hasPrevious())
+            {
+                ShaderSource dependency = i2.previous();
+                source.insert(dependency);
+            }
+        }
+    }
+    
+    public GLShader makeShader(String vertName, String fragName, boolean shouldComplete) throws ShaderException
+    {
+        return new GLShader(sources.get(vertName), sources.get(fragName), shouldComplete);
+    }
+    
+    public GLShader makeShader(String vertName, String fragName) throws ShaderException
+    {
+        return makeShader(vertName, fragName, true);
+    }
+    
+    public void unload()
+    {
+        sources.clear();
+        graph.clear();
+        ShaderSource.resetHash();
     }
     
     private ShaderProcessor() {}
