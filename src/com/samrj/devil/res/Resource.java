@@ -61,7 +61,7 @@ public abstract class Resource
     
     public String name()
     {
-        return path.substring(path.lastIndexOf('/'));
+        return path.substring(path.lastIndexOf('/') + 1);
     }
     
     public abstract boolean canOpen();

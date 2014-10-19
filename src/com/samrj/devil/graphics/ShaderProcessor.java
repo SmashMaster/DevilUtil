@@ -5,6 +5,7 @@ import com.samrj.devil.res.Resource;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.ListIterator;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -47,22 +48,31 @@ public class ShaderProcessor
             while (i2.hasPrevious())
             {
                 ShaderSource dependency = i2.previous();
+                if (dependency == source) continue;
                 source.insert(dependency);
             }
         }
     }
     
-    public GLShader makeShader(String vertName, String fragName, boolean shouldComplete) throws ShaderException
+    private static ShaderSource loudGet(String name)
     {
-        return new GLShader(sources.get(vertName), sources.get(fragName), shouldComplete);
+        name = name.toLowerCase(Locale.ENGLISH);
+        ShaderSource out = sources.get(name);
+        if (out == null) throw new IllegalArgumentException("No such source '" + name + "'");
+        return out;
     }
     
-    public GLShader makeShader(String vertName, String fragName) throws ShaderException
+    public static GLShader makeShader(String vertName, String fragName, boolean shouldComplete) throws ShaderException
+    {
+        return new GLShader(loudGet(vertName), loudGet(fragName), shouldComplete);
+    }
+    
+    public static GLShader makeShader(String vertName, String fragName) throws ShaderException
     {
         return makeShader(vertName, fragName, true);
     }
     
-    public void unload()
+    public static void unload()
     {
         sources.clear();
         graph.clear();

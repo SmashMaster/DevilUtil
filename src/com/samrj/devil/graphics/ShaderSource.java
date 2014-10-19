@@ -65,7 +65,7 @@ class ShaderSource
     void insert(ShaderSource source)
     {
         Iterator<String> i = source.lines.descendingIterator();
-        while (i.hasNext()) lines.add(incLine, i.next());
+        while (i.hasNext()) lines.add(incLine > 0 ? incLine : 1, i.next());
     }
     
     String getSource()
