@@ -15,6 +15,13 @@ import static com.samrj.devil.math.Util.PrimType.BYTE;
 public class ByteBuffer extends Buffer<java.nio.ByteBuffer>
                         implements Bufferable<ByteBuffer>
 {
+    public static ByteBuffer wrap(int... data)
+    {
+        ByteBuffer out = new ByteBuffer(data.length);
+        out.put(data);
+        return out;
+    }
+    
     public static ByteBuffer wrap(byte... data)
     {
         ByteBuffer out = new ByteBuffer(data.length);
@@ -25,6 +32,13 @@ public class ByteBuffer extends Buffer<java.nio.ByteBuffer>
     public ByteBuffer(int capacity)
     {
         super(capacity, BYTE);
+    }
+    
+    public void put(int... data)
+    {
+        write(data.length);
+        java.nio.ByteBuffer buf = buffer();
+        for (int i : data) buf.put((byte)i);
     }
     
     public void put(byte... data)
