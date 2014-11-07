@@ -1,5 +1,7 @@
 package com.samrj.devil.gl;
 
+import org.lwjgl.opengl.GL20;
+
 public final class DGL
 {
     public static enum Mesh
@@ -9,6 +11,7 @@ public final class DGL
     
     public static void use(ShaderProgram shader)
     {
+        GL20.glUseProgram(shader.getID());
     }
     
     public static Uniform getUniform(String name)
