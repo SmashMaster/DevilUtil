@@ -165,8 +165,6 @@ public class GLVertexPool
                                        stride, attrib.offset);
         }
         
-        GL20.glVertexAttrib4f(ibo, vao, vao, vao, vao);
-        
         GL11.glDrawElements(polyMode, indices.size(), GL11.GL_UNSIGNED_INT, 0);
         
         for (Attribute attrib : attribs) GL20.glDisableVertexAttribArray(attrib.loc);
