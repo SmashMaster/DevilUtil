@@ -23,7 +23,9 @@ Here's how you draw the same triangle in forward-compatible OpenGL. The RIGHT wa
          1.0f, -1.0f
     };
 
-    FloatBuffer vBuffer = ByteBuffer.allocateDirect(vertices.length*4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+    FloatBuffer vBuffer = ByteBuffer.allocateDirect(vertices.length*4)
+                                .order(ByteOrder.nativeOrder())
+                                .asFloatBuffer();
     vBuffer.put(vertices);
     vBuffer.rewind();
 
