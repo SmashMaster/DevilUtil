@@ -1,20 +1,28 @@
 package com.samrj.devil.gl;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import org.lwjgl.opengl.GL20;
 
 public final class DGL
 {
-    private final static Map<Integer, Attribute> attributes = new TreeMap<>();
+    private final static Map<String, Attribute> attributes = new HashMap<>();
+    private final static Map<Integer, Attribute> activeAtts = new TreeMap<>();
     private static ShaderProgram shader = null;
     
     public static void use(ShaderProgram shader)
     {
         if (shader == DGL.shader) return;
-        disableAttributes();
         DGL.shader = shader;
         GL20.glUseProgram(shader.getID());
+        refreshAttributes();
+    }
+    
+    private static void ensureShaderActive()
+    {
+        if (shader == null)
+            throw new IllegalStateException("No shader is currently bound!");
     }
     
     public static Uniform getUniform(String name)
@@ -22,35 +30,41 @@ public final class DGL
         return null;
     }
     
-    public static Attribute enableAttribute(String name)
+    /**
+     * All attribute names are related to exactly one Attribute object.
+     */
+    public static Attribute getAttribute(String name)
     {
-        if (shader == null)
-            throw new IllegalStateException("No shader is active.");
-        
-        int shaderID = shader.getID();
-        int index = GL20.glGetAttribLocation(shaderID, name);
-        if (index == -1) throw new IllegalArgumentException(
-                "No such attribute: '" + name + "'");
-        
-        Attribute att = attributes.get(index);
+        Attribute att = attributes.get(name);
         
         if (att == null)
         {
-            int size = GL20.glGetActiveAttribSize(shaderID, index);
-            int type = GL20.glGetActiveAttribType(shaderID, index);
-            int bytes = Attribute.typeBytesPerElem(type);
-            
-            att = new Attribute(index, size, bytes, type);
-            attributes.put(index, att);
+            att = new Attribute(name);
+            attributes.put(name, att);
         }
         
         return att;
     }
     
-    public static void disableAttributes()
+    public static void use(Attribute... atts)
     {
-        for (Attribute att : attributes.values()) att.active = false;
-        attributes.clear();
+        ensureShaderActive();
+        for (Attribute att : activeAtts.values()) att.disable();
+        activeAtts.clear();
+        
+        for (Attribute att : atts)
+        {
+            att.enable(shader);
+            activeAtts.put(att.getIndex(), att);
+        }
+    }
+    
+    /**
+     * Keep current attributes active in case active shader is changed.
+     */
+    private static void refreshAttributes()
+    {
+        for (Attribute att : activeAtts.values()) att.enable(shader);
     }
     
     public static int vertex()

@@ -22,7 +22,7 @@ public final class Attribute
             case GL40.GL_DOUBLE_VEC2: return "GL_DOUBLE_VEC2";
             case GL40.GL_DOUBLE_VEC3: return "GL_DOUBLE_VEC3";
             case GL40.GL_DOUBLE_VEC4: return "GL_DOUBLE_VEC4";
-            default: return "";
+            default: throw new IllegalArgumentException("No such type: " + type);
         }
     }
     
@@ -42,7 +42,7 @@ public final class Attribute
             case GL20.GL_FLOAT_VEC4:
             case GL20.GL_INT_VEC4:
             case GL40.GL_DOUBLE_VEC4: return 4;
-            default: return -1;
+            default: throw new IllegalArgumentException("No such type: " + type);
         }
     }
     
@@ -62,30 +62,78 @@ public final class Attribute
             case GL40.GL_DOUBLE_VEC2:
             case GL40.GL_DOUBLE_VEC3:
             case GL40.GL_DOUBLE_VEC4: return 8;
-            default: return -1;
+            default: throw new IllegalArgumentException("No such type: " + type);
         }
     }
     
-    private final ByteDataStream bytes;
-    private final int index, type;
-    boolean active = true;
-    
-    Attribute(int index, int size, int bytesPerElem, int type)
+    public static int typeDataType(int type)
     {
-        this.index = index;
-        this.type = type;
+        switch (type)
+        {
+            case GL11.GL_FLOAT:
+            case GL20.GL_FLOAT_VEC2:
+            case GL20.GL_FLOAT_VEC3:
+            case GL20.GL_FLOAT_VEC4: return GL11.GL_FLOAT;
+            case GL11.GL_INT:
+            case GL20.GL_INT_VEC2:
+            case GL20.GL_INT_VEC3:
+            case GL20.GL_INT_VEC4: return GL11.GL_INT;
+            case GL11.GL_DOUBLE:
+            case GL40.GL_DOUBLE_VEC2:
+            case GL40.GL_DOUBLE_VEC3:
+            case GL40.GL_DOUBLE_VEC4: return GL11.GL_DOUBLE;
+            default: throw new IllegalArgumentException("No such type: " + type);
+        }
+    }
+    
+    public final String name;
+    private ByteDataStream bytes = null;
+    private int index; //This attribute's index on the currently bound shader
+    private int size; //Number of elements for this attribute's type
+    private int type; //OpenGL vertex attribute type enum
+    private int byteLength; //Total length of this attribute in bytes
+    private boolean active = false;
+    
+    Attribute(String name)
+    {
+        if (name == null) throw new NullPointerException();
+        this.name = name;
+    }
+    
+    /**
+     * Can already be enabled, might be switching to another shader.
+     */
+    void enable(ShaderProgram shader)
+    {
+        int shaderID = shader.getID();
         
-        bytes = new ByteDataStream(size*bytesPerElem);
+        index = GL20.glGetAttribLocation(shaderID, name);
+        if (index == -1) throw new IllegalArgumentException(
+                "No such attribute: '" + name + "'");
+        
+        size = GL20.glGetActiveAttribSize(shaderID, index);
+        type = GL20.glGetActiveAttribType(shaderID, index);
+        byteLength = size*typeBytesPerElem(type);
+        bytes = new ByteDataStream(byteLength);
+        
+        active = true;
+    }
+    
+    void disable()
+    {
+        if (!active) return;
+        bytes = null;
+        active = false;
     }
     
     private void ensureActive()
     {
-        if (!active) throw new IllegalStateException("This attribute is inactive.");
+        if (!active) throw new IllegalStateException(
+                "Attribute '" + name + "' is inactive.");
     }
     
     private void ensureType(int type)
     {
-        ensureActive();
         if (this.type != type) throw new IllegalArgumentException(
                 "Expected type " + typeName(this.type) + ", got " + typeName(type));
     }
@@ -96,10 +144,35 @@ public final class Attribute
         return index;
     }
     
+    int getSize()
+    {
+        ensureActive();
+        return size;
+    }
+    
+    int getType()
+    {
+        ensureActive();
+        return type;
+    }
+    
+    int getByteLength()
+    {
+        ensureActive();
+        return byteLength;
+    }
+    
+    void writeTo(ByteDataStream byteStream)
+    {
+        ensureActive();
+        bytes.writeTo(byteStream);
+    }
+    
     //FLOATS
     
     public void set(float x)
     {
+        ensureActive();
         ensureType(GL11.GL_FLOAT);
         bytes.reset();
         bytes.writeFloat(x);
@@ -107,6 +180,7 @@ public final class Attribute
     
     public void set(float x, float y)
     {
+        ensureActive();
         ensureType(GL20.GL_FLOAT_VEC2);
         bytes.reset();
         bytes.writeFloat(x);
@@ -115,6 +189,7 @@ public final class Attribute
     
     public void set(float x, float y, float z)
     {
+        ensureActive();
         ensureType(GL20.GL_FLOAT_VEC3);
         bytes.reset();
         bytes.writeFloat(x);
@@ -124,6 +199,7 @@ public final class Attribute
     
     public void set(float x, float y, float z, float w)
     {
+        ensureActive();
         ensureType(GL20.GL_FLOAT_VEC4);
         bytes.reset();
         bytes.writeFloat(x);
@@ -136,6 +212,7 @@ public final class Attribute
     
     public void set(int x)
     {
+        ensureActive();
         ensureType(GL11.GL_INT);
         bytes.reset();
         bytes.writeInt(x);
@@ -143,6 +220,7 @@ public final class Attribute
     
     public void set(int x, int y)
     {
+        ensureActive();
         ensureType(GL20.GL_INT_VEC2);
         bytes.reset();
         bytes.writeInt(x);
@@ -151,6 +229,7 @@ public final class Attribute
     
     public void set(int x, int y, int z)
     {
+        ensureActive();
         ensureType(GL20.GL_INT_VEC3);
         bytes.reset();
         bytes.writeInt(x);
@@ -160,6 +239,7 @@ public final class Attribute
     
     public void set(int x, int y, int z, int w)
     {
+        ensureActive();
         ensureType(GL20.GL_INT_VEC4);
         bytes.reset();
         bytes.writeInt(x);
@@ -172,6 +252,7 @@ public final class Attribute
     
     public void set(double x)
     {
+        ensureActive();
         ensureType(GL11.GL_DOUBLE);
         bytes.reset();
         bytes.writeDouble(x);
@@ -179,6 +260,7 @@ public final class Attribute
     
     public void set(double x, double y)
     {
+        ensureActive();
         ensureType(GL40.GL_DOUBLE_VEC2);
         bytes.reset();
         bytes.writeDouble(x);
@@ -187,6 +269,7 @@ public final class Attribute
     
     public void set(double x, double y, double z)
     {
+        ensureActive();
         ensureType(GL40.GL_DOUBLE_VEC3);
         bytes.reset();
         bytes.writeDouble(x);
@@ -196,6 +279,7 @@ public final class Attribute
     
     public void set(double x, double y, double z, double w)
     {
+        ensureActive();
         ensureType(GL40.GL_DOUBLE_VEC4);
         bytes.reset();
         bytes.writeDouble(x);

@@ -1,6 +1,8 @@
 package com.samrj.devil.gl;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class ByteDataStream extends ByteArrayOutputStream
 {
@@ -36,6 +38,7 @@ public class ByteDataStream extends ByteArrayOutputStream
         writeBuffer[5] = (byte)(v >>> 16);
         writeBuffer[6] = (byte)(v >>>  8);
         writeBuffer[7] = (byte)v;
+        
         write(writeBuffer, 0, 8);
     }
 
@@ -47,5 +50,19 @@ public class ByteDataStream extends ByteArrayOutputStream
     public final void writeDouble(double v)
     {
         writeLong(Double.doubleToLongBits(v));
+    }
+    
+    public final void writeTo(ByteDataStream stream)
+    {
+        stream.write(buf, 0, count);
+    }
+    
+    public ByteBuffer toBuffer()
+    {
+        ByteBuffer buffer = ByteBuffer.allocateDirect(count);
+        buffer.order(ByteOrder.nativeOrder());
+        buffer.put(buf, 0, count);
+        buffer.rewind();
+        return buffer;
     }
 }
