@@ -1,6 +1,7 @@
 package com.samrj.devil.gl;
 
 import java.util.Map;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
@@ -17,6 +18,7 @@ public class Mesh
     private final int vaoID, vboID;
     private boolean complete = false;
     private boolean destroyed = false;
+    private int vertexCount = 0;
     
     public Mesh(Map<Integer, Attribute> attributes)
     {
@@ -38,11 +40,12 @@ public class Mesh
         if (complete) throw new IllegalStateException("Mesh is already complete!");
     }
     
-    void vertex()
+    int vertex()
     {
         ensureIncomplete();
         for (Attribute attribute : attributes)
             attribute.writeTo(vBytes);
+        return vertexCount++;
     }
     
     void complete()
@@ -82,12 +85,15 @@ public class Mesh
             offset += att.getByteLength();
         }
         
-        GL30.glBindVertexArray(0);
+        GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, vertexCount);
+        
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+        GL30.glBindVertexArray(0);
     }
     
     void destroy()
     {
+        if (destroyed) return;
         GL30.glDeleteVertexArrays(vaoID);
         GL15.glDeleteBuffers(vboID);
         destroyed = true;
