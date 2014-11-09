@@ -1,9 +1,14 @@
 package com.samrj.devil.gl;
 
+import java.util.Map;
+import java.util.TreeMap;
 import org.lwjgl.opengl.GL20;
 
 public final class DGL
 {
+    private final static Map<Integer, Attribute> attributes = new TreeMap<>();
+    private static ShaderProgram shader = null;
+    
     public static enum Mesh
     {
         RAW, INDEXED;
@@ -11,6 +16,9 @@ public final class DGL
     
     public static void use(ShaderProgram shader)
     {
+        if (shader == DGL.shader) return;
+        disableAttributes();
+        DGL.shader = shader;
         GL20.glUseProgram(shader.getID());
     }
     
@@ -19,26 +27,34 @@ public final class DGL
         return null;
     }
     
-    public static void set(Uniform uniform, float x, float y, float z)
+    public static Attribute enableAttribute(String name)
     {
+        if (shader == null)
+            throw new IllegalStateException("No shader is active.");
+        
+        int shaderID = shader.getID();
+        int index = GL20.glGetAttribLocation(shaderID, name);
+        if (index == -1) throw new IllegalArgumentException(
+                "No such attribute: '" + name + "'");
+        
+        Attribute att = attributes.get(index);
+        
+        if (att == null)
+        {
+            int size = GL20.glGetActiveAttribSize(shaderID, index);
+            int type = GL20.glGetActiveAttribType(shaderID, index);
+            int bytes = Attribute.typeBytesPerElem(type);
+            
+            att = new Attribute(index, size, bytes, type);
+            attributes.put(index, att);
+        }
+        
+        return att;
     }
     
-    public static void setUniform(String name, float x, float y, float z)
+    public static void disableAttributes()
     {
-        set(getUniform(name), x, y, z);
-    }
-    
-    public static Attribute getAttribute(String name)
-    {
-        return null;
-    }
-    
-    public static void set(Attribute attribute, float x, float y)
-    {
-    }
-    
-    public static void use(Attribute... attributes)
-    {
+        attributes.clear();
     }
     
     public static int vertex()
@@ -50,7 +66,7 @@ public final class DGL
     {
     }
     
-    public static com.samrj.devil.gl.Mesh define(DGL.Mesh mesh)
+    public static com.samrj.devil.gl.Mesh define(DGL.Mesh type)
     {
         return null;
     }
@@ -59,7 +75,7 @@ public final class DGL
     {
     }
     
-    public static void draw(DGL.Mesh mesh)
+    public static void draw(DGL.Mesh type)
     {
     }
     
