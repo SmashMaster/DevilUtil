@@ -13,9 +13,9 @@ Here's how you draw a triangle in immediate mode, using LWJGL:
     GL11.glEnd();
 
 3 vertices and 5 lines. It took me 30 seconds to write and it ran first time without error.
-The "getting shit done" to "lines of code" ratio here should make you happy. It makes ME happy.
+The "getting shit done" to "lines of code" ratio here should make you happy. It makes *me* happy.
 
-Here's how you draw the same triangle in forward-compatible OpenGL. The RIGHT way:
+Here's how you draw the same triangle in forward-compatible OpenGL. The *right* way:
 
     float[] vertices = new float[]{
         -1.0f, -1.0f,
@@ -53,7 +53,7 @@ Clear, consice, simple, and elegant. Every programmer's dream! And it only took 
 
 This is a problem.
 
-This is a barrier to entry; this is an extra hour of work in between inspiration and your idea appearing on screen. If you want to make games from scratch, you have to either deal with this or use deprecated OpenGL. That's bullshit.
+This is a barrier to entry; this is an extra hour of work in between inspiration and your idea appearing on screen. If you want to make games from scratch, you have to either deal with this or use deprecated OpenGL. That's *bullshit*.
 
 So here's my alternative:
 
