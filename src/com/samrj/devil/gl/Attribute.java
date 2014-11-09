@@ -68,6 +68,7 @@ public final class Attribute
     
     private final ByteDataStream bytes;
     private final int index, type;
+    boolean active = true;
     
     Attribute(int index, int size, int bytesPerElem, int type)
     {
@@ -77,14 +78,21 @@ public final class Attribute
         bytes = new ByteDataStream(size*bytesPerElem);
     }
     
+    private void ensureActive()
+    {
+        if (!active) throw new IllegalStateException("This attribute is inactive.");
+    }
+    
     private void ensureType(int type)
     {
+        ensureActive();
         if (this.type != type) throw new IllegalArgumentException(
                 "Expected type " + typeName(this.type) + ", got " + typeName(type));
     }
     
     int getIndex()
     {
+        ensureActive();
         return index;
     }
     

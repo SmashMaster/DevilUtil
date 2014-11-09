@@ -9,11 +9,6 @@ public final class DGL
     private final static Map<Integer, Attribute> attributes = new TreeMap<>();
     private static ShaderProgram shader = null;
     
-    public static enum Mesh
-    {
-        RAW, INDEXED;
-    }
-    
     public static void use(ShaderProgram shader)
     {
         if (shader == DGL.shader) return;
@@ -54,6 +49,7 @@ public final class DGL
     
     public static void disableAttributes()
     {
+        for (Attribute att : attributes.values()) att.active = false;
         attributes.clear();
     }
     
@@ -62,20 +58,20 @@ public final class DGL
         return -1;
     }
     
-    public static void index()
+    public static void index(int index)
     {
     }
     
-    public static com.samrj.devil.gl.Mesh define(DGL.Mesh type)
+    public static com.samrj.devil.gl.Mesh define(Mesh.Type type)
     {
         return null;
     }
     
-    public static void draw(com.samrj.devil.gl.Mesh mesh)
+    public static void draw(Mesh mesh)
     {
     }
     
-    public static void draw(DGL.Mesh type)
+    public static void draw(Mesh.Type type)
     {
     }
     
