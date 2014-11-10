@@ -3,21 +3,13 @@ package com.samrj.devil.gl;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
-import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 
 public final class DGL
 {
     private static enum State
     {
-        IDLE("IDLE"), DRAW_MESH("DRAW_MESH"), DEFINE_MESH("DEFINE_MESH");
-        
-        private final String name;
-        
-        private State(String name)
-        {
-            this.name = name;
-        }
+        IDLE, DRAW_MESH, DEFINE_MESH;
     }
     
     private final static Map<String, Attribute> attributes = new HashMap<>();
@@ -30,7 +22,7 @@ public final class DGL
     {
         for (State state : states) if (DGL.state == state) return;
         throw new IllegalStateException(
-                "Current state " + DGL.state.name +
+                "Current state " + DGL.state.name() +
                 " is illegal for attempted operation.");
     }
     
@@ -104,13 +96,18 @@ public final class DGL
         mesh.index(index);
     }
     
-    public static Mesh define(Mesh.Type type)
+    public static Mesh define(Mesh.Type type, Mesh.RenderMode mode)
     {
         ensureState(State.IDLE);
         ensureShaderActive();
         state = State.DEFINE_MESH;
-        mesh = new Mesh(type, GL15.GL_STATIC_DRAW, activeAttribs);
+        mesh = new Mesh(type, Mesh.Usage.GL_STATIC_DRAW, mode, activeAttribs);
         return mesh;
+    }
+    
+    public static Mesh define(Mesh.Type type)
+    {
+        return define(type, Mesh.RenderMode.TRIANGLES);
     }
     
     public static void draw(Mesh mesh)
@@ -120,12 +117,17 @@ public final class DGL
         mesh.draw();
     }
     
-    public static void draw(Mesh.Type type)
+    public static void draw(Mesh.Type type, Mesh.RenderMode mode)
     {
         ensureState(State.IDLE);
         ensureShaderActive();
         state = State.DRAW_MESH;
-        mesh = new Mesh(type, GL15.GL_STREAM_DRAW, activeAttribs);
+        mesh = new Mesh(type, Mesh.Usage.GL_STREAM_DRAW, mode, activeAttribs);
+    }
+    
+    public static void draw(Mesh.Type type)
+    {
+        draw(type, Mesh.RenderMode.TRIANGLES);
     }
     
     public static void end()

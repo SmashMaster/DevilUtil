@@ -42,4 +42,9 @@ public final class ShaderProgram
     {
         return id;
     }
+    
+    public void use()
+    {
+        DGL.use(this);
+    }
 }
