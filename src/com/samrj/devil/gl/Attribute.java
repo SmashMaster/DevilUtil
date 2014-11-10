@@ -111,8 +111,8 @@ public final class Attribute
         if (index == -1) throw new IllegalArgumentException(
                 "No such attribute: '" + name + "'");
         
-        size = GL20.glGetActiveAttribSize(shaderID, index);
         type = GL20.glGetActiveAttribType(shaderID, index);
+        size = typeSize(type);
         byteLength = size*typeBytesPerElem(type);
         bytes = new ByteDataStream(byteLength);
         

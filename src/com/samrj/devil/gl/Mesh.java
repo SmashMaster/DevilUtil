@@ -1,5 +1,6 @@
 package com.samrj.devil.gl;
 
+import java.nio.FloatBuffer;
 import java.util.Map;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;

@@ -30,8 +30,8 @@ public final class DGL
     {
         for (State state : states) if (DGL.state == state) return;
         throw new IllegalStateException(
-                "Current state " + DGL.state +
-                " is illegal for given operation.");
+                "Current state " + DGL.state.name +
+                " is illegal for attempted operation.");
     }
     
     public static void use(ShaderProgram shader)
@@ -95,7 +95,7 @@ public final class DGL
     public static int vertex()
     {
         ensureState(State.DEFINE_MESH, State.DRAW_MESH);
-        return -1;
+        return mesh.vertex();
     }
     
     public static void index(int index)
@@ -130,9 +130,10 @@ public final class DGL
     public static void end()
     {
         ensureState(State.DEFINE_MESH, State.DRAW_MESH);
+        boolean drawMesh = state == State.DRAW_MESH;
         mesh.complete();
         state = State.IDLE;
-        if (state == State.DRAW_MESH)
+        if (drawMesh)
         {
             draw(mesh);
             mesh.destroy();

@@ -20,24 +20,24 @@ public class ByteDataStream extends ByteArrayOutputStream
     
     public final void writeInt(int v)
     {
-        writeBuffer[0] = (byte)(v >>> 24);
-        writeBuffer[1] = (byte)(v >>> 16);
-        writeBuffer[2] = (byte)(v >>>  8);
-        writeBuffer[3] = (byte)v;
+        writeBuffer[3] = (byte)(v >>> 24);
+        writeBuffer[2] = (byte)(v >>> 16);
+        writeBuffer[1] = (byte)(v >>>  8);
+        writeBuffer[0] = (byte)v;
         
         write(writeBuffer, 0, 4);
     }
     
     public final void writeLong(long v)
     {
-        writeBuffer[0] = (byte)(v >>> 56);
-        writeBuffer[1] = (byte)(v >>> 48);
-        writeBuffer[2] = (byte)(v >>> 40);
-        writeBuffer[3] = (byte)(v >>> 32);
-        writeBuffer[4] = (byte)(v >>> 24);
-        writeBuffer[5] = (byte)(v >>> 16);
-        writeBuffer[6] = (byte)(v >>>  8);
-        writeBuffer[7] = (byte)v;
+        writeBuffer[7] = (byte)(v >>> 56);
+        writeBuffer[6] = (byte)(v >>> 48);
+        writeBuffer[5] = (byte)(v >>> 40);
+        writeBuffer[4] = (byte)(v >>> 32);
+        writeBuffer[3] = (byte)(v >>> 24);
+        writeBuffer[2] = (byte)(v >>> 16);
+        writeBuffer[1] = (byte)(v >>>  8);
+        writeBuffer[0] = (byte)v;
         
         write(writeBuffer, 0, 8);
     }
