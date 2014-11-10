@@ -18,7 +18,7 @@ public class ByteDataStream extends ByteArrayOutputStream
     
     private final byte writeBuffer[] = new byte[8];
     
-    public final void writeInt(int v)
+    public synchronized void writeInt(int v)
     {
         writeBuffer[3] = (byte)(v >>> 24);
         writeBuffer[2] = (byte)(v >>> 16);
@@ -28,7 +28,7 @@ public class ByteDataStream extends ByteArrayOutputStream
         write(writeBuffer, 0, 4);
     }
     
-    public final void writeLong(long v)
+    public synchronized void writeLong(long v)
     {
         writeBuffer[7] = (byte)(v >>> 56);
         writeBuffer[6] = (byte)(v >>> 48);
@@ -42,22 +42,22 @@ public class ByteDataStream extends ByteArrayOutputStream
         write(writeBuffer, 0, 8);
     }
 
-    public final void writeFloat(float v)
+    public synchronized void writeFloat(float v)
     {
         writeInt(Float.floatToIntBits(v));
     }
 
-    public final void writeDouble(double v)
+    public synchronized void writeDouble(double v)
     {
         writeLong(Double.doubleToLongBits(v));
     }
     
-    public final void writeTo(ByteDataStream stream)
+    public synchronized void writeTo(ByteDataStream stream)
     {
         stream.write(buf, 0, count);
     }
     
-    public ByteBuffer toBuffer()
+    public synchronized ByteBuffer toBuffer()
     {
         ByteBuffer buffer = ByteBuffer.allocateDirect(count);
         buffer.order(ByteOrder.nativeOrder());

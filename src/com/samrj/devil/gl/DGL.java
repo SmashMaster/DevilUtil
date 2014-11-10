@@ -101,6 +101,7 @@ public final class DGL
     public static void index(int index)
     {
         ensureState(State.DEFINE_MESH, State.DRAW_MESH);
+        mesh.index(index);
     }
     
     public static Mesh define(Mesh.Type type)
