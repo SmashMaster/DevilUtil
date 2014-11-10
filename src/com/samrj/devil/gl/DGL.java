@@ -3,16 +3,40 @@ package com.samrj.devil.gl;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 
 public final class DGL
 {
+    private static enum State
+    {
+        IDLE("IDLE"), DRAW_MESH("DRAW_MESH"), DEFINE_MESH("DEFINE_MESH");
+        
+        private final String name;
+        
+        private State(String name)
+        {
+            this.name = name;
+        }
+    }
+    
     private final static Map<String, Attribute> attributes = new HashMap<>();
-    private final static Map<Integer, Attribute> activeAtts = new TreeMap<>();
+    private final static Map<Integer, Attribute> activeAttribs = new TreeMap<>();
     private static ShaderProgram shader = null;
+    private static State state = State.IDLE;
+    private static Mesh mesh = null;
+    
+    private static void ensureState(State... states)
+    {
+        for (State state : states) if (DGL.state == state) return;
+        throw new IllegalStateException(
+                "Current state " + DGL.state +
+                " is illegal for given operation.");
+    }
     
     public static void use(ShaderProgram shader)
     {
+        ensureState(State.IDLE);
         if (shader == DGL.shader) return;
         DGL.shader = shader;
         GL20.glUseProgram(shader.getID());
@@ -48,14 +72,15 @@ public final class DGL
     
     public static void use(Attribute... atts)
     {
+        ensureState(State.IDLE);
         ensureShaderActive();
-        for (Attribute att : activeAtts.values()) att.disable();
-        activeAtts.clear();
+        for (Attribute att : activeAttribs.values()) att.disable();
+        activeAttribs.clear();
         
         for (Attribute att : atts)
         {
             att.enable(shader);
-            activeAtts.put(att.getIndex(), att);
+            activeAttribs.put(att.getIndex(), att);
         }
     }
     
@@ -64,33 +89,55 @@ public final class DGL
      */
     private static void refreshAttributes()
     {
-        for (Attribute att : activeAtts.values()) att.enable(shader);
+        for (Attribute att : activeAttribs.values()) att.enable(shader);
     }
     
     public static int vertex()
     {
+        ensureState(State.DEFINE_MESH, State.DRAW_MESH);
         return -1;
     }
     
     public static void index(int index)
     {
+        ensureState(State.DEFINE_MESH, State.DRAW_MESH);
     }
     
-    public static com.samrj.devil.gl.Mesh define(Mesh.Type type)
+    public static Mesh define(Mesh.Type type)
     {
-        return null;
+        ensureState(State.IDLE);
+        ensureShaderActive();
+        state = State.DEFINE_MESH;
+        mesh = new Mesh(type, GL15.GL_STATIC_DRAW, activeAttribs);
+        return mesh;
     }
     
     public static void draw(Mesh mesh)
     {
+        ensureState(State.IDLE);
+        ensureShaderActive();
+        mesh.draw();
     }
     
     public static void draw(Mesh.Type type)
     {
+        ensureState(State.IDLE);
+        ensureShaderActive();
+        state = State.DRAW_MESH;
+        mesh = new Mesh(type, GL15.GL_STREAM_DRAW, activeAttribs);
     }
     
     public static void end()
     {
+        ensureState(State.DEFINE_MESH, State.DRAW_MESH);
+        mesh.complete();
+        state = State.IDLE;
+        if (state == State.DRAW_MESH)
+        {
+            draw(mesh);
+            mesh.destroy();
+        }
+        mesh = null;
     }
     
     private DGL() {}

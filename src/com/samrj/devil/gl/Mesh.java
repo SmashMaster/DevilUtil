@@ -16,15 +16,17 @@ public class Mesh
     private ByteDataStream vBytes = null;
     private final Attribute[] attributes;
     private final int vaoID, vboID;
+    private final int usage;
     private boolean complete = false;
     private boolean destroyed = false;
     private int vertexCount = 0;
     
-    public Mesh(Map<Integer, Attribute> attributes)
+    public Mesh(Type type, int usage, Map<Integer, Attribute> attributes)
     {
         this.attributes = new Attribute[attributes.size()];
         attributes.values().toArray(this.attributes);
         
+        this.usage = usage;
         vBytes = new ByteDataStream();
         vaoID = GL30.glGenVertexArrays();
         vboID = GL15.glGenBuffers();
@@ -52,7 +54,7 @@ public class Mesh
     {
         ensureIncomplete();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboID);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vBytes.toBuffer(), GL15.GL_STATIC_DRAW);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vBytes.toBuffer(), usage);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         
         vBytes = null;
@@ -91,7 +93,7 @@ public class Mesh
         GL30.glBindVertexArray(0);
     }
     
-    void destroy()
+    public void destroy()
     {
         if (destroyed) return;
         GL30.glDeleteVertexArrays(vaoID);
