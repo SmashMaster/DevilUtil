@@ -101,9 +101,9 @@ public class Mesh
     void complete()
     {
         ensureIncomplete();
+        
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboID);
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vBytes.toBuffer(), usage);
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         
         if (type == Type.INDEXED)
         {
@@ -112,19 +112,7 @@ public class Mesh
             GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
         }
         
-        vBytes = null;
-        iBytes = null;
-        complete = true;
-    }
-    
-    void draw()
-    {
-        ensureAlive();
-        if (!complete) throw new IllegalStateException("Mesh is not complete!");
-        
         GL30.glBindVertexArray(vaoID);
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboID);
-        
         int stride = 0;
         if (attributes.length > 1) //If our vertices are not tightly packed
             for (Attribute att : attributes) stride += att.getByteLength();
@@ -143,6 +131,22 @@ public class Mesh
             offset += att.getByteLength();
         }
         
+        GL30.glBindVertexArray(0);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+        
+        vBytes = null;
+        iBytes = null;
+        complete = true;
+    }
+    
+    void draw()
+    {
+        ensureAlive();
+        if (!complete) throw new IllegalStateException("Mesh is not complete!");
+        
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboID);
+        GL30.glBindVertexArray(vaoID);
+        
         switch (type)
         {
             case RAW:
@@ -155,13 +159,19 @@ public class Mesh
                 break;
         }
         
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         GL30.glBindVertexArray(0);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
     }
     
     public void destroy()
     {
         if (destroyed) return;
+        if (!complete)
+        {
+            vBytes = null;
+            iBytes = null;
+        }
+        
         GL30.glDeleteVertexArrays(vaoID);
         GL15.glDeleteBuffers(vboID);
         if (type == Type.INDEXED) GL15.glDeleteBuffers(eboID);

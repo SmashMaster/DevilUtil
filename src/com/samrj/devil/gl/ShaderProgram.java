@@ -6,7 +6,7 @@ import org.lwjgl.opengl.GL20;
 
 public final class ShaderProgram
 {
-    private int id;
+    private final int id;
     
     public ShaderProgram(Shader... shaders) throws ShaderException
     {
@@ -38,13 +38,8 @@ public final class ShaderProgram
         }
     }
     
-    public int getID()
+    int getID()
     {
         return id;
-    }
-    
-    public void use()
-    {
-        DGL.use(this);
     }
 }
