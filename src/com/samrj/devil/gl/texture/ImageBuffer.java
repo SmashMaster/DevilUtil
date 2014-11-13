@@ -3,8 +3,12 @@ package com.samrj.devil.gl.texture;
 import com.samrj.devil.gl.util.Primitive;
 import static com.samrj.devil.gl.util.Primitive.*;
 import java.awt.image.Raster;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import javax.imageio.ImageIO;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
@@ -14,7 +18,7 @@ import org.lwjgl.opengl.GL30;
  * 
  * @author samjohns
  */
-public class ImageBuffer
+public final class ImageBuffer
 {
     public static enum Format
     {
@@ -45,6 +49,13 @@ public class ImageBuffer
         }
     }
     
+    private static InputStream open(String path) throws IOException
+    {
+        InputStream stream = ClassLoader.getSystemResourceAsStream(path);
+        if (stream == null) throw new FileNotFoundException(path);
+        return stream;
+    }
+    
     public final int width, height;
     public final Format format;
     public final Primitive type;
@@ -65,7 +76,6 @@ public class ImageBuffer
         this(width, height, format, BYTE);
         ensureCapacity(sizeof(data));
         buffer.put(data);
-        buffer.rewind();
     }
     
     public ImageBuffer(int width, int height, Format format, short[] data)
@@ -73,7 +83,6 @@ public class ImageBuffer
         this(width, height, format, SHORT);
         ensureCapacity(sizeof(data));
         buffer.asShortBuffer().put(data);
-        buffer.rewind();
     }
     
     public ImageBuffer(int width, int height, Format format, int[] data)
@@ -81,7 +90,6 @@ public class ImageBuffer
         this(width, height, format, INT);
         ensureCapacity(sizeof(data));
         buffer.asIntBuffer().put(data);
-        buffer.rewind();
     }
     
     public ImageBuffer(int width, int height, Format format, float[] data)
@@ -89,7 +97,6 @@ public class ImageBuffer
         this(width, height, format, FLOAT);
         ensureCapacity(sizeof(data));
         buffer.asFloatBuffer().put(data);
-        buffer.rewind();
     }
     
     public ImageBuffer(Raster raster)
@@ -101,7 +108,11 @@ public class ImageBuffer
             for (int x = 0; x < width; x++)
                 for (int b = 0; b < format.bands; b++)
                     buffer.put((byte)raster.getSample(x, y, b));
-        buffer.rewind();
+    }
+    
+    public ImageBuffer(String path) throws IOException
+    {
+        this(ImageIO.read(open(path)).getRaster());
     }
     
     private void ensureCapacity(int size)
@@ -110,9 +121,9 @@ public class ImageBuffer
             "Expected " + buffer.capacity() + " bytes of image data, got " + size);
     }
     
-    private void ensureType(Primitive type)
+    ByteBuffer getBuffer()
     {
-        if (this.type != type) throw new IllegalArgumentException(
-            "Expected primitive type " + this.type + ", got " + type);
+        buffer.rewind();
+        return buffer;
     }
 }
