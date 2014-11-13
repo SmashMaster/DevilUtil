@@ -2,6 +2,7 @@ package com.samrj.devil.buffer;
 
 import com.samrj.devil.math.Util.PrimType;
 import java.nio.BufferOverflowException;
+import java.nio.ByteOrder;
 import org.lwjgl.BufferUtils;
 
 /**
@@ -35,6 +36,7 @@ public abstract class Buffer<TYPE extends java.nio.Buffer>
         typeSize = type.size;
         capacity *= typeSize;
         buffer = BufferUtils.createByteBuffer(capacity);
+        buffer.order(ByteOrder.nativeOrder());
     }
     
     /**
