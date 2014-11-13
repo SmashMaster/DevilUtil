@@ -1,5 +1,6 @@
 package com.samrj.devil.gl;
 
+import com.samrj.devil.gl.util.ByteDataStream;
 import java.util.Map;
 import org.lwjgl.opengl.*;
 
@@ -121,12 +122,9 @@ public class Mesh
         for (Attribute att : attributes)
         {
             int index = att.getIndex();
-            int size = att.getSize();
-            int type = att.getType();
-            int dataType = Attribute.typeDataType(type);
-            
+            Attribute.Type type = att.getType();
             GL20.glEnableVertexAttribArray(index);
-            GL20.glVertexAttribPointer(index, size, dataType, false, stride, offset);
+            GL20.glVertexAttribPointer(index, type.size, type.dataType.glEnum, false, stride, offset);
             
             offset += att.getByteLength();
         }

@@ -1,4 +1,4 @@
-package com.samrj.devil.gl;
+package com.samrj.devil.gl.util;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
