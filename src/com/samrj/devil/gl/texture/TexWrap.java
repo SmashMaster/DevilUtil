@@ -6,12 +6,12 @@ import org.lwjgl.opengl.GL14;
 
 public enum TexWrap
 {
-    CLAMP_TO_EDGE(GL12.GL_CLAMP_TO_EDGE),
+    CLAMP_TO_EDGE  (GL12.GL_CLAMP_TO_EDGE),
     MIRRORED_REPEAT(GL14.GL_MIRRORED_REPEAT),
-    REPEAT(GL11.GL_REPEAT);
-    
-    public final int glEnum;
-    
+    REPEAT         (GL11.GL_REPEAT);
+
+    final int glEnum;
+
     private TexWrap(int glEnum)
     {
         this.glEnum = glEnum;

@@ -11,6 +11,10 @@ public enum Primitive
     DOUBLE(GL11.GL_DOUBLE,         Double.BYTES);
     
     public final int glEnum;
+    
+    /**
+     * Size of this primitive type, measured in bytes.
+     */
     public final int size;
     
     private Primitive(int glEnum, int size)

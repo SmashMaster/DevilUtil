@@ -10,10 +10,10 @@ public enum TexFilter
     LINEAR_MIPMAP_NEAREST (GL11.GL_LINEAR_MIPMAP_NEAREST, true),
     NEAREST_MIPMAP_LINEAR (GL11.GL_NEAREST_MIPMAP_LINEAR, true),
     LINEAR_MIPMAP_LINEAR  (GL11.GL_LINEAR_MIPMAP_LINEAR, true);
-    
-    public final int glEnum;
-    public final boolean mipmapped;
-    
+
+    final int glEnum;
+    final boolean mipmapped;
+
     private TexFilter(int glEnum, boolean mipmapped)
     {
         this.glEnum = glEnum;

@@ -77,7 +77,7 @@ public final class Attribute
         
         index = GL20.glGetAttribLocation(shaderID, name);
         if (index == -1) throw new IllegalArgumentException(
-                "No such attribute: '" + name + "'");
+                "No such attribute: '" + name + "'!");
         
         type = typeFromGLEnum(GL20.glGetActiveAttribType(shaderID, index));
         bytes = new ByteDataStream(type.size*type.dataType.size);
@@ -94,13 +94,13 @@ public final class Attribute
     private void ensureActive()
     {
         if (!active) throw new IllegalStateException(
-                "Attribute '" + name + "' is inactive.");
+                "Attribute '" + name + "' is inactive!");
     }
     
     private void ensureType(Type type)
     {
         if (this.type != type) throw new IllegalArgumentException(
-                "Expected type " + this.type + ", got " + type);
+                "Expected type " + this.type + ", got " + type + "!");
     }
     
     int getIndex()

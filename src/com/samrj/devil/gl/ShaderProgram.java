@@ -6,7 +6,7 @@ import org.lwjgl.opengl.GL20;
 
 public final class ShaderProgram
 {
-    private final int id;
+    public final int id;
     
     public ShaderProgram(Shader... shaders) throws ShaderException
     {
