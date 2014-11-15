@@ -122,7 +122,7 @@ public class Mesh
         for (Attribute att : attributes)
         {
             int index = att.getIndex();
-            Attribute.Type type = att.getType();
+            VarType type = att.getType();
             GL20.glEnableVertexAttribArray(index);
             GL20.glVertexAttribPointer(index, type.size, type.dataType.glEnum, false, stride, offset);
             
