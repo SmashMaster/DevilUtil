@@ -52,6 +52,16 @@ public class ByteDataStream extends ByteArrayOutputStream
         writeLong(Double.doubleToLongBits(v));
     }
     
+    public synchronized void writeBoolean(boolean v)
+    {
+        writeBuffer[3] = 0;
+        writeBuffer[2] = 0;
+        writeBuffer[1] = 0;
+        writeBuffer[0] = v ? (byte)1 : 0;
+        
+        write(writeBuffer, 0, 4);
+    }
+    
     public synchronized void writeTo(ByteDataStream stream)
     {
         stream.write(buf, 0, count);

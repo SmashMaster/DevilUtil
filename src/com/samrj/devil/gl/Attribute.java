@@ -119,46 +119,6 @@ public final class Attribute
         bytes.writeFloat(w);
     }
     
-    //INTS
-    
-    public void set(int x)
-    {
-        ensureActive();
-        ensureType(VarType.INT);
-        bytes.reset();
-        bytes.writeInt(x);
-    }
-    
-    public void set(int x, int y)
-    {
-        ensureActive();
-        ensureType(VarType.INT_VEC2);
-        bytes.reset();
-        bytes.writeInt(x);
-        bytes.writeInt(y);
-    }
-    
-    public void set(int x, int y, int z)
-    {
-        ensureActive();
-        ensureType(VarType.INT_VEC3);
-        bytes.reset();
-        bytes.writeInt(x);
-        bytes.writeInt(y);
-        bytes.writeInt(z);
-    }
-    
-    public void set(int x, int y, int z, int w)
-    {
-        ensureActive();
-        ensureType(VarType.INT_VEC4);
-        bytes.reset();
-        bytes.writeInt(x);
-        bytes.writeInt(y);
-        bytes.writeInt(z);
-        bytes.writeInt(w);
-    }
-    
     //DOUBLES
     
     public void set(double x)
@@ -199,5 +159,83 @@ public final class Attribute
         bytes.writeDouble(w);
     }
     
-    //TODO: Matrices
+    //INTS
+    
+    public void set(int x)
+    {
+        ensureActive();
+        ensureType(VarType.INT);
+        bytes.reset();
+        bytes.writeInt(x);
+    }
+    
+    public void set(int x, int y)
+    {
+        ensureActive();
+        ensureType(VarType.INT_VEC2);
+        bytes.reset();
+        bytes.writeInt(x);
+        bytes.writeInt(y);
+    }
+    
+    public void set(int x, int y, int z)
+    {
+        ensureActive();
+        ensureType(VarType.INT_VEC3);
+        bytes.reset();
+        bytes.writeInt(x);
+        bytes.writeInt(y);
+        bytes.writeInt(z);
+    }
+    
+    public void set(int x, int y, int z, int w)
+    {
+        ensureActive();
+        ensureType(VarType.INT_VEC4);
+        bytes.reset();
+        bytes.writeInt(x);
+        bytes.writeInt(y);
+        bytes.writeInt(z);
+        bytes.writeInt(w);
+    }
+    
+    //BOOLEAN
+    
+    public void set(boolean x)
+    {
+        ensureActive();
+        ensureType(VarType.INT);
+        bytes.reset();
+        bytes.writeBoolean(x);
+    }
+    
+    public void set(boolean x, boolean y)
+    {
+        ensureActive();
+        ensureType(VarType.INT_VEC2);
+        bytes.reset();
+        bytes.writeBoolean(x);
+        bytes.writeBoolean(y);
+    }
+    
+    public void set(boolean x, boolean y, boolean z)
+    {
+        ensureActive();
+        ensureType(VarType.INT_VEC3);
+        bytes.reset();
+        bytes.writeBoolean(x);
+        bytes.writeBoolean(y);
+        bytes.writeBoolean(z);
+    }
+    
+    public void set(boolean x, boolean y, boolean z, boolean w)
+    {
+        ensureActive();
+        ensureType(VarType.INT_VEC4);
+        bytes.reset();
+        bytes.writeBoolean(x);
+        bytes.writeBoolean(y);
+        bytes.writeBoolean(z);
+        bytes.writeBoolean(w);
+    }
 }
