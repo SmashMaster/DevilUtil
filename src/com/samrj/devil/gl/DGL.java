@@ -3,6 +3,7 @@ package com.samrj.devil.gl;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
 public final class DGL
@@ -142,6 +143,33 @@ public final class DGL
             mesh.destroy();
         }
         mesh = null;
+    }
+    
+    public static enum ScreenBuffer
+    {
+        COLOR  (GL11.GL_COLOR_BUFFER_BIT),
+        DEPTH  (GL11.GL_DEPTH_BUFFER_BIT),
+        ACCUM  (GL11.GL_ACCUM_BUFFER_BIT),
+        STENCIL(GL11.GL_STENCIL_BUFFER_BIT);
+        
+        private final int glEnum;
+        
+        private ScreenBuffer(int glEnum)
+        {
+            this.glEnum = glEnum;
+        }
+    }
+    
+    public static void clearColor(float r, float g, float b, float a)
+    {
+        GL11.glClearColor(r, g, b, a);
+    }
+    
+    public static void clear(ScreenBuffer... buffers)
+    {
+        int bufferBits = 0;
+        for (ScreenBuffer buffer : buffers) bufferBits |= buffer.glEnum;
+        GL11.glClear(bufferBits);
     }
     
     private DGL() {}
