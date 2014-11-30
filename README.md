@@ -62,9 +62,9 @@ So here's my alternative:
     DGL.use(pos);
 
     DGL.draw(DGL.Mesh.RAW);
-        DGL.set(pos, -1.0f, -1.0f); DGL.vertex();
-        DGL.set(pos,  0.0f,  1.0f); DGL.vertex();
-        DGL.set(pos,  1.0f, -1.0f); DGL.vertex();
+        pos.set(-1.0f, -1.0f); DGL.vertex();
+        pos.set( 0.0f,  1.0f); DGL.vertex();
+        pos.set( 1.0f, -1.0f); DGL.vertex();
     DGL.end();
 
 That's more like it. DevilGL is doing all the hard work in the background; mostly in the end() function. This retains almost all of the power and speed of modern OpenGL, without sacrificing the simplicity or ease of use of deprecated OpenGL.
