@@ -1,8 +1,9 @@
 package com.samrj.devil.gl;
 
-import java.util.HashMap;
+import com.samrj.devil.util.IdentitySet;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.Set;
+import java.util.WeakHashMap;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
@@ -13,96 +14,127 @@ public final class DGL
         IDLE, DRAW_MESH, DEFINE_MESH;
     }
     
-    private final static Map<String, Attribute> attributes = new HashMap<>();
-    private final static Map<Integer, Attribute> activeAttribs = new TreeMap<>();
     private static ShaderProgram shader = null;
     private static State state = State.IDLE;
     private static Mesh mesh = null;
     
-    private static void ensureState(State... states)
+    private static void ensureState(String error, State... states)
     {
         for (State state : states) if (DGL.state == state) return;
-        throw new IllegalStateException(
-                "Current state " + DGL.state.name() +
-                " is illegal for attempted operation.");
+        throw new IllegalStateException(error);
+    }
+    
+    private static void ensureShaderActive()
+    {
+        if (shader == null)
+            throw new IllegalStateException("No shader is currently bound.");
     }
     
     public static void use(ShaderProgram shader)
     {
-        ensureState(State.IDLE);
+        ensureState("Cannot bind shaders in state: " + state, State.IDLE);
         if (shader == DGL.shader) return;
         DGL.shader = shader;
         GL20.glUseProgram(shader.getID());
         refreshAttributes();
     }
     
-    private static void ensureShaderActive()
-    {
-        if (shader == null)
-            throw new IllegalStateException("No shader is currently bound!");
-    }
-    
-    public static Uniform getUniform(String name)
-    {
-        return null;
-    }
+    //<editor-fold defaultstate="collapsed" desc="Attribute Methods">
+    /**
+     * All attribute names are guaranteed to have up to one Attribute object
+     * associated with them. If that object is not in use, it will automatically
+     * be garbage collected.
+     */
+    private static final Map<String, Attribute> attributes = new WeakHashMap<>();
+    private static final Set<Attribute> activeAttributes = new IdentitySet<>();
     
     /**
-     * All attribute names are related to exactly one Attribute object.
+     * Returns the Attribute object for the given shader variable name, or
+     * creates one if it does not exist.
+     * 
+     * @param name the shader variable name of an attribute
+     * @return the Attribute object corresponding to the given name.
      */
     public static Attribute getAttribute(String name)
     {
-        Attribute att = attributes.get(name);
+        ensureState("Cannot fetch attributes in state: " + state, State.IDLE);
+        if (name == null) throw new NullPointerException();
         
+        Attribute att = attributes.get(name);
         if (att == null)
         {
             att = new Attribute(name);
             attributes.put(name, att);
         }
-        
         return att;
     }
     
-    public static void use(Attribute... atts)
+    /**
+     * Enables all given attributes.
+     * 
+     * @param atts each attribute to be enabled.
+     */
+    public static void enableAttributes(Attribute... atts)
     {
-        ensureState(State.IDLE);
-        ensureShaderActive();
-        for (Attribute att : activeAttribs.values()) att.disable();
-        activeAttribs.clear();
-        
+        ensureState("Cannot enable attributes in state: " + state, State.IDLE);
         for (Attribute att : atts)
         {
             att.enable(shader);
-            activeAttribs.put(att.getIndex(), att);
+            activeAttributes.add(att);
         }
     }
     
     /**
-     * Keep current attributes active in case active shader is changed.
+     * Enables and returns the given attribute.
+     * 
+     * @param name the shader variable name of the given attribute.
+     * @return the attribute corresponding to the given name.
+     */
+    public static Attribute enableAttribute(String name)
+    {
+        Attribute att = getAttribute(name);
+        enableAttributes(att);
+        return att;
+    }
+    
+    /**
+     * @return an array containing all enabled attributes.
+     */
+    public static Attribute[] getEnabledAttributes()
+    {
+        ensureState("Cannot enable attributes in state: " + state, State.IDLE);
+        Attribute[] out = new Attribute[activeAttributes.size()];
+        return activeAttributes.toArray(out);
+    }
+    
+    //</editor-fold>
+    
+    /**
+     * TODO: Just disable attributes that don't exist in new shader.
      */
     private static void refreshAttributes()
     {
-        for (Attribute att : activeAttribs.values()) att.enable(shader);
+        for (Attribute att : activeAttributes) att.enable(shader);
     }
     
     public static int vertex()
     {
-        ensureState(State.DEFINE_MESH, State.DRAW_MESH);
+        ensureState("Cannot define vertices in state: " + state, State.DEFINE_MESH, State.DRAW_MESH);
         return mesh.vertex();
     }
     
     public static void index(int index)
     {
-        ensureState(State.DEFINE_MESH, State.DRAW_MESH);
+        ensureState("Cannot define indices in state: " + state, State.DEFINE_MESH, State.DRAW_MESH);
         mesh.index(index);
     }
     
     public static Mesh define(Mesh.Type type, Mesh.RenderMode mode)
     {
-        ensureState(State.IDLE);
+        ensureState("Cannot define new meshes in state: " + State.IDLE);
         ensureShaderActive();
         state = State.DEFINE_MESH;
-        mesh = new Mesh(type, Mesh.Usage.GL_STATIC_DRAW, mode, activeAttribs);
+        mesh = new Mesh(type, Mesh.Usage.GL_STATIC_DRAW, mode, activeAttributes);
         return mesh;
     }
     
@@ -113,17 +145,17 @@ public final class DGL
     
     public static void draw(Mesh mesh)
     {
-        ensureState(State.IDLE);
+        ensureState("Cannot start drawing in state: " + State.IDLE);
         ensureShaderActive();
         mesh.draw();
     }
     
     public static void draw(Mesh.Type type, Mesh.RenderMode mode)
     {
-        ensureState(State.IDLE);
+        ensureState("Cannot start drawing in state: " + State.IDLE);
         ensureShaderActive();
         state = State.DRAW_MESH;
-        mesh = new Mesh(type, Mesh.Usage.GL_STREAM_DRAW, mode, activeAttribs);
+        mesh = new Mesh(type, Mesh.Usage.GL_STREAM_DRAW, mode, activeAttributes);
     }
     
     public static void draw(Mesh.Type type)
@@ -133,7 +165,7 @@ public final class DGL
     
     public static void end()
     {
-        ensureState(State.DEFINE_MESH, State.DRAW_MESH);
+        ensureState("No state to end.", State.DEFINE_MESH, State.DRAW_MESH);
         boolean drawMesh = state == State.DRAW_MESH;
         mesh.complete();
         state = State.IDLE;

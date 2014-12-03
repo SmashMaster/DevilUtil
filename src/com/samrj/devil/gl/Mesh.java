@@ -1,7 +1,8 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.gl.util.ByteDataStream;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.Set;
 import org.lwjgl.opengl.*;
 
 public class Mesh
@@ -57,11 +58,10 @@ public class Mesh
     private boolean destroyed = false;
     private int vertexCount = 0, indexCount = 0;
     
-    public Mesh(Type type, Usage usage, RenderMode renderMode, Map<Integer, Attribute> attributes)
+    Mesh(Type type, Usage usage, RenderMode renderMode, Attribute[] attributes)
     {
         this.type = type;
-        this.attributes = new Attribute[attributes.size()];
-        attributes.values().toArray(this.attributes);
+        this.attributes = Arrays.copyOf(attributes, attributes.length);
         
         this.usage = usage.glEnum;
         this.renderMode = renderMode.glEnum;
@@ -70,6 +70,11 @@ public class Mesh
         vaoID = GL30.glGenVertexArrays();
         vboID = GL15.glGenBuffers();
         eboID = (type == Type.INDEXED) ? GL15.glGenBuffers() : -1;
+    }
+    
+    Mesh(Type type, Usage usage, RenderMode renderMode, Set<Attribute> attributes)
+    {
+        this(type, usage, renderMode, attributes.toArray(new Attribute[attributes.size()]));
     }
     
     private void ensureAlive()

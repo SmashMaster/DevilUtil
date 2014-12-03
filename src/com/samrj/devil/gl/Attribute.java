@@ -20,9 +20,6 @@ public final class Attribute
         this.name = name;
     }
     
-    /**
-     * Can already be enabled, might be switching to another shader.
-     */
     void enable(ShaderProgram shader)
     {
         int shaderID = shader.getID();
