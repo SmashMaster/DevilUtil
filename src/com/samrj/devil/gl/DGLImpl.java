@@ -87,11 +87,11 @@ abstract class DGLImpl
     
     abstract int vertex();
     abstract void index(int index);
-    abstract Mesh define(Mesh.Type type, Mesh.RenderMode mode);
-    abstract Mesh define(Mesh.Type type);
-    abstract void draw(Mesh mesh);
-    abstract void draw(Mesh.Type type, Mesh.RenderMode mode);
-    abstract void draw(Mesh.Type type);
+    abstract Mesh30 define(Mesh30.Type type, Mesh30.RenderMode mode);
+    abstract Mesh30 define(Mesh30.Type type);
+    abstract void draw(Mesh30 mesh);
+    abstract void draw(Mesh30.Type type, Mesh30.RenderMode mode);
+    abstract void draw(Mesh30.Type type);
     abstract void end();
     
     void clearColor(float r, float g, float b, float a)

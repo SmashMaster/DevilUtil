@@ -37,7 +37,7 @@ class DGL30 extends DGLImpl
     }
     
     @Override
-    public void draw(Mesh mesh)
+    public void draw(Mesh30 mesh)
     {
         ensureState(State.IDLE);
         ensureShaderActive();

@@ -39,31 +39,31 @@ class DGL20 extends DGLImpl
     }
 
     @Override
-    public Mesh20 define(Mesh20.Type type, Mesh20.RenderMode mode)
+    public Mesh30 define(Mesh30.Type type, Mesh30.RenderMode mode)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Mesh20 define(Mesh20.Type type)
+    public Mesh30 define(Mesh30.Type type)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void draw(Mesh mesh)
+    public void draw(Mesh30 mesh)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void draw(Mesh20.Type type, Mesh20.RenderMode mode)
+    public void draw(Mesh30.Type type, Mesh30.RenderMode mode)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void draw(Mesh20.Type type)
+    public void draw(Mesh30.Type type)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
