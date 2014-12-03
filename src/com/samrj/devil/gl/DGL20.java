@@ -1,7 +1,8 @@
 package com.samrj.devil.gl;
 
-class DGL20 extends DGLImpl
+class DGL20 implements DGLImpl
 {
+
     @Override
     public void use(ShaderProgram shader)
     {
@@ -39,31 +40,31 @@ class DGL20 extends DGLImpl
     }
 
     @Override
-    public Mesh30 define(Mesh30.Type type, Mesh30.RenderMode mode)
+    public Mesh define(Mesh.Type type, Mesh.RenderMode mode)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Mesh30 define(Mesh30.Type type)
+    public Mesh define(Mesh.Type type)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void draw(Mesh30 mesh)
+    public void draw(Mesh mesh)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void draw(Mesh30.Type type, Mesh30.RenderMode mode)
+    public void draw(Mesh.Type type, Mesh.RenderMode mode)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void draw(Mesh30.Type type)
+    public void draw(Mesh.Type type)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -73,4 +74,17 @@ class DGL20 extends DGLImpl
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    @Override
+    public void clearColor(float r, float g, float b, float a)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void clear(DGL.ScreenBuffer... buffers)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
 }

@@ -56,27 +56,27 @@ public final class DGL
         impl.index(index);
     }
     
-    public static Mesh30 define(Mesh30.Type type, Mesh30.RenderMode mode)
+    public static Mesh define(Mesh.Type type, Mesh.RenderMode mode)
     {
         return impl.define(type, mode);
     }
     
-    public static Mesh30 define(Mesh30.Type type)
+    public static Mesh define(Mesh.Type type)
     {
         return impl.define(type);
     }
     
-    public static void draw(Mesh30 mesh)
+    public static void draw(Mesh mesh)
     {
         impl.draw(mesh);
     }
     
-    public static void draw(Mesh30.Type type, Mesh30.RenderMode mode)
+    public static void draw(Mesh.Type type, Mesh.RenderMode mode)
     {
         impl.draw(type, mode);
     }
     
-    public static void draw(Mesh30.Type type)
+    public static void draw(Mesh.Type type)
     {
         impl.draw(type);
     }
