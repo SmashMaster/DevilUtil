@@ -126,10 +126,10 @@ public class Mesh
         int offset = 0;
         for (Attribute att : attributes)
         {
-            int index = att.getIndex();
-            VarType type = att.getType();
-            GL20.glEnableVertexAttribArray(index);
-            GL20.glVertexAttribPointer(index, type.size, type.dataType.glEnum, false, stride, offset);
+            int attIndex = att.getIndex();
+            VarType attType = att.getType();
+            GL20.glEnableVertexAttribArray(attIndex);
+            GL20.glVertexAttribPointer(attIndex, attType.size, attType.dataType.glEnum, false, stride, offset);
             
             offset += att.getByteLength();
         }

@@ -1,6 +1,7 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.util.IdentitySet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -30,6 +31,11 @@ public final class DGL
             throw new IllegalStateException("No shader is currently bound.");
     }
     
+    /**
+     * Uses the given shader for all draw operations.
+     * 
+     * @param shader the shader to bind.
+     */
     public static void use(ShaderProgram shader)
     {
         ensureState("Cannot bind shaders in state: " + state, State.IDLE);
@@ -107,15 +113,40 @@ public final class DGL
         return activeAttributes.toArray(out);
     }
     
-    //</editor-fold>
-    
     /**
-     * TODO: Just disable attributes that don't exist in new shader.
+     * Re-enable all currently enabled attributes on the current shader. Any
+     * attributes that cannot be enabled are ignored.
      */
     private static void refreshAttributes()
     {
-        for (Attribute att : activeAttributes) att.enable(shader);
+        Iterator<Attribute> i = activeAttributes.iterator();
+        for (Attribute att = i.next(); i.hasNext(); att = i.next())
+            if (!att.softEnable(shader)) i.remove();
     }
+    
+    /**
+     * Disables all given attributes.
+     * 
+     * @param atts each attribute to disable.
+     */
+    public static void disableAttributes(Attribute... atts)
+    {
+        for (Attribute att : atts)
+        {
+            att.disable();
+            activeAttributes.remove(att);
+        }
+    }
+    
+    /**
+     * Disables all attributes.
+     */
+    public static void disableAttributes()
+    {
+        for (Attribute att : activeAttributes) att.disable();
+        activeAttributes.clear();
+    }
+    //</editor-fold>
     
     public static int vertex()
     {

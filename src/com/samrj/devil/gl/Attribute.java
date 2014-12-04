@@ -12,7 +12,7 @@ public final class Attribute
     private ByteDataStream bytes = null;
     private int index; //This attribute's index on the currently bound shader
     private VarType type; //OpenGL vertex attribute type enum
-    private boolean active = false;
+    private boolean enabled = false;
     
     Attribute(String name)
     {
@@ -20,29 +20,56 @@ public final class Attribute
         this.name = name;
     }
     
-    void enable(ShaderProgram shader)
+    /**
+     * Enable this attribute on the given shader. Can fail silently.
+     * 
+     * @param shader the shader to enable this attribute on.
+     * @return whether or not the attribute was successfully enabled.
+     */
+    boolean softEnable(ShaderProgram shader)
     {
         int shaderID = shader.getID();
         
         index = GL20.glGetAttribLocation(shaderID, name);
-        if (index == -1) throw new IllegalArgumentException(
-                "No such attribute: '" + name + "'!");
+        if (index == -1)
+        {
+            disable();
+            return false;
+        }
         
         type = VarType.fromGLEnum(GL20.glGetActiveAttribType(shaderID, index));
         bytes = new ByteDataStream(type.size*type.dataType.size);
-        active = true;
+        enabled = true;
+        return true;
+    }
+    
+    /**
+     * Enable this attribute on the given shader, and throw an exception if no
+     * such variable exists.
+     * 
+     * @param shader the shader to enable this attribute on.
+     */
+    void enable(ShaderProgram shader)
+    {
+        if (!softEnable(shader)) throw new IllegalArgumentException(
+                "No such attribute: '" + name + "'!");
     }
     
     void disable()
     {
-        if (!active) return;
+        type = null;
         bytes = null;
-        active = false;
+        enabled = false;
     }
     
-    private void ensureActive()
+    boolean isEnabled()
     {
-        if (!active) throw new IllegalStateException(
+        return enabled;
+    }
+    
+    private void ensureEnabled()
+    {
+        if (!enabled) throw new IllegalStateException(
                 "Attribute '" + name + "' is inactive!");
     }
     
@@ -54,25 +81,25 @@ public final class Attribute
     
     int getIndex()
     {
-        ensureActive();
+        ensureEnabled();
         return index;
     }
     
     VarType getType()
     {
-        ensureActive();
+        ensureEnabled();
         return type;
     }
     
     int getByteLength()
     {
-        ensureActive();
+        ensureEnabled();
         return type.size*type.dataType.size;
     }
     
     void writeTo(ByteDataStream byteStream)
     {
-        ensureActive();
+        ensureEnabled();
         bytes.writeTo(byteStream);
     }
     
@@ -80,7 +107,7 @@ public final class Attribute
     
     public void set(float x)
     {
-        ensureActive();
+        ensureEnabled();
         ensureType(VarType.FLOAT);
         bytes.reset();
         bytes.writeFloat(x);
@@ -88,7 +115,7 @@ public final class Attribute
     
     public void set(float x, float y)
     {
-        ensureActive();
+        ensureEnabled();
         ensureType(VarType.FLOAT_VEC2);
         bytes.reset();
         bytes.writeFloat(x);
@@ -97,7 +124,7 @@ public final class Attribute
     
     public void set(float x, float y, float z)
     {
-        ensureActive();
+        ensureEnabled();
         ensureType(VarType.FLOAT_VEC3);
         bytes.reset();
         bytes.writeFloat(x);
@@ -107,7 +134,7 @@ public final class Attribute
     
     public void set(float x, float y, float z, float w)
     {
-        ensureActive();
+        ensureEnabled();
         ensureType(VarType.FLOAT_VEC4);
         bytes.reset();
         bytes.writeFloat(x);
@@ -120,7 +147,7 @@ public final class Attribute
     
     public void set(double x)
     {
-        ensureActive();
+        ensureEnabled();
         ensureType(VarType.DOUBLE);
         bytes.reset();
         bytes.writeDouble(x);
@@ -128,7 +155,7 @@ public final class Attribute
     
     public void set(double x, double y)
     {
-        ensureActive();
+        ensureEnabled();
         ensureType(VarType.DOUBLE_VEC2);
         bytes.reset();
         bytes.writeDouble(x);
@@ -137,7 +164,7 @@ public final class Attribute
     
     public void set(double x, double y, double z)
     {
-        ensureActive();
+        ensureEnabled();
         ensureType(VarType.DOUBLE_VEC3);
         bytes.reset();
         bytes.writeDouble(x);
@@ -147,7 +174,7 @@ public final class Attribute
     
     public void set(double x, double y, double z, double w)
     {
-        ensureActive();
+        ensureEnabled();
         ensureType(VarType.DOUBLE_VEC4);
         bytes.reset();
         bytes.writeDouble(x);
@@ -160,7 +187,7 @@ public final class Attribute
     
     public void set(int x)
     {
-        ensureActive();
+        ensureEnabled();
         ensureType(VarType.INT);
         bytes.reset();
         bytes.writeInt(x);
@@ -168,7 +195,7 @@ public final class Attribute
     
     public void set(int x, int y)
     {
-        ensureActive();
+        ensureEnabled();
         ensureType(VarType.INT_VEC2);
         bytes.reset();
         bytes.writeInt(x);
@@ -177,7 +204,7 @@ public final class Attribute
     
     public void set(int x, int y, int z)
     {
-        ensureActive();
+        ensureEnabled();
         ensureType(VarType.INT_VEC3);
         bytes.reset();
         bytes.writeInt(x);
@@ -187,7 +214,7 @@ public final class Attribute
     
     public void set(int x, int y, int z, int w)
     {
-        ensureActive();
+        ensureEnabled();
         ensureType(VarType.INT_VEC4);
         bytes.reset();
         bytes.writeInt(x);
@@ -200,7 +227,7 @@ public final class Attribute
     
     public void set(boolean x)
     {
-        ensureActive();
+        ensureEnabled();
         ensureType(VarType.INT);
         bytes.reset();
         bytes.writeBoolean(x);
@@ -208,7 +235,7 @@ public final class Attribute
     
     public void set(boolean x, boolean y)
     {
-        ensureActive();
+        ensureEnabled();
         ensureType(VarType.INT_VEC2);
         bytes.reset();
         bytes.writeBoolean(x);
@@ -217,7 +244,7 @@ public final class Attribute
     
     public void set(boolean x, boolean y, boolean z)
     {
-        ensureActive();
+        ensureEnabled();
         ensureType(VarType.INT_VEC3);
         bytes.reset();
         bytes.writeBoolean(x);
@@ -227,7 +254,7 @@ public final class Attribute
     
     public void set(boolean x, boolean y, boolean z, boolean w)
     {
-        ensureActive();
+        ensureEnabled();
         ensureType(VarType.INT_VEC4);
         bytes.reset();
         bytes.writeBoolean(x);
