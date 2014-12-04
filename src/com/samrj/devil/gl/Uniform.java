@@ -8,6 +8,7 @@ public class Uniform
     public final String name;
     private int index;
     private VarType type; //OpenGL vertex attribute type enum
+    private boolean enabled = false;
     
     Uniform(String name)
     {
@@ -15,15 +16,33 @@ public class Uniform
         this.name = name;
     }
     
-    void enable(ShaderProgram shader)
+    boolean enableSoft(ShaderProgram shader)
     {
+        if (shader == null)
+        {
+            disable();
+            return false;
+        }
+        
         int shaderID = shader.getID();
         
         index = GL20.glGetUniformLocation(shaderID, name);
-        if (index == -1) throw new IllegalArgumentException(
-                "No such attribute: '" + name + "'!");
+        if (index == -1)
+        {
+            disable();
+            return false;
+        }
         
         type = VarType.fromGLEnum(GL20.glGetActiveUniformType(shaderID, index));
+        enabled = true;
+        return true;
+    }
+    
+    void disable()
+    {
+        index = -1;
+        type = null;
+        enabled = false;
     }
     
 //    FLOAT       (GL11.GL_FLOAT,        1, Primitive.FLOAT),
@@ -50,6 +69,12 @@ public class Uniform
 //    SAMPLER_3D  (GL20.GL_SAMPLER_3D,   1, Primitive.INT),
 //    SAMPLER_CUBE(GL20.GL_SAMPLER_CUBE, 1, Primitive.INT);
     
+    private void ensureEnabled()
+    {
+        if (!enabled) throw new IllegalStateException(
+                "No such shader variable: '" + name + "'");
+    }
+    
     private void ensureType(VarType type)
     {
         if (this.type != type) throw new IllegalArgumentException(
@@ -60,24 +85,28 @@ public class Uniform
     
     public void set(float x)
     {
+        ensureEnabled();
         ensureType(VarType.FLOAT);
         GL20.glUniform1f(index, x);
     }
     
     public void set(float x, float y)
     {
+        ensureEnabled();
         ensureType(VarType.FLOAT_VEC2);
         GL20.glUniform2f(index, x, y);
     }
     
     public void set(float x, float y, float z)
     {
+        ensureEnabled();
         ensureType(VarType.FLOAT_VEC3);
         GL20.glUniform3f(index, x, y, z);
     }
     
     public void set(float x, float y, float z, float w)
     {
+        ensureEnabled();
         ensureType(VarType.FLOAT_VEC4);
         GL20.glUniform4f(index, x, y, z, w);
     }
@@ -86,24 +115,28 @@ public class Uniform
     
     public void set(int x)
     {
+        ensureEnabled();
         ensureType(VarType.INT);
         GL20.glUniform1i(index, x);
     }
     
     public void set(int x, int y)
     {
+        ensureEnabled();
         ensureType(VarType.INT_VEC2);
         GL20.glUniform2i(index, x, y);
     }
     
     public void set(int x, int y, int z)
     {
+        ensureEnabled();
         ensureType(VarType.INT_VEC3);
         GL20.glUniform3i(index, x, y, z);
     }
     
     public void set(int x, int y, int z, int w)
     {
+        ensureEnabled();
         ensureType(VarType.INT_VEC4);
         GL20.glUniform4i(index, x, y, z, w);
     }
@@ -117,24 +150,28 @@ public class Uniform
     
     public void set(boolean x)
     {
+        ensureEnabled();
         ensureType(VarType.BOOL);
         GL20.glUniform1i(index, btoi(x));
     }
     
     public void set(boolean x, boolean y)
     {
+        ensureEnabled();
         ensureType(VarType.BOOL_VEC2);
         GL20.glUniform2i(index, btoi(x), btoi(y));
     }
     
     public void set(boolean x, boolean y, boolean z)
     {
+        ensureEnabled();
         ensureType(VarType.BOOL_VEC3);
         GL20.glUniform3i(index, btoi(x), btoi(y), btoi(z));
     }
     
     public void set(boolean x, boolean y, boolean z, boolean w)
     {
+        ensureEnabled();
         ensureType(VarType.BOOL_VEC4);
         GL20.glUniform4i(index, btoi(x), btoi(y), btoi(z), btoi(w));
     }
@@ -143,6 +180,7 @@ public class Uniform
     
     public void bind(Texture2D tex)
     {
+        ensureEnabled();
         ensureType(VarType.SAMPLER_2D);
         //Bind texture to first available texture unit, assign uniform to unit index
     }

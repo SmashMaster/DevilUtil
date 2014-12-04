@@ -36,13 +36,14 @@ public final class DGL
      * 
      * @param shader the shader to bind.
      */
-    public static void use(ShaderProgram shader)
+    public static void useShader(ShaderProgram shader)
     {
         ensureState("Cannot bind shaders in state: " + state, State.IDLE);
         if (shader == DGL.shader) return;
         DGL.shader = shader;
         GL20.glUseProgram(shader.getID());
         refreshAttributes();
+        refreshUniforms();
     }
     
     //<editor-fold defaultstate="collapsed" desc="Attribute Methods">
@@ -114,17 +115,6 @@ public final class DGL
     }
     
     /**
-     * Re-enable all currently enabled attributes on the current shader. Any
-     * attributes that cannot be enabled are ignored.
-     */
-    private static void refreshAttributes()
-    {
-        Iterator<Attribute> i = activeAttributes.iterator();
-        for (Attribute att = i.next(); i.hasNext(); att = i.next())
-            if (!att.softEnable(shader)) i.remove();
-    }
-    
-    /**
      * Disables all given attributes.
      * 
      * @param atts each attribute to disable.
@@ -146,7 +136,50 @@ public final class DGL
         for (Attribute att : activeAttributes) att.disable();
         activeAttributes.clear();
     }
+    
+    /**
+     * Re-enable all currently enabled attributes on the current shader. Any
+     * attributes that cannot be enabled are ignored.
+     */
+    private static void refreshAttributes()
+    {
+        Iterator<Attribute> i = activeAttributes.iterator();
+        for (Attribute att = i.next(); i.hasNext(); att = i.next())
+            if (!att.enableSoft(shader)) i.remove();
+    }
     //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="Uniform Methods">
+    private static final Map<String, Uniform> uniforms = new WeakHashMap<>();
+    
+    /**
+     * Returns the Uniform object for the given shader variable name, or
+     * creates one if it does not exist.
+     * 
+     * @param name the shader variable name of an attribute
+     * @return the Attribute object corresponding to the given name.
+     */
+    public static Uniform getUniform(String name)
+    {
+        ensureState("Cannot fetch uniforms in state: " + state, State.IDLE);
+        if (name == null) throw new NullPointerException();
+        
+        Uniform uni = uniforms.get(name);
+        if (uni == null)
+        {
+            uni = new Uniform(name);
+            uni.enableSoft(shader);
+            uniforms.put(name, uni);
+        }
+        return uni;
+    }
+    
+    private static void refreshUniforms()
+    {
+        for (Uniform uniform : uniforms.values()) uniform.enableSoft(shader);
+    }
+    //</editor-fold>
+    
+    
     
     public static int vertex()
     {

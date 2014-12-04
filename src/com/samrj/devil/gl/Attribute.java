@@ -26,7 +26,7 @@ public final class Attribute
      * @param shader the shader to enable this attribute on.
      * @return whether or not the attribute was successfully enabled.
      */
-    boolean softEnable(ShaderProgram shader)
+    boolean enableSoft(ShaderProgram shader)
     {
         int shaderID = shader.getID();
         
@@ -51,7 +51,7 @@ public final class Attribute
      */
     void enable(ShaderProgram shader)
     {
-        if (!softEnable(shader)) throw new IllegalArgumentException(
+        if (!enableSoft(shader)) throw new IllegalArgumentException(
                 "No such attribute: '" + name + "'!");
     }
     
