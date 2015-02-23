@@ -146,6 +146,15 @@ public final class Vector3f implements Bufferable<FloatBuffer>, NumState<Vector3
         return mult(length/length());
     }
     
+    public Vector3f maxLength(float length)
+    {
+        if (length < 0f) throw new IllegalArgumentException();
+        if (isZero(Float.MIN_NORMAL)) return this;
+        
+        float curLength = length();
+        return length > curLength ? mult(length/curLength) : this;
+    }
+    
     public Vector3f setDist(Vector3f v, float dist)
     {
         return sub(v).setLength(dist).add(v);
