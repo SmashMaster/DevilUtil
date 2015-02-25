@@ -43,8 +43,8 @@ public class DelaunayTriangulation
         //Count number of leading vertically colinear points
         float leftBound = points[0].x;
         int numColinear = 1;
-        int firstPoint;
         while (numColinear < points.length && points[numColinear].x == leftBound) numColinear++;
+        int firstPoint;
         
         if (numColinear > 1)
         {
@@ -67,17 +67,19 @@ public class DelaunayTriangulation
             //Triangle and hull must have clockwise winding order
             if (new Line(p0, p2).side(p1) == 1)
             {
-                triangles.add(new Triangle(p0, p1, p2));
-                hull.add(new Edge(p0, p1));
-                hull.add(new Edge(p1, p2));
-                hull.add(new Edge(p2, p0));
+                Triangle triangle = new Triangle(p0, p1, p2);
+                triangles.add(triangle);
+                hull.add(new Edge(p0, p1, triangle));
+                hull.add(new Edge(p1, p2, triangle));
+                hull.add(new Edge(p2, p0, triangle));
             }
             else
             {
-                triangles.add(new Triangle(p0, p2, p1));
-                hull.add(new Edge(p0, p2));
-                hull.add(new Edge(p2, p1));
-                hull.add(new Edge(p1, p0));
+                Triangle triangle = new Triangle(p0, p2, p1);
+                triangles.add(triangle);
+                hull.add(new Edge(p0, p2, triangle));
+                hull.add(new Edge(p2, p1, triangle));
+                hull.add(new Edge(p1, p0, triangle));
             }
             
             firstPoint = 3;
@@ -91,35 +93,50 @@ public class DelaunayTriangulation
             Vector2f point = points[i];
             
             //Any point added will always add two edges to the hull
-            Vector2f edgeStart = null, edgeEnd = null;
+            Vector2f leftEdge = null, rightEdge = null;
+            Triangle leftTriangle = null, rightTriangle = null;
             int edgeIndex = -1;
+            
+            Triangle prevTriangle = null;
             
             boolean foundEdge = false;
             ListIterator<Edge> it = hull.listIterator();
             while (it.hasNext())
             {
                 Edge edge = it.next();
-                
                 if (edge.faces(point))
                 {
+                    Triangle triangle = new Triangle(edge.a, point, edge.b);
+                    triangles.add(triangle);
+                    
+                    //Maintain references
+                    if (edge.inside != null) edge.inside.setNeighbor(edge, triangle);
+                    triangle.ca = edge.inside;
+                    if (prevTriangle != null)
+                    {
+                        prevTriangle.bc = triangle;
+                        triangle.ab = prevTriangle;
+                    }
+                    prevTriangle = triangle;
+                    
                     if (!foundEdge)
                     {
-                        edgeStart = edge.a;
+                        leftEdge = edge.a;
+                        leftTriangle = triangle;
                         foundEdge = true;
                         edgeIndex = it.previousIndex();
                     }
                     
-                    Triangle triangle = new Triangle(edge.a, point, edge.b);
-                    triangles.add(triangle);
                     it.remove();
-                    edgeEnd = edge.b;
+                    rightEdge = edge.b;
+                    rightTriangle = triangle;
                 }
                 else if (foundEdge) break; //We can terminate early because our hull is convex
             }
             
             //Update the hull to include our new edges
-            hull.add(edgeIndex, new Edge(point, edgeEnd));
-            hull.add(edgeIndex, new Edge(edgeStart, point));
+            hull.add(edgeIndex, new Edge(point, rightEdge, rightTriangle));
+            hull.add(edgeIndex, new Edge(leftEdge, point, leftTriangle));
         }
         
         //Fix all illegal triangles by flipping edges
@@ -138,10 +155,16 @@ public class DelaunayTriangulation
     public class Edge
     {
         public Vector2f a, b;
+        private Triangle inside;
+        
+        private Edge(Vector2f a, Vector2f b, Triangle inside)
+        {
+            this.a = a; this.b = b; this.inside = inside;
+        }
         
         private Edge(Vector2f a, Vector2f b)
         {
-            this.a = a; this.b = b;
+            this(a, b, null);
         }
         
         private boolean faces(Vector2f point)
@@ -150,13 +173,19 @@ public class DelaunayTriangulation
             Vector2f w = point.csub(a);
             return Util.signum(d.cross(w)) == 1;
         }
+        
+        private boolean matches(Vector2f a, Vector2f b)
+        {
+            return (this.a == a && this.b == b) ||
+                   (this.a == b && this.b == a);
+        }
     }
     
     public class Triangle
     {
         public Vector2f a, b, c;
-        private Triangle ab, bc, ca;
-        private final Vector2f circumcenter = new Vector2f();
+        public Triangle ab, bc, ca;
+        public final Vector2f circumcenter = new Vector2f();
         private float circumradiusSq;
         
         private Triangle(Vector2f a, Vector2f b, Vector2f c)
@@ -177,6 +206,24 @@ public class DelaunayTriangulation
             circumcenter.div(2f*(a.x*(b.y - c.y) + b.x*(c.y - a.y) + c.x*(a.y - b.y)));
             
             circumradiusSq = a.squareDist(circumcenter);
+        }
+        
+        private int getEdge(Edge edge)
+        {
+            if (edge.matches(a, b)) return 0;
+            if (edge.matches(b, c)) return 1;
+            if (edge.matches(c, a)) return 2;
+            throw new IllegalArgumentException();
+        }
+        
+        private void setNeighbor(Edge edge, Triangle triangle)
+        {
+            switch (getEdge(edge))
+            {
+                case 0: ab = triangle; return;
+                case 1: bc = triangle; return;
+                case 2: ca = triangle; return;
+            }
         }
     }
 }
