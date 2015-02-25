@@ -3,7 +3,11 @@ package com.samrj.devil.geo2d;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vector2f;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 
 /**
@@ -14,44 +18,143 @@ import java.util.Set;
 public class DelaunayTriangulation
 {
     private Set<Triangle> triangles = new HashSet<>();
+    private LinkedList<Edge> hull = new LinkedList<>();
     
     public DelaunayTriangulation(Vector2f... points)
     {
-        Arrays.sort(points, (Vector2f v1, Vector2f v2) -> Util.signum(v1.x - v2.x));
+        if (points.length < 3) return;
         
-        Edge topLeadingEdge;
+        /**
+         * Sort all points in ascending horizontal order. Vertically collinear
+         * points are sorted in descending vertical order.
+         */
+        Arrays.sort(points, (Vector2f v1, Vector2f v2) ->
         {
+            int horizontal = Util.signum(v1.x - v2.x);
+            if (horizontal == 0)
+            {
+                int vertical = Util.signum(v2.y - v1.y);
+                if (vertical == 0) throw new IllegalArgumentException();
+                return vertical;
+            }
+            return horizontal;
+        });
+        
+        //Count number of leading vertically colinear points
+        float leftBound = points[0].x;
+        int numColinear = 1;
+        int firstPoint;
+        while (numColinear < points.length && points[numColinear].x == leftBound) numColinear++;
+        
+        if (numColinear > 1)
+        {
+            //Generate vertical leading hull
+            for (int i=1; i<numColinear; i++)
+            {
+                Edge edge = new Edge(points[i-1], points[i]);
+                hull.addLast(edge);
+            }
+            
+            firstPoint = numColinear;
+        }
+        else
+        {
+            //If no collinear points, generate first triangle
             Vector2f p0 = points[0];
             Vector2f p1 = points[1];
-
-            topLeadingEdge = p0.y > p1.y ? new Edge(p0, p1) : new Edge(p1, p0);
+            Vector2f p2 = points[2];
+            
+            //Triangle and hull must have clockwise winding order
+            if (new Line(p0, p2).side(p1) == 1)
+            {
+                triangles.add(new Triangle(p0, p1, p2));
+                hull.add(new Edge(p0, p1));
+                hull.add(new Edge(p1, p2));
+                hull.add(new Edge(p2, p0));
+            }
+            else
+            {
+                triangles.add(new Triangle(p0, p2, p1));
+                hull.add(new Edge(p0, p2));
+                hull.add(new Edge(p2, p1));
+                hull.add(new Edge(p1, p0));
+            }
+            
+            firstPoint = 3;
         }
         
-        for (int i=2; i<points.length; i++)
+        //Start building triangles
+        for (int i=firstPoint; i<points.length; i++)
         {
-            Edge edge = topLeadingEdge;
             //Work our way down the top leading edge, generating triangles for
-            //all leading edges that face our point, and updating the leading
-            //edge as we go.
+            //all hull edges that face our point.
+            Vector2f point = points[i];
+            
+            //Any point added will always add two edges to the hull
+            Vector2f edgeStart = null, edgeEnd = null;
+            int edgeIndex = -1;
+            
+            boolean foundEdge = false;
+            ListIterator<Edge> it = hull.listIterator();
+            while (it.hasNext())
+            {
+                Edge edge = it.next();
+                
+                if (edge.faces(point))
+                {
+                    if (!foundEdge)
+                    {
+                        edgeStart = edge.a;
+                        foundEdge = true;
+                        edgeIndex = it.previousIndex();
+                    }
+                    
+                    Triangle triangle = new Triangle(edge.a, point, edge.b);
+                    triangles.add(triangle);
+                    it.remove();
+                    edgeEnd = edge.b;
+                }
+                else if (foundEdge) break; //We can terminate early because our hull is convex
+            }
+            
+            //Update the hull to include our new edges
+            hull.add(edgeIndex, new Edge(point, edgeEnd));
+            hull.add(edgeIndex, new Edge(edgeStart, point));
         }
         
         //Fix all illegal triangles by flipping edges
     }
     
-    private class Edge
+    public Set<Triangle> getTriangles()
     {
-        private Vector2f a, b;
-        private Edge next;
+        return Collections.unmodifiableSet(triangles);
+    }
+    
+    public List<Edge> getHull()
+    {
+        return Collections.unmodifiableList(hull);
+    }
+    
+    public class Edge
+    {
+        public Vector2f a, b;
         
         private Edge(Vector2f a, Vector2f b)
         {
             this.a = a; this.b = b;
         }
+        
+        private boolean faces(Vector2f point)
+        {
+            Vector2f d = b.csub(a);
+            Vector2f w = point.csub(a);
+            return Util.signum(d.cross(w)) == 1;
+        }
     }
     
-    private class Triangle
+    public class Triangle
     {
-        private Vector2f a, b, c;
+        public Vector2f a, b, c;
         private Triangle ab, bc, ca;
         private final Vector2f circumcenter = new Vector2f();
         private float circumradiusSq;
