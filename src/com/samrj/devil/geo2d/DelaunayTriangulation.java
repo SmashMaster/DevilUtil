@@ -93,8 +93,7 @@ public class DelaunayTriangulation
             Vector2f point = points[i];
             
             //Any point added will always add two edges to the hull
-            Vector2f leftEdge = null, rightEdge = null;
-            Triangle leftTriangle = null, rightTriangle = null;
+            Edge leftEdge = new Edge(null, point), rightEdge = new Edge(point, null);
             int edgeIndex = -1;
             
             Triangle prevTriangle = null;
@@ -121,25 +120,23 @@ public class DelaunayTriangulation
                     
                     if (!foundEdge)
                     {
-                        leftEdge = edge.a;
-                        leftTriangle = triangle;
+                        leftEdge.a = edge.a;
+                        leftEdge.inside = triangle;
                         foundEdge = true;
                         edgeIndex = it.previousIndex();
                     }
                     
                     it.remove();
-                    rightEdge = edge.b;
-                    rightTriangle = triangle;
+                    rightEdge.b = edge.b;
+                    rightEdge.inside = triangle;
                 }
                 else if (foundEdge) break; //We can terminate early because our hull is convex
             }
             
             //Update the hull to include our new edges
-            hull.add(edgeIndex, new Edge(point, rightEdge, rightTriangle));
-            hull.add(edgeIndex, new Edge(leftEdge, point, leftTriangle));
+            hull.add(edgeIndex, rightEdge);
+            hull.add(edgeIndex, leftEdge);
         }
-        
-        //Fix all illegal triangles by flipping edges
     }
     
     public Set<Triangle> getTriangles()
@@ -186,7 +183,7 @@ public class DelaunayTriangulation
         public Vector2f a, b, c;
         public Triangle ab, bc, ca;
         public final Vector2f circumcenter = new Vector2f();
-        private float circumradiusSq;
+        public float circumradiusSq;
         
         private Triangle(Vector2f a, Vector2f b, Vector2f c)
         {
@@ -213,7 +210,7 @@ public class DelaunayTriangulation
             if (edge.matches(a, b)) return 0;
             if (edge.matches(b, c)) return 1;
             if (edge.matches(c, a)) return 2;
-            throw new IllegalArgumentException();
+            return -1;
         }
         
         private void setNeighbor(Edge edge, Triangle triangle)
