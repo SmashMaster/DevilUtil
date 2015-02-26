@@ -3,6 +3,7 @@ package com.samrj.devil.geo2d;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vector2f;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -184,6 +185,11 @@ public class DelaunayTriangulation
 //            System.out.println("Number of points triangulated: " + points.length);
 //            System.out.println("Number of triangles made: " + triangles.size());
 //        }
+    }
+    
+    public DelaunayTriangulation(Collection<Vector2f> collection)
+    {
+        this(collection.toArray(new Vector2f[collection.size()]));
     }
     
     /**
