@@ -103,6 +103,9 @@ public class DelaunayTriangulation
             Edge leftEdge = new Edge(null, point), rightEdge = new Edge(point, null);
             int edgeIndex = -1;
             
+            Triangle prevTriangle = null;
+            List<Edge> deletedEdges = new LinkedList<>();
+            
             boolean foundEdge = false;
             ListIterator<Edge> it = hull.listIterator();
             while (it.hasNext())
@@ -114,11 +117,19 @@ public class DelaunayTriangulation
                     triangles.add(triangle);
                     
                     //Maintain references
+                    if (edge.inside != null) edge.inside.setNeighbor(edge, triangle);
+                    triangle.neighbors[2] = edge.inside;
+                    if (prevTriangle != null)
+                    {
+                        prevTriangle.neighbors[1] = triangle;
+                        triangle.neighbors[0] = prevTriangle;
+                    }
+                    prevTriangle = triangle;
+                    
                     if (!foundEdge)
                     {
                         leftEdge.a = edge.a;
                         leftEdge.inside = triangle;
-                        leftEdge.add();
                         foundEdge = true;
                         edgeIndex = it.previousIndex();
                     }
@@ -126,44 +137,75 @@ public class DelaunayTriangulation
                     it.remove();
                     rightEdge.b = edge.b;
                     rightEdge.inside = triangle;
-                    rightEdge.add();
                     
-                    //Perform a Lawson flip if our edge does not meet the Delaunay criterion
-                    validate(edge, triangle, point);
+                    edge.outside = triangle;
+                    edge.remove();
+                    deletedEdges.add(edge);
                 }
                 else if (foundEdge) break; //We can terminate early because our hull is convex
             }
             
+            leftEdge.add();
+            rightEdge.add();
+            
             //Update the hull to include our new edges
             hull.add(edgeIndex, rightEdge);
             hull.add(edgeIndex, leftEdge);
+            
+            for (Edge edge : deletedEdges) validate(edge.inside, edge.outside);
+        }
+        
+        //Now let's BRUTE FORCE TEST this motherfucker to make sure we're solid.
+        //Get rid of this when this is fixed!!!
+        for (Vector2f point : points) for (Triangle triangle : triangles)
+        {
+            float dsq = Util.sqrt(triangle.circumcenter.squareDist(point)) - Util.sqrt(triangle.circumradiusSq);
+            if (dsq < -1f) throw new RuntimeException("Non-Delaunay triangulation. Error: " + -dsq);
         }
     }
     
-    private void validate(Edge edge, Triangle outside, Vector2f point)
+    private void validate(Triangle inside, Triangle outside)
     {
-        Triangle inside = edge.inside;
-        edge.remove();
-        if (inside.circumcenter.squareDist(point) < inside.circumradiusSq)
-            flip(edge, inside, outside);
-    }
-    
-    private void flip(Edge edge, Triangle inside, Triangle outside)
-    {
-        Vector2f a = inside.adjacentPoint(edge);
-        Vector2f b = edge.a;
-        Vector2f c = outside.adjacentPoint(edge);
-        Vector2f d = edge.b;
+        int outsideIndex = outside.sharedEdgeIndex(inside);
+        if (outsideIndex == -1) return;
         
-        Edge ab = inside.getEdge(a, b);
-        Edge bc = outside.getEdge(b, c);
-        Edge cd = outside.getEdge(c, d);
-        Edge da = inside.getEdge(d, a);
+        Vector2f c = outside.adjacentPoint(outsideIndex);
         
-        inside.set(a, b, c);
-        inside.setEdges(ab, bc, null);
-        outside.set(a, c, d);
-        outside.setEdges(null, cd, da);
+        if (inside.circumcenter.squareDist(c) < inside.circumradiusSq)
+        {
+            int insideIndex = inside.sharedEdgeIndex(outside);
+            
+            Vector2f a = inside.adjacentPoint(insideIndex);
+            Vector2f b = inside.leftPoint(insideIndex);
+            Vector2f d = outside.leftPoint(outsideIndex);
+
+            Edge abe = inside.getEdge(a, b);
+            Edge bce = outside.getEdge(b, c);
+            Edge cde = outside.getEdge(c, d);
+            Edge dae = inside.getEdge(d, a);
+
+            Triangle abt = inside.getNeighbor(a, b);
+            Triangle bct = outside.getNeighbor(b, c);
+            Triangle cdt = outside.getNeighbor(c, d);
+            Triangle dat = inside.getNeighbor(d, a);
+            
+            inside.set(a, b, c);
+            inside.setEdges(abe, bce, null);
+            inside.setNeighbors(abt, bct, outside);
+            outside.set(a, c, d);
+            outside.setEdges(null, cde, dae);
+            outside.setNeighbors(inside, cdt, dat);
+            
+            if (abt != null) abt.setNeighbor(a, b, inside);
+            if (bct != null) bct.setNeighbor(b, c, inside);
+            if (cdt != null) cdt.setNeighbor(c, d, outside);
+            if (dat != null) dat.setNeighbor(d, a, outside);
+            
+            if (abt != null) validate(abt, inside);
+            if (bct != null) validate(inside, bct);
+            if (cdt != null) validate(outside, cdt);
+            if (dat != null) validate(dat, outside);
+        }
     }
     
     public Set<Triangle> getTriangles()
@@ -179,7 +221,7 @@ public class DelaunayTriangulation
     public class Edge
     {
         public Vector2f a, b;
-        public Triangle inside;
+        public Triangle inside, outside;
         
         private Edge(Vector2f a, Vector2f b, Triangle inside)
         {
@@ -213,6 +255,7 @@ public class DelaunayTriangulation
     {
         public Vector2f a, b, c;
         private final Edge[] edges = new Edge[3];
+        public final Triangle[] neighbors = new Triangle[3];
         public final Vector2f circumcenter = new Vector2f();
         public float circumradiusSq;
         
@@ -245,6 +288,13 @@ public class DelaunayTriangulation
             for (Edge edge : edges) if (edge != null) edge.inside = this;
         }
         
+        private void setNeighbors(Triangle ab, Triangle bc, Triangle ca)
+        {
+            neighbors[0] = ab;
+            neighbors[1] = bc;
+            neighbors[2] = ca;
+        }
+        
         private int edgeIndex(Vector2f a0, Vector2f b0)
         {
             if (matches(a0, b0, a, b)) return 0;
@@ -269,16 +319,52 @@ public class DelaunayTriangulation
             edges[edgeIndex(edge)] = edge;
         }
         
-        private Edge getEdge(Vector2f a, Vector2f b)
+        private void setNeighbor(Edge edge, Triangle triangle)
         {
-            if (a == null || b == null) throw new NullPointerException();
-            int index = edgeIndex(a, b);
+            neighbors[edgeIndex(edge)] = triangle;
+        }
+        
+        private Edge getEdge(Vector2f a0, Vector2f b0)
+        {
+            if (a0 == null || b0 == null) throw new NullPointerException();
+            int index = edgeIndex(a0, b0);
             return index == -1 ? null : edges[index];
         }
         
-        private Vector2f adjacentPoint(Edge edge)
+        private Triangle getNeighbor(Vector2f a0, Vector2f b0)
         {
-            switch (edgeIndex(edge))
+            if (a0 == null || b0 == null) throw new NullPointerException();
+            int index = edgeIndex(a0, b0);
+            return index == -1 ? null : neighbors[index];
+        }
+        
+        private void setNeighbor(Vector2f a0, Vector2f b0, Triangle triangle)
+        {
+            if (a0 == null || b0 == null) throw new NullPointerException();
+            int index = edgeIndex(a0, b0);
+            neighbors[index] = triangle;
+        }
+        
+        private int sharedEdgeIndex(Triangle triangle)
+        {
+            for (int i=0; i<3; i++) if (triangle == neighbors[i]) return i;
+            return -1;
+        }
+        
+        private Vector2f leftPoint(int index)
+        {
+            switch (index)
+            {
+                case 0: return a;
+                case 1: return b;
+                case 2: return c;
+            }
+            throw new IllegalArgumentException();
+        }
+        
+        private Vector2f adjacentPoint(int index)
+        {
+            switch (index)
             {
                 case 0: return c;
                 case 1: return a;
