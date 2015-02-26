@@ -92,6 +92,8 @@ public class DelaunayTriangulation
             firstPoint = 3;
         }
         
+        List<Edge> badEdges = new LinkedList<>();
+        
         //Start building triangles
         for (int i=firstPoint; i<points.length; i++)
         {
@@ -104,7 +106,6 @@ public class DelaunayTriangulation
             int edgeIndex = -1;
             
             Triangle prevTriangle = null;
-            List<Edge> deletedEdges = new LinkedList<>();
             
             boolean foundEdge = false;
             ListIterator<Edge> it = hull.listIterator();
@@ -117,10 +118,21 @@ public class DelaunayTriangulation
                     triangles.add(triangle);
                     
                     //Maintain references
-                    if (edge.inside != null) edge.inside.setNeighbor(edge, triangle);
+                    if (edge.inside == null) edge.inside = triangle;
+                    else
+                    {
+                        edge.inside.setNeighbor(edge, triangle);
+                        edge.outside = triangle;
+                    }
+                    triangle.edges[2] = edge;
                     triangle.neighbors[2] = edge.inside;
                     if (prevTriangle != null)
                     {
+                        Edge splitEdge = new Edge(triangle.a, triangle.b);
+                        splitEdge.inside = prevTriangle;
+                        splitEdge.outside = triangle;
+                        splitEdge.add();
+                        badEdges.add(splitEdge);
                         prevTriangle.neighbors[1] = triangle;
                         triangle.neighbors[0] = prevTriangle;
                     }
@@ -130,6 +142,7 @@ public class DelaunayTriangulation
                     {
                         leftEdge.a = edge.a;
                         leftEdge.inside = triangle;
+                        leftEdge.add();
                         foundEdge = true;
                         edgeIndex = it.previousIndex();
                     }
@@ -138,22 +151,19 @@ public class DelaunayTriangulation
                     rightEdge.b = edge.b;
                     rightEdge.inside = triangle;
                     
-                    edge.outside = triangle;
-                    edge.remove();
-                    deletedEdges.add(edge);
+                    badEdges.add(edge);
                 }
                 else if (foundEdge) break; //We can terminate early because our hull is convex
             }
             
-            leftEdge.add();
             rightEdge.add();
             
             //Update the hull to include our new edges
             hull.add(edgeIndex, rightEdge);
             hull.add(edgeIndex, leftEdge);
-            
-            for (Edge edge : deletedEdges) validate(edge.inside, edge.outside);
         }
+        
+        for (int i=0; i<1000; i++) for (Edge edge : badEdges) validate(edge);
         
         //Now let's BRUTE FORCE TEST this motherfucker to make sure we're solid.
         //Get rid of this when this is fixed!!!
@@ -164,20 +174,16 @@ public class DelaunayTriangulation
         }
     }
     
-    private void validate(Triangle inside, Triangle outside)
+    private void validate(Edge edge)
     {
-        int outsideIndex = outside.sharedEdgeIndex(inside);
-        if (outsideIndex == -1) return;
-        
-        Vector2f c = outside.adjacentPoint(outsideIndex);
+        Triangle inside = edge.inside, outside = edge.outside;
+        Vector2f c = outside.adjacentPoint(edge);
         
         if (inside.circumcenter.squareDist(c) < inside.circumradiusSq)
         {
-            int insideIndex = inside.sharedEdgeIndex(outside);
-            
-            Vector2f a = inside.adjacentPoint(insideIndex);
-            Vector2f b = inside.leftPoint(insideIndex);
-            Vector2f d = outside.leftPoint(outsideIndex);
+            Vector2f a = inside.adjacentPoint(edge);
+            Vector2f b = inside.leftPoint(edge);
+            Vector2f d = outside.leftPoint(edge);
 
             Edge abe = inside.getEdge(a, b);
             Edge bce = outside.getEdge(b, c);
@@ -190,21 +196,24 @@ public class DelaunayTriangulation
             Triangle dat = inside.getNeighbor(d, a);
             
             inside.set(a, b, c);
-            inside.setEdges(abe, bce, null);
+            inside.setEdges(abe, bce, edge);
             inside.setNeighbors(abt, bct, outside);
             outside.set(a, c, d);
-            outside.setEdges(null, cde, dae);
+            outside.setEdges(edge, cde, dae);
             outside.setNeighbors(inside, cdt, dat);
+            
+            abe.inside = inside; abe.outside = abt;
+            bce.inside = inside; bce.outside = bct;
+            cde.inside = outside; cde.outside = cdt;
+            dae.inside = outside; dae.outside = dat;
             
             if (abt != null) abt.setNeighbor(a, b, inside);
             if (bct != null) bct.setNeighbor(b, c, inside);
             if (cdt != null) cdt.setNeighbor(c, d, outside);
             if (dat != null) dat.setNeighbor(d, a, outside);
             
-            if (abt != null) validate(abt, inside);
-            if (bct != null) validate(inside, bct);
-            if (cdt != null) validate(outside, cdt);
-            if (dat != null) validate(dat, outside);
+            edge.a = a;
+            edge.b = c;
         }
     }
     
@@ -242,19 +251,15 @@ public class DelaunayTriangulation
         
         private void add()
         {
-            inside.addEdge(this);
-        }
-        
-        private void remove()
-        {
-            inside.removeEdge(this);
+            if (inside != null) inside.addEdge(this);
+            if (outside != null) outside.addEdge(this);
         }
     }
     
     public class Triangle
     {
         public Vector2f a, b, c;
-        private final Edge[] edges = new Edge[3];
+        public final Edge[] edges = new Edge[3];
         public final Triangle[] neighbors = new Triangle[3];
         public final Vector2f circumcenter = new Vector2f();
         public float circumradiusSq;
@@ -284,8 +289,6 @@ public class DelaunayTriangulation
             edges[0] = ab;
             edges[1] = bc;
             edges[2] = ca;
-            
-            for (Edge edge : edges) if (edge != null) edge.inside = this;
         }
         
         private void setNeighbors(Triangle ab, Triangle bc, Triangle ca)
@@ -307,11 +310,6 @@ public class DelaunayTriangulation
         {
             if (edge == null) throw new NullPointerException();
             return edgeIndex(edge.a, edge.b);
-        }
-        
-        private void removeEdge(Edge edge)
-        {
-            edges[edgeIndex(edge)] = null;
         }
         
         private void addEdge(Edge edge)
@@ -341,19 +339,12 @@ public class DelaunayTriangulation
         private void setNeighbor(Vector2f a0, Vector2f b0, Triangle triangle)
         {
             if (a0 == null || b0 == null) throw new NullPointerException();
-            int index = edgeIndex(a0, b0);
-            neighbors[index] = triangle;
+            neighbors[edgeIndex(a0, b0)] = triangle;
         }
         
-        private int sharedEdgeIndex(Triangle triangle)
+        private Vector2f leftPoint(Edge edge)
         {
-            for (int i=0; i<3; i++) if (triangle == neighbors[i]) return i;
-            return -1;
-        }
-        
-        private Vector2f leftPoint(int index)
-        {
-            switch (index)
+            switch (edgeIndex(edge))
             {
                 case 0: return a;
                 case 1: return b;
@@ -362,9 +353,9 @@ public class DelaunayTriangulation
             throw new IllegalArgumentException();
         }
         
-        private Vector2f adjacentPoint(int index)
+        private Vector2f adjacentPoint(Edge edge)
         {
-            switch (index)
+            switch (edgeIndex(edge))
             {
                 case 0: return c;
                 case 1: return a;
