@@ -1,11 +1,12 @@
 package com.samrj.devil.util;
 
+import com.samrj.devil.math.Util;
 import java.util.Arrays;
 
 /**
  * A map between integers and objects based on a hash table with linked list
- * separate chaining. All integers are allowed as keys. Null is not allowed as
- * a value.
+ * separate chaining. All integers are allowed as keys. Null is the default
+ * value for all keys.
  * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2014 Samuel Johnson
@@ -13,15 +14,36 @@ import java.util.Arrays;
  */
 public class SparseArray<T>
 {
-    private Entry[] entries;
+    private static final int triNumbers[] = {1, 3, 6, 10, 15, 21, 28, 36,
+                                             45, 55, 66, 78, 91, 105, 120, 136};
+    
+    /**
+     * This sentinel object indicates that there may be a key collision at the
+     * given index.
+     */
+    private static final Object SENTINEL = new Object();
+    
+    private static int triNumber(int n)
+    {
+        if (n < triNumbers.length) return triNumbers[n];
+        n++;
+        return n*(n+1) >>> 2;
+    }
+    
+    private final float loadFactor;
+    private int[] keys;
+    private Object[] entries;
+    private int mask;
     private int size = 0;
-    private float loadFactor;
     
     public SparseArray(int capacity, float loadFactor)
     {
         if (capacity <= 0 || loadFactor <= 0f || loadFactor >= 1f)
             throw new IllegalArgumentException();
-        entries = new Entry[capacity];
+        if (!Util.isPower2(capacity)) capacity = Util.nextPower2(capacity);
+        entries = new Object[capacity];
+        keys = new int[capacity];
+        mask = capacity - 1;
         this.loadFactor = loadFactor;
     }
     
@@ -50,47 +72,75 @@ public class SparseArray<T>
         return (float)size/entries.length;
     }
     
-    private int index(int key)
+    private boolean isEmpty(int i)
     {
-        int t = key % entries.length;
-        return t<0 ? t+entries.length : t;
+        Object entry = entries[i];
+        return entry == null || entry == SENTINEL;
+    }
+    
+    private int search(int key)
+    {
+        int i = key;
+        int numSearched = 0;
+        while (numSearched < entries.length)
+        {
+            i &= mask;
+            Object entry = entries[i];
+            if (entry == null || keys[i] == key) return i;
+            i += triNumber(numSearched++);
+        }
+        throw new RuntimeException("Sparse array full?");
+    }
+    
+    private void grow()
+    {
+        Object[] oldEntries = entries;
+        int[] oldKeys = keys;
+        entries = new Object[oldEntries.length << 1];
+        keys = new int[entries.length];
+        mask = entries.length - 1;
+        
+        for (int i=0; i<oldEntries.length; i++)
+        {
+            Object entry = oldEntries[i];
+            if (entry != null && entry != SENTINEL)
+            {
+                int key = oldKeys[i];
+                int index = search(key);
+                keys[index] = key;
+                entries[index] = entry;
+            }
+        }
+    }
+    
+    public T get(int key)
+    {
+        int i = search(key);
+        if (keys[i] != key || isEmpty(i)) return null;
+        return (T)entries[i];
     }
     
     public void put(int key, T value)
     {
-        if (value == null) throw new NullPointerException();
-        
-        int index = index(key);
-        if (entries[index] == null)
+        if (value == null)
         {
-            entries[index] = new Entry(key, value);
-            size++;
+            remove(key);
+            return;
         }
-        else if (entries[index].put(key, value)) size++;
+        
+        int i = search(key);
+        if (isEmpty(i)) size++;
+        keys[i] = key;
+        entries[i] = value;
         
         if (load() >= loadFactor) grow();
     }
     
-    private void put(Entry entry)
-    {
-        int index = index(entry.key);
-        if (entries[index]  == null) entries[index] = entry;
-        else entries[index].put(entry);
-    }
-    
     public void remove(int key)
     {
-        int index = index(key);
-        Entry entry = entries[index];
-        if (entry != null)
-        {
-            if (entry.key == key)
-            {
-                entries[index] = entry.next;
-                size--;
-            }
-            else if (entry.remove(key)) size--;
-        }
+        int i = search(key);
+        if (!isEmpty(i)) size--;
+        entries[i] = SENTINEL;
     }
     
     public void clear()
@@ -99,83 +149,18 @@ public class SparseArray<T>
         size = 0;
     }
     
-    public T get(int key)
-    {
-        Entry entry = entries[index(key)];
-        if (entry == null) return null;
-        return (T)entry.get(key);
-    }
-    
-    private void grow()
-    {
-        Entry[] oldEntries = entries;
-        entries = new Entry[oldEntries.length << 1];
-        
-        for (Entry entry : oldEntries) while (entry != null)
-        {
-            entry.prepareForGrow();
-            put(entry);
-            entry = entry.oldNext;
-        }
-    }
-    
-    private static class Entry
-    {
-        private int key;
-        private Object value;
-        private Entry oldNext;
-        private Entry next;
-        
-        private Entry(int key, Object value)
-        {
-            this.key = key;
-            this.value = value;
-        }
-        
-        private boolean put(int key, Object value)
-        {
-            if (this.key == key)
-            {
-                this.value = value;
-                return false;
-            }
-            else if (next == null)
-            {
-                next = new Entry(key, value);
-                return true;
-            }
-            else return next.put(key, value);
-        }
-        
-        private void put(Entry entry)
-        {
-            if (next == null) next = entry;
-            else next.put(entry);
-        }
-        
-        private Object get(int key)
-        {
-            if (this.key == key) return value;
-            else if (next == null) return null;
-            else return next.get(key);
-        }
-        
-        private boolean remove(int key)
-        {
-            if (next == null) return false;
-            if (next.key == key)
-            {
-                next = next.next;
-                return true;
-            }
-            return next.remove(key);
-        }
-        
-        private void prepareForGrow()
-        {
-            oldNext = next;
-            next = null;
-            if (oldNext != null) oldNext.prepareForGrow();
-        }
-    }
+//    public void debugPrint(PrintStream stream)
+//    {
+//        Object firstEntry = entries[0];
+//        if (firstEntry == SENTINEL) stream.print("[sentinel");
+//        else stream.print("[" + entries[0]);
+//        
+//        for (int i=1; i<entries.length; i++)
+//        {
+//            Object entry = entries[i];
+//            if (entry == SENTINEL) stream.print(", sentinel");
+//            else stream.print(", " + entry);
+//        }
+//        stream.println("]");
+//    }
 }

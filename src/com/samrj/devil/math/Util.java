@@ -588,6 +588,23 @@ public class Util
         return (n & (n - 1)) == 0;
     }
     
+    /**
+     * @param n Any positive integer.
+     * @return The smallest power of 2 that is greater than n.
+     */
+    public static int nextPower2(int n)
+    {
+        if (n <= 0) return 1;
+        n--;
+        n |= n >> 1;
+        n |= n >> 2;
+        n |= n >> 4;
+        n |= n >> 8;
+        n |= n >> 16;
+        n++;
+        return n;
+    }
+    
     public static int indexMax(int... values)
     {
         if (values.length == 0) throw new IllegalArgumentException();
