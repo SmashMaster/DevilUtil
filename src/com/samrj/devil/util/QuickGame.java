@@ -38,7 +38,7 @@ public abstract class QuickGame implements Element
         this(resX, resY, null);
     }
     
-    public abstract void init();
+    public abstract void init() throws Exception;
     @Override public abstract void in(MouseEvent in);
     @Override public abstract void in(KeyEvent in);
     public abstract void step(float dt);
@@ -51,7 +51,14 @@ public abstract class QuickGame implements Element
         Display.setVSyncEnabled(false);
         Display.create(pixelFormat, contextAttribs);
         
-        init();
+        try
+        {
+            init();
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
         
         running = true;
         while (running)
