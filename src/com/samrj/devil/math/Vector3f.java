@@ -198,6 +198,14 @@ public final class Vector3f implements Bufferable<FloatBuffer>, NumState<Vector3
         return set(-x, -y, -z);
     }
     
+    /**
+     * @return The element-wise reciprocal of this vector.
+     */
+    public Vector3f reciprocal()
+    {
+        return set(1.0f/x, 1.0f/y, 1.0f/z);
+    }
+    
     public Vector3f cross(Vector3f v)
     {
         return set(y*v.z - z*v.y,
@@ -244,6 +252,7 @@ public final class Vector3f implements Bufferable<FloatBuffer>, NumState<Vector3
     public Vector3f cavg(Vector3f v) {return clone().avg(v);}
     public Vector3f cnormalize()     {return clone().normalize();}
     public Vector3f cnegate()        {return clone().negate();}
+    public Vector3f creciprocal()        {return clone().reciprocal();}
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Accessor Methods">
     public float squareLength()
