@@ -1,11 +1,12 @@
 package com.samrj.devil.graphics;
 
-import com.samrj.devil.buffer.FloatBuffer;
-import com.samrj.devil.buffer.IntBuffer;
 import static com.samrj.devil.math.Util.PrimType.FLOAT;
 import static com.samrj.devil.math.Util.PrimType.INT;
 import static com.samrj.devil.math.Util.sizeof;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
@@ -54,8 +55,8 @@ public class GLVertexPool
         
         this.vertexSize = vertexSize;
         
-        vertices = new FloatBuffer(vertCapacity*vertexSize);
-        indices = new IntBuffer(indCapacity);
+        vertices = BufferUtils.createFloatBuffer(vertCapacity*vertexSize);
+        indices = BufferUtils.createIntBuffer(indCapacity);
         
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertices.capacity()*sizeof(FLOAT), usage);
@@ -96,11 +97,12 @@ public class GLVertexPool
     {
         if (data.length % vertexSize != 0) throw new IllegalArgumentException();
         
-        int oldSize = vertices.size();
+        int oldSize = vertices.limit();
         vertices.put(data);
+        vertices.position(oldSize);
         
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
-        GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, oldSize*sizeof(FLOAT), vertices.get(oldSize, data.length));
+        GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, oldSize*sizeof(FLOAT), vertices);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         
         return oldSize/vertexSize;
@@ -108,21 +110,22 @@ public class GLVertexPool
     
     public int getNumVerts()
     {
-        return vertices.size()/vertexSize;
+        return vertices.limit()/vertexSize;
     }
     
     public int getNumIndices()
     {
-        return indices.size();
+        return indices.limit();
     }
     
     public void addIndices(int... data)
     {
-        int oldSize = indices.size();
+        int oldSize = indices.limit();
         indices.put(data);
+        indices.position(oldSize);
         
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ibo);
-        GL15.glBufferSubData(GL15.GL_ELEMENT_ARRAY_BUFFER, oldSize*sizeof(INT), indices.get(oldSize, data.length));
+        GL15.glBufferSubData(GL15.GL_ELEMENT_ARRAY_BUFFER, oldSize*sizeof(INT), indices);
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
     }
     
@@ -165,7 +168,7 @@ public class GLVertexPool
                                        stride, attrib.offset);
         }
         
-        GL11.glDrawElements(polyMode, indices.size(), GL11.GL_UNSIGNED_INT, 0);
+        GL11.glDrawElements(polyMode, indices.limit(), GL11.GL_UNSIGNED_INT, 0);
         
         for (Attribute attrib : attribs) GL20.glDisableVertexAttribArray(attrib.loc);
         

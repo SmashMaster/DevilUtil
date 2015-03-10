@@ -1,8 +1,7 @@
 package com.samrj.devil.graphics;
 
-import com.samrj.devil.buffer.IntBuffer;
-import static com.samrj.devil.buffer.PublicBuffers.fbuffer;
 import static com.samrj.devil.buffer.PublicBuffers.ibuffer;
+import static com.samrj.devil.buffer.PublicBuffers.fbuffer;
 import com.samrj.devil.math.Matrix2f;
 import com.samrj.devil.math.Matrix3f;
 import com.samrj.devil.math.Matrix4f;
@@ -30,7 +29,10 @@ public class GLShader
         
         java.nio.IntBuffer shadBuf = BufferUtils.createIntBuffer(2);
         shadBuf.limit(2); shadBuf.position(0);
-        GL20.glGetAttachedShaders(id, new IntBuffer(1).write(1), shadBuf);
+        ibuffer.clear();
+        ibuffer.put(1);
+        ibuffer.rewind();
+        GL20.glGetAttachedShaders(id, ibuffer, shadBuf);
         
         int vertid = shadBuf.get(0);
         int fragid = shadBuf.get(1);
@@ -201,10 +203,10 @@ public class GLShader
     {
         switch (elementSize)
         {
-            case 1: GL20.glUniform1(loc, ibuffer.get()); break;
-            case 2: GL20.glUniform2(loc, ibuffer.get()); break;
-            case 3: GL20.glUniform3(loc, ibuffer.get()); break;
-            case 4: GL20.glUniform4(loc, ibuffer.get()); break;
+            case 1: GL20.glUniform1(loc, ibuffer); break;
+            case 2: GL20.glUniform2(loc, ibuffer); break;
+            case 3: GL20.glUniform3(loc, ibuffer); break;
+            case 4: GL20.glUniform4(loc, ibuffer); break;
             default: throw new IllegalArgumentException();
         }
     }
@@ -213,10 +215,10 @@ public class GLShader
     {
         switch (elementSize)
         {
-            case 1: GL20.glUniform1(loc, fbuffer.get()); break;
-            case 2: GL20.glUniform2(loc, fbuffer.get()); break;
-            case 3: GL20.glUniform3(loc, fbuffer.get()); break;
-            case 4: GL20.glUniform4(loc, fbuffer.get()); break;
+            case 1: GL20.glUniform1(loc, fbuffer); break;
+            case 2: GL20.glUniform2(loc, fbuffer); break;
+            case 3: GL20.glUniform3(loc, fbuffer); break;
+            case 4: GL20.glUniform4(loc, fbuffer); break;
             default: throw new IllegalArgumentException();
         }
     }
@@ -225,6 +227,7 @@ public class GLShader
     {
         ibuffer.clear();
         ibuffer.put(data);
+        ibuffer.rewind();
         glUniformi(getUniLoc(name), elementSize);
     }
     
@@ -237,6 +240,7 @@ public class GLShader
     {
         ibuffer.clear();
         for (boolean b : data) ibuffer.put(b ? 1 : 0);
+        ibuffer.rewind();
         glUniformi(getUniLoc(name), 1);
     }
     
@@ -244,6 +248,7 @@ public class GLShader
     {
         fbuffer.clear();
         fbuffer.put(data);
+        fbuffer.rewind();
         glUniformf(getUniLoc(name), elementSize);
     }
     
@@ -268,21 +273,24 @@ public class GLShader
     {
         fbuffer.clear();
         m.putIn(fbuffer);
-        GL20.glUniformMatrix2(getUniLoc(name), false, fbuffer.get());
+        fbuffer.rewind();
+        GL20.glUniformMatrix2(getUniLoc(name), false, fbuffer);
     }
     
     public void glUniform(String name, Matrix3f m)
     {
         fbuffer.clear();
         m.putIn(fbuffer);
-        GL20.glUniformMatrix3(getUniLoc(name), false, fbuffer.get());
+        fbuffer.rewind();
+        GL20.glUniformMatrix3(getUniLoc(name), false, fbuffer);
     }
     
     public void glUniform(String name, Matrix4f m)
     {
         fbuffer.clear();
         m.putIn(fbuffer);
-        GL20.glUniformMatrix4(getUniLoc(name), false, fbuffer.get());
+        fbuffer.rewind();
+        GL20.glUniformMatrix4(getUniLoc(name), false, fbuffer);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Attribute Methods">

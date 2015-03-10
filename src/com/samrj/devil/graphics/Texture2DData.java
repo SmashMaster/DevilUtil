@@ -1,7 +1,5 @@
 package com.samrj.devil.graphics;
 
-import com.samrj.devil.buffer.Buffer;
-import com.samrj.devil.buffer.ByteBuffer;
 import com.samrj.devil.res.FileRes;
 import com.samrj.devil.res.Resource;
 import java.awt.image.BufferedImage;
@@ -9,6 +7,7 @@ import java.awt.image.Raster;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import javax.imageio.ImageIO;
 
 /**
@@ -24,22 +23,21 @@ public class Texture2DData
     private ByteBuffer buffer;
     
     // <editor-fold defaultstate="collapsed" desc="Constructors">
-    public Texture2DData(int width, int height, int format, Buffer b)
-    {
-        this.width = width;
-        this.height = height;
-        this.format = format;
-        baseFormat = TexUtil.getBaseFormat(format);
-        bands = TexUtil.getBands(baseFormat);
-        if (bands == -1) throw new IllegalArgumentException("Illegal format specified.");
-        
-        int elemSize = b.getType().size;
-        int length = width*height*bands*elemSize;
-        if (b.size()*elemSize != length) throw new IllegalArgumentException("Illegal input buffer size " + b.size() + ", expected size " + length/elemSize);
-        buffer = new ByteBuffer(length);
-        b.get();
-        buffer.put(b.byteBuffer());
-    }
+//    public Texture2DData(int width, int height, int format, Buffer b)
+//    {
+//        this.width = width;
+//        this.height = height;
+//        this.format = format;
+//        baseFormat = TexUtil.getBaseFormat(format);
+//        bands = TexUtil.getBands(baseFormat);
+//        if (bands == -1) throw new IllegalArgumentException("Illegal format specified.");
+//        
+//        int elemSize = b.getType().size;
+//        int length = width*height*bands*elemSize;
+//        if (b.size()*elemSize != length) throw new IllegalArgumentException("Illegal input buffer size " + b.size() + ", expected size " + length/elemSize);
+//        buffer = ByteBuffer.allocateDirect(length);
+//        buffer.put(b.byteBuffer());
+//    }
     
     public Texture2DData(int width, int height, int format)
     {
@@ -51,7 +49,7 @@ public class Texture2DData
         if (bands == -1) throw new IllegalArgumentException("Illegal format specified.");
         
         int length = width*height*bands;
-        buffer = new ByteBuffer(length);
+        buffer = ByteBuffer.allocateDirect(length);
         buffer.put(new byte[length]);
     }
     
@@ -139,7 +137,7 @@ public class Texture2DData
     
     private void load(Raster raster)
     {
-        buffer = new ByteBuffer(width*height*bands);
+        buffer = ByteBuffer.allocateDirect(width*height*bands);
         
         for (int y=height-1; y>=0; y--)
             for (int x=0; x<width; x++)
@@ -152,9 +150,10 @@ public class Texture2DData
      * 
      * @return the java.nio buffer associated with this RasterBuffer.
      */
-    public java.nio.ByteBuffer read()
+    public ByteBuffer read()
     {
-        return buffer.get();
+        buffer.rewind();
+        return buffer;
     }
     
     public GLTexture2D makeTexture2D(Texture2DParams params)

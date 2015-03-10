@@ -1,9 +1,9 @@
 package com.samrj.devil.math;
 
 import com.samrj.devil.buffer.Bufferable;
-import com.samrj.devil.buffer.FloatBuffer;
 import static com.samrj.devil.buffer.PublicBuffers.fbuffer;
 import com.samrj.devil.math.Util.Axis;
+import java.nio.FloatBuffer;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -284,11 +284,11 @@ public final class Matrix4f implements Bufferable<FloatBuffer>, Matrix<Matrix4f>
     
     public Matrix4f set(FloatBuffer buf)
     {
-        java.nio.FloatBuffer fb = buf.get();
-        set(fb.get(), fb.get(), fb.get(), fb.get(),
-            fb.get(), fb.get(), fb.get(), fb.get(),
-            fb.get(), fb.get(), fb.get(), fb.get(),
-            fb.get(), fb.get(), fb.get(), fb.get());
+        buf.rewind();
+        set(buf.get(), buf.get(), buf.get(), buf.get(),
+            buf.get(), buf.get(), buf.get(), buf.get(),
+            buf.get(), buf.get(), buf.get(), buf.get(),
+            buf.get(), buf.get(), buf.get(), buf.get());
         return this;
     }
     
@@ -300,7 +300,7 @@ public final class Matrix4f implements Bufferable<FloatBuffer>, Matrix<Matrix4f>
             case GL11.GL_PROJECTION: mode = GL11.GL_PROJECTION_MATRIX; break;
         }
         fbuffer.clear();
-        GL11.glGetFloat(mode, fbuffer.write(16));
+        GL11.glGetFloat(mode, fbuffer);
         return set(fbuffer).transpose();
     }
     
@@ -462,7 +462,8 @@ public final class Matrix4f implements Bufferable<FloatBuffer>, Matrix<Matrix4f>
         GL11.glMatrixMode(mode);
         fbuffer.clear();
         clone().transpose().putIn(fbuffer);
-        GL11.glLoadMatrix(fbuffer.get());
+        fbuffer.rewind();
+        GL11.glLoadMatrix(fbuffer);
     }
     
     public void glMult(int mode)
@@ -470,7 +471,8 @@ public final class Matrix4f implements Bufferable<FloatBuffer>, Matrix<Matrix4f>
         GL11.glMatrixMode(mode);
         fbuffer.clear();
         clone().transpose().putIn(fbuffer);
-        GL11.glMultMatrix(fbuffer.get());
+        fbuffer.rewind();
+        GL11.glMultMatrix(fbuffer);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Overriden Object Methods">
@@ -493,10 +495,15 @@ public final class Matrix4f implements Bufferable<FloatBuffer>, Matrix<Matrix4f>
     @Override
     public void putIn(FloatBuffer buf)
     {
-        buf.put(a, b, c, d,
-                e, f, g, h,
-                i, j, k, l,
-                m, n, o, p);
+        /**
+         * Faster than initalizing a temporary array.
+         * FloatBuffer.put(float[] src) ends up calling FloatBuffer.put(float f)
+         * 16 times anyway.
+         */
+        buf.put(a); buf.put(b); buf.put(c); buf.put(d);
+        buf.put(e); buf.put(f); buf.put(g); buf.put(h);
+        buf.put(i); buf.put(j); buf.put(k); buf.put(l);
+        buf.put(m); buf.put(n); buf.put(o); buf.put(p);
     }
     
     @Override

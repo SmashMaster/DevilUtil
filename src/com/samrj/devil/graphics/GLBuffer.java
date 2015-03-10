@@ -1,6 +1,6 @@
 package com.samrj.devil.graphics;
 
-import com.samrj.devil.buffer.FloatBuffer;
+import java.nio.FloatBuffer;
 import org.lwjgl.opengl.GL15;
 
 /**
@@ -41,7 +41,7 @@ public final class GLBuffer
     public void glBufferData(FloatBuffer data, int usage)
     {
         if (isDeleted()) throw new IllegalStateException();
-        GL15.glBufferData(target, data.get(), usage);
+        GL15.glBufferData(target, data, usage);
     }
     
     public void glDelete()

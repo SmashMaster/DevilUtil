@@ -1,7 +1,7 @@
 package com.samrj.devil.graphics;
 
-import com.samrj.devil.buffer.Buffer;
-import com.samrj.devil.buffer.ByteBuffer;
+import java.nio.ByteBuffer;
+import org.lwjgl.BufferUtils;
 
 /**
  * 3D texture data class for OpenGL.
@@ -15,22 +15,22 @@ public class Texture3DData
     public final int width, height, depth, format, baseFormat, bands;
     private ByteBuffer buffer;
     
-    public Texture3DData(int width, int height, int depth, int format, Buffer b)
-    {
-        this.width = width;
-        this.height = height;
-        this.depth = depth;
-        this.format = format;
-        baseFormat = TexUtil.getBaseFormat(format);
-        bands = TexUtil.getBands(baseFormat);
-        if (bands == -1) throw new IllegalArgumentException("Illegal format specified.");
-        
-        int length = width*height*depth*bands*b.getType().size;
-        if (b.size() != length) throw new IllegalArgumentException("Illegal input buffer size " + b.size() + ", expected size " + length);
-        buffer = new ByteBuffer(length);
-        b.get();
-        buffer.put(b.byteBuffer());
-    }
+//    public Texture3DData(int width, int height, int depth, int format, Buffer b)
+//    {
+//        this.width = width;
+//        this.height = height;
+//        this.depth = depth;
+//        this.format = format;
+//        baseFormat = TexUtil.getBaseFormat(format);
+//        bands = TexUtil.getBands(baseFormat);
+//        if (bands == -1) throw new IllegalArgumentException("Illegal format specified.");
+//        
+//        int length = width*height*depth*bands*b.getType().size;
+//        if (b.size() != length) throw new IllegalArgumentException("Illegal input buffer size " + b.size() + ", expected size " + length);
+//        buffer = new ByteBuffer(length);
+//        b.get();
+//        buffer.put(b.byteBuffer());
+//    }
     
     public Texture3DData(int width, int height, int depth, int format)
     {
@@ -43,7 +43,7 @@ public class Texture3DData
         if (bands == -1) throw new IllegalArgumentException("Illegal format specified.");
         
         int length = width*height*depth*bands;
-        buffer = new ByteBuffer(length);
+        buffer = BufferUtils.createByteBuffer(length);
         buffer.put(new byte[length]);
     }
     
@@ -52,9 +52,10 @@ public class Texture3DData
      * 
      * @return the java.nio buffer associated with this RasterBuffer.
      */
-    public java.nio.ByteBuffer read()
+    public ByteBuffer read()
     {
-        return buffer.get();
+        buffer.rewind();
+        return buffer;
     }
     
     public GLTexture3D makeTexture3D(Texture3DParams params)

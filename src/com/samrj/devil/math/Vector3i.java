@@ -1,7 +1,7 @@
 package com.samrj.devil.math;
 
 import com.samrj.devil.buffer.Bufferable;
-import com.samrj.devil.buffer.IntBuffer;
+import java.nio.IntBuffer;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -205,7 +205,9 @@ public final class Vector3i implements Bufferable<IntBuffer>
     @Override
     public void putIn(IntBuffer buf)
     {
-        buf.put(x, y, z);
+        buf.put(x);
+        buf.put(y);
+        buf.put(z);
     }
     
     @Override

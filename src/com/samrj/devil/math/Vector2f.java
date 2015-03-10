@@ -1,9 +1,9 @@
 package com.samrj.devil.math;
 
 import com.samrj.devil.buffer.Bufferable;
-import com.samrj.devil.buffer.FloatBuffer;
 import com.samrj.devil.math.Util.Axis;
 import com.samrj.devil.math.numerical.NumState;
+import java.nio.FloatBuffer;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -433,7 +433,8 @@ public final class Vector2f implements Bufferable<FloatBuffer>, NumState<Vector2
     @Override
     public void putIn(FloatBuffer buf)
     {
-        buf.put(x, y);
+        buf.put(x);
+        buf.put(y);
     }
     
     @Override

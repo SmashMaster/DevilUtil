@@ -1,8 +1,10 @@
 package com.samrj.devil.buffer;
 
+import java.nio.Buffer;
+
 /**
  * Used to put wrapped data (like vectors) into Buffers.
- * 
+ *
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE

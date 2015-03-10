@@ -1,9 +1,12 @@
 package com.samrj.devil.buffer;
 
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import org.lwjgl.BufferUtils;
+
 /**
- * This class contains public utility buffers, which can be used for repetitive
- * or small operations without having to instantiate new buffers, wasting memory
- * and CPU cycles.
+ * Publicly available utility buffers. Each has a capacity of 64 bytes. As such,
+ * these should fit on an x86 cache line, and fbuffer should fit a Matrix4f.
  * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2014 Samuel Johnson
@@ -11,11 +14,10 @@ package com.samrj.devil.buffer;
  */
 public class PublicBuffers
 {
-    public static final IntBuffer   ibuffer = new IntBuffer(16);
-    public static final FloatBuffer fbuffer = new FloatBuffer(16);
+    public static final IntBuffer ibuffer = BufferUtils.createIntBuffer(16);
+    public static final FloatBuffer fbuffer = BufferUtils.createFloatBuffer(16);
     
-    /**
-     * Don't let anyone instantiate this.
-     */
-    private PublicBuffers() {}
+    private PublicBuffers()
+    {
+    }
 }

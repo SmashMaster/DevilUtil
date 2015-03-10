@@ -1,7 +1,7 @@
 package com.samrj.devil.math;
 
 import com.samrj.devil.buffer.Bufferable;
-import com.samrj.devil.buffer.IntBuffer;
+import java.nio.IntBuffer;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -220,7 +220,8 @@ public final class Vector2i implements Bufferable<IntBuffer>
     @Override
     public void putIn(IntBuffer buf)
     {
-        buf.put(x, y);
+        buf.put(x);
+        buf.put(y);
     }
     
     @Override

@@ -1,9 +1,9 @@
 package com.samrj.devil.math;
 
 import com.samrj.devil.buffer.Bufferable;
-import com.samrj.devil.buffer.FloatBuffer;
 import static com.samrj.devil.buffer.PublicBuffers.fbuffer;
 import com.samrj.devil.math.Util.Axis;
+import java.nio.FloatBuffer;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -312,7 +312,8 @@ public final class Matrix3f implements Bufferable<FloatBuffer>, Matrix<Matrix3f>
         GL11.glMatrixMode(mode);
         fbuffer.clear();
         toMatrix4f().transpose().putIn(fbuffer);
-        GL11.glLoadMatrix(fbuffer.get());
+        fbuffer.rewind();
+        GL11.glLoadMatrix(fbuffer);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Overriden Object Methods">
@@ -334,9 +335,9 @@ public final class Matrix3f implements Bufferable<FloatBuffer>, Matrix<Matrix3f>
     @Override
     public void putIn(FloatBuffer buf)
     {
-        buf.put(a, b, c,
-                d, e, f,
-                g, h, i);
+        buf.put(a); buf.put(b); buf.put(c);
+        buf.put(d); buf.put(e); buf.put(f);
+        buf.put(g); buf.put(h); buf.put(i);
     }
     
     @Override

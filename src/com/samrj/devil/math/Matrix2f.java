@@ -1,7 +1,7 @@
 package com.samrj.devil.math;
 
 import com.samrj.devil.buffer.Bufferable;
-import com.samrj.devil.buffer.FloatBuffer;
+import java.nio.FloatBuffer;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -160,8 +160,8 @@ public final class Matrix2f implements Bufferable<FloatBuffer>, Matrix<Matrix2f>
     @Override
     public void putIn(FloatBuffer buf)
     {
-        buf.put(a, b,
-                c, d);
+        buf.put(a); buf.put(b);
+        buf.put(c); buf.put(d);
     }
     
     @Override

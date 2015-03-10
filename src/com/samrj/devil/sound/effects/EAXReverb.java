@@ -55,9 +55,11 @@ public class EAXReverb extends Reverb
         EFX10.alEffecti(id, EFX10.AL_EAXREVERB_DECAY_HFLIMIT         , decayHFLimit        );
         fbuffer.clear();
         reflectionsPan.putIn(fbuffer);
-        EFX10.alEffect (id, EFX10.AL_EAXREVERB_REFLECTIONS_PAN, fbuffer.get());
+        fbuffer.rewind();
+        EFX10.alEffect (id, EFX10.AL_EAXREVERB_REFLECTIONS_PAN, fbuffer);
         fbuffer.clear();
         lateReverbPan.putIn(fbuffer);
-        EFX10.alEffect (id, EFX10.AL_EAXREVERB_LATE_REVERB_PAN, fbuffer.get());
+        fbuffer.rewind();
+        EFX10.alEffect (id, EFX10.AL_EAXREVERB_LATE_REVERB_PAN, fbuffer);
     }
 }

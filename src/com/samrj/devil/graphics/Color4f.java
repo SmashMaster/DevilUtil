@@ -1,7 +1,7 @@
 package com.samrj.devil.graphics;
 
 import com.samrj.devil.buffer.Bufferable;
-import com.samrj.devil.buffer.FloatBuffer;
+import java.nio.FloatBuffer;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -136,8 +136,11 @@ public final class Color4f implements Bufferable<FloatBuffer>
     @Override
     public void putIn(FloatBuffer buf)
     {
-        buf.put(r, g, b, a);
-    }
+        buf.put(r);
+        buf.put(g);
+        buf.put(b);
+        buf.put(a);
+}
     
     @Override
     public int size()
