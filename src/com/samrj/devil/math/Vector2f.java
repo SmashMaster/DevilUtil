@@ -48,7 +48,7 @@ public abstract class Vector2f implements Bufferable<FloatBuffer>
      */
     public float length()
     {
-        return (float)Math.sqrt(x()*x() + y()*y());
+        return (float)Math.sqrt(squareLength());
     }
     
     /**
@@ -140,6 +140,14 @@ public abstract class Vector2f implements Bufferable<FloatBuffer>
     }
     
     /**
+     * Returns the negation of this vector.
+     */
+    public MutableVector2f negate()
+    {
+        return new MutableVector2f(this).negateLocal();
+    }
+    
+    /**
      * Returns the cross product of this and a three-dimensional
      * vector of the form <0.0, 0.0, z>..
      * 
@@ -167,7 +175,7 @@ public abstract class Vector2f implements Bufferable<FloatBuffer>
     }
     
     /**
-     * Returns the normalized vector for this.
+     * Returns a normalized copy of this.
      */
     public MutableVector2f norm()
     {
@@ -198,6 +206,22 @@ public abstract class Vector2f implements Bufferable<FloatBuffer>
     public MutableVector2f vecProjUnit(Vector2f v)
     {
         return new MutableVector2f(this).vecProjUnitLocal(v);
+    }
+    
+    /**
+     * Returns the reflection of this about the given vector.
+     */
+    public MutableVector2f reflectUnit(Vector2f n)
+    {
+        return new MutableVector2f(this).reflectUnitLocal(n);
+    }
+    
+    /**
+     * Returns the reflection of this about the given vector.
+     */
+    public MutableVector2f refractunit(Vector2f n, float eta)
+    {
+        return new MutableVector2f(this).refractUnitLocal(n, eta);
     }
     // </editor-fold>
     
