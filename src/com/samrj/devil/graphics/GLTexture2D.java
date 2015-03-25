@@ -37,8 +37,11 @@ public class GLTexture2D
     public GLTexture2D(Texture2DData data, Texture2DParams params)
     {
         if (data == null || params == null) throw new NullPointerException();
-        
-        GL11.glEnable(GL11.GL_TEXTURE_2D);
+        boolean enabling = false;
+        if (!GL11.glIsEnabled(GL11.GL_TEXTURE_2D)) {
+            GL11.glEnable(GL11.GL_TEXTURE_2D);
+            enabling = true;
+        }
         id = GL11.glGenTextures();
         glBind();
         
@@ -52,6 +55,7 @@ public class GLTexture2D
             GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
         
         params.glApply(this);
+        if (enabling) GL11.glDisable(GL11.GL_TEXTURE_2D);
     }
     
     public GLTexture2D(Texture2DData data)
