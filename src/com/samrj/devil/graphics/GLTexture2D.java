@@ -38,7 +38,7 @@ public class GLTexture2D
     {
         if (data == null || params == null) throw new NullPointerException();
         boolean enabling = false;
-        if (GL11.glIsEnabled(GL11.GL_TEXTURE_2D)) {
+        if (!GL11.glIsEnabled(GL11.GL_TEXTURE_2D)) {
             GL11.glEnable(GL11.GL_TEXTURE_2D);
             enabling = true;
         }
