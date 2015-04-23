@@ -311,7 +311,7 @@ public final class Matrix3f implements Bufferable<FloatBuffer>, Matrix<Matrix3f>
     {
         GL11.glMatrixMode(mode);
         fbuffer.clear();
-        toMatrix4f().transpose().putIn(fbuffer);
+        toMatrix4f().putIn(fbuffer);
         fbuffer.rewind();
         GL11.glLoadMatrix(fbuffer);
     }
@@ -335,9 +335,9 @@ public final class Matrix3f implements Bufferable<FloatBuffer>, Matrix<Matrix3f>
     @Override
     public void putIn(FloatBuffer buf)
     {
-        buf.put(a); buf.put(b); buf.put(c);
-        buf.put(d); buf.put(e); buf.put(f);
-        buf.put(g); buf.put(h); buf.put(i);
+        buf.put(a); buf.put(d); buf.put(g);
+        buf.put(b); buf.put(e); buf.put(h);
+        buf.put(c); buf.put(f); buf.put(i);
     }
     
     @Override

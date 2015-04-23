@@ -160,8 +160,8 @@ public final class Matrix2f implements Bufferable<FloatBuffer>, Matrix<Matrix2f>
     @Override
     public void putIn(FloatBuffer buf)
     {
-        buf.put(a); buf.put(b);
-        buf.put(c); buf.put(d);
+        buf.put(a); buf.put(c);
+        buf.put(b); buf.put(d);
     }
     
     @Override

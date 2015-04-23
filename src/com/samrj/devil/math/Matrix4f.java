@@ -461,7 +461,7 @@ public final class Matrix4f implements Bufferable<FloatBuffer>, Matrix<Matrix4f>
     {
         GL11.glMatrixMode(mode);
         fbuffer.clear();
-        clone().transpose().putIn(fbuffer);
+        putIn(fbuffer);
         fbuffer.rewind();
         GL11.glLoadMatrix(fbuffer);
     }
@@ -470,7 +470,7 @@ public final class Matrix4f implements Bufferable<FloatBuffer>, Matrix<Matrix4f>
     {
         GL11.glMatrixMode(mode);
         fbuffer.clear();
-        clone().transpose().putIn(fbuffer);
+        putIn(fbuffer);
         fbuffer.rewind();
         GL11.glMultMatrix(fbuffer);
     }
@@ -500,10 +500,10 @@ public final class Matrix4f implements Bufferable<FloatBuffer>, Matrix<Matrix4f>
          * FloatBuffer.put(float[] src) ends up calling FloatBuffer.put(float f)
          * 16 times anyway.
          */
-        buf.put(a); buf.put(b); buf.put(c); buf.put(d);
-        buf.put(e); buf.put(f); buf.put(g); buf.put(h);
-        buf.put(i); buf.put(j); buf.put(k); buf.put(l);
-        buf.put(m); buf.put(n); buf.put(o); buf.put(p);
+        buf.put(a); buf.put(e); buf.put(i); buf.put(m);
+        buf.put(b); buf.put(f); buf.put(j); buf.put(n);
+        buf.put(c); buf.put(g); buf.put(k); buf.put(o);
+        buf.put(d); buf.put(h); buf.put(l); buf.put(p);
     }
     
     @Override
