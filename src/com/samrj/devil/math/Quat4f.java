@@ -22,6 +22,11 @@ public final class Quat4f
      */
     
     // <editor-fold defaultstate="collapsed" desc="Factory Methods">
+    public static Quat4f identity()
+    {
+        return new Quat4f();
+    }
+    
     public static Quat4f axisAngle(Vector3f axis, float angle) //Apapted from [0]
     {
         final float a = angle*.5f;
