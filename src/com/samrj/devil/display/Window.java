@@ -1,5 +1,7 @@
 package com.samrj.devil.display;
 
+import com.samrj.devil.buffer.BufferUtil;
+import com.samrj.devil.math.Vector2i;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
@@ -16,6 +18,11 @@ public class Window
     private static int toEnum(boolean bool)
     {
         return bool ? GL11.GL_TRUE : GL11.GL_FALSE;
+    }
+    
+    private static boolean toBool(int flag)
+    {
+        return flag == GL11.GL_TRUE;
     }
     
     static void ensureInitialized()
@@ -421,6 +428,56 @@ public class Window
         GLFW.glfwDestroyWindow(id);
         id = -1;
         GLFWError.flushErrors(); 
+    }
+    
+    /**
+     * This method returns the value of the close flag of this window.
+     * 
+     * <p>This method is not synchronized and may be called from any thread.</p>
+     * 
+     * @return The value of the close flag.
+     */
+    public final boolean shouldClose()
+    {
+        int flag = GLFW.glfwWindowShouldClose(id);
+        GLFWError.flushErrors(); 
+        return toBool(flag);
+    }
+    
+    /**
+     * This method sets the value of the close flag of this window. This can be
+     * used to override the user's attempt to close the window, or to signal
+     * that it should be closed.
+     * 
+     * <p>This method is not synchronized and may be called from any thread.</p>
+     * 
+     * @param shouldClose 
+     */
+    public final void setShouldClose(boolean shouldClose)
+    {
+        GLFW.glfwSetWindowShouldClose(id, toEnum(shouldClose));
+        GLFWError.flushErrors(); 
+    }
+    
+    /**
+     * This method sets this window's title.
+     * 
+     * @param title The desired title.
+     */
+    public final void setTitle(String title)
+    {
+        GLFW.glfwSetWindowTitle(id, title);
+        GLFWError.flushErrors();
+    }
+    
+    public final Vector2i getPos()
+    {
+        BufferUtil.clearPublicBuffers();
+        GLFW.glfwGetWindowPos(id, BufferUtil.pubBufA, BufferUtil.pubBufB);
+        GLFWError.flushErrors();
+        
+        return new Vector2i(BufferUtil.pubBufA.getInt(),
+                            BufferUtil.pubBufB.getInt());
     }
     
     long getID()
