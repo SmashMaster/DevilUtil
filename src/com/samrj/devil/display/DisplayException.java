@@ -35,9 +35,9 @@ public class DisplayException extends RuntimeException
     
     public final int code;
     
-    public DisplayException(int code, String message)
+    DisplayException(GLFWError error)
     {
-        super(getName(code) + ": " + message);
-        this.code = code;
+        super(getName(error.code) + ": " + error.message);
+        code = error.code;
     }
 }

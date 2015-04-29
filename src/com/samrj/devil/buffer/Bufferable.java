@@ -3,7 +3,7 @@ package com.samrj.devil.buffer;
 import java.nio.Buffer;
 
 /**
- * Abstract class for all 32 bit, 2 component vectors.
+ * Interface for anything than can be written to memory. (Everything)
  * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2015 Samuel Johnson

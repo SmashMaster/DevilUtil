@@ -10,13 +10,29 @@ import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 
 /**
- * Static factory class for nio buffers.
+ * Static factory class for nio buffers. Also has some small, public buffers.
+ * 
+ * The public buffers are not thread-safe at all, so watch out.
  * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2015 Samuel Johnson
  */
 public class BufferUtil
 {
+    public static final ByteBuffer pubBufA = createByteBuffer(64);
+    public static final ByteBuffer pubBufB = createByteBuffer(64);
+    public static final ByteBuffer pubBufC = createByteBuffer(64);
+    
+    /**
+     * Clears each of the public utility buffers.
+     */
+    public static void clearPublicBuffers()
+    {
+        pubBufA.clear();
+        pubBufB.clear();
+        pubBufC.clear();
+    }
+    
     /**
      * Creates a byte buffer whose capacity (in bytes) is the given value.
      */
@@ -78,7 +94,7 @@ public class BufferUtil
      * fills that buffer with the contents of the array, and then rewinds the
      * buffer.
      */
-    public static ByteBuffer wrap(byte... array)
+    public static ByteBuffer wrapBytes(byte... array)
     {
         ByteBuffer buffer = createByteBuffer(array.length);
         //Actually faster than bulk put due to bounds checking.
@@ -92,7 +108,7 @@ public class BufferUtil
      * fills that buffer with the contents of the array, and then rewinds the
      * buffer.
      */
-    public static ShortBuffer wrap(short... array)
+    public static ShortBuffer wrapShorts(short... array)
     {
         ShortBuffer buffer = createShortBuffer(array.length);
         for (short s : array) buffer.put(s);
@@ -105,7 +121,7 @@ public class BufferUtil
      * fills that buffer with the contents of the array, and then rewinds the
      * buffer.
      */
-    public static IntBuffer wrap(int... array)
+    public static IntBuffer wrapInts(int... array)
     {
         IntBuffer buffer = createIntBuffer(array.length);
         for (int i : array) buffer.put(i);
@@ -118,7 +134,7 @@ public class BufferUtil
      * fills that buffer with the contents of the array, and then rewinds the
      * buffer.
      */
-    public static LongBuffer wrap(long... array)
+    public static LongBuffer wrapLongs(long... array)
     {
         LongBuffer buffer = createLongBuffer(array.length);
         for (long l : array) buffer.put(l);
@@ -131,7 +147,7 @@ public class BufferUtil
      * fills that buffer with the contents of the array, and then rewinds the
      * buffer.
      */
-    public static FloatBuffer wrap(float... array)
+    public static FloatBuffer wrapFloats(float... array)
     {
         FloatBuffer buffer = createFloatBuffer(array.length);
         for (float f : array) buffer.put(f);
@@ -144,7 +160,7 @@ public class BufferUtil
      * fills that buffer with the contents of the array, and then rewinds the
      * buffer.
      */
-    public static DoubleBuffer wrap(double... array)
+    public static DoubleBuffer wrapDoubles(double... array)
     {
         DoubleBuffer buffer = createDoubleBuffer(array.length);
         for (double d : array) buffer.put(d);
@@ -157,7 +173,7 @@ public class BufferUtil
      * fills that buffer with the contents of the array, and then rewinds the
      * buffer.
      */
-    public static CharBuffer wrap(char... array)
+    public static CharBuffer wrapChars(char... array)
     {
         CharBuffer buffer = createCharBuffer(array.length);
         for (char c : array) buffer.put(c);
@@ -170,7 +186,7 @@ public class BufferUtil
      * fills that buffer with the contents of the string, and then rewinds the
      * buffer.
      */
-    public static CharBuffer wrap(CharSequence string)
+    public static CharBuffer wrapString(CharSequence string)
     {
         final int length = string.length();
         CharBuffer buffer = createCharBuffer(string.length());

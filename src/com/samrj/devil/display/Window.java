@@ -1,10 +1,7 @@
 package com.samrj.devil.display;
 
-import java.util.LinkedList;
-import java.util.Queue;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.system.MemoryUtil;
 
 /**
  * Window class for creating OpenGL contexts via the GLFW library.
@@ -14,7 +11,6 @@ import org.lwjgl.system.MemoryUtil;
  */
 public class Window
 {
-    private static final Queue<DisplayException> errors = new LinkedList<>();
     private static boolean initialized = false;
     
     private static int toEnum(boolean bool)
@@ -22,22 +18,9 @@ public class Window
         return bool ? GL11.GL_TRUE : GL11.GL_FALSE;
     }
     
-    private static void onError(int errorCode, long descPointer)
+    static void ensureInitialized()
     {
-        String desc = MemoryUtil.memDecodeUTF8(descPointer);
-        errors.add(new DisplayException(errorCode, desc));
-    }
-    
-    /**
-     * Flushes any errors stored by onError() callback. Should be called after
-     * most GLFW library calls.
-     */
-    private static void flushErrors()
-    {
-        DisplayException error = errors.poll();
-        if (error == null) return;
-        errors.clear();
-        throw error;
+        if (!initialized) throw new IllegalStateException("Windowing system not initialized.");
     }
     
     /**
@@ -56,9 +39,11 @@ public class Window
     public static void init()
     {
         if (initialized) throw new IllegalStateException("Windowing system already initialized.");
-        GLFW.glfwSetErrorCallback(GLFW.GLFWErrorCallback(Window::onError));
+        GLFWError.init();
         GLFW.glfwInit();
-        flushErrors();
+        GLFWError.flushErrors();
+        
+        Monitor.init();
         initialized = true;
     }
     
@@ -78,9 +63,9 @@ public class Window
      */
     public static void terminate()
     {
-        if (!initialized) throw new IllegalStateException("Windowing system not initialized.");
+        ensureInitialized();
         GLFW.glfwTerminate();
-        errors.clear();
+        GLFWError.clearErrors();
         initialized = false;
     }
     
@@ -97,7 +82,7 @@ public class Window
     public static void resetHints()
     {
         GLFW.glfwDefaultWindowHints();
-        flushErrors();
+        GLFWError.flushErrors();
     }
     
     /**
@@ -106,11 +91,13 @@ public class Window
      * This hint is ignored for full screen windows.
      * 
      * <p>Defaults to true.</p>
+     * 
+     * @param resizable Whether the window should be resizable by the user.
      */
     public static void hintResizable(boolean resizable)
     {
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, toEnum(resizable));
-        flushErrors();
+        GLFWError.flushErrors();
     }
     
     /**
@@ -118,11 +105,13 @@ public class Window
      * This hint is ignored for full screen windows.
      * 
      * <p>Defaults to true.</p>
+     * 
+     * @param visible Whether the window should be visible upon creation.
      */
     public static void hintVisible(boolean visible)
     {
         GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, toEnum(visible));
-        flushErrors();
+        GLFWError.flushErrors();
     }
     
     /**
@@ -132,11 +121,13 @@ public class Window
      * it is usually still possible for the user to generate close events.
      * 
      * <p>Defaults to true.</p>
+     * 
+     * @param decorated Whether the window should be decorated.
      */
     public static void hintDecorated(boolean decorated)
     {
         GLFW.glfwWindowHint(GLFW.GLFW_DECORATED, toEnum(decorated));
-        flushErrors();
+        GLFWError.flushErrors();
     }
     
     /**
@@ -145,11 +136,13 @@ public class Window
      * windows.
      * 
      * <p>Defaults to true.</p>
+     * 
+     * @param focused Whether the window should be focused upon creation.
      */
     public static void hintFocused(boolean focused)
     {
         GLFW.glfwWindowHint(GLFW.GLFW_FOCUSED, toEnum(focused));
-        flushErrors();
+        GLFWError.flushErrors();
     }
     
     /**
@@ -158,11 +151,14 @@ public class Window
      * for windowed mode windows.
      * 
      * <p>Defaults to true.</p>
+     * 
+     * @param autoIconify Whether the full screen window should automatically
+     *                    iconify.
      */
     public static void hintAutoIconify(boolean autoIconify)
     {
         GLFW.glfwWindowHint(GLFW.GLFW_AUTO_ICONIFY, toEnum(autoIconify));
-        flushErrors();
+        GLFWError.flushErrors();
     }
     
     /**
@@ -172,11 +168,13 @@ public class Window
      * windows. This hint is ignored for full screen windows.
      * 
      * <p>Defaults to false.</p>
+     * 
+     * @param floating Whether this window should be floating or not.
      */
     public static void hintFloating(boolean floating)
     {
         GLFW.glfwWindowHint(GLFW.GLFW_FLOATING, toEnum(floating));
-        flushErrors();
+        GLFWError.flushErrors();
     }
     
     /**
@@ -184,12 +182,14 @@ public class Window
      * framebuffer. Any negative value means the application has no preference.
      * 
      * <p>Defaults to 8.</p>
+     * 
+     * @param bits The bit depth of the red component of the framebuffer.
      */
     public static void hintRedBits(int bits)
     {
         if (bits < 0) bits = GLFW.GLFW_DONT_CARE;
         GLFW.glfwWindowHint(GLFW.GLFW_RED_BITS, bits);
-        flushErrors();
+        GLFWError.flushErrors();
     }
     
     /**
@@ -197,12 +197,14 @@ public class Window
      * framebuffer. Any negative value means the application has no preference.
      * 
      * <p>Defaults to 8.</p>
+     * 
+     * @param bits The bit depth of the green component of the framebuffer.
      */
     public static void hintGreenBits(int bits)
     {
         if (bits < 0) bits = GLFW.GLFW_DONT_CARE;
         GLFW.glfwWindowHint(GLFW.GLFW_GREEN_BITS, bits);
-        flushErrors();
+        GLFWError.flushErrors();
     }
     
     /**
@@ -210,12 +212,14 @@ public class Window
      * framebuffer. Any negative value means the application has no preference.
      * 
      * <p>Defaults to 8.</p>
+     * 
+     * @param bits The bit depth of the blue component of the framebuffer.
      */
     public static void hintBlueBits(int bits)
     {
         if (bits < 0) bits = GLFW.GLFW_DONT_CARE;
         GLFW.glfwWindowHint(GLFW.GLFW_BLUE_BITS, bits);
-        flushErrors();
+        GLFWError.flushErrors();
     }
     
     /**
@@ -223,12 +227,14 @@ public class Window
      * framebuffer. Any negative value means the application has no preference.
      * 
      * <p>Defaults to 8.</p>
+     * 
+     * @param bits The bit depth of the alpha component of the framebuffer.
      */
     public static void hintAlphaBits(int bits)
     {
         if (bits < 0) bits = GLFW.GLFW_DONT_CARE;
         GLFW.glfwWindowHint(GLFW.GLFW_ALPHA_BITS, bits);
-        flushErrors();
+        GLFWError.flushErrors();
     }
     
     /**
@@ -236,12 +242,14 @@ public class Window
      * framebuffer. Any negative value means the application has no preference.
      * 
      * <p>Defaults to 24.</p>
+     * 
+     * @param bits The bit depth of the depth component of the framebuffer.
      */
     public static void hintDepthBits(int bits)
     {
         if (bits < 0) bits = GLFW.GLFW_DONT_CARE;
         GLFW.glfwWindowHint(GLFW.GLFW_DEPTH_BITS, bits);
-        flushErrors();
+        GLFWError.flushErrors();
     }
     
     /**
@@ -249,12 +257,14 @@ public class Window
      * framebuffer. Any negative value means the application has no preference.
      * 
      * <p>Defaults to 8.</p>
+     * 
+     * @param bits The bit depth of the stencil component of the framebuffer.
      */
     public static void hintStencilBits(int bits)
     {
         if (bits < 0) bits = GLFW.GLFW_DONT_CARE;
         GLFW.glfwWindowHint(GLFW.GLFW_STENCIL_BITS, bits);
-        flushErrors();
+        GLFWError.flushErrors();
     }
     
     /**
@@ -263,23 +273,27 @@ public class Window
      * preference.
      * 
      * <p>Defaults to 0.</p>
+     * 
+     * @param samples The number of samples to use for multisampling.
      */
     public static void hintSamples(int samples)
     {
         if (samples < 0) samples = GLFW.GLFW_DONT_CARE;
         GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, samples);
-        flushErrors();
+        GLFWError.flushErrors();
     }
     
     /**
      * Specifies whether the framebuffer should be sRGB capable.
      * 
      * <p>Defaults to false.</p>
+     * 
+     * @param srgbCapable Whether the framebuffer should be sRGB capable.
      */
     public static void hintSRGBCapable(boolean srgbCapable)
     {
         GLFW.glfwWindowHint(GLFW.GLFW_SRGB_CAPABLE, toEnum(srgbCapable));
-        flushErrors();
+        GLFWError.flushErrors();
     }
     
     /**
@@ -287,11 +301,13 @@ public class Window
      * always want to use double buffering. This is a hard constraint.
      * 
      * <p>Defaults to true.</p>
+     * 
+     * @param doubleBuffer Whether or not to use double buffering.
      */
     public static void hintDoubleBuffer(boolean doubleBuffer)
     {
         GLFW.glfwWindowHint(GLFW.GLFW_DOUBLE_BUFFER, toEnum(doubleBuffer));
-        flushErrors();
+        GLFWError.flushErrors();
     }
     
     /**
@@ -300,21 +316,69 @@ public class Window
      * hint is ignored for windowed mode windows.
      * 
      * <p>Defaults to highest available refresh rate.</p>
+     * 
+     * @param refreshRate The desired refresh rate.
      */
     public static void hintRefreshRate(int refreshRate)
     {
         if (refreshRate < 0) refreshRate = GLFW.GLFW_DONT_CARE;
         GLFW.glfwWindowHint(GLFW.GLFW_REFRESH_RATE, refreshRate);
-        flushErrors();
+        GLFWError.flushErrors();
     }
     // </editor-fold>
     
     private long id = -1;
     
-    public Window(int width, int height, CharSequence title)
+    /**
+     * This function creates a window and its associated OpenGL context. Most of
+     * the options controlling how the window and its context should be created
+     * are specified with window hints.
+     * 
+     * <p>Successful creation does not change which context is current. Before
+     * you can use the newly created context, you need to make it current.</p>
+     * 
+     * <p>The created window, framebuffer and context may differ from what you
+     * requested, as not all parameters and hints are hard constraints. This
+     * includes the size of the window, especially for full screen windows. To
+     * query the actual attributes of the created window, framebuffer and
+     * context, see glfwGetWindowAttrib, glfwGetWindowSize and
+     * glfwGetFramebufferSize.</p>
+     * 
+     * <p>To create a full screen window, you need to specify the monitor the
+     * window will cover. If no monitor is specified, windowed mode will be
+     * used. Unless you have a way for the user to choose a specific monitor, it
+     * is recommended that you pick the primary monitor.</p>
+     * 
+     * <p>For full screen windows, the specified size becomes the resolution of
+     * the window's desired video mode. As long as a full screen window has
+     * input focus, the supported video mode most closely matching the desired
+     * video mode is set for the specified monitor.</p>
+     * 
+     * <p>By default, newly created windows use the placement recommended by the
+     * window system. To create the window at a specific position, make it
+     * initially invisible using the hintVisible() window hint, set its position
+     * and then show it.</p>
+     * 
+     * <p>If a full screen window has input focus, the screensaver is prohibited
+     * from starting.</p>
+     * 
+     * <p>Window systems put limits on window sizes. Very large or very small
+     * window dimensions may be overridden by the window system on creation.
+     * Check the actual size after creation. </p>
+     * 
+     * <p>The swap interval is not set during window creation and the initial
+     * value may vary depending on driver settings and defaults.</p>
+     * 
+     * @param width The desired width, in screen coordinates, of the window.
+     * @param height The desired height, in screen coordinates, of the window.
+     * @param title The initial window title.
+     * @param monitor The monitor to use for full screen mode, or 0 to use
+     *                windowed mode.
+     */
+    public Window(int width, int height, CharSequence title, Monitor monitor)
     {
-        id = GLFW.glfwCreateWindow(width, height, title, 0, 0);
-        flushErrors();
+        id = GLFW.glfwCreateWindow(width, height, title, monitor == null ? 0 : monitor.id, 0);
+        GLFWError.flushErrors();
         
         GLFW.glfwSetWindowPosCallback(id, GLFW.GLFWWindowPosCallback(this::onMove));
         GLFW.glfwSetWindowSizeCallback(id, GLFW.GLFWWindowSizeCallback(this::onResize));
@@ -323,17 +387,43 @@ public class Window
         GLFW.glfwSetWindowFocusCallback(id, GLFW.GLFWWindowFocusCallback(this::onFocus));
         GLFW.glfwSetWindowIconifyCallback(id, GLFW.GLFWWindowIconifyCallback(this::onIconify));
         GLFW.glfwSetFramebufferSizeCallback(id, GLFW.GLFWFramebufferSizeCallback(this::onFramebufferResize));
-        flushErrors();
+        GLFWError.flushErrors();
     }
     
+    /**
+     * Creates a window using windowed mode.
+     * 
+     * <p>This method may only be called from the main thread.</p>
+     * 
+     * @param width The desired width, in screen coordinates, of the window.
+     * @param height The desired height, in screen coordinates, of the window.
+     * @param title The initial window title.
+     */
+    public Window(int width, int height, CharSequence title)
+    {
+        this(width, height, title, null);
+    }
+    
+    /**
+     * This method destroys this window and its context. On calling this method,
+     * no further callbacks will be called for this window.
+     * 
+     * <p>If the context of this window is current on the main thread, it is
+     * detached before being destroyed.</p>
+     * 
+     * <p>The context of this window must not be current on any other thread
+     * when this method is called.</p>
+     * 
+     * <p>This method may only be called from the main thread.</p>
+     */
     public final void destroy()
     {
         GLFW.glfwDestroyWindow(id);
         id = -1;
-        flushErrors(); 
+        GLFWError.flushErrors(); 
     }
     
-    public final long getID()
+    long getID()
     {
         return id;
     }

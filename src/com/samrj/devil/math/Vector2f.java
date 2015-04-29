@@ -224,6 +224,24 @@ public abstract class Vector2f implements Bufferable<FloatBuffer>
         return new MutableVector2f(this).refractUnitLocal(n, eta);
     }
     // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Object Overriden Methods">
+    @Override
+    public String toString()
+    {
+        return "("+x()+", "+y()+")";
+    }
+    
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        final Vector2f other = (Vector2f) obj;
+        if (Float.floatToIntBits(this.x()) != Float.floatToIntBits(other.x())) return false;
+        if (Float.floatToIntBits(this.y()) != Float.floatToIntBits(other.y())) return false;
+        return true;
+    }
+    // </editor-fold>
     
     @Override
     public void writeTo(FloatBuffer buffer)
