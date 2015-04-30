@@ -462,6 +462,8 @@ public class Window
     /**
      * This method sets this window's title.
      * 
+     * <p>This method may only be called from the main thread.</p>
+     * 
      * @param title The desired title.
      */
     public final void setTitle(String title)
@@ -470,6 +472,14 @@ public class Window
         GLFWError.flushErrors();
     }
     
+    /**
+     * This method retrieves the position, in screen coordinates, of the upper-
+     * left corner of the client area of this window.
+     * 
+     * <p>This method may only be called from the main thread.</p>
+     * 
+     * @return The position of the upper-left corner of this window.
+     */
     public final Vector2i getPos()
     {
         BufferUtil.clearPublicBuffers();
@@ -479,6 +489,106 @@ public class Window
         return new Vector2i(BufferUtil.pubBufA.getInt(),
                             BufferUtil.pubBufB.getInt());
     }
+    
+    /**
+     * This method sets the position, in screen coordinates, of the upper-left
+     * corner of the client area of this windowed mode window. If the window is
+     * a full screen window, this function does nothing.
+     * 
+     * <p>Do not use this method to move an already visible window unless you
+     * have very good reasons for doing so, as it will confuse and annoy the
+     * user.</p>
+     * 
+     * <p>The window manager may put limits on what positions are allowed. GLFW
+     * cannot and should not override these limits.</p>
+     * 
+     * <p>This method may only be called from the main thread.</p>
+     * 
+     * @param x The x-coordinate of the upper-left corner of the client area.
+     * @param y The y-coordinate of the upper-left corner of the client area.
+     */
+    public final void setPos(int x, int y)
+    {
+        GLFW.glfwSetWindowPos(id, x, y);
+        GLFWError.flushErrors();
+    }
+    
+    /**
+     * This method retrieves the size, in screen coordinates, of the client area
+     * of the specified window. If you wish to retrieve the size of the
+     * framebuffer of the window in pixels, use getFramebufferSize().
+     * 
+     * <p>This method may only be called from the main thread.</p>
+     * 
+     * @return The size of the client area.
+     */
+    public final Vector2i getSize()
+    {
+        BufferUtil.clearPublicBuffers();
+        GLFW.glfwGetWindowSize(id, BufferUtil.pubBufA, BufferUtil.pubBufB);
+        GLFWError.flushErrors();
+        
+        return new Vector2i(BufferUtil.pubBufA.getInt(),
+                            BufferUtil.pubBufB.getInt());
+    }
+    
+    /**
+     * This function sets the size, in screen coordinates, of the client area of
+     * this window.
+     * 
+     * <p>For full screen windows, this function selects and switches to the
+     * resolution closest to the specified size, without affecting the window's
+     * context. As the context is unaffected, the bit depths of the framebuffer
+     * remain unchanged.</p>
+     * 
+     * <p>The window manager may put limits on what sizes are allowed. GLFW
+     * cannot and should not override these limits.</p>
+     * 
+     * <p>This method may only be called from the main thread.</p>
+     * 
+     * @param x The desired width of the client area.
+     * @param y The desired height of the client area.
+     */
+    public final void setSize(int x, int y)
+    {
+        GLFW.glfwSetWindowSize(id, x, y);
+        GLFWError.flushErrors();
+    }
+    
+    /**
+     * This function retrieves the size, in pixels, of the framebuffer of this
+     * window. If you wish to retrieve the size of the window in screen
+     * coordinates, use getSize().
+     * 
+     * <p>This method may only be called from the main thread.</p>
+     * 
+     * @return The size of this window's framebuffer.
+     */
+    public final Vector2i getFramebufferSize()
+    {
+        BufferUtil.clearPublicBuffers();
+        GLFW.glfwGetFramebufferSize(id, BufferUtil.pubBufA, BufferUtil.pubBufB);
+        GLFWError.flushErrors();
+        
+        return new Vector2i(BufferUtil.pubBufA.getInt(),
+                            BufferUtil.pubBufB.getInt());
+    }
+    
+    //per-window methods:
+    //glfwGetWindowFrameSize
+    //glfwIconifyWindow
+    //glfwRestoreWindow
+    //glfwShowWindow
+    //glfwHideWindow
+    //glfwGetWindowMonitor
+    //glfwGetWindowAttrib
+    //glfwSwapBuffers
+    
+    //Static methods needed:
+    //glfwPollEvents
+    //glfwWaitEvents
+    //glfwPostEmptyEvent
+    
     
     long getID()
     {
