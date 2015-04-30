@@ -562,7 +562,7 @@ public class Window
      * 
      * <p>This method may only be called from the main thread.</p>
      * 
-     * @return The size of this window's framebuffer.
+     * @return The size of the framebuffer of this window.
      */
     public final Vector2i getFramebufferSize()
     {
@@ -574,14 +574,128 @@ public class Window
                             BufferUtil.pubBufB.getInt());
     }
     
+    /**
+     * This method retrieves the size, in screen coordinates, of each edge of
+     * the frame of this window. This size includes the title bar, if the window
+     * has one. The size of the frame may vary depending on the window-related
+     * hints used to create it.
+     * 
+     * <p>Because this method retrieves the size of each window frame edge and
+     * not the offset along a particular coordinate axis, the retrieved values
+     * will always be zero or positive.</p>
+     * 
+     * <p>This method may only be called from the main thread.</p>
+     * 
+     * @return The size of each edge of the frame of this window.
+     */
+    public final FrameSize getFrameSize()
+    {
+        BufferUtil.clearPublicBuffers();
+        GLFW.glfwGetWindowFrameSize(id, BufferUtil.pubBufA, BufferUtil.pubBufB,
+                                        BufferUtil.pubBufC, BufferUtil.pubBufD);
+        GLFWError.flushErrors();
+        
+        return new FrameSize(BufferUtil.pubBufA.getInt(),
+                             BufferUtil.pubBufB.getInt(),
+                             BufferUtil.pubBufC.getInt(),
+                             BufferUtil.pubBufD.getInt());
+    }
+    
+    /**
+     * This method iconifies (minimizes) the specified window if it was
+     * previously restored. If the window is already iconified, this method
+     * does nothing.
+     * 
+     * <p>If the specified window is a full screen window, the original monitor
+     * resolution is restored until the window is restored.</p>
+     * 
+     * <p>This method may only be called from the main thread.</p>
+     */
+    public final void iconify()
+    {
+        GLFW.glfwIconifyWindow(id);
+        GLFWError.flushErrors();
+    }
+    
+    /**
+     * This method restores the specified window if it was previously iconified
+     * (minimized). If the window is already restored, this method does nothing.
+     * 
+     * <p>If the specified window is a full screen window, the resolution chosen
+     * for the window is restored on the selected monitor.</p>
+     * 
+     * <p>This method may only be called from the main thread.</p>
+     */
+    public final void restore()
+    {
+        GLFW.glfwRestoreWindow(id);
+        GLFWError.flushErrors();
+    }
+    
+    /**
+     * This method makes this window visible if it was previously hidden. If the
+     * window is already visible or is in full screen mode, this method does
+     * nothing.
+     * 
+     * <p>This method may only be called from the main thread.</p>
+     */
+    public final void show()
+    {
+        GLFW.glfwShowWindow(id);
+        GLFWError.flushErrors();
+    }
+    
+    /**
+     * This method hides this window if it was previously visible. If the window
+     * is already hidden or is in full screen mode, this method does nothing.
+     * 
+     * <p>This method may only be called from the main thread.</p>
+     */
+    public final void hide()
+    {
+        GLFW.glfwHideWindow(id);
+        GLFWError.flushErrors();
+    }
+    
+    /**
+     * This method returns the monitor that this window is in full screen on.
+     * 
+     * <p>This method may only be called from the main thread.</p>
+     * 
+     * @return The monitor, or null if the window is in windowed mode.
+     */
+    public final Monitor getMonitor()
+    {
+        long monitor = GLFW.glfwGetWindowMonitor(id);
+        GLFWError.flushErrors();
+        
+        return Monitor.get(monitor);
+    }
+    
+    /**
+     * This method returns the value of an attribute of this window or its
+     * OpenGL context.
+     * 
+     * <p>Framebuffer related hints are not window attributes. You need to use
+     * OpenGL calls to query for that information.</p>
+     * 
+     * <p>See http://www.glfw.org/docs/latest/window.html#window_attribs for a
+     * list of window attributes.</p>
+     * 
+     * @param attrib The window attribute whose value to return.
+     * @return The value of the attribute.
+     * @deprecated You need to pass GLFW enums into this function, which is bad
+     *             form. A better solution needs to be found.
+     */
+    @Deprecated
+    public final int glfwGetAttrib(int attrib)
+    {
+        int value = GLFW.glfwGetWindowAttrib(id, attrib);
+        GLFWError.flushErrors();
+        return value;
+    }
+    
     //per-window methods:
-    //glfwGetWindowFrameSize
-    //glfwIconifyWindow
-    //glfwRestoreWindow
-    //glfwShowWindow
-    //glfwHideWindow
-    //glfwGetWindowMonitor
-    //glfwGetWindowAttrib
     //glfwSwapBuffers
     
     //Static methods needed:

@@ -22,6 +22,7 @@ public class BufferUtil
     public static final ByteBuffer pubBufA = createByteBuffer(64);
     public static final ByteBuffer pubBufB = createByteBuffer(64);
     public static final ByteBuffer pubBufC = createByteBuffer(64);
+    public static final ByteBuffer pubBufD = createByteBuffer(64);
     
     /**
      * Clears each of the public utility buffers.

@@ -38,6 +38,19 @@ public final class Monitor
         GLFWError.flushErrors();
     }
     
+    static Monitor get(long id)
+    {
+        if (id == 0L) return null;
+        
+        Monitor monitor = monitors.get(id);
+        if (monitor == null)
+        {
+            monitor = new Monitor(id);
+            monitors.put(id, monitor);
+        }
+        return monitor;
+    }
+    
     private static void callback(long id, int event)
     {
         Monitor monitor = monitors.get(id);
