@@ -3,7 +3,15 @@ package com.samrj.devil.display;
 import com.samrj.devil.buffer.BufferUtil;
 import com.samrj.devil.math.Vector2i;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
+import org.lwjgl.glfw.GLFWWindowCloseCallback;
+import org.lwjgl.glfw.GLFWWindowFocusCallback;
+import org.lwjgl.glfw.GLFWWindowIconifyCallback;
+import org.lwjgl.glfw.GLFWWindowPosCallback;
+import org.lwjgl.glfw.GLFWWindowRefreshCallback;
+import org.lwjgl.glfw.GLFWWindowSizeCallback;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GLContext;
 
 /**
  * Window class for creating OpenGL contexts via the GLFW library.
@@ -75,6 +83,35 @@ public class Window
         GLFWError.clearErrors();
         initialized = false;
     }
+    
+    /**
+     * This method processes only those events that are already in the event
+     * queue and then returns immediately. Processing events will cause the
+     * window and input callbacks associated with those events to be called.
+     * 
+     * <p>On some platforms, a window move, resize or menu operation will cause
+     * event processing to block. This is due to how event processing is
+     * designed on those platforms. You can use the window refresh callback to
+     * redraw the contents of your window when necessary during such operations.</p>
+     * 
+     * <p>On some platforms, certain events are sent directly to the application
+     * without going through the event queue, causing callbacks to be called
+     * outside of a call to one of the event processing functions.</p>
+     * 
+     * <p>Event processing is not required for joystick input to work.</p>
+     * 
+     * <p>This method may only be called from the main thread.</p>
+     */
+    public static void pollEvents()
+    {
+        GLFW.glfwPollEvents();
+        GLFWError.flushErrors();
+    }
+    
+    //Static methods needed:
+    //glfwPollEvents
+    //glfwWaitEvents
+    //glfwPostEmptyEvent
     
     // <editor-fold defaultstate="collapsed" desc="Hints">
     /**
@@ -335,6 +372,14 @@ public class Window
     // </editor-fold>
     
     private long id = -1;
+    private GLContext context;
+    private GLFWWindowPosCallback posCallback;
+    private GLFWWindowSizeCallback sizeCallback;
+    private GLFWWindowCloseCallback closeCallback;
+    private GLFWWindowRefreshCallback refreshCallback;
+    private GLFWWindowFocusCallback focusCallback;
+    private GLFWWindowIconifyCallback iconifyCallback;
+    private GLFWFramebufferSizeCallback framebufferSizeCallback;
     
     /**
      * This function creates a window and its associated OpenGL context. Most of
@@ -387,14 +432,17 @@ public class Window
         id = GLFW.glfwCreateWindow(width, height, title, monitor == null ? 0 : monitor.id, 0);
         GLFWError.flushErrors();
         
-        GLFW.glfwSetWindowPosCallback(id, GLFW.GLFWWindowPosCallback(this::onMove));
-        GLFW.glfwSetWindowSizeCallback(id, GLFW.GLFWWindowSizeCallback(this::onResize));
-        GLFW.glfwSetWindowCloseCallback(id, GLFW.GLFWWindowCloseCallback(this::onClose));
-        GLFW.glfwSetWindowRefreshCallback(id, GLFW.GLFWWindowRefreshCallback(this::onRefresh));
-        GLFW.glfwSetWindowFocusCallback(id, GLFW.GLFWWindowFocusCallback(this::onFocus));
-        GLFW.glfwSetWindowIconifyCallback(id, GLFW.GLFWWindowIconifyCallback(this::onIconify));
-        GLFW.glfwSetFramebufferSizeCallback(id, GLFW.GLFWFramebufferSizeCallback(this::onFramebufferResize));
+        GLFW.glfwSetWindowPosCallback(id, posCallback = GLFW.GLFWWindowPosCallback(this::onMove));
+        GLFW.glfwSetWindowSizeCallback(id, sizeCallback = GLFW.GLFWWindowSizeCallback(this::onResize));
+        GLFW.glfwSetWindowCloseCallback(id, closeCallback = GLFW.GLFWWindowCloseCallback(this::onClose));
+        GLFW.glfwSetWindowRefreshCallback(id, refreshCallback = GLFW.GLFWWindowRefreshCallback(this::onRefresh));
+        GLFW.glfwSetWindowFocusCallback(id, focusCallback = GLFW.GLFWWindowFocusCallback(this::onFocus));
+        GLFW.glfwSetWindowIconifyCallback(id, iconifyCallback = GLFW.GLFWWindowIconifyCallback(this::onIconify));
+        GLFW.glfwSetFramebufferSizeCallback(id, framebufferSizeCallback = GLFW.GLFWFramebufferSizeCallback(this::onFramebufferResize));
         GLFWError.flushErrors();
+        
+        makeCurrent();
+        context = GLContext.createFromCurrent();
     }
     
     /**
@@ -425,6 +473,17 @@ public class Window
      */
     public final void destroy()
     {
+        posCallback.release(); posCallback = null;
+        sizeCallback.release(); sizeCallback = null;
+        closeCallback.release(); closeCallback = null;
+        refreshCallback.release(); refreshCallback = null;
+        focusCallback.release(); focusCallback = null;
+        iconifyCallback.release(); iconifyCallback = null;
+        framebufferSizeCallback.release(); framebufferSizeCallback = null;
+        
+        context.destroy();
+        context = null;
+        
         GLFW.glfwDestroyWindow(id);
         id = -1;
         GLFWError.flushErrors(); 
@@ -682,6 +741,8 @@ public class Window
      * <p>See http://www.glfw.org/docs/latest/window.html#window_attribs for a
      * list of window attributes.</p>
      * 
+     * <p>This method may only be called from the main thread.</p>
+     * 
      * @param attrib The window attribute whose value to return.
      * @return The value of the attribute.
      * @deprecated You need to pass GLFW enums into this function, which is bad
@@ -695,14 +756,34 @@ public class Window
         return value;
     }
     
-    //per-window methods:
-    //glfwSwapBuffers
+    /**
+     * This method swaps the front and back buffers of this window. If the swap
+     * interval is greater than zero, the GPU driver waits the specified number
+     * of screen updates before swapping the buffers.
+     * 
+     * <p>This method is not synchronized and may be called from any thread.</p>
+     */
+    public final void swapBuffers()
+    {
+        GLFW.glfwSwapBuffers(id);
+        GLFWError.flushErrors();
+    }
     
-    //Static methods needed:
-    //glfwPollEvents
-    //glfwWaitEvents
-    //glfwPostEmptyEvent
-    
+    /**
+     * This method makes the OpenGL context of this window current on the
+     * calling thread. A context can only be made current on a single thread at
+     * a time and each thread can have only a single current context at a time.
+     * 
+     * <p>By default, making a context non-current implicitly forces a pipeline
+     * flush. On machines that support GL_KHR_context_flush_control, you can
+     * control whether a context performs this flush by setting the
+     * GLFW_CONTEXT_RELEASE_BEHAVIOR window hint.</p>
+     */
+    public final void makeCurrent()
+    {
+        GLFW.glfwMakeContextCurrent(id);
+        GLFWError.flushErrors();
+    }
     
     long getID()
     {
