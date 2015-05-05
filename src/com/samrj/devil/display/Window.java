@@ -785,7 +785,13 @@ public class Window
         GLFWError.flushErrors();
     }
     
-    long getID()
+    /**
+     * Returns a unique ID for this window. Will be -1 if the window has been
+     * destroyed.
+     * 
+     * @return An ID for this window.
+     */
+    public long getID()
     {
         return id;
     }
