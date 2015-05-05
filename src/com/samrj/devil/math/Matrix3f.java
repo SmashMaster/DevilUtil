@@ -313,7 +313,7 @@ public final class Matrix3f implements Bufferable<FloatBuffer>, Matrix<Matrix3f>
         fbuffer.clear();
         toMatrix4f().putIn(fbuffer);
         fbuffer.rewind();
-        GL11.glLoadMatrix(fbuffer);
+        GL11.glLoadMatrixf(fbuffer);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Overriden Object Methods">

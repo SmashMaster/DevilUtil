@@ -201,12 +201,14 @@ public class GLShader
     
     private void glUniformi(int loc, int elementSize)
     {
+        GL20.glUniform1iv(loc, ibuffer);
+        
         switch (elementSize)
         {
-            case 1: GL20.glUniform1(loc, ibuffer); break;
-            case 2: GL20.glUniform2(loc, ibuffer); break;
-            case 3: GL20.glUniform3(loc, ibuffer); break;
-            case 4: GL20.glUniform4(loc, ibuffer); break;
+            case 1: GL20.glUniform1iv(loc, ibuffer); break;
+            case 2: GL20.glUniform2iv(loc, ibuffer); break;
+            case 3: GL20.glUniform3iv(loc, ibuffer); break;
+            case 4: GL20.glUniform4iv(loc, ibuffer); break;
             default: throw new IllegalArgumentException();
         }
     }
@@ -215,10 +217,10 @@ public class GLShader
     {
         switch (elementSize)
         {
-            case 1: GL20.glUniform1(loc, fbuffer); break;
-            case 2: GL20.glUniform2(loc, fbuffer); break;
-            case 3: GL20.glUniform3(loc, fbuffer); break;
-            case 4: GL20.glUniform4(loc, fbuffer); break;
+            case 1: GL20.glUniform1fv(loc, fbuffer); break;
+            case 2: GL20.glUniform2fv(loc, fbuffer); break;
+            case 3: GL20.glUniform3fv(loc, fbuffer); break;
+            case 4: GL20.glUniform4fv(loc, fbuffer); break;
             default: throw new IllegalArgumentException();
         }
     }
@@ -274,7 +276,7 @@ public class GLShader
         fbuffer.clear();
         m.putIn(fbuffer);
         fbuffer.rewind();
-        GL20.glUniformMatrix2(getUniLoc(name), false, fbuffer);
+        GL20.glUniformMatrix2fv(getUniLoc(name), false, fbuffer);
     }
     
     public void glUniform(String name, Matrix3f m)
@@ -282,7 +284,7 @@ public class GLShader
         fbuffer.clear();
         m.putIn(fbuffer);
         fbuffer.rewind();
-        GL20.glUniformMatrix3(getUniLoc(name), false, fbuffer);
+        GL20.glUniformMatrix3fv(getUniLoc(name), false, fbuffer);
     }
     
     public void glUniform(String name, Matrix4f m)
@@ -290,7 +292,7 @@ public class GLShader
         fbuffer.clear();
         m.putIn(fbuffer);
         fbuffer.rewind();
-        GL20.glUniformMatrix4(getUniLoc(name), false, fbuffer);
+        GL20.glUniformMatrix4fv(getUniLoc(name), false, fbuffer);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Attribute Methods">

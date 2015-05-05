@@ -98,7 +98,8 @@ public class GLTexture3D
     
     public boolean glIsBound()
     {
-        return GL11.glGetInteger(GL12.GL_TEXTURE_BINDING_3D) == id;
+        //GL12.GL_TEXTURE_BINDING_3D == 0x806A (Missing enum in LWJGL 3?)
+        return GL11.glGetInteger(0x806A) == id;
     }
     
     public int id()

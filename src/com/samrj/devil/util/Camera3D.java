@@ -1,7 +1,6 @@
 package com.samrj.devil.util;
 
 import com.samrj.devil.math.*;
-import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -21,16 +20,19 @@ public class Camera3D
     
     public final Vector3f pos;
     public final Quat4f rot;
+    private int resX, resY;
     private Matrix4f proj;
     private Vector2i res;
     
-    public Camera3D(float fov, float near, float far)
+    public Camera3D(int resX, int resY, float fov, float near, float far)
     {
         if (fov <= 0f || fov >= Util.PI) throw new IllegalArgumentException();
         if (far <= near || near <= 0f) throw new IllegalArgumentException();
+        this.resX = resX;
+        this.resY = resY;
         pos = new Vector3f();
         rot = new Quat4f();
-        res = new Vector2i(Display.getWidth(), Display.getHeight());
+        res = new Vector2i(resX, resY);
         
         proj = Matrix4f.perspective(fov, res.y/(float)res.x, near, far);
     }
@@ -81,8 +83,8 @@ public class Camera3D
      */
     public Vector3f toScreen(Vector3f pos)
     {
-        float midx = Display.getWidth()*.5f;
-        float midy = Display.getHeight()*.5f;
+        float midx = resX*.5f;
+        float midy = resY*.5f;
         pos = pos.clone();
         pos.mult(getView());
         pos.mult(proj);
@@ -99,8 +101,8 @@ public class Camera3D
      */
     public Vector3f dirToScreen(Vector3f dir)
     {
-        float midx = Display.getWidth()*.5f;
-        float midy = Display.getHeight()*.5f;
+        float midx = resX*.5f;
+        float midy = resY*.5f;
         dir = dir.clone();
         dir.mult(getView().toMatrix3f());
         dir.mult(proj.toMatrix3f());

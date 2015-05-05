@@ -5,7 +5,6 @@ import com.samrj.devil.math.Matrix3f;
 import com.samrj.devil.math.Matrix4f;
 import com.samrj.devil.math.Vector2f;
 import com.samrj.devil.math.Vector2i;
-import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -15,11 +14,11 @@ import org.lwjgl.opengl.GL11;
  */
 public class Camera2D
 {
-    public static void glLoadScreen()
+    public static void glLoadScreen(int resX, int resY)
     {
         GL11.glMatrixMode(GL11.GL_PROJECTION);
         GL11.glLoadIdentity();
-        GL11.glOrtho(0f, Display.getWidth(), 0f, Display.getHeight(), -1f, 1f);
+        GL11.glOrtho(0f, resX, 0f, resY, -1f, 1f);
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
         GL11.glLoadIdentity();
     }
@@ -38,12 +37,12 @@ public class Camera2D
     private Vector2f mid;
     private Vector2i res;
     
-    public Camera2D(Vector2f pos, float height)
+    public Camera2D(int resX, int resY, Vector2f pos, float height)
     {
         if (height <= 0f) throw new IllegalArgumentException();
         this.pos = pos.clone();
         
-        res = new Vector2i(Display.getWidth(), Display.getHeight());
+        res = new Vector2i(resX, resY);
         mid = res.as2f().div(2f);
         
         proj = Matrix4f.ortho(mid.x, mid.y, -1f, 1f);

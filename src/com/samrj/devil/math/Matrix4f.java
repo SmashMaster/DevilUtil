@@ -300,7 +300,7 @@ public final class Matrix4f implements Bufferable<FloatBuffer>, Matrix<Matrix4f>
             case GL11.GL_PROJECTION: mode = GL11.GL_PROJECTION_MATRIX; break;
         }
         fbuffer.clear();
-        GL11.glGetFloat(mode, fbuffer);
+        GL11.glGetFloatv(mode, fbuffer);
         return set(fbuffer).transpose();
     }
     
@@ -367,7 +367,6 @@ public final class Matrix4f implements Bufferable<FloatBuffer>, Matrix<Matrix4f>
                                e*cos + g*nsn, f, e*sin + g*cos, h,
                                i*cos + k*nsn, j, i*sin + k*cos, l,
                                m*cos + o*nsn, n, m*sin + o*cos, p);
-                
                 
             case Z: return set(a*cos + b*sin, a*nsn + b*cos, c, d,
                                e*cos + f*sin, e*nsn + f*cos, g, h,
@@ -463,7 +462,7 @@ public final class Matrix4f implements Bufferable<FloatBuffer>, Matrix<Matrix4f>
         fbuffer.clear();
         putIn(fbuffer);
         fbuffer.rewind();
-        GL11.glLoadMatrix(fbuffer);
+        GL11.glLoadMatrixf(fbuffer);
     }
     
     public void glMult(int mode)
@@ -472,7 +471,7 @@ public final class Matrix4f implements Bufferable<FloatBuffer>, Matrix<Matrix4f>
         fbuffer.clear();
         putIn(fbuffer);
         fbuffer.rewind();
-        GL11.glMultMatrix(fbuffer);
+        GL11.glMultMatrixf(fbuffer);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Overriden Object Methods">
