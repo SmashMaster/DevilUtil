@@ -19,7 +19,7 @@ public final class MatrixStack<TYPE extends Matrix>
     
     public void push(TYPE m)
     {
-        head = new Node((TYPE)m.clone(), head);
+        head = new Node((TYPE)m.copy(), head);
         size++;
     }
     

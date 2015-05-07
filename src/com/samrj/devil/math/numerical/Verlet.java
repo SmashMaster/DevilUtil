@@ -16,7 +16,7 @@ public class Verlet implements SymplecticIntegrator
         float hdt = dt*.5f;
         
         T qMid = dvdt.getSlope(t0, p0).mult(hdt).add(v0);
-        T p1 = qMid.clone().mult(dt).add(p0);
+        T p1 = qMid.copy().mult(dt).add(p0);
         T v1 = dvdt.getSlope(t0 + dt, p1).mult(hdt).add(qMid);
         return new StatePair<>(p1, v1);
     }

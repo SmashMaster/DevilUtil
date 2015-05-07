@@ -81,8 +81,7 @@ public class Range
         return distance(range) <= 0f;
     }
     
-    @Override
-    public Range clone()
+    public Range copy()
     {
         return new Range(this);
     }

@@ -54,7 +54,7 @@ public class RigidBody3D
     
     private Matrix3f rotatedInvMOI()
     {
-        return localDirToWorld.clone().mult(moi.inv).mult(worldDirToLocal);
+        return localDirToWorld.copy().mult(moi.inv).mult(worldDirToLocal);
     }
     
     public void step(float dt)
@@ -92,7 +92,7 @@ public class RigidBody3D
     public void applyImpulse(Vector3f impulse, Vector3f localPosition)
     {
         applyImpulse(impulse);
-        applyAngularImpulse(impulse.clone().cross(localPosition));
+        applyAngularImpulse(impulse.copy().cross(localPosition));
     }
     
     public void applyAngularImpulse(Vector3f angImp)
@@ -102,7 +102,7 @@ public class RigidBody3D
     
     public Vector3f getPointVelocity(Vector3f point)
     {
-        return angVel.clone().cross(point).add(vel);
+        return angVel.copy().cross(point).add(vel);
     }
     
     public Vector3f getLocalPointVelocity(Vector3f localPoint)

@@ -141,14 +141,14 @@ public final class Matrix2f implements Bufferable<FloatBuffer>, Matrix<Matrix2f>
     {
         return a*d - b*c;
     }
-    // </editor-fold>
-    // <editor-fold defaultstate="collapsed" desc="Overriden Object Methods">
+    
     @Override
-    public Matrix2f clone()
+    public Matrix2f copy()
     {
         return new Matrix2f(this);
     }
-    
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Overriden Object Methods">
     @Override
     public String toString()
     {

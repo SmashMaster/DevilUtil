@@ -271,27 +271,27 @@ public final class Vector2f implements Bufferable<FloatBuffer>, NumState<Vector2
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Nonlocal Mutators">
-    public Vector2f cadd(float x, float y)  {return clone().add(x, y);}
-    public Vector2f cadd(Vector2f v)        {return clone().add(v);}
-    public Vector2f csub(float x, float y)  {return clone().sub(x, y);}
-    public Vector2f csub(Vector2f v)        {return clone().sub(v);}
-    public Vector2f cmult(float s)          {return clone().mult(s);}
-    public Vector2f cmult(float x, float y) {return clone().mult(x, y);}
-    public Vector2f cmult(Vector2f v)       {return clone().mult(v);}
-    public Vector2f cmult(Matrix2f mat)     {return clone().mult(mat);}
-    public Vector2f cmult(Matrix3f mat)     {return clone().mult(mat);}
-    public Vector2f cdiv(float s)           {return clone().div(s);}
+    public Vector2f cadd(float x, float y)  {return copy().add(x, y);}
+    public Vector2f cadd(Vector2f v)        {return copy().add(v);}
+    public Vector2f csub(float x, float y)  {return copy().sub(x, y);}
+    public Vector2f csub(Vector2f v)        {return copy().sub(v);}
+    public Vector2f cmult(float s)          {return copy().mult(s);}
+    public Vector2f cmult(float x, float y) {return copy().mult(x, y);}
+    public Vector2f cmult(Vector2f v)       {return copy().mult(v);}
+    public Vector2f cmult(Matrix2f mat)     {return copy().mult(mat);}
+    public Vector2f cmult(Matrix3f mat)     {return copy().mult(mat);}
+    public Vector2f cdiv(float s)           {return copy().div(s);}
     
-    public Vector2f cloop(float min, float max) {return clone().loop(min, max);}
-    public Vector2f clerp(Vector2f v, float t)  {return clone().lerp(v, t);}
+    public Vector2f cloop(float min, float max) {return copy().loop(min, max);}
+    public Vector2f clerp(Vector2f v, float t)  {return copy().lerp(v, t);}
     
-    public Vector2f cavg(Vector2f v) {return clone().avg(v);}
-    public Vector2f cnormalize()     {return clone().normalize();}
-    public Vector2f crotCW()         {return clone().rotCW();}
-    public Vector2f crotCCW()        {return clone().rotCCW();}
-    public Vector2f cflipX()         {return clone().flipX();}
-    public Vector2f cflipY()         {return clone().flipY();}
-    public Vector2f cnegate()        {return clone().negate();}
+    public Vector2f cavg(Vector2f v) {return copy().avg(v);}
+    public Vector2f cnormalize()     {return copy().normalize();}
+    public Vector2f crotCW()         {return copy().rotCW();}
+    public Vector2f crotCCW()        {return copy().rotCCW();}
+    public Vector2f cflipX()         {return copy().flipX();}
+    public Vector2f cflipY()         {return copy().flipY();}
+    public Vector2f cnegate()        {return copy().negate();}
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Accessors">
     public float squareLength()
@@ -404,6 +404,12 @@ public final class Vector2f implements Bufferable<FloatBuffer>, NumState<Vector2
     {
         return Util.isFinite(x) && Util.isFinite(y);
     }
+    
+    @Override
+    public Vector2f copy()
+    {
+        return new Vector2f(this);
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Object Overriden Methods">
     @Override
@@ -412,12 +418,6 @@ public final class Vector2f implements Bufferable<FloatBuffer>, NumState<Vector2
         return "("+x+", "+y+")";
     }
     
-    @Override
-    public Vector2f clone()
-    {
-        return new Vector2f(this);
-    }
-
     @Override
     public boolean equals(Object obj)
     {

@@ -176,6 +176,11 @@ public final class Vector2i implements Bufferable<IntBuffer>
     {
         return new Vector2f(this);
     }
+    
+    public Vector2i copy()
+    {
+        return new Vector2i(this);
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Overriden Object Methods">
     /**
@@ -208,12 +213,6 @@ public final class Vector2i implements Bufferable<IntBuffer>
     public String toString()
     {
         return "("+x+", "+y+")";
-    }
-    
-    @Override
-    public Vector2i clone()
-    {
-        return new Vector2i(this);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Overriden Bufferable Methods">

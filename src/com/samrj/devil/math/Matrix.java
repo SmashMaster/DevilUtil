@@ -15,5 +15,5 @@ public interface Matrix<SELF_TYPE extends Matrix>
     public SELF_TYPE invert();
     public SELF_TYPE transpose();
     public float determinant();
-    public SELF_TYPE clone();
+    public SELF_TYPE copy();
 }

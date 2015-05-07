@@ -40,7 +40,7 @@ public class Camera2D
     public Camera2D(int resX, int resY, Vector2f pos, float height)
     {
         if (height <= 0f) throw new IllegalArgumentException();
-        this.pos = pos.clone();
+        this.pos = pos.copy();
         
         res = new Vector2i(resX, resY);
         mid = res.as2f().div(2f);
@@ -56,12 +56,12 @@ public class Camera2D
     
     public Vector2f getMid()
     {
-        return mid.clone();
+        return mid.copy();
     }
     
     public Vector2i getRes()
     {
-        return res.clone();
+        return res.copy();
     }
     
     public float getAspectRatio()
@@ -71,7 +71,7 @@ public class Camera2D
     
     public Matrix4f getProj()
     {
-        return proj.clone();
+        return proj.copy();
     }
     
     public void glLoadProj()

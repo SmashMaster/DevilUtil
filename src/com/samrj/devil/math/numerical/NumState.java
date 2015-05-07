@@ -14,5 +14,5 @@ public interface NumState<SELF_TYPE extends NumState<SELF_TYPE>>
     public SELF_TYPE sub(SELF_TYPE ns);
     public SELF_TYPE mult(float f);
     public SELF_TYPE div(float f);
-    public SELF_TYPE clone();
+    public SELF_TYPE copy();
 }

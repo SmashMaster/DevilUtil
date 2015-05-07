@@ -40,8 +40,8 @@ public class Seg extends Line
     {
         float t = projScalT(v);
         
-        if (t >= 1f) return b.clone();
-        if (t <= 0f) return a.clone();
+        if (t >= 1f) return b.copy();
+        if (t <= 0f) return a.copy();
         
         return super.projVec(v);
     }

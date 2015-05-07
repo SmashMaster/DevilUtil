@@ -63,7 +63,7 @@ public class Util
         
         public Vector3f versor()
         {
-            return dir.clone();
+            return dir.copy();
         }
     }
     

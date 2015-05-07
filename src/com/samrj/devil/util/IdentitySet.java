@@ -81,11 +81,6 @@ public class IdentitySet<T> extends AbstractSet<T>
         map.clear();
     }
     
-    @Override public IdentitySet<T> clone()
-    {
-        return new IdentitySet<>(this);
-    }
-    
     @Override
     public int hashCode()
     {

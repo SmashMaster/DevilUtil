@@ -158,6 +158,11 @@ public final class Vector3i implements Bufferable<IntBuffer>
     {
         return new Vector3f(x, y, z);
     }
+    
+    public Vector3i copy()
+    {
+        return new Vector3i(this);
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Overriden Object Methods">
     /**
@@ -193,12 +198,6 @@ public final class Vector3i implements Bufferable<IntBuffer>
     public String toString()
     {
         return "("+x+", "+y+", "+z+")";
-    }
-    
-    @Override
-    public Vector3i clone()
-    {
-        return new Vector3i(this);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Overriden Bufferable Methods">

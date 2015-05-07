@@ -33,7 +33,7 @@ public final class Quat4f
         final float sin = Util.sin(a);
         final float cos = Util.cos(a);
         
-        axis = axis.clone().setLength(sin);
+        axis = axis.copy().setLength(sin);
         
         return new Quat4f(cos, axis.x, axis.y, axis.z);
     }

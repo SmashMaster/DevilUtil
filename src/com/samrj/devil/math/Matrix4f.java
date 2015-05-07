@@ -473,14 +473,15 @@ public final class Matrix4f implements Bufferable<FloatBuffer>, Matrix<Matrix4f>
         fbuffer.rewind();
         GL11.glMultMatrixf(fbuffer);
     }
-    // </editor-fold>
-    // <editor-fold defaultstate="collapsed" desc="Overriden Object Methods">
+    
     @Override
-    public Matrix4f clone()
+    public Matrix4f copy()
     {
         return new Matrix4f(this);
     }
     
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Overriden Object Methods">
     @Override
     public String toString()
     {

@@ -44,7 +44,7 @@ public class Camera3D
     
     public Matrix4f getProj()
     {
-        return proj.clone();
+        return proj.copy();
     }
     
     public void glLoadProj()
@@ -72,7 +72,7 @@ public class Camera3D
     
     public Matrix4f getViewProj()
     {
-        return proj.clone().mult(getView());
+        return proj.copy().mult(getView());
     }
     
     /**
@@ -85,7 +85,7 @@ public class Camera3D
     {
         float midx = resX*.5f;
         float midy = resY*.5f;
-        pos = pos.clone();
+        pos = pos.copy();
         pos.mult(getView());
         pos.mult(proj);
         pos.x = pos.x*midx/pos.z + midx;
@@ -103,7 +103,7 @@ public class Camera3D
     {
         float midx = resX*.5f;
         float midy = resY*.5f;
-        dir = dir.clone();
+        dir = dir.copy();
         dir.mult(getView().toMatrix3f());
         dir.mult(proj.toMatrix3f());
         dir.x = dir.x*midx/dir.z + midx;

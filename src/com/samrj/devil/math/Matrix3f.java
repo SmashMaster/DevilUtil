@@ -315,14 +315,14 @@ public final class Matrix3f implements Bufferable<FloatBuffer>, Matrix<Matrix3f>
         fbuffer.rewind();
         GL11.glLoadMatrixf(fbuffer);
     }
-    // </editor-fold>
-    // <editor-fold defaultstate="collapsed" desc="Overriden Object Methods">
+    
     @Override
-    public Matrix3f clone()
+    public Matrix3f copy()
     {
         return new Matrix3f(this);
     }
-    
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Overriden Object Methods">
     @Override
     public String toString()
     {

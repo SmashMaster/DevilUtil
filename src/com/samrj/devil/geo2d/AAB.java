@@ -217,7 +217,7 @@ public class AAB
      */
     public Vector2f closest(Vector2f v)
     {
-        Vector2f out = v.clone();
+        Vector2f out = v.copy();
         
         if (out.x > x1) out.x = x1;
         else if (out.x < x0) out.x = x0;

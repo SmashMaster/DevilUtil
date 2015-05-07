@@ -20,7 +20,7 @@ public class ConvexPoly
         if (verts.length <= 3) throw new IllegalArgumentException();
         
         this.verts = new Vector2f[verts.length];
-        for (int i=0; i<verts.length; i++) this.verts[i] = verts[i].clone();
+        for (int i=0; i<verts.length; i++) this.verts[i] = verts[i].copy();
         
         if (!isConvex()) throw new ConcavePolyException();
     }
@@ -33,7 +33,7 @@ public class ConvexPoly
     public ConvexPoly(ConvexPoly poly)
     {
         this.verts = new Vector2f[poly.verts.length];
-        for (int i=0; i<verts.length; i++) verts[i] = poly.verts[i].clone();
+        for (int i=0; i<verts.length; i++) verts[i] = poly.verts[i].copy();
     }
     
     private boolean isConvex()
@@ -41,7 +41,7 @@ public class ConvexPoly
         Vector2f prev = null, d2 = null;
         for (int i=0; i<verts.length; i++)
         {
-            Vector2f v = verts[i].clone();
+            Vector2f v = verts[i].copy();
             this.verts[i] = v;
             
             Vector2f d1 = (prev != null) ? v.csub(prev) : null;

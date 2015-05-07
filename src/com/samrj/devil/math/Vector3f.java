@@ -235,24 +235,24 @@ public final class Vector3f implements Bufferable<FloatBuffer>, NumState<Vector3
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Nonlocal Mutators">
-    public Vector3f cadd(float x, float y, float z)  {return clone().add(x, y, z);}
-    public Vector3f cadd(Vector3f v)                 {return clone().add(v);}
-    public Vector3f csub(float x, float y, float z)  {return clone().sub(x, y, z);}
-    public Vector3f csub(Vector3f v)                 {return clone().sub(v);}
-    public Vector3f cmult(float s)                   {return clone().mult(s);}
-    public Vector3f cmult(float x, float y, float z) {return clone().mult(x, y, z);}
-    public Vector3f cmult(Vector3f v)                {return clone().mult(v);}
-    public Vector3f cmult(Matrix3f mat)              {return clone().mult(mat);}
-    public Vector3f cmult(Matrix4f mat)              {return clone().mult(mat);}
-    public Vector3f cdiv(float s)                    {return clone().div(s);}
+    public Vector3f cadd(float x, float y, float z)  {return copy().add(x, y, z);}
+    public Vector3f cadd(Vector3f v)                 {return copy().add(v);}
+    public Vector3f csub(float x, float y, float z)  {return copy().sub(x, y, z);}
+    public Vector3f csub(Vector3f v)                 {return copy().sub(v);}
+    public Vector3f cmult(float s)                   {return copy().mult(s);}
+    public Vector3f cmult(float x, float y, float z) {return copy().mult(x, y, z);}
+    public Vector3f cmult(Vector3f v)                {return copy().mult(v);}
+    public Vector3f cmult(Matrix3f mat)              {return copy().mult(mat);}
+    public Vector3f cmult(Matrix4f mat)              {return copy().mult(mat);}
+    public Vector3f cdiv(float s)                    {return copy().div(s);}
     
-    public Vector3f cloop(float min, float max) {return clone().loop(min, max);}
-    public Vector3f clerp(Vector3f v, float t)  {return clone().lerp(v, t);}
+    public Vector3f cloop(float min, float max) {return copy().loop(min, max);}
+    public Vector3f clerp(Vector3f v, float t)  {return copy().lerp(v, t);}
     
-    public Vector3f cavg(Vector3f v) {return clone().avg(v);}
-    public Vector3f cnormalize()     {return clone().normalize();}
-    public Vector3f cnegate()        {return clone().negate();}
-    public Vector3f creciprocal()        {return clone().reciprocal();}
+    public Vector3f cavg(Vector3f v) {return copy().avg(v);}
+    public Vector3f cnormalize()     {return copy().normalize();}
+    public Vector3f cnegate()        {return copy().negate();}
+    public Vector3f creciprocal()        {return copy().reciprocal();}
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Accessor Methods">
     public float squareLength()
@@ -329,8 +329,8 @@ public final class Vector3f implements Bufferable<FloatBuffer>, NumState<Vector3
     {
         if (isZero(1e-6f) || v.isZero(1e-6f)) throw new IllegalArgumentException();
         
-        Vector3f v0 = clone().normalize();
-        Vector3f v1 = v.clone().normalize();
+        Vector3f v0 = copy().normalize();
+        Vector3f v1 = v.copy().normalize();
 
         final float dot = v0.dot(v1);
         //this and v have same direction.
@@ -361,6 +361,12 @@ public final class Vector3f implements Bufferable<FloatBuffer>, NumState<Vector3
     {
         GL11.glTranslatef(x, y, z);
     }
+    
+    @Override
+    public Vector3f copy()
+    {
+        return new Vector3f(this);
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Overriden Object Methods">
     @Override
@@ -386,12 +392,6 @@ public final class Vector3f implements Bufferable<FloatBuffer>, NumState<Vector3
     public String toString()
     {
         return "("+x+", "+y+", "+z+")";
-    }
-    
-    @Override
-    public Vector3f clone()
-    {
-        return new Vector3f(this);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Overriden Bufferable Methods">

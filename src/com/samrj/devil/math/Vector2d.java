@@ -160,52 +160,52 @@ public class Vector2d
     // <editor-fold defaultstate="collapsed" desc="Nonlocal Mutators">
     public Vector2d cadd(float x, float y)
     {
-        return clone().add(x, y);
+        return copy().add(x, y);
     }
     
     public Vector2d cadd(Vector2d v)
     {
-        return clone().add(v);
+        return copy().add(v);
     }
     
     public Vector2d cadd(Vector2f v)
     {
-        return clone().add(v);
+        return copy().add(v);
     }
     
     public Vector2d csub(double x, double y)
     {
-        return clone().sub(x, y);
+        return copy().sub(x, y);
     }
 
     public Vector2d csub(Vector2d v)
     {
-        return clone().sub(v);
+        return copy().sub(v);
     }
     
     public Vector2d csub(Vector2f v)
     {
-        return clone().sub(v);
+        return copy().sub(v);
     }
     
     public Vector2d cmult(double s)
     {
-        return clone().mult(s);
+        return copy().mult(s);
     }
     
     public Vector2d cmult(Matrix2f mat)
     {
-        return clone().mult(mat);
+        return copy().mult(mat);
     }
     
     public Vector2d cmult(Matrix3f mat)
     {
-        return clone().mult(mat);
+        return copy().mult(mat);
     }
     
     public Vector2d cdiv(double s)
     {
-        return clone().div(s);
+        return copy().div(s);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Accessors">
@@ -248,18 +248,17 @@ public class Vector2d
     {
         return new Vector2f((float)x, (float)y);
     }
+    
+    public Vector2d copy()
+    {
+        return new Vector2d(this);
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Object Overriden Methods">
     @Override
     public String toString()
     {
         return "("+x+", "+y+")";
-    }
-    
-    @Override
-    public Vector2d clone()
-    {
-        return new Vector2d(this);
     }
     // </editor-fold>
 }
