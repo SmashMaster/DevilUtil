@@ -115,6 +115,16 @@ public final class Vector3f implements Bufferable<FloatBuffer>, NumState<Vector3
         return set(x/s, y/s, z/s);
     }
     
+    public Vector3f div(float x, float y, float z)
+    {
+        return set(this.x/x, this.y/y, this.z/z);
+    }
+    
+    public Vector3f div(Vector3f v)
+    {
+        return div(v.x, v.y, v.z);
+    }
+    
     public Vector3f loop(float min, float max)
     {
         return set(Util.loop(x, min, max),
@@ -245,6 +255,8 @@ public final class Vector3f implements Bufferable<FloatBuffer>, NumState<Vector3
     public Vector3f cmult(Matrix3f mat)              {return copy().mult(mat);}
     public Vector3f cmult(Matrix4f mat)              {return copy().mult(mat);}
     public Vector3f cdiv(float s)                    {return copy().div(s);}
+    public Vector3f cdiv(float x, float y, float z)  {return copy().div(x, y, z);}
+    public Vector3f cdiv(Vector3f v)                 {return copy().div(v);}
     
     public Vector3f cloop(float min, float max) {return copy().loop(min, max);}
     public Vector3f clerp(Vector3f v, float t)  {return copy().lerp(v, t);}
