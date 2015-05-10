@@ -84,6 +84,11 @@ public final class GLFWUtil
         return new VideoMode(buffer);
     }
     
+    public static VideoMode getPrimaryMonitorVideoMode()
+    {
+        return getMonitorVideoMode(GLFW.glfwGetPrimaryMonitor());
+    }
+    
     public static GammaRamp getMonitorGammaRamp(long monitor)
     {
         return new GammaRamp(GLFW.glfwGetGammaRamp(monitor));
