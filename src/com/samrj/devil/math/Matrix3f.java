@@ -1,7 +1,7 @@
 package com.samrj.devil.math;
 
 import com.samrj.devil.buffer.Bufferable;
-import static com.samrj.devil.buffer.PublicBuffers.fbuffer;
+import com.samrj.devil.buffer.BufferUtil;
 import com.samrj.devil.math.Util.Axis;
 import java.nio.FloatBuffer;
 import org.lwjgl.opengl.GL11;
@@ -310,10 +310,13 @@ public final class Matrix3f implements Bufferable<FloatBuffer>, Matrix<Matrix3f>
     public void glLoad(int mode)
     {
         GL11.glMatrixMode(mode);
-        fbuffer.clear();
-        toMatrix4f().putIn(fbuffer);
-        fbuffer.rewind();
-        GL11.glLoadMatrixf(fbuffer);
+        
+        FloatBuffer buffer = BufferUtil.pubBufA.asFloatBuffer();
+        
+        buffer.clear();
+        toMatrix4f().putIn(buffer);
+        buffer.rewind();
+        GL11.glLoadMatrixf(buffer);
     }
     
     @Override

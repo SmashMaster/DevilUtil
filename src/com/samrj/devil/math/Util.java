@@ -150,12 +150,15 @@ public class Util
     // <editor-fold defaultstate="collapsed" desc="Float Math">
     public static float[] quadFormula(float a, float b, float c)
     {
+        if (Util.isSubnormal(a)) return new float[0];
+        
         float discriminant = b*b - 4f*a*c;
         
-        if (discriminant < 0f) return new float[0];
-        if (discriminant == 0f) return new float[] {-b/(a*2f)};
+        if (discriminant < 0.0f || !Float.isFinite(discriminant)) return new float[0];
+        if (discriminant == 0.0f) return new float[] {-b/(a*2f)};
         
         float sqrtDisc = (float)Math.sqrt(discriminant);
+        
         float a2 = a*2f;
         return new float[] {(-b - sqrtDisc)/a2, (sqrtDisc - b)/a2};
     }
@@ -466,6 +469,32 @@ public class Util
     public static float min(float... values)
     {
         return values[indexMin(values)];
+    }
+    
+    public static int indexMinPositive(float... values)
+    {
+        if (values.length == 0) throw new IllegalArgumentException();
+        if (values.length == 1) return 0;
+        
+        float min = values[0];
+        int out = 0;
+        
+        for (int i=1; i<values.length; i++) if (values[i] >= 0.0f && values[i] < min)
+        {
+            min = values[i];
+            out = i;
+        }
+        
+        return out;
+    }
+    
+    /**
+     * Returns the smallest positive value in the given array, or a negative
+     * value if all are negative.
+     */
+    public static float minPositive(float... values)
+    {
+        return values[indexMinPositive(values)];
     }
     
     public static int indexMax(float... values)

@@ -330,6 +330,13 @@ public final class Vector3f implements Bufferable<FloatBuffer>, NumState<Vector3
                Util.isZero(z, threshold);
     }
     
+    public boolean isFinite()
+    {
+        return Float.isFinite(x) &&
+               Float.isFinite(y) &&
+               Float.isFinite(z);
+    }
+    
     public boolean epsEqual(Vector3f v, int tolerance)
     {
         return Util.epsEqual(v.x, x, tolerance) &&

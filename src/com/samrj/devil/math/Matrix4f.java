@@ -1,7 +1,7 @@
 package com.samrj.devil.math;
 
+import com.samrj.devil.buffer.BufferUtil;
 import com.samrj.devil.buffer.Bufferable;
-import static com.samrj.devil.buffer.PublicBuffers.fbuffer;
 import com.samrj.devil.math.Util.Axis;
 import java.nio.FloatBuffer;
 import org.lwjgl.opengl.GL11;
@@ -299,9 +299,10 @@ public final class Matrix4f implements Bufferable<FloatBuffer>, Matrix<Matrix4f>
             case GL11.GL_MODELVIEW: mode = GL11.GL_MODELVIEW_MATRIX; break;
             case GL11.GL_PROJECTION: mode = GL11.GL_PROJECTION_MATRIX; break;
         }
-        fbuffer.clear();
-        GL11.glGetFloatv(mode, fbuffer);
-        return set(fbuffer).transpose();
+        FloatBuffer buffer = BufferUtil.pubBufA.asFloatBuffer();
+        buffer.clear();
+        GL11.glGetFloatv(mode, buffer);
+        return set(buffer).transpose();
     }
     
     @Override
@@ -459,19 +460,21 @@ public final class Matrix4f implements Bufferable<FloatBuffer>, Matrix<Matrix4f>
     public void glLoad(int mode)
     {
         GL11.glMatrixMode(mode);
-        fbuffer.clear();
-        putIn(fbuffer);
-        fbuffer.rewind();
-        GL11.glLoadMatrixf(fbuffer);
+        FloatBuffer buffer = BufferUtil.pubBufA.asFloatBuffer();
+        buffer.clear();
+        putIn(buffer);
+        buffer.rewind();
+        GL11.glLoadMatrixf(buffer);
     }
     
     public void glMult(int mode)
     {
         GL11.glMatrixMode(mode);
-        fbuffer.clear();
-        putIn(fbuffer);
-        fbuffer.rewind();
-        GL11.glMultMatrixf(fbuffer);
+        FloatBuffer buffer = BufferUtil.pubBufA.asFloatBuffer();
+        buffer.clear();
+        putIn(buffer);
+        buffer.rewind();
+        GL11.glMultMatrixf(buffer);
     }
     
     @Override

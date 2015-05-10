@@ -1,6 +1,7 @@
 package com.samrj.devil.graphics;
 
-import static com.samrj.devil.buffer.PublicBuffers.ibuffer;
+import static com.samrj.devil.buffer.BufferUtil.pubBufA;
+import java.nio.IntBuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
@@ -64,9 +65,9 @@ public class GLFrameBuffer
         for (int i=0; i<a.length; i++) if (a[i] < GL30.GL_COLOR_ATTACHMENT0)
             a[i] += GL30.GL_COLOR_ATTACHMENT0;
         
-        ibuffer.clear();
-        ibuffer.put(a);
-        GL20.glDrawBuffers(ibuffer.get());
+        IntBuffer buffer = pubBufA.asIntBuffer();
+        buffer.clear(); buffer.put(a); buffer.rewind();
+        GL20.glDrawBuffers(buffer);
     }
     
     public void glTexture2D(GLTexture2D t, int attachment)

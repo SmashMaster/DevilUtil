@@ -1,13 +1,15 @@
 package com.samrj.devil.graphics;
 
-import static com.samrj.devil.buffer.PublicBuffers.ibuffer;
-import static com.samrj.devil.buffer.PublicBuffers.fbuffer;
+import com.samrj.devil.buffer.BufferUtil;
+import static com.samrj.devil.buffer.BufferUtil.pubBufA;
+import static com.samrj.devil.buffer.BufferUtil.pubBufB;
 import com.samrj.devil.math.Matrix2f;
 import com.samrj.devil.math.Matrix3f;
 import com.samrj.devil.math.Matrix4f;
 import com.samrj.devil.res.Resource;
 import java.io.*;
-import org.lwjgl.BufferUtils;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
@@ -27,12 +29,12 @@ public class GLShader
         int numShaders = GL20.glGetProgrami(id, GL20.GL_ATTACHED_SHADERS);
         if (numShaders != 2) return null;
         
-        java.nio.IntBuffer shadBuf = BufferUtils.createIntBuffer(2);
-        shadBuf.limit(2); shadBuf.position(0);
-        ibuffer.clear();
-        ibuffer.put(1);
-        ibuffer.rewind();
-        GL20.glGetAttachedShaders(id, ibuffer, shadBuf);
+        BufferUtil.clearPublicBuffers();
+        IntBuffer shadBuf = pubBufA.asIntBuffer();
+        IntBuffer countBuf = pubBufB.asIntBuffer();
+        countBuf.put(1);
+        countBuf.rewind();
+        GL20.glGetAttachedShaders(id, countBuf, shadBuf);
         
         int vertid = shadBuf.get(0);
         int fragid = shadBuf.get(1);
@@ -198,6 +200,9 @@ public class GLShader
         if (out < 0) throw new UniformNotFoundException(name);
         return out;
     }
+    
+    private static IntBuffer ibuffer = pubBufA.asIntBuffer();
+    private static FloatBuffer fbuffer = pubBufB.asFloatBuffer();
     
     private void glUniformi(int loc, int elementSize)
     {

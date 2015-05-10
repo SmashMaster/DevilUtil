@@ -1,12 +1,12 @@
 package com.samrj.devil.graphics;
 
+import com.samrj.devil.buffer.BufferUtil;
 import static com.samrj.devil.math.Util.PrimType.FLOAT;
 import static com.samrj.devil.math.Util.PrimType.INT;
 import static com.samrj.devil.math.Util.sizeof;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
@@ -55,8 +55,8 @@ public class GLVertexPool
         
         this.vertexSize = vertexSize;
         
-        vertices = BufferUtils.createFloatBuffer(vertCapacity*vertexSize);
-        indices = BufferUtils.createIntBuffer(indCapacity);
+        vertices = BufferUtil.createFloatBuffer(vertCapacity*vertexSize);
+        indices = BufferUtil.createIntBuffer(indCapacity);
         
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertices.capacity()*sizeof(FLOAT), usage);

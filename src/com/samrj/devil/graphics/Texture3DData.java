@@ -1,7 +1,7 @@
 package com.samrj.devil.graphics;
 
+import com.samrj.devil.buffer.BufferUtil;
 import java.nio.ByteBuffer;
-import org.lwjgl.BufferUtils;
 
 /**
  * 3D texture data class for OpenGL.
@@ -43,7 +43,7 @@ public class Texture3DData
         if (bands == -1) throw new IllegalArgumentException("Illegal format specified.");
         
         int length = width*height*depth*bands;
-        buffer = BufferUtils.createByteBuffer(length);
+        buffer = BufferUtil.createByteBuffer(length);
         buffer.put(new byte[length]);
     }
     
