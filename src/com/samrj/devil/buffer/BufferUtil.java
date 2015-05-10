@@ -32,6 +32,7 @@ public class BufferUtil
         pubBufA.clear();
         pubBufB.clear();
         pubBufC.clear();
+        pubBufD.clear();
     }
     
     /**
