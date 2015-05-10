@@ -14,9 +14,9 @@ import org.lwjgl.glfw.GLFW;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class GLFWUtil
+public final class GLFWUtil
 {
-    public Vector2i getWindowPos(long window)
+    public static Vector2i getWindowPos(long window)
     {
         BufferUtil.clearPublicBuffers();
         GLFW.glfwGetWindowPos(window, BufferUtil.pubBufA, BufferUtil.pubBufB);
@@ -25,7 +25,7 @@ public class GLFWUtil
                             BufferUtil.pubBufB.getInt());
     }
     
-    public Vector2i getWindowSize(long window)
+    public static Vector2i getWindowSize(long window)
     {
         BufferUtil.clearPublicBuffers();
         GLFW.glfwGetWindowSize(window, BufferUtil.pubBufA, BufferUtil.pubBufB);
@@ -34,7 +34,7 @@ public class GLFWUtil
                             BufferUtil.pubBufB.getInt());
     }
     
-    public final Vector2i getFramebufferSize(long window)
+    public static final Vector2i getFramebufferSize(long window)
     {
         BufferUtil.clearPublicBuffers();
         GLFW.glfwGetFramebufferSize(window, BufferUtil.pubBufA, BufferUtil.pubBufB);
@@ -43,7 +43,7 @@ public class GLFWUtil
                             BufferUtil.pubBufB.getInt());
     }
     
-    public final FrameSize getWindowFrameSize(long window)
+    public static final FrameSize getWindowFrameSize(long window)
     {
         BufferUtil.clearPublicBuffers();
         GLFW.glfwGetWindowFrameSize(window, BufferUtil.pubBufA, BufferUtil.pubBufB,
@@ -55,7 +55,7 @@ public class GLFWUtil
                              BufferUtil.pubBufD.getInt());
     }
     
-    public Vector2i getMonitorPos(long monitor)
+    public static Vector2i getMonitorPos(long monitor)
     {
         BufferUtil.clearPublicBuffers();
         GLFW.glfwGetMonitorPos(monitor, BufferUtil.pubBufA, BufferUtil.pubBufB);
@@ -64,7 +64,7 @@ public class GLFWUtil
                             BufferUtil.pubBufB.getInt());
     }
     
-    public Vector2i getMonitorPhysicalSize(long monitor)
+    public static Vector2i getMonitorPhysicalSize(long monitor)
     {
         BufferUtil.clearPublicBuffers();
         GLFW.glfwGetMonitorPhysicalSize(monitor, BufferUtil.pubBufA, BufferUtil.pubBufB);
@@ -73,24 +73,28 @@ public class GLFWUtil
                             BufferUtil.pubBufB.getInt());
     }
     
-    public LinkedList<VideoMode> getMonitorVideoModes(long monitor)
+    public static LinkedList<VideoMode> getMonitorVideoModes(long monitor)
     {
         return VideoMode.getAll(monitor);
     }
     
-    public VideoMode getMonitorVideoMode(long monitor)
+    public static VideoMode getMonitorVideoMode(long monitor)
     {
         ByteBuffer buffer = GLFW.glfwGetVideoMode(monitor);
         return new VideoMode(buffer);
     }
     
-    public GammaRamp getMonitorGammaRamp(long monitor)
+    public static GammaRamp getMonitorGammaRamp(long monitor)
     {
         return new GammaRamp(GLFW.glfwGetGammaRamp(monitor));
     }
     
-    public void setMonitorGammaRamp(long monitor, GammaRamp gammaRamp)
+    public static void setMonitorGammaRamp(long monitor, GammaRamp gammaRamp)
     {
         GLFW.glfwSetGammaRamp(monitor, gammaRamp.toBuffer());
+    }
+    
+    private GLFWUtil()
+    {
     }
 }
