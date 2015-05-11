@@ -337,6 +337,13 @@ public final class Vector3f implements Bufferable<FloatBuffer>, NumState<Vector3
                Float.isFinite(z);
     }
     
+    public float getEpsilon()
+    {
+        return Util.max(Util.getEpsilon(x),
+                        Util.getEpsilon(y),
+                        Util.getEpsilon(z));
+    }
+    
     public boolean epsEqual(Vector3f v, int tolerance)
     {
         return Util.epsEqual(v.x, x, tolerance) &&

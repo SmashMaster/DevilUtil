@@ -360,18 +360,11 @@ public class Util
     {
         if (Float.isNaN(f)) return Float.NaN;
         if (Float.isInfinite(f)) return Float.POSITIVE_INFINITY;
-        if (!isSubnormal(f)) return Float.MIN_VALUE;
         
-        //Isolate exponent.
-        final int exp = (Float.floatToRawIntBits(f) & 0x7F800000) >>> 23;
+        float finc = Float.intBitsToFloat(Float.floatToRawIntBits(f) + 1);
+        //The first number whose absolute value is greater than f's.
         
-        //f is the smallest number with a normal epsilon.
-        if (exp == 24) return Float.MIN_NORMAL;
-        //f may still be normal, but its epsilon is subnormal.
-        if (exp < 24) return Float.intBitsToFloat(1 << (exp - 1));
-        
-        //Lower exp such that new MSB is old LSF, and return float.
-        return Float.intBitsToFloat((exp - 23) << 23);
+        return Math.abs(finc - f); //Automatically works on subnormal values.
     }
     
     /**
