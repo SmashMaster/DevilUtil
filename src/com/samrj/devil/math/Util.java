@@ -471,32 +471,6 @@ public class Util
         return values[indexMin(values)];
     }
     
-    public static int indexMinAbs(float... values)
-    {
-        if (values.length == 0) throw new IllegalArgumentException();
-        
-        float min = Math.abs(values[0]);
-        int out = 0;
-        
-        for (int i=1; i<values.length; i++)
-        {
-            float abs = Math.abs(values[i]);
-            
-            if (abs < min)
-            {
-                min = abs;
-                out = i;
-            }
-        }
-        
-        return out;
-    }
-    
-    public static float minAbs(float... values)
-    {
-        return values[indexMinAbs(values)];
-    }
-    
     public static int indexMax(float... values)
     {
         if (values.length == 0) throw new IllegalArgumentException();
