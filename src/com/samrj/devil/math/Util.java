@@ -471,30 +471,30 @@ public class Util
         return values[indexMin(values)];
     }
     
-    public static int indexMinPositive(float... values)
+    public static int indexMinAbs(float... values)
     {
         if (values.length == 0) throw new IllegalArgumentException();
-        if (values.length == 1) return 0;
         
-        float min = values[0];
+        float min = Math.abs(values[0]);
         int out = 0;
         
-        for (int i=1; i<values.length; i++) if (values[i] >= 0.0f && values[i] < min)
+        for (int i=1; i<values.length; i++)
         {
-            min = values[i];
-            out = i;
+            float abs = Math.abs(values[i]);
+            
+            if (abs < min)
+            {
+                min = abs;
+                out = i;
+            }
         }
         
         return out;
     }
     
-    /**
-     * Returns the smallest positive value in the given array, or a negative
-     * value if all are negative.
-     */
-    public static float minPositive(float... values)
+    public static float minAbs(float... values)
     {
-        return values[indexMinPositive(values)];
+        return values[indexMinAbs(values)];
     }
     
     public static int indexMax(float... values)
