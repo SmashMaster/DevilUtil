@@ -330,6 +330,11 @@ public final class Vector3f implements Bufferable<FloatBuffer>, NumState<Vector3
                Util.isZero(z, threshold);
     }
     
+    public boolean isZero()
+    {
+        return x == 0.0f && y == 0.0f && z == 0.0f;
+    }
+    
     public boolean isFinite()
     {
         return Float.isFinite(x) &&
