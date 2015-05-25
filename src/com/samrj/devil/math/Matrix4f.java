@@ -431,6 +431,14 @@ public final class Matrix4f implements Bufferable<FloatBuffer>, Matrix<Matrix4f>
                    a*f*k + b*g*i + c*e*j - a*g*j - b*e*k - c*f*i).div(det);
     }
     
+    public Matrix4f rotation()
+    {
+        return set(a, b, c, 0.0f,
+                   e, f, g, 0.0f,
+                   i, j, k, 0.0f,
+                   m, n, o, p);
+    }
+    
     @Override
     public Matrix4f transpose()
     {
