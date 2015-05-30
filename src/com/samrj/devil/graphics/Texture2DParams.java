@@ -23,4 +23,12 @@ public final class Texture2DParams
         texture.glParam(GL11.GL_TEXTURE_MIN_FILTER, minFilter);
         texture.glParam(GL11.GL_TEXTURE_MAG_FILTER, magFilter);
     }
+    
+    public void glApply(GLTextureRectangle texture)
+    {
+        texture.glParam(GL11.GL_TEXTURE_WRAP_S, wrapS);
+        texture.glParam(GL11.GL_TEXTURE_WRAP_T, wrapT);
+        texture.glParam(GL11.GL_TEXTURE_MIN_FILTER, minFilter);
+        texture.glParam(GL11.GL_TEXTURE_MAG_FILTER, magFilter);
+    }
 }
