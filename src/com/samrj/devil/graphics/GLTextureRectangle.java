@@ -55,7 +55,7 @@ public class GLTextureRectangle
                 data.baseFormat, GL11.GL_UNSIGNED_BYTE, data.read());
         
         if (TexUtil.isMipmapFilter(params.minFilter))
-            GL30.glGenerateMipmap(GL31.GL_TEXTURE_RECTANGLE);
+            throw new IllegalArgumentException("Rectangle textures do not support mipmapping.");
         
         params.glApply(this);
         if (enabling) GL11.glDisable(GL31.GL_TEXTURE_RECTANGLE);
