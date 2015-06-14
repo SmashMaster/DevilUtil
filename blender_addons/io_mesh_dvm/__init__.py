@@ -31,7 +31,7 @@ class DVMExporter(bpy.types.Operator, ExportHelper):
     def execute(self, context):
         from . import export_dvm
         imp.reload(export_dvm)
-        return export_dvm.write(context, self.filepath, type)
+        return export_dvm.export(context, self.filepath, type)
 
 def menu_export(self, context):
     self.layout.operator(DVMExporter.bl_idname, text="DevilModel (.dvm)")
