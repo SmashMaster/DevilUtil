@@ -6,10 +6,10 @@ class Triangle:
         self.vertices = vertices
         self.normal = normal
 
-def makeYUp(vertex):
+def rotateYUp(vertex):
     return [vertex[0], vertex[2], -vertex[1]]
 
-def write(context, filepath):
+def write(context, filepath, type):
     # Exit edit mode before exporting, so current object states are exported properly.
     if bpy.ops.object.mode_set.poll():
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -36,8 +36,8 @@ def write(context, filepath):
     for mesh in meshes:
         file.write(struct.pack('>i', len(mesh.vertices)))
         for vertex in mesh.vertices:
-            file.write(struct.pack('>3f', *makeYUp(vertex.co)))
-            file.write(struct.pack('>3f', *makeYUp(vertex.normal)))
+            file.write(struct.pack('>3f', *rotateYUp(vertex.co)))
+            file.write(struct.pack('>3f', *rotateYUp(vertex.normal)))
         
         triangles = []
         
@@ -52,7 +52,7 @@ def write(context, filepath):
         file.write(struct.pack('>i', len(triangles)))
         for triangle in triangles:
             file.write(struct.pack('>3i', *triangle.vertices))
-            file.write(struct.pack('>3f', *makeYUp(triangle.normal)))
+            file.write(struct.pack('>3f', *rotateYUp(triangle.normal)))
         
     file.close()
     return {'FINISHED'}

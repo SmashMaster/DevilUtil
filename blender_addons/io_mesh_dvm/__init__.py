@@ -10,7 +10,7 @@ bl_info = {
 import imp
 import bpy
 
-from bpy.props import StringProperty, BoolProperty
+from bpy.props import StringProperty, EnumProperty
 from bpy_extras.io_utils import ExportHelper
 
 class DVMExporter(bpy.types.Operator, ExportHelper):
@@ -20,21 +20,18 @@ class DVMExporter(bpy.types.Operator, ExportHelper):
     filename_ext = ".dvm"
     filter_glob = StringProperty(default="*.dvm", options={'HIDDEN'})
 
-#    apply_modifiers = BoolProperty(
-#            name="Apply Modifiers",
-#            description="Use transformed mesh data from each object",
-#            default=True,
-#            )
-#    triangulate = BoolProperty(
-#            name="Triangulate",
-#            description="Triangulate quads",
-#            default=True,
-#            )
+    type = EnumProperty(
+            name="Type",
+            description="Choose output model type",
+            items=(('0', "Static", "1 material per mesh, no rigging or animation"),
+                   ('1', "Multitextured", "4 materials per mesh, no rigging or animation"),
+                   ('2', "Animated", "1 material per mesh, rigged and animated")),
+            default='0',)
 
     def execute(self, context):
         from . import export_dvm
         imp.reload(export_dvm)
-        return export_dvm.write(context, self.filepath)
+        return export_dvm.write(context, self.filepath, type)
 
 def menu_export(self, context):
     self.layout.operator(DVMExporter.bl_idname, text="DevilModel (.dvm)")
