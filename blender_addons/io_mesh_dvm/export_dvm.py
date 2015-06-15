@@ -48,9 +48,6 @@ def loopVerticesEqual(lva, lvb):
     
     return True
 
-def rotateYUp(vertex):
-    return [vertex[0], vertex[2], -vertex[1]]
-
 def writeJavaUTF(file, string):
     utf8 = string.encode('utf_8')
     strlen = len(utf8)
@@ -131,6 +128,9 @@ def prepareMesh(mesh):
     
     return vertices, triangles
 
+def rotateYUp(vertex):
+    return [vertex[0], vertex[2], -vertex[1]]
+
 def exportMesh(file, dvmType, object, mesh):
     vertices, triangles = prepareMesh(mesh)
     
@@ -142,9 +142,9 @@ def exportMesh(file, dvmType, object, mesh):
     #Write vertices
     file.write(struct.pack('>i', len(vertices)))
     for vertex in vertices: #Position
-        file.write(struct.pack('>3f', *vertex.vert.co))
+        file.write(struct.pack('>3f', *rotateYUp(vertex.vert.co)))
     for vertex in vertices: #Normal
-        file.write(struct.pack('>3f', *vertex.loop.normal))
+        file.write(struct.pack('>3f', *rotateYUp(vertex.loop.normal)))
     for vertex in vertices: #UV
         if vertex.uvLoops:
             file.write(struct.pack('>2f', *vertex.uvLoops[0].uv))
