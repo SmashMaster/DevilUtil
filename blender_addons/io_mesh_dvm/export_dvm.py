@@ -61,7 +61,7 @@ def writeJavaUTF(file, string):
 def writePaddedJavaUTF(file, string):
     #Padded to multiples of 4 bytes
     bytesWritten = writeJavaUTF(file, string)
-    padding = 4 - (bytesWritten % 4)
+    padding = (4 - (bytesWritten % 4)) % 4
     file.write(struct.pack('>' + str(padding) + 'x'))
     
 def prepareMesh(mesh):
