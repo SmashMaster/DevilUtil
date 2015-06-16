@@ -6,6 +6,8 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DevilModel
 {
@@ -34,6 +36,7 @@ public class DevilModel
     }
     
     public final Mesh[] meshes;
+    private final Map<String, Integer> nameMap;
     
     public DevilModel(InputStream inputStream) throws IOException
     {
@@ -44,8 +47,12 @@ public class DevilModel
 
             int numMeshes = in.readInt();
             meshes = new Mesh[numMeshes];
+            nameMap = new HashMap<>(numMeshes);
             for (int i=0; i<numMeshes; i++)
+            {
                 meshes[i] = new Mesh(in);
+                nameMap.put(meshes[i].name, i);
+            }
         }
         finally
         {
@@ -66,5 +73,11 @@ public class DevilModel
     public DevilModel(String path) throws IOException
     {
         this(Resource.find(path));
+    }
+    
+    public Mesh getMesh(String name)
+    {
+        int i = nameMap.get(name);
+        return meshes[i];
     }
 }
