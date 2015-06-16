@@ -41,7 +41,6 @@ public class DevilModel
         {
             DataInputStream in = new DataInputStream(inputStream);
             if (!in.readUTF().equals("DevilModel")) throw new IOException("Illegal file format specified.");
-            if (!in.readUTF().equals(Type.STATIC.id)) throw new IOException("I haven't programmed that yet.");
 
             int numMeshes = in.readInt();
             meshes = new Mesh[numMeshes];

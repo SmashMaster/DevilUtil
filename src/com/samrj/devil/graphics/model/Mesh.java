@@ -10,6 +10,9 @@ import java.nio.IntBuffer;
 public class Mesh
 {
     public final String name;
+    public final boolean hasUVs, hasVertexColors;
+    public final String[] textures;
+    
     public final int numVertices;
     public final FloatBuffer vertexData;
     public final int numTriangles;
@@ -19,8 +22,20 @@ public class Mesh
     {
         name = DevilModel.readPaddedUTF(in);
         
+        int bitFlags = in.readInt();
+        hasUVs = (bitFlags & 1) == 1;
+        hasVertexColors = (bitFlags & 2) == 2;
+        
+        textures = new String[in.readInt()];
+        for (int i=0; i<textures.length; i++)
+            textures[i] = DevilModel.readPaddedUTF(in);
+        
+        //The order and length of vertex data is defined in export_dvm.py
         numVertices = in.readInt();
-        int vertexDataLength = numVertices*(3 + 3 + 2);
+        int bytesPerVertex = 3 + 3;
+        if (hasUVs) bytesPerVertex += 2;
+        if (hasVertexColors) bytesPerVertex += 3;
+        int vertexDataLength = numVertices*bytesPerVertex;
         vertexData = BufferUtil.createFloatBuffer(vertexDataLength);
         for (int i=0; i<vertexDataLength; i++)
             vertexData.put(in.readFloat());

@@ -19,19 +19,11 @@ class DVMExporter(bpy.types.Operator, ExportHelper):
 
     filename_ext = ".dvm"
     filter_glob = StringProperty(default="*.dvm", options={'HIDDEN'})
-
-    dvmType = EnumProperty(
-            name="Type",
-            description="Choose output model type",
-            items=(('0', "Static", "1 material per mesh, no rigging or animation"),
-                   ('1', "Multitextured", "4 materials per mesh, no rigging or animation"),
-                   ('2', "Animated", "1 material per mesh, rigged and animated")),
-            default='0',)
-
+    
     def execute(self, context):
         from . import export_dvm
         imp.reload(export_dvm)
-        return export_dvm.export(context, self.filepath, int(self.dvmType))
+        return export_dvm.export(context, self.filepath)
 
 def menu_export(self, context):
     self.layout.operator(DVMExporter.bl_idname, text="DevilModel (.dvm)")

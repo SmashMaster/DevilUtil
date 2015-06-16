@@ -2,12 +2,15 @@ import bpy
 import struct
 import os
 
+DVM_FLAG_HAS_UVS = 1
+DVM_FLAG_HAS_VERTEX_COLORS = 2
+
 class LoopVertex:
     def __init__(self, mesh, poly, loop):
         self.poly = poly
         self.loop = loop
-        self.uvLoops = [uvLayer[loop.index] for uvLayer in mesh.uv_layers[:4]] #First 4 uv loop layers (test this plz)
-        self.vertexColorLoop = mesh.vertex_colors[0][loop.index] if mesh.vertex_colors else None
+        self.uvLoop = mesh.uv_layers[0].data[loop.index] if mesh.uv_layers else None
+        self.vertexColorLoop = mesh.vertex_colors[0].data[loop.index] if mesh.vertex_colors else None
         self.pointers = []
 
 class Triangle:
@@ -28,13 +31,15 @@ def loopVerticesEqual(lva, lvb):
         if a != b:
             return False
     
-    if len(lva.uvLoops) != len(lvb.uvLoops):
-        return False
+    lvaHasUV = lva.uvLoop is not None
+    lvbHasUV = lvb.uvLoop is not None
     
-    for uva, uvb in zip(lva.uvLoops, lvb.uvLoops):
-        for a, b in zip(uva.uv, uvb.uv):
+    if lvaHasUV and lvbHasUV:
+        for a, b in zip(lva.uvLoop.uv, lvb.uvLoop.uv):
             if a != b:
                 return False
+    elif lvaHasUV != lvbHasUV:
+        return False
     
     lvaHasColor = lva.vertexColorLoop is not None
     lvbHasColor = lvb.vertexColorLoop is not None
@@ -66,12 +71,19 @@ def prepareMesh(mesh):
     mesh.calc_tessface()
     mesh.calc_normals_split()
 
+    hasUVs = False
+    hasVertexColors = False
+    
     #Set up LoopVertex list
     loopVertexSets = [set() for i in range(len(mesh.vertices))]
     for poly in mesh.polygons:
         for loopIndex in range(poly.loop_start, poly.loop_start + poly.loop_total):
             loop = mesh.loops[loopIndex]
             loopVertex = LoopVertex(mesh, poly, loop)
+            if loopVertex.uvLoop is not None:
+                hasUVs = True
+            if loopVertex.vertexColorLoop is not None:
+                hasVertexColors = True
             loopVertexSets[loop.vertex_index].add(loopVertex)
     
     #Set up Triangle list
@@ -126,39 +138,68 @@ def prepareMesh(mesh):
             i += 1
             vertices.append(loopVertex)
     
-    return vertices, triangles
+    return vertices, triangles, hasUVs, hasVertexColors
 
 def rotateYUp(vertex):
     return [vertex[0], vertex[2], -vertex[1]]
 
-def exportMesh(file, dvmType, object, mesh):
-    vertices, triangles = prepareMesh(mesh)
+def exportMesh(file, object, mesh):
+    vertices, triangles, hasUVs, hasVertexColors = prepareMesh(mesh)
     
-    if dvmType is not 0:
-        raise Exception("I haven't programmed that yet.")
-    
+    #Write mesh name
     writePaddedJavaUTF(file, object.name)
+    
+    #Write flag bits
+    flagBits = 0
+    if hasUVs:
+        flagBits |= DVM_FLAG_HAS_UVS
+    if hasVertexColors:
+        flagBits |= DVM_FLAG_HAS_VERTEX_COLORS
+    file.write(struct.pack('>i', flagBits))
+    
+    #Write textures
+    textures = []
+    if (mesh.materials):
+        for textureSlot in mesh.materials[0].texture_slots:
+            if textureSlot and textureSlot.use and hasattr(textureSlot.texture, 'image'):
+                textures.append(textureSlot.texture)
+                if len(textures) is 4:
+                    break
+    
+    file.write(struct.pack('>i', len(textures)))
+    for texture in textures:
+        writePaddedJavaUTF(file, texture.image.name)
     
     #Write vertices
     file.write(struct.pack('>i', len(vertices)))
-    for vertex in vertices: #Position
+    #Positions
+    for vertex in vertices:
         file.write(struct.pack('>3f', *rotateYUp(vertex.vert.co)))
-    for vertex in vertices: #Normal
+    #Normals
+    for vertex in vertices:
         file.write(struct.pack('>3f', *rotateYUp(vertex.loop.normal)))
-    for vertex in vertices: #UV
-        if vertex.uvLoops:
-            file.write(struct.pack('>2f', *vertex.uvLoops[0].uv))
-        else:
-            file.write(struct.pack('>8x'))
+    #UVs
+    if hasUVs:
+        for vertex in vertices: 
+            if vertex.uvLoop is not None:
+                file.write(struct.pack('>2f', *vertex.uvLoop.uv))
+            else:
+                file.write(struct.pack('>8x'))
+    #Vertex Colors
+    if hasVertexColors:
+        for vertex in vertices: 
+            if vertex.vertexColorLoop is not None:
+                file.write(struct.pack('>3f', *vertex.vertexColorLoop.color))
+            else:
+                file.write(struct.pack('>12x'))
     
     #Write triangle indices
     file.write(struct.pack('>i', len(triangles)))
     for triangle in triangles:
         for pointer in triangle.loopVertexPointers:
             file.write(struct.pack('>i', pointer.loopVertex.index))
-    
-    
-def export(context, filepath, dvmType):
+
+def export(context, filepath):
     os.system("cls")
 
     # Exit edit mode before exporting, so current object states are exported properly.
@@ -173,15 +214,12 @@ def export(context, filepath, dvmType):
         if isinstance(object.data, bpy.types.Mesh):
             meshes.append(object)
     
-    TYPE_NAMES = ["ST", "MT", "AN"]
-    
     file = open(filepath, "wb")
     try:
         writeJavaUTF(file, "DevilModel")
-        writeJavaUTF(file, TYPE_NAMES[dvmType])
         file.write(struct.pack('>i', len(meshes)))
         for mesh in meshes:
-            exportMesh(file, dvmType, mesh, mesh.data)
+            exportMesh(file, mesh, mesh.data)
     finally:
         file.close()
     
