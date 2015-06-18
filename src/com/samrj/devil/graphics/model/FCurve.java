@@ -37,6 +37,9 @@ public class FCurve
             keyframes[i] = new Keyframe(in);
             keyframeIndices.put(keyframes[i].coord.x, i);
         }
+        
+        for (int i0=0; i0<numKeyframes - 1; i0++)
+            Keyframe.validate(keyframes[i0], keyframes[i0 + 1]);
     }
     
     public float evaluate(float time)
