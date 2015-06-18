@@ -6,20 +6,55 @@ import java.io.IOException;
 
 public class Keyframe
 {
+    public static enum Interpolation
+    {
+        CONSTANT, LINEAR, BEZIER;
+    }
+    
     /**
-     * When evaluating Bezier curves, keyframe handles need to be adjusted so that
-     * no loops are created. See the following source code for details:
+     * The total length of the handles is not allowed to be more
+     * than the horizontal distance between left and right.
+     */
+    public static final void validate(Keyframe left, Keyframe right)
+    {
+        float width = right.coord.x - left.coord.x;
+        
+        Vector2f dHandleLeft = left.handleRight.csub(left.coord);
+        Vector2f dHandleRight = right.handleLeft.csub(right.coord);
+        
+        float handleLeftLength = dHandleLeft.length();
+        float handleRightLength = dHandleRight.length();
+        float totalLength = handleLeftLength + handleRightLength;
+        
+        if (totalLength > width)
+        {
+            float adjFactor = width/totalLength;
+            dHandleLeft.mult(adjFactor);
+            dHandleRight.mult(adjFactor);
+            
+            left.handleRight.set(left.coord).add(dHandleLeft);
+            right.handleLeft.set(right.coord).add(dHandleRight);
+        }
+    }
+    
+    /**
+     * See the following source code for a correct implementation of bezier FCurve keyframes:
      * 
      * https://svn.blender.org/svnroot/bf-blender/trunk/blender/source/blender/blenkernel/intern/fcurve.c
      */
     public static final float evaluate(Keyframe left, Keyframe right, float time)
     {
+        if (time <= left.coord.x) return left.coord.y;
+        if (time >= right.coord.x ||
+                left.interpolation == Interpolation.CONSTANT) return right.coord.y;
+        
+        float frac = (time - left.coord.x)/(right.coord.x - left.coord.x);
+        
+        if (left.interpolation == Interpolation.LINEAR)
+            return left.coord.y + (right.coord.y - left.coord.y)*frac;
+        
+        //Now calculate bezier curve.
         throw new UnsupportedOperationException();
-    }
-    
-    public static enum Interpolation
-    {
-        CONSTANT, LINEAR, BEZIER;
     }
     
     /**
