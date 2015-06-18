@@ -1,5 +1,8 @@
 package com.samrj.devil.graphics.model;
 
+import com.samrj.devil.math.Matrix3f;
+import com.samrj.devil.math.Vector2f;
+import com.samrj.devil.math.Vector3f;
 import com.samrj.devil.res.FileRes;
 import com.samrj.devil.res.Resource;
 import java.io.DataInputStream;
@@ -11,18 +14,6 @@ import java.util.Map;
 
 public class DevilModel
 {
-    public static enum Type
-    {
-        STATIC("ST"), MULTITEXTURED("MT"), ANIMATED("AN");
-        
-        public final String id;
-        
-        private Type(String identifier)
-        {
-            id = identifier;
-        }
-    }
-    
     public static final String readPaddedUTF(DataInputStream in) throws IOException
     {
         if (!in.markSupported()) throw new IOException("Cannot read padded UTF-8 on this platform.");
@@ -35,8 +26,29 @@ public class DevilModel
         return out;
     }
     
+    public static final Vector2f readVector2f(DataInputStream in) throws IOException
+    {
+        return new Vector2f(in.readFloat(), in.readFloat());
+    }
+    
+    public static final Vector3f readVector3f(DataInputStream in) throws IOException
+    {
+        return new Vector3f(in.readFloat(), in.readFloat(), in.readFloat());
+    }
+    
+    public static final Matrix3f readMatrix3f(DataInputStream in) throws IOException
+    {
+        return new Matrix3f(in.readFloat(), in.readFloat(), in.readFloat(),
+                            in.readFloat(), in.readFloat(), in.readFloat(),
+                            in.readFloat(), in.readFloat(), in.readFloat());
+    }
+    
+    public final Armature armature;
+    public final Action[] actions;
     public final Mesh[] meshes;
-    private final Map<String, Integer> nameMap;
+    
+    private final Map<String, Integer> meshIndices;
+    private final Map<String, Integer> actionIndices;
     
     public DevilModel(InputStream inputStream) throws IOException
     {
@@ -45,13 +57,35 @@ public class DevilModel
             DataInputStream in = new DataInputStream(inputStream);
             if (!in.readUTF().equals("DevilModel")) throw new IOException("Illegal file format specified.");
 
+            boolean hasArmature = in.readInt() != 0;
+            if (hasArmature)
+            {
+                armature = new Armature(in);
+                
+                int numActions = in.readInt();
+                actions = new Action[numActions];
+                actionIndices = new HashMap<>(numActions);
+                for (int i=0; i<numActions; i++)
+                {
+                    actions[i] = new Action(in);
+                    actionIndices.put(actions[i].name, i);
+                }
+            }
+            else
+            {
+                armature = null;
+                actions = null;
+                actionIndices = null;
+            }
+            
+            
             int numMeshes = in.readInt();
             meshes = new Mesh[numMeshes];
-            nameMap = new HashMap<>(numMeshes);
+            meshIndices = new HashMap<>(numMeshes);
             for (int i=0; i<numMeshes; i++)
             {
-                meshes[i] = new Mesh(in);
-                nameMap.put(meshes[i].name, i);
+                meshes[i] = new Mesh(in, armature);
+                meshIndices.put(meshes[i].name, i);
             }
         }
         finally
@@ -77,7 +111,13 @@ public class DevilModel
     
     public Mesh getMesh(String name)
     {
-        int i = nameMap.get(name);
+        int i = meshIndices.get(name);
         return meshes[i];
+    }
+    
+    public Action getAction(String name)
+    {
+        int i = actionIndices.get(name);
+        return actions[i];
     }
 }

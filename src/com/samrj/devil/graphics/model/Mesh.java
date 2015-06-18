@@ -12,13 +12,14 @@ public class Mesh
     public final String name;
     public final boolean hasUVs, hasVertexColors;
     public final String[] textures;
+    public final int numVertexGroups;
     
     public final int numVertices;
     public final FloatBuffer vertexData;
     public final int numTriangles;
     public final IntBuffer triangleIndexData;
     
-    public Mesh(DataInputStream in) throws IOException
+    public Mesh(DataInputStream in, Armature armature) throws IOException
     {
         name = DevilModel.readPaddedUTF(in);
         
@@ -30,12 +31,17 @@ public class Mesh
         for (int i=0; i<textures.length; i++)
             textures[i] = DevilModel.readPaddedUTF(in);
         
+        if (armature != null) numVertexGroups = in.readInt();
+        else numVertexGroups = 0;
+        
         //The order and length of vertex data is defined in export_dvm.py
+        int floatsPerVertex = 3 + 3;
+        if (hasUVs) floatsPerVertex += 2;
+        if (hasVertexColors) floatsPerVertex += 3;
+        floatsPerVertex += numVertexGroups*2;
+        
         numVertices = in.readInt();
-        int bytesPerVertex = 3 + 3;
-        if (hasUVs) bytesPerVertex += 2;
-        if (hasVertexColors) bytesPerVertex += 3;
-        int vertexDataLength = numVertices*bytesPerVertex;
+        int vertexDataLength = numVertices*floatsPerVertex;
         vertexData = BufferUtil.createFloatBuffer(vertexDataLength);
         for (int i=0; i<vertexDataLength; i++)
             vertexData.put(in.readFloat());
