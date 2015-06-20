@@ -3,6 +3,7 @@ package com.samrj.devil.graphics;
 import com.samrj.devil.buffer.BufferUtil;
 import static com.samrj.devil.buffer.BufferUtil.pubBufA;
 import static com.samrj.devil.buffer.BufferUtil.pubBufB;
+import com.samrj.devil.buffer.Bufferable;
 import com.samrj.devil.math.Matrix2f;
 import com.samrj.devil.math.Matrix3f;
 import com.samrj.devil.math.Matrix4f;
@@ -47,6 +48,15 @@ public class GLShader
         }
         
         return new GLShader(id, vertid, fragid);
+    }
+    
+    private static FloatBuffer buffer(Bufferable<FloatBuffer> data)
+    {
+        FloatBuffer out = pubBufA.asFloatBuffer();
+        out.clear();
+        data.putIn(out);
+        out.rewind();
+        return out;
     }
     
     private int id, vertid, fragid;
@@ -190,143 +200,69 @@ public class GLShader
         GL30.glBindFragDataLocation(id, colorNumber, name);
     }
     
-    // <editor-fold defaultstate="collapsed" desc="Uniform Methods">
-    private int getUniLoc(String name)
-    {
-        if (!glInUse()) throw new IllegalStateException();
-        
-        int out = GL20.glGetUniformLocation(id, name);
-        
-        if (out < 0) throw new UniformNotFoundException(name);
-        return out;
-    }
-    
-    private static IntBuffer ibuffer = pubBufA.asIntBuffer();
-    private static FloatBuffer fbuffer = pubBufB.asFloatBuffer();
-    
-    private void glUniformi(int loc, int elementSize)
-    {
-        GL20.glUniform1iv(loc, ibuffer);
-        
-        switch (elementSize)
-        {
-            case 1: GL20.glUniform1iv(loc, ibuffer); break;
-            case 2: GL20.glUniform2iv(loc, ibuffer); break;
-            case 3: GL20.glUniform3iv(loc, ibuffer); break;
-            case 4: GL20.glUniform4iv(loc, ibuffer); break;
-            default: throw new IllegalArgumentException();
-        }
-    }
-    
-    private void glUniformf(int loc, int elementSize)
-    {
-        switch (elementSize)
-        {
-            case 1: GL20.glUniform1fv(loc, fbuffer); break;
-            case 2: GL20.glUniform2fv(loc, fbuffer); break;
-            case 3: GL20.glUniform3fv(loc, fbuffer); break;
-            case 4: GL20.glUniform4fv(loc, fbuffer); break;
-            default: throw new IllegalArgumentException();
-        }
-    }
-    
-    public void glUniform(int elementSize, String name, int... data)
-    {
-        ibuffer.clear();
-        ibuffer.put(data);
-        ibuffer.rewind();
-        glUniformi(getUniLoc(name), elementSize);
-    }
-    
-    public void glUniform(String name, int... data)
-    {
-        glUniform(1, name, data);
-    }
-    
-    public void glUniform(String name, boolean... data)
-    {
-        ibuffer.clear();
-        for (boolean b : data) ibuffer.put(b ? 1 : 0);
-        ibuffer.rewind();
-        glUniformi(getUniLoc(name), 1);
-    }
-    
-    public void glUniform(int elementSize, String name, float... data)
-    {
-        fbuffer.clear();
-        fbuffer.put(data);
-        fbuffer.rewind();
-        glUniformf(getUniLoc(name), elementSize);
-    }
-    
-    public void glUniform(String name, float... data)
-    {
-        glUniform(1, name, data);
-    }
-    
-//    public void glUniform(String name, Bufferable<FloatBuffer>... data)
-//    {
-//        if (data.length == 0) throw new IllegalArgumentException();
-//        
-//        int elementSize = data[0].size();
-//        int loc = getUniLoc(name);
-//        
-//        fbuffer.clear();
-//        for (Bufferable b : data) b.putIn(fbuffer);
-//        glUniformf(loc, elementSize);
-//    }
-    
-    public void glUniform(String name, Matrix2f m)
-    {
-        fbuffer.clear();
-        m.putIn(fbuffer);
-        fbuffer.rewind();
-        GL20.glUniformMatrix2fv(getUniLoc(name), false, fbuffer);
-    }
-    
-    public void glUniform(String name, Matrix3f m)
-    {
-        fbuffer.clear();
-        m.putIn(fbuffer);
-        fbuffer.rewind();
-        GL20.glUniformMatrix3fv(getUniLoc(name), false, fbuffer);
-    }
-    
-    public void glUniform(String name, Matrix4f m)
-    {
-        fbuffer.clear();
-        m.putIn(fbuffer);
-        fbuffer.rewind();
-        GL20.glUniformMatrix4fv(getUniLoc(name), false, fbuffer);
-    }
-    // </editor-fold>
-    // <editor-fold defaultstate="collapsed" desc="Attribute Methods">
     public int glGetAttribLocation(String name)
     {
         if (!glInUse()) throw new IllegalStateException();
-        
         int out = GL20.glGetAttribLocation(id, name);
-        
-        if (out < 0) throw new UniformNotFoundException();
+        if (out < 0) throw new LocationNotFoundException();
         return out;
     }
     
-    public void glAttribute(String name, float... data)
+    public int glGetUniformLocation(String name)
     {
         if (!glInUse()) throw new IllegalStateException();
-        
-        final int loc = glGetAttribLocation(name);
-        
-        switch (data.length)
-        {
-            case 1: GL20.glVertexAttrib1f(loc, data[0]); break;
-            case 2: GL20.glVertexAttrib2f(loc, data[0], data[1]); break;
-            case 3: GL20.glVertexAttrib3f(loc, data[0], data[1], data[2]); break;
-            case 4: GL20.glVertexAttrib4f(loc, data[0], data[1], data[2], data[3]); break;
-            default: throw new IllegalArgumentException();
-        }
+        int out = GL20.glGetUniformLocation(id, name);
+        if (out < 0) throw new LocationNotFoundException();
+        return out;
     }
-    // </editor-fold>
+    
+    public void glUniform1i(String name, int x)
+    {
+        int loc = glGetUniformLocation(name);
+        GL20.glUniform1i(loc, x);
+    }
+    
+    public void glUniform1f(String name, float x)
+    {
+        int loc = glGetUniformLocation(name);
+        GL20.glUniform1f(loc, x);
+    }
+    
+    public void glUniform2f(String name, float x, float y)
+    {
+        int loc = glGetUniformLocation(name);
+        GL20.glUniform2f(loc, x, y);
+    }
+    
+    public void glUniform3f(String name, float x, float y, float z)
+    {
+        int loc = glGetUniformLocation(name);
+        GL20.glUniform3f(loc, x, y, z);
+    }
+    
+    public void glUniform4f(String name, float x, float y, float z, float w)
+    {
+        int loc = glGetUniformLocation(name);
+        GL20.glUniform4f(loc, x, y, z, w);
+    }
+    
+    public void glUniformMatrix2f(String name, Matrix2f matrix)
+    {
+        int loc = glGetUniformLocation(name);
+        GL20.glUniformMatrix2fv(loc, false, buffer(matrix));
+    }
+    
+    public void glUniformMatrix3f(String name, Matrix3f matrix)
+    {
+        int loc = glGetUniformLocation(name);
+        GL20.glUniformMatrix3fv(loc, false, buffer(matrix));
+    }
+    
+    public void glUniformMatrix4f(String name, Matrix4f matrix)
+    {
+        int loc = glGetUniformLocation(name);
+        GL20.glUniformMatrix4fv(loc, false, buffer(matrix));
+    }
     
     public int id()
     {
