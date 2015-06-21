@@ -1,5 +1,6 @@
 package com.samrj.devil.graphics.model;
 
+import com.samrj.devil.math.Matrix3f;
 import com.samrj.devil.math.Matrix4f;
 import com.samrj.devil.math.Quat4f;
 import com.samrj.devil.math.Vector3f;
@@ -15,6 +16,13 @@ public class Bone
     
     //Constants
     public final String name;
+    
+    /**
+     * connect: Bone's head is stuck to the parent's tail.
+     * inheritRotation: Bone inherits rotation from parent bone.
+     * localLocation: Bone location is set in local space. (???)
+     * relativeParent: Object children will use relative transform. (???)
+     */
     public final boolean connect, inheritRotation, localLocation, relativeParent;
     public final int parentIndex;
     public final Vector3f head, tail;
@@ -26,6 +34,8 @@ public class Bone
     public final Vector3f location = new Vector3f();
     public final Quat4f rotation = new Quat4f();
     public final Matrix4f matrix = new Matrix4f();
+    public final Matrix4f rotMatrix = new Matrix4f();
+    public final Vector3f tailPos = new Vector3f();
     
     public Bone(DataInputStream in) throws IOException
     {
@@ -50,10 +60,35 @@ public class Bone
     
     void updateMatrices()
     {
-        if (parent != null) matrix.set(parent.matrix);
-        else matrix.set();
-        matrix.multTranslate(location);
-        matrix.multRotate(rotation.clone().normalize());
+        matrix.set();
+        
+        Matrix4f rotationMatrix = rotation.toMatrix4f();
+        Vector3f translation = head.cadd(location);
+        
+        if (parent != null)
+        {
+            matrix.multTranslate(parent.tailPos);
+            matrix.mult(parent.rotMatrix);
+        }
+            
+        matrix.multTranslate(translation);
+        matrix.mult(rotationMatrix);
+        matrix.multTranslate(translation.negate());
+        
+        //Still have to take into account inheritRotation.
+        //The other booleans are useless and can be removed entirely.
+        
+        if (parent != null)
+        {
+            matrix.multTranslate(parent.tailPos.cnegate());
+            rotMatrix.set(parent.rotMatrix).mult(rotationMatrix);
+            tailPos.set(tail).mult(rotMatrix).add(parent.tailPos);
+        }
+        else
+        {
+            rotMatrix.set(rotationMatrix);
+            tailPos.set(tail).mult(rotMatrix);
+        }
     }
     
     public Bone getParent()
