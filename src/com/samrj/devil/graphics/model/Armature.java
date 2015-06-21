@@ -1,8 +1,11 @@
 package com.samrj.devil.graphics.model;
 
+import com.samrj.devil.buffer.BufferUtil;
 import com.samrj.devil.math.topo.DAG;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.util.List;
 
 public class Armature
@@ -10,6 +13,7 @@ public class Armature
     public final Bone[] bones;
     private final DAG<Bone> boneGraph = new DAG();
     private final List<Bone> boneOrder;
+    private final ByteBuffer boneMatrixBuffer;
     
     public Armature(DataInputStream in) throws IOException
     {
@@ -32,10 +36,20 @@ public class Armature
         }
         
         boneOrder = boneGraph.sort();
+        boneMatrixBuffer = BufferUtil.createByteBuffer(numBones*16*4);
     }
     
     public void updateBoneMatrices()
     {
         for (Bone bone : boneOrder) bone.updateMatrices();
+    }
+    
+    public ByteBuffer bufferBoneMatrices()
+    {
+        boneMatrixBuffer.clear();
+        FloatBuffer fBuffer = boneMatrixBuffer.asFloatBuffer();
+        for (Bone bone : bones) bone.matrix.putIn(fBuffer);
+        boneMatrixBuffer.rewind();
+        return boneMatrixBuffer;
     }
 }

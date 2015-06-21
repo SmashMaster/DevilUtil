@@ -1,13 +1,10 @@
 package com.samrj.devil.graphics.model;
 
-import com.samrj.devil.math.Matrix3f;
 import com.samrj.devil.math.Matrix4f;
 import com.samrj.devil.math.Quat4f;
 import com.samrj.devil.math.Vector3f;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 
 public class Bone
 {
@@ -53,13 +50,8 @@ public class Bone
     
     void updateMatrices()
     {
-        if (parent != null)
-        {
-            matrix.set(parent.matrix);
-            matrix.mult(baseMatrix);
-        }
-        else matrix.set(baseMatrix);
-        
+        if (parent != null) matrix.set(parent.matrix);
+        else matrix.set();
         matrix.multTranslate(location);
         matrix.multRotate(rotation);
     }
