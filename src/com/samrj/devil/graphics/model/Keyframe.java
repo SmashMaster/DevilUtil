@@ -45,15 +45,18 @@ public class Keyframe
         float c = 3.0f*(-x0 + x1);
         float d = x0 - x;
         
-        float del0 = b*b - 3.0f*a*c;
-        float del1 = 2.0f*b*b*b - 9.0f*a*b*c + 27.0f*a*a*d;
+        b /= (a*3.0f);
+        c /= a;
+        d /= a;
         
-        float bigC = Util.cbrt((del1 + Util.sqrt(del1*del1 - 4.0f*del0*del0*del0))*0.5f);
-        float root = -(b + bigC + del0/bigC)/(3.0f*a);
+        float bsq = b*b;
+
+        float p = c/3.0f - bsq;
+        float q = (b*(2.0f*bsq - c) + d)/2.0f;
+        float s = q*q + p*p*p;
         
-//        System.out.println(root);
-        
-        return root;
+        float t = Util.sqrt(s);
+        return Util.cbrt(-q + t) + Util.cbrt(-q - t) - b;
     }
     
     public static final float bezierY(float y0, float y1, float y2, float y3, float t)
@@ -64,7 +67,6 @@ public class Keyframe
     
     public static final float bezier(Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, float x)
     {
-//        System.out.println(p0 + " " + p1 + " " + p2 + " " + p3);
         float t = bezierT(p0.x, p1.x, p2.x, p3.x, x);
         return    bezierY(p0.y, p1.y, p2.y, p3.y, t);
     }
@@ -80,11 +82,10 @@ public class Keyframe
             return left.coord.y;
         if (time >= right.coord.x) return right.coord.y;
         
-        float frac = (time - left.coord.x)/(right.coord.x - left.coord.x);
         if (left.interpolation == Interpolation.LINEAR)
-            return left.coord.y + (right.coord.y - left.coord.y)*frac;
+            return left.coord.y + (right.coord.y - left.coord.y)*(time - left.coord.x)/(right.coord.x - left.coord.x);
         
-        return bezier(left.coord, left.handleRight, right.handleLeft, right.coord, frac);
+        return bezier(left.coord, left.handleRight, right.handleLeft, right.coord, time);
     }
     
     /**
