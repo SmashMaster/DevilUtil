@@ -53,7 +53,7 @@ public class Bone
         if (parent != null) matrix.set(parent.matrix);
         else matrix.set();
         matrix.multTranslate(location);
-        matrix.multRotate(rotation);
+        matrix.multRotate(rotation.clone().normalize());
     }
     
     public Bone getParent()
