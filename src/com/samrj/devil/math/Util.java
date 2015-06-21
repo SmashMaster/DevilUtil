@@ -107,6 +107,11 @@ public class Util
         return (float)Math.sqrt(v);
     }
     
+    public static float cbrt(float v)
+    {
+        return (float)Math.cbrt(v);
+    }
+    
     public static float toRadians(float a)
     {
         return a*(PI/180f);

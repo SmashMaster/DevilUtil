@@ -16,6 +16,7 @@ public class FCurve
     public final Property property;
     public final int component;
     public final Keyframe[] keyframes;
+    public final float minX, maxX;
     
     private final TreeMap<Float, Integer> keyframeIndices;
     
@@ -31,12 +32,17 @@ public class FCurve
         component = in.readInt();
         int numKeyframes = in.readInt();
         keyframes = new Keyframe[numKeyframes];
+        float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY;
         keyframeIndices = new TreeMap<>();
         for (int i=0; i<numKeyframes; i++)
         {
             keyframes[i] = new Keyframe(in);
-            keyframeIndices.put(keyframes[i].coord.x, i);
+            float x = keyframes[i].coord.x;
+            if (x < min) min = x;
+            if (x > max) max = x;
+            keyframeIndices.put(x, i);
         }
+        minX = min; maxX = max;
         
         for (int i0=0; i0<numKeyframes - 1; i0++)
             Keyframe.validate(keyframes[i0], keyframes[i0 + 1]);
@@ -45,7 +51,7 @@ public class FCurve
     public float evaluate(float time)
     {
         Entry<Float, Integer> e0 = keyframeIndices.floorEntry(time);
-        if (time <= e0.getKey()) return keyframes[0].coord.y; //Before first
+        if (e0 == null) return keyframes[0].coord.y; //Before first
         
         int i0 = e0.getValue();
         Keyframe k0 = keyframes[i0];
