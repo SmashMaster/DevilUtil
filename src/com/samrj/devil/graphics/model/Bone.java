@@ -1,17 +1,34 @@
 package com.samrj.devil.graphics.model;
 
 import com.samrj.devil.math.Matrix3f;
+import com.samrj.devil.math.Matrix4f;
+import com.samrj.devil.math.Quat4f;
 import com.samrj.devil.math.Vector3f;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class Bone
 {
+    public static enum Property
+    {
+        LOCATION, ROTATION;
+    }
+    
+    //Constants
     public final String name;
     public final boolean connect, inheritRotation, localLocation, relativeParent;
     public final int parentIndex;
     public final Vector3f head, tail;
-    public final Matrix3f matrix;
+    public final Matrix4f baseMatrix;
+    
+    private Bone parent = null;
+    
+    //Live properties
+    public final Vector3f location = new Vector3f();
+    public final Quat4f rotation = new Quat4f();
+    public final Matrix4f matrix = new Matrix4f();
     
     public Bone(DataInputStream in) throws IOException
     {
@@ -26,6 +43,56 @@ public class Bone
         parentIndex = in.readInt();
         head = DevilModel.readVector3f(in);
         tail = DevilModel.readVector3f(in);
-        matrix = DevilModel.readMatrix3f(in);
+        baseMatrix = DevilModel.readMatrix3f(in).toMatrix4f();
+    }
+    
+    void setParent(Bone parent)
+    {
+        this.parent = parent;
+    }
+    
+    void updateMatrices()
+    {
+        if (parent != null)
+        {
+            matrix.set(parent.matrix);
+            matrix.mult(baseMatrix);
+        }
+        else matrix.set(baseMatrix);
+        
+        matrix.multTranslate(location);
+        matrix.multRotate(rotation);
+    }
+    
+    public Bone getParent()
+    {
+        return parent;
+    }
+    
+    public void set(Property property, int index, float value)
+    {
+        switch(property)
+        {
+            case LOCATION:
+                switch (index)
+                {
+                    case 0: location.x = value; break;
+                    case 1: location.y = value; break;
+                    case 2: location.z = value; break;
+                    default: throw new ArrayIndexOutOfBoundsException();
+                }
+                break;
+            case ROTATION:
+                switch (index)
+                {
+                    case 0: rotation.w = value; break;
+                    case 1: rotation.x = value; break;
+                    case 2: rotation.y = value; break;
+                    case 3: rotation.z = value; break;
+                    default: throw new ArrayIndexOutOfBoundsException();
+                }
+                break;
+            default: throw new IllegalArgumentException("Illegal property specified.");
+        }
     }
 }

@@ -17,11 +17,16 @@ public class Action
         float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY;
         for (int i=0; i<numFCurves; i++)
         {
-            FCurve curve = new FCurve(in);
-            fCurves[i] = curve;
-            if (curve.minX < min) min = curve.minX;
-            if (curve.maxX > max) max = curve.maxX;
+            FCurve fCurve = new FCurve(in);
+            fCurves[i] = fCurve;
+            if (fCurve.minX < min) min = fCurve.minX;
+            if (fCurve.maxX > max) max = fCurve.maxX;
         }
         start = min; end = max;
+    }
+    
+    public void apply(Armature armature, float time)
+    {
+        for (FCurve fCurve : fCurves) fCurve.apply(armature, time);
     }
 }

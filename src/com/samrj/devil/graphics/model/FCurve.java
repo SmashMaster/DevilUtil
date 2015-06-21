@@ -7,14 +7,9 @@ import java.util.TreeMap;
 
 public class FCurve
 {
-    public static enum Property
-    {
-        LOCATION, ROTATION;
-    }
-    
     public final int boneIndex;
-    public final Property property;
-    public final int component;
+    public final Bone.Property property;
+    public final int propIndex;
     public final Keyframe[] keyframes;
     public final float minX, maxX;
     
@@ -25,11 +20,11 @@ public class FCurve
         boneIndex = in.readInt();
         switch (DevilModel.readPaddedUTF(in))
         {
-            case "LC": property = Property.LOCATION; break;
-            case "RT": property = Property.ROTATION; break;
+            case "LC": property = Bone.Property.LOCATION; break;
+            case "RT": property = Bone.Property.ROTATION; break;
             default: throw new IllegalArgumentException();
         }
-        component = in.readInt();
+        propIndex = in.readInt();
         int numKeyframes = in.readInt();
         keyframes = new Keyframe[numKeyframes];
         float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY;
@@ -59,5 +54,12 @@ public class FCurve
         
         Keyframe k1 = keyframes[i0 + 1];
         return Keyframe.evaluate(k0, k1, time);
+    }
+    
+    public void apply(Armature armature, float time)
+    {
+        Bone bone = armature.bones[boneIndex];
+        float value = evaluate(time);
+        bone.set(property, propIndex, value);
     }
 }
