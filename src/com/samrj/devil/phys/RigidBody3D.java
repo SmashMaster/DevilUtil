@@ -34,7 +34,7 @@ public class RigidBody3D
     {
         localDirToWorld.set(orient.toMatrix3f());
         
-        Matrix3f invOrientMat3 = orient.clone().invert().toMatrix3f();
+        Matrix3f invOrientMat3 = orient.copy().invert().toMatrix3f();
         Matrix4f invOrientMat4 = invOrientMat3.toMatrix4f();
         
         worldDirToLocal.set(invOrientMat3);

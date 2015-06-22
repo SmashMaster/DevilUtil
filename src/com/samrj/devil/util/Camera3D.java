@@ -65,7 +65,7 @@ public class Camera3D
     
     public Matrix4f getView()
     {
-        Matrix4f out = rot.clone().invert().toMatrix4f();
+        Matrix4f out = rot.copy().invert().toMatrix4f();
         out.multTranslate(pos.cnegate());
         return out;
     }

@@ -18,8 +18,10 @@ public final class Quat4f
      * Sources of information, code, or algorithms:
      * [0] http://www.cprogramming.com/tutorial/3d/quaternions.html
      * [1] OpenGL Mathematics (glm.g-truc.net)
-     * [2] http://en.wikipedia.org/wiki/Rotation_matrix#Quaternion
+     * [2] https://svn.blender.org/svnroot/bf-blender/trunk/blender/source/blender/blenlib/intern/math_rotation.c
      */
+    
+    private static final float SQRT_2 = Util.sqrt(2.0f);
     
     // <editor-fold defaultstate="collapsed" desc="Factory Methods">
     public static Quat4f identity()
@@ -126,7 +128,7 @@ public final class Quat4f
     
     public Quat4f slerp(Quat4f q, float t) //Source: [1]
     {
-        q = q.clone();
+        q = q.copy();
         
         float cos = dot(q);
         
@@ -173,31 +175,31 @@ public final class Quat4f
     
     public Matrix3f toMatrix3f() //Source: [2]
     {
-        final float x2 = x*2f, y2 = y*2f, z2 = z*2f;
+        float q0 = SQRT_2*w, q1 = SQRT_2*x, q2 = SQRT_2*y, q3 = SQRT_2*z;
+
+	float qda = q0*q1, qdb = q0*q2, qdc = q0*q3;
+	float qaa = q1*q1, qab = q1*q2, qac = q1*q3;
+	float qbb = q2*q2, qbc = q2*q3, qcc = q3*q3;
         
-        final float wx = w*x2, wy = w*y2, wz = w*z2;
-        final float xx = x*x2, xy = x*y2, xz = x*z2;
-        final float            yy = y*y2, yz = y*z2;
-        final float                       zz = z*z2;
-        
-        return new Matrix3f(1f - yy - zz,      xy - wz,      xz + wy,
-                            xy + wz,      1f - xx - zz,      yz - wx,
-                            xz - wy,           yz + wx, 1f - xx - yy).transpose();
+        return new Matrix3f(
+                1.0f - qbb - qcc, -qdc + qab, qdb + qac,
+                qdc + qab, 1.0f - qaa - qcc, -qda + qbc,
+                -qdb + qac, qda + qbc, 1.0f - qaa - qbb);
     }
     
-    public Matrix4f toMatrix4f() //Source: [2]
+    public Matrix4f toMatrix4f()
     {
-        final float x2 = x*2f, y2 = y*2f, z2 = z*2f;
+        float q0 = SQRT_2*w, q1 = SQRT_2*x, q2 = SQRT_2*y, q3 = SQRT_2*z;
+
+	float qda = q0*q1, qdb = q0*q2, qdc = q0*q3;
+	float qaa = q1*q1, qab = q1*q2, qac = q1*q3;
+	float qbb = q2*q2, qbc = q2*q3, qcc = q3*q3;
         
-        final float wx = w*x2, wy = w*y2, wz = w*z2;
-        final float xx = x*x2, xy = x*y2, xz = x*z2;
-        final float            yy = y*y2, yz = y*z2;
-        final float                       zz = z*z2;
-        
-        return new Matrix4f(1f - yy - zz,      xy - wz,      xz + wy, 0,
-                            xy + wz,      1f - xx - zz,      yz - wx, 0,
-                            xz - wy,           yz + wx, 1f - xx - yy, 0,
-                                  0,                 0,            0, 1).transpose();
+        return new Matrix4f(
+                1.0f - qbb - qcc, -qdc + qab, qdb + qac, 0.0f,
+                qdc + qab, 1.0f - qaa - qcc, -qda + qbc, 0.0f,
+                -qdb + qac, qda + qbc, 1.0f - qaa - qbb, 0.0f,
+                0.0f, 0.0f, 0.0f, 1.0f);
     }
     
     public float squareLength()
@@ -225,18 +227,15 @@ public final class Quat4f
                Util.epsEqual(q.x, y, tolerance) &&
                Util.epsEqual(q.y, z, tolerance);
     }
+    
+    public Quat4f copy()
+    {
+        return new Quat4f(w, x, y, z);
+    }
     // </editor-fold>
-    // <editor-fold defaultstate="collapsed" desc="Overriden Object Methods">
     @Override
     public String toString()
     {
         return "("+w+": "+x+", "+y+", "+z+")";
     }
-    
-    @Override
-    public Quat4f clone()
-    {
-        return new Quat4f(w, x, y, z);
-    }
-    // </editor-fold>
 }

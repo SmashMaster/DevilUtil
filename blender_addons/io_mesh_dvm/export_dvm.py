@@ -18,11 +18,6 @@ def writePaddedJavaUTF(file, string):
 def rotateYUp(vector):
     return [vector[0], vector[2], -vector[1]]
 
-DVM_BONE_FLAG_CONNECT = 1
-DVM_BONE_FLAG_INHERIT_ROTATION = 2
-DVM_BONE_FLAG_LOCAL_LOCATION = 4
-DVM_BONE_FLAG_RELATIVE_PARENT = 8
-
 def exportArmature(file, armature):
     bones = armature.bones
     num_bones = len(bones)
@@ -37,28 +32,19 @@ def exportArmature(file, armature):
         #Write bone name
         writePaddedJavaUTF(file, bone.name)
         
-        #Write bone property flags
-        flag_bits = 0
-        if bone.use_connect:
-            flag_bits |= DVM_BONE_FLAG_CONNECT
-        if bone.use_inherit_rotation:
-            flag_bits |= DVM_BONE_FLAG_INHERIT_ROTATION
-        if bone.use_local_location:
-            flag_bits |= DVM_BONE_FLAG_LOCAL_LOCATION
-        if bone.use_relative_parent:
-            flag_bits |= DVM_BONE_FLAG_RELATIVE_PARENT
-        file.write(struct.pack('>i', flag_bits))
-        
         #Write bone parent
         if bone.parent is not None:
             file.write(struct.pack('>i', bone_indices[bone.parent.name]))
         else:
             file.write(struct.pack('>i', -1))
         
-        #Write bone head and tail
-        file.write(struct.pack('>3f', *rotateYUp(bone.head)))
-        file.write(struct.pack('>3f', *rotateYUp(bone.tail)))
+        #Write inherit rotation
+        file.write(struct.pack('>i', bone.use_inherit_rotation))
         
+        #Write bone head and tail
+        file.write(struct.pack('>3f', *rotateYUp(bone.head_local)))
+        file.write(struct.pack('>3f', *rotateYUp(bone.tail_local)))
+    
         #Write bone matrix (NEED TO ROTATE THIS SO Y AXIS IS UP?)
         for i in range(3):
             file.write(struct.pack('>3f', *bone.matrix[i]))

@@ -1,6 +1,5 @@
 package com.samrj.devil.graphics.model;
 
-import com.samrj.devil.math.Matrix3f;
 import com.samrj.devil.math.Matrix4f;
 import com.samrj.devil.math.Quat4f;
 import com.samrj.devil.math.Vector3f;
@@ -16,79 +15,70 @@ public class Bone
     
     //Constants
     public final String name;
-    
-    /**
-     * connect: Bone's head is stuck to the parent's tail.
-     * inheritRotation: Bone inherits rotation from parent bone.
-     * localLocation: Bone location is set in local space. (???)
-     * relativeParent: Object children will use relative transform. (???)
-     */
-    public final boolean connect, inheritRotation, localLocation, relativeParent;
+    public final boolean inheritRotation;
     public final int parentIndex;
     public final Vector3f head, tail;
     public final Matrix4f baseMatrix;
     
     private Bone parent = null;
     
+    //Head offset from parent's tail, and tail offset from head.
+    public final Vector3f headOffset = new Vector3f();
+    public final Vector3f tailOffset = new Vector3f();
+    
     //Live properties
     public final Vector3f location = new Vector3f();
     public final Quat4f rotation = new Quat4f();
     public final Matrix4f matrix = new Matrix4f();
     public final Matrix4f rotMatrix = new Matrix4f();
-    public final Vector3f tailPos = new Vector3f();
+    public final Vector3f headFinal = new Vector3f();
+    public final Vector3f tailFinal = new Vector3f();
     
     public Bone(DataInputStream in) throws IOException
     {
         name = DevilModel.readPaddedUTF(in);
-        
-        int bitFlags = in.readInt();
-        connect = (bitFlags & 1) == 1;
-        inheritRotation = (bitFlags & 2) == 2;
-        localLocation = (bitFlags & 4) == 4;
-        relativeParent = (bitFlags & 8) == 8;
-        
         parentIndex = in.readInt();
+        inheritRotation = in.readInt() != 0;
         head = DevilModel.readVector3f(in);
         tail = DevilModel.readVector3f(in);
         baseMatrix = DevilModel.readMatrix3f(in).toMatrix4f();
+        headOffset.set(head);
+        tailOffset.set(tail).sub(head);
     }
     
     void setParent(Bone parent)
     {
         this.parent = parent;
+        headOffset.set(head).sub(parent.tail);
     }
     
     void updateMatrices()
     {
-        matrix.set();
+        Matrix4f relativeRotMat = rotation.copy().normalize().toMatrix4f();
         
-        Matrix4f rotationMatrix = rotation.toMatrix4f();
-        Vector3f translation = head.cadd(location);
-        
-        if (parent != null)
+        if (parent == null)
         {
-            matrix.multTranslate(parent.tailPos);
-            matrix.mult(parent.rotMatrix);
+            rotMatrix.set(relativeRotMat);
+            headFinal.set(headOffset).add(location);
+            tailFinal.set(tailOffset).mult(relativeRotMat).add(headFinal);
         }
-            
-        matrix.multTranslate(translation);
-        matrix.mult(rotationMatrix);
-        matrix.multTranslate(translation.negate());
-        
-        //Still have to take into account inheritRotation.
-        //The other booleans are useless and can be removed entirely.
-        
-        if (parent != null)
+        else if (inheritRotation)
         {
-            matrix.multTranslate(parent.tailPos.cnegate());
-            rotMatrix.set(parent.rotMatrix).mult(rotationMatrix);
-            tailPos.set(tail).mult(rotMatrix).add(parent.tailPos);
+            rotMatrix.set(parent.rotMatrix).mult(relativeRotMat);
+            headFinal.set(headOffset).add(location).mult(parent.rotMatrix).add(parent.tailFinal);
+            tailFinal.set(tailOffset).mult(rotMatrix).add(headFinal);
         }
         else
         {
-            rotMatrix.set(rotationMatrix);
-            tailPos.set(tail).mult(rotMatrix);
+            rotMatrix.set(relativeRotMat);
+            headFinal.set(headOffset).add(location).add(parent.tailFinal);
+            tailFinal.set(tailOffset).mult(rotMatrix).add(headFinal);
         }
+        
+        matrix.set();
+        matrix.mult(Matrix4f.translate(headFinal));
+        matrix.mult(rotMatrix);
+        matrix.mult(Matrix4f.translate(head.cnegate()));
     }
     
     public Bone getParent()
