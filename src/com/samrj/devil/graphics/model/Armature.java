@@ -11,13 +11,13 @@ import java.util.List;
 public class Armature
 {
     public final Bone[] bones;
+    public final IKConstraint[] ikConstraints;
     private final DAG<Bone> boneGraph = new DAG();
     private final List<Bone> boneOrder;
     private final ByteBuffer boneMatrixBuffer;
     
     public Armature(DataInputStream in) throws IOException
     {
-        
         int numBones = in.readInt();
         bones = new Bone[numBones];
         for (int i=0; i<numBones; i++)
@@ -34,6 +34,11 @@ public class Armature
             bone.setParent(parent);
             boneGraph.addEdge(parent, bone);
         }
+        
+        int numIKConstraints = in.readInt();
+        ikConstraints = new IKConstraint[numIKConstraints];
+        for (int i=0; i<numIKConstraints; i++)
+            ikConstraints[i] = new IKConstraint(in, bones);
         
         boneOrder = boneGraph.sort();
         boneMatrixBuffer = BufferUtil.createByteBuffer(numBones*16*4);

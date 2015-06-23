@@ -18,7 +18,16 @@ def writePaddedJavaUTF(file, string):
 def rotateYUp(vector):
     return [vector[0], vector[2], -vector[1]]
 
-def exportArmature(file, armature):
+class IKConstraint:
+    def __init__(self, bone, constraint, bone_indices):
+        self.constraint = constraint
+        self.bone_index = bone_indices[bone.name]
+        self.target_index = bone_indices[constraint.subtarget]
+        self.pole_target_index = bone_indices[constraint.pole_subtarget]
+    
+def exportArmature(file, object):
+    armature = object.data
+    pose = object.pose
     bones = armature.bones
     num_bones = len(bones)
     file.write(struct.pack('>i', num_bones))
@@ -28,6 +37,7 @@ def exportArmature(file, armature):
     for i in range(num_bones):
         bone_indices[bones[i].name] = i
     
+    #Export bones
     for bone in bones:
         #Write bone name
         writePaddedJavaUTF(file, bone.name)
@@ -48,6 +58,25 @@ def exportArmature(file, armature):
         #Write bone matrix (NEED TO ROTATE THIS SO Y AXIS IS UP?)
         for i in range(3):
             file.write(struct.pack('>3f', *bone.matrix[i]))
+    
+    #Export IK constraints
+    ik_constraints = []
+    for pose_bone in pose.bones:
+        for constraint in pose_bone.constraints:
+            if isinstance(constraint, bpy.types.KinematicConstraint):
+                if constraint.chain_count != 2:
+                    continue
+                if constraint.target is None or constraint.subtarget not in bone_indices:
+                    continue
+                if constraint.pole_target is None or constraint.pole_subtarget not in bone_indices:
+                    continue
+                ik_constraints.append(IKConstraint(pose_bone.bone, constraint, bone_indices))
+    
+    file.write(struct.pack('>i', len(ik_constraints)))
+    for ik_constraint in ik_constraints:
+        file.write(struct.pack('>i', ik_constraint.bone_index))
+        file.write(struct.pack('>i', ik_constraint.target_index))
+        file.write(struct.pack('>i', ik_constraint.pole_target_index))
     
     return bone_indices
 
@@ -253,7 +282,8 @@ def prepareMesh(mesh):
 DVM_MESH_FLAG_HAS_UVS = 1
 DVM_MESH_FLAG_HAS_VERTEX_COLORS = 2
 
-def exportMesh(file, object, mesh, armature_bone_indices):
+def exportMesh(file, object, armature_bone_indices):
+    mesh = object.data
     vertices, triangles, has_uvs, has_vertex_colors = prepareMesh(mesh)
     
     #Write mesh name
@@ -359,33 +389,36 @@ def export(filepath):
     try:
         writeJavaUTF(file, "DevilModel")
         
+        #Find relevant objects
+        meshes = []
+        armatures = []
+        for object in bpy.data.objects:
+            if isinstance(object.data, bpy.types.Mesh):
+                meshes.append(object)
+            if isinstance(object.data, bpy.types.Armature):
+                armatures.append(object)
+        
         armature_bone_indices = None
         
         #Export armature and actions
-        if bpy.data.armatures:
+        if armatures:
             file.write(struct.pack('>i', True))
-            armature = bpy.data.armatures[0]
-            armature_bone_indices = exportArmature(file, bpy.data.armatures[0])
-            old_pose_position = armature.pose_position
-            armature.pose_position = 'REST'
+            armature = armatures[0]
+            armature_bone_indices = exportArmature(file, armature)
+            old_pose_position = armature.data.pose_position
+            armature.data.pose_position = 'REST'
             
             file.write(struct.pack('>i', len(bpy.data.actions)))
             for action in bpy.data.actions:
                 exportAction(file, armature_bone_indices, action)
             
-            armature.pose_position = old_pose_position
+            armature.data.pose_position = old_pose_position
         else:
             file.write(struct.pack('>i', False))
         
-        #Export meshes
-        meshes = []
-        for object in bpy.data.objects:
-            if isinstance(object.data, bpy.types.Mesh):
-                meshes.append(object)
-        
         file.write(struct.pack('>i', len(meshes)))
         for mesh in meshes:
-            exportMesh(file, mesh, mesh.data, armature_bone_indices)
+            exportMesh(file, mesh, armature_bone_indices)
     finally:
         file.close()
     
