@@ -2,12 +2,14 @@ package com.samrj.devil.graphics.model;
 
 import com.samrj.devil.math.Matrix4f;
 import com.samrj.devil.math.Quat4f;
-import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vector3f;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
-public class Bone
+public class Bone implements Solvable
 {
     public static enum Property
     {
@@ -22,6 +24,7 @@ public class Bone
     public final Matrix4f baseMatrix;
     public final Matrix4f inverseBaseMatrix;
     
+    private final Collection<Bone> children = new ArrayList<>();
     private Bone parent = null;
     
     //Head offset from parent's tail, and tail offset from head.
@@ -54,13 +57,8 @@ public class Bone
         inverseBaseMatrix = boneDir.invert().toMatrix4f();
     }
     
-    void setParent(Bone parent)
-    {
-        this.parent = parent;
-        headOffset.set(head).sub(parent.tail);
-    }
-    
-    void updateMatrices()
+    @Override
+    public void solve()
     {
         Matrix4f relativeRotMat = rotation.copy().normalize().toMatrix4f();
         
@@ -95,9 +93,21 @@ public class Bone
         matrix.mult(Matrix4f.translate(head.cnegate()));
     }
     
+    void setParent(Bone parent)
+    {
+        this.parent = parent;
+        parent.children.add(this);
+        headOffset.set(head).sub(parent.tail);
+    }
+    
     public Bone getParent()
     {
         return parent;
+    }
+    
+    public Collection<Bone> getChildren()
+    {
+        return Collections.unmodifiableCollection(children);
     }
     
     public void set(Property property, int index, float value)

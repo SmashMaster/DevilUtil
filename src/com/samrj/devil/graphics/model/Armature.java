@@ -12,8 +12,8 @@ public class Armature
 {
     public final Bone[] bones;
     public final IKConstraint[] ikConstraints;
-    private final DAG<Bone> boneGraph = new DAG();
-    private final List<Bone> boneOrder;
+    private final DAG<Solvable> solveGraph = new DAG();
+    private final List<Solvable> solveOrder;
     private final ByteBuffer boneMatrixBuffer;
     
     public Armature(DataInputStream in) throws IOException
@@ -24,7 +24,7 @@ public class Armature
         {
             Bone bone = new Bone(in);
             bones[i] = bone;
-            boneGraph.add(bone);
+            solveGraph.add(bone);
         }
         
         for (Bone bone : bones)
@@ -32,21 +32,37 @@ public class Armature
             if (bone.parentIndex < 0) continue;
             Bone parent = bones[bone.parentIndex];
             bone.setParent(parent);
-            boneGraph.addEdge(parent, bone);
+            solveGraph.addEdge(parent, bone);
         }
         
         int numIKConstraints = in.readInt();
         ikConstraints = new IKConstraint[numIKConstraints];
         for (int i=0; i<numIKConstraints; i++)
-            ikConstraints[i] = new IKConstraint(in, bones);
+        {
+            IKConstraint ikConstraint = new IKConstraint(in, bones);
+            ikConstraints[i] = ikConstraint;
+            solveGraph.remove(ikConstraint.start);
+            solveGraph.remove(ikConstraint.end);
+            solveGraph.add(ikConstraint);
+            
+            Bone parent = ikConstraint.start.getParent();
+            if (parent != null)
+                solveGraph.addEdge(parent, ikConstraint);
+            
+            for (Bone child : ikConstraint.end.getChildren())
+                solveGraph.addEdge(ikConstraint, child);
+            
+            solveGraph.addEdge(ikConstraint.target, ikConstraint);
+            solveGraph.addEdge(ikConstraint.poleTarget, ikConstraint);
+        }
         
-        boneOrder = boneGraph.sort();
+        solveOrder = solveGraph.sort();
         boneMatrixBuffer = BufferUtil.createByteBuffer(numBones*16*4);
     }
     
-    public void updateBoneMatrices()
+    public void solve()
     {
-        for (Bone bone : boneOrder) bone.updateMatrices();
+        for (Solvable solvable : solveOrder) solvable.solve();
     }
     
     public ByteBuffer bufferBoneMatrices()
