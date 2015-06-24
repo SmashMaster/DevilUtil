@@ -14,9 +14,9 @@ def writePaddedJavaUTF(file, string):
     bytes_written = writeJavaUTF(file, string)
     padding = (4 - (bytes_written % 4)) % 4
     file.write(struct.pack('>' + str(padding) + 'x'))
-    
-def rotateYUp(vector):
-    return [vector[0], vector[2], -vector[1]]
+
+def vec3BlendToDevil(vector):
+    return [vector[1], vector[2], vector[0]]
 
 class IKConstraint:
     def __init__(self, bone, constraint, bone_indices):
@@ -24,7 +24,10 @@ class IKConstraint:
         self.bone_index = bone_indices[bone.name]
         self.target_index = bone_indices[constraint.subtarget]
         self.pole_target_index = bone_indices[constraint.pole_subtarget]
-    
+
+DVM_BONE_INHERIT_ROTATION_FLAG = 1
+DVM_BONE_LOCAL_LOCATION = 2
+
 def exportArmature(file, object):
     armature = object.data
     pose = object.pose
@@ -48,16 +51,17 @@ def exportArmature(file, object):
         else:
             file.write(struct.pack('>i', -1))
         
-        #Write inherit rotation
-        file.write(struct.pack('>i', bone.use_inherit_rotation))
+        #Write bone flags
+        flag_bits = 0
+        if bone.use_inherit_rotation:
+            flag_bits |= DVM_BONE_INHERIT_ROTATION_FLAG
+        if bone.use_local_location:
+            flag_bits |= DVM_BONE_LOCAL_LOCATION
+        file.write(struct.pack('>i', flag_bits))
         
         #Write bone head and tail
-        file.write(struct.pack('>3f', *rotateYUp(bone.head_local)))
-        file.write(struct.pack('>3f', *rotateYUp(bone.tail_local)))
-    
-        #Write bone matrix (NEED TO ROTATE THIS SO Y AXIS IS UP?)
-        for i in range(3):
-            file.write(struct.pack('>3f', *bone.matrix[i]))
+        file.write(struct.pack('>3f', *vec3BlendToDevil(bone.head_local)))
+        file.write(struct.pack('>3f', *vec3BlendToDevil(bone.tail_local)))
     
     #Export IK constraints
     ik_constraints = []
@@ -80,17 +84,25 @@ def exportArmature(file, object):
     
     return bone_indices
 
-DVM_ACTION_ID_LOCATION = "LC"
-DVM_ACTION_ID_ROTATION = "RT"
-DVM_ACTION_INTERPOLATION_CONSTANT = 0
-DVM_ACTION_INTERPOLATION_LINEAR = 1
-DVM_ACTION_INTERPOLATION_BEZIER = 2
+DVM_PROPERTY_NAMES = ["LC", "RT"]
+DVM_PROPERTY_LOCATION = 0
+DVM_PROPERTY_ROTATION = 1
+DVM_REMAP_LOCATION = [2, 0, 1]
+DVM_REMAP_ROTATION = [0, 3, 1, 2]
+DVM_INTERPOLATION_CONSTANT = 0
+DVM_INTERPOLATION_LINEAR = 1
+DVM_INTERPOLATION_BEZIER = 2
 
 class BoneFCurve:
     def __init__(self, fcurve, bone_index, property):
         self.fcurve = fcurve
         self.bone_index = bone_index
         self.property = property
+        
+        if property == DVM_PROPERTY_LOCATION:
+            self.array_index = DVM_REMAP_LOCATION[fcurve.array_index]
+        elif property == DVM_PROPERTY_ROTATION:
+            self.array_index = DVM_REMAP_ROTATION[fcurve.array_index]
     
 def exportAction(file, armature_bone_indices, action):
     #Write action name
@@ -120,9 +132,9 @@ def exportAction(file, armature_bone_indices, action):
         property_name = fpath[bone_name_length + 3:]
         property = None
         if property_name == "location":
-            property = DVM_ACTION_ID_LOCATION
+            property = DVM_PROPERTY_LOCATION
         elif property_name == "rotation_quaternion":
-            property = DVM_ACTION_ID_ROTATION
+            property = DVM_PROPERTY_ROTATION
         else:
             continue
         
@@ -135,19 +147,19 @@ def exportAction(file, armature_bone_indices, action):
         
         #Write bone, property, and property index
         file.write(struct.pack('>i', fcurve.bone_index))
-        writeJavaUTF(file, fcurve.property)
-        file.write(struct.pack('>i', fcurve.fcurve.array_index))
+        writeJavaUTF(file, DVM_PROPERTY_NAMES[fcurve.property])
+        file.write(struct.pack('>i', fcurve.array_index))
         
         #Write keyframes
         keyframes = fcurve.fcurve.keyframe_points
         file.write(struct.pack('>i', len(keyframes)))
         for keyframe in keyframes:
             interp_name = keyframe.interpolation
-            interp_id = DVM_ACTION_INTERPOLATION_LINEAR
+            interp_id = DVM_INTERPOLATION_LINEAR
             if interp_name == 'CONSTANT':
-                interp_id = DVM_ACTION_INTERPOLATION_CONSTANT
+                interp_id = DVM_INTERPOLATION_CONSTANT
             elif interp_name == 'BEZIER':
-                interp_id = DVM_ACTION_INTERPOLATION_BEZIER
+                interp_id = DVM_INTERPOLATION_BEZIER
             
             file.write(struct.pack('>i', interp_id))
             file.write(struct.pack('>2f', *keyframe.co))
@@ -324,10 +336,10 @@ def exportMesh(file, object, armature_bone_indices):
     file.write(struct.pack('>i', len(vertices)))
     #Positions
     for vertex in vertices:
-        file.write(struct.pack('>3f', *rotateYUp(vertex.vert.co)))
+        file.write(struct.pack('>3f', *vec3BlendToDevil(vertex.vert.co)))
     #Normals
     for vertex in vertices:
-        file.write(struct.pack('>3f', *rotateYUp(vertex.loop.normal)))
+        file.write(struct.pack('>3f', *vec3BlendToDevil(vertex.loop.normal)))
     #UVs
     if has_uvs:
         for vertex in vertices: 

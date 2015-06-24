@@ -2,6 +2,7 @@ package com.samrj.devil.graphics.model;
 
 import com.samrj.devil.math.Matrix4f;
 import com.samrj.devil.math.Quat4f;
+import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vector3f;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -15,10 +16,11 @@ public class Bone
     
     //Constants
     public final String name;
-    public final boolean inheritRotation;
+    public final boolean inheritRotation, localLocation;
     public final int parentIndex;
     public final Vector3f head, tail;
     public final Matrix4f baseMatrix;
+    public final Matrix4f inverseBaseMatrix;
     
     private Bone parent = null;
     
@@ -38,12 +40,18 @@ public class Bone
     {
         name = DevilModel.readPaddedUTF(in);
         parentIndex = in.readInt();
-        inheritRotation = in.readInt() != 0;
+        
+        int flagBits = in.readInt();
+        inheritRotation = (flagBits & 1) == 1;
+        localLocation = (flagBits & 2) == 2;
         head = DevilModel.readVector3f(in);
         tail = DevilModel.readVector3f(in);
-        baseMatrix = DevilModel.readMatrix3f(in).toMatrix4f();
         headOffset.set(head);
         tailOffset.set(tail).sub(head);
+        
+        Quat4f boneDir = Quat4f.fromDir(tailOffset);
+        baseMatrix = boneDir.toMatrix4f();
+        inverseBaseMatrix = boneDir.invert().toMatrix4f();
     }
     
     void setParent(Bone parent)
@@ -59,19 +67,25 @@ public class Bone
         if (parent == null)
         {
             rotMatrix.set(relativeRotMat);
-            headFinal.set(headOffset).add(location);
+            headFinal.set(location);
+            if (localLocation) headFinal.mult(baseMatrix);
+            headFinal.add(headOffset);
             tailFinal.set(tailOffset).mult(relativeRotMat).add(headFinal);
         }
         else if (inheritRotation)
         {
-            rotMatrix.set(parent.rotMatrix).mult(relativeRotMat);
-            headFinal.set(headOffset).add(location).mult(parent.rotMatrix).add(parent.tailFinal);
+            rotMatrix.set(parent.baseMatrix).mult(parent.rotMatrix).mult(relativeRotMat).mult(parent.inverseBaseMatrix);
+            headFinal.set(location);
+            if (localLocation) headFinal.mult(baseMatrix);
+            headFinal.add(headOffset).mult(parent.rotMatrix).add(parent.tailFinal);
             tailFinal.set(tailOffset).mult(rotMatrix).add(headFinal);
         }
         else
         {
-            rotMatrix.set(relativeRotMat);
-            headFinal.set(headOffset).add(location).add(parent.tailFinal);
+            rotMatrix.set(parent.baseMatrix).mult(relativeRotMat).mult(parent.inverseBaseMatrix);;
+            headFinal.set(location);
+            if (localLocation) headFinal.mult(baseMatrix);
+            headFinal.add(headOffset).add(parent.tailFinal);
             tailFinal.set(tailOffset).mult(rotMatrix).add(headFinal);
         }
         
