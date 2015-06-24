@@ -57,40 +57,49 @@ public class Bone implements Solvable
         inverseBaseMatrix = boneDir.invert().toMatrix4f();
     }
     
-    @Override
-    public void solve()
+    void solveRotationMatrix()
     {
         Matrix4f relativeRotMat = rotation.copy().normalize().toMatrix4f();
         
-        if (parent == null)
-        {
-            rotMatrix.set(relativeRotMat);
-            headFinal.set(location);
-            if (localLocation) headFinal.mult(baseMatrix);
-            headFinal.add(headOffset);
-            tailFinal.set(tailOffset).mult(relativeRotMat).add(headFinal);
-        }
-        else if (inheritRotation)
-        {
-            rotMatrix.set(parent.baseMatrix).mult(parent.rotMatrix).mult(relativeRotMat).mult(parent.inverseBaseMatrix);
-            headFinal.set(location);
-            if (localLocation) headFinal.mult(baseMatrix);
-            headFinal.add(headOffset).mult(parent.rotMatrix).add(parent.tailFinal);
-            tailFinal.set(tailOffset).mult(rotMatrix).add(headFinal);
-        }
+        if (parent == null) rotMatrix.set(relativeRotMat);
         else
         {
-            rotMatrix.set(parent.baseMatrix).mult(relativeRotMat).mult(parent.inverseBaseMatrix);;
-            headFinal.set(location);
-            if (localLocation) headFinal.mult(baseMatrix);
-            headFinal.add(headOffset).add(parent.tailFinal);
-            tailFinal.set(tailOffset).mult(rotMatrix).add(headFinal);
+            rotMatrix.set(parent.baseMatrix);
+            if (inheritRotation) rotMatrix.mult(parent.rotMatrix);
+            rotMatrix.mult(relativeRotMat).mult(parent.inverseBaseMatrix);
         }
-        
+    }
+    
+    void solveHeadPosition()
+    {
+        headFinal.set(location);
+        if (localLocation) headFinal.mult(baseMatrix);
+        headFinal.add(headOffset);
+        if (parent == null) return;
+        if (inheritRotation) headFinal.mult(parent.rotMatrix);
+        headFinal.add(parent.tailFinal);
+    }
+    
+    void solveTailPosition()
+    {
+        tailFinal.set(tailOffset).mult(rotMatrix).add(headFinal);
+    }
+    
+    void solveMatrix()
+    {
         matrix.set();
         matrix.mult(Matrix4f.translate(headFinal));
         matrix.mult(rotMatrix);
         matrix.mult(Matrix4f.translate(head.cnegate()));
+    }
+    
+    @Override
+    public void solve()
+    {
+        solveRotationMatrix();
+        solveHeadPosition();
+        solveTailPosition();
+        solveMatrix();
     }
     
     void setParent(Bone parent)
