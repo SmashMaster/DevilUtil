@@ -1,5 +1,6 @@
 package com.samrj.devil.graphics.model;
 
+import com.samrj.devil.math.Matrix4f;
 import com.samrj.devil.math.Quat4f;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vector3f;
@@ -39,19 +40,30 @@ public class IKConstraint implements Solvable
         float dist = Util.sqrt(distSq);
         dir.div(dist);
         
-        float chordDist = (distSq - endSqLen + startSqLen)/(dist*2.0f);
-        float chordLen = Util.sqrt(startSqLen - chordDist*chordDist);
+        Vector3f poleDir = poleTarget.headFinal.csub(start.headFinal).normalize();
+        Vector3f hingeAxis = poleDir.copy().cross(dir).normalize();
+        Vector3f chordYDir = hingeAxis.copy().cross(dir).negate().normalize();
         
-        Vector3f chordCenter = dir.cmult(chordDist).add(start.headFinal);
+        float chordX = (distSq - endSqLen + startSqLen)/(dist*2.0f);
+        Vector3f chordCenter = dir.cmult(chordX).add(start.headFinal);
         
-        Vector3f chordDir = poleTarget.headFinal.csub(start.headFinal).normalize();
-        chordDir.cross(dir).normalize(); //Perpendicular to chord direction and target direction
-        chordDir.cross(dir).negate().normalize(); //Perpendicular to target dir and faces towards pole target
+        float chordY = Util.sqrt(startSqLen - chordX*chordX);
+        Vector3f kneePos = chordYDir.cmult(chordY).add(chordCenter);
         
-        Vector3f kneePos = chordDir.cmult(chordLen).add(chordCenter);
+        start.reachTowards(kneePos);
         
-        //Just need to figure out how to set the two bones' rotations now
+        start.solveRotationMatrix();
+        start.solveTailPosition();
+        start.solveMatrix();
+        end.solveHeadPosition();
         
+        end.reachTowards(target.headFinal);
+        
+        end.solveRotationMatrix();
+        end.solveTailPosition();
+        end.solveMatrix();
+        
+        //DEBUG RENDER
         GL11.glColor3f(1.0f, 0.0f, 1.0f);
         GL11.glLineWidth(1.0f);
         GL11.glBegin(GL11.GL_LINE_STRIP);
@@ -59,18 +71,5 @@ public class IKConstraint implements Solvable
         kneePos.glVertex();
         target.headFinal.glVertex();
         GL11.glEnd();
-        
-        start.reachTowards(kneePos);
-        
-        start.solveRotationMatrix();
-        start.solveTailPosition();
-        start.solveMatrix();
-        
-        end.solveHeadPosition();
-        end.reachTowards(target.headFinal);
-        
-        end.solveRotationMatrix();
-        end.solveTailPosition();
-        end.solveMatrix();
     }
 }

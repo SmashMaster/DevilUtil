@@ -69,8 +69,9 @@ public class Bone implements Solvable
         else
         {
             rotMatrix.set(parent.baseMatrix);
+            rotMatrix.mult(relativeRotMat);
+            rotMatrix.mult(parent.inverseBaseMatrix);
             if (inheritRotation) rotMatrix.mult(parent.rotMatrix);
-            rotMatrix.mult(relativeRotMat).mult(parent.inverseBaseMatrix);
         }
         
         inverseRotMatrix.set(rotMatrix).invert();
@@ -127,10 +128,10 @@ public class Bone implements Solvable
     {
         Vector3f dir = target.csub(headFinal); //Global
         dir.mult(parent.inverseBaseMatrix); //Local to parent
-        dir.mult(parent.inverseRotMatrix);
         
         Vector3f v = Util.Axis.X.versor(); //Local
         v.mult(baseMatrix); //Global
+        v.mult(parent.rotMatrix);
         v.mult(parent.inverseBaseMatrix); //Local to parent
         
         rotation.set(v.rotationTo(dir));
