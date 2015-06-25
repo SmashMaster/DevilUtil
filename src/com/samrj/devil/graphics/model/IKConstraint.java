@@ -51,6 +51,18 @@ public class IKConstraint implements Solvable
         Vector3f kneePos = chordYDir.cmult(chordY).add(chordCenter);
         
         start.reachTowards(kneePos);
+        start.solveRotationMatrix(); //Solve rotation matrix then correct roll error
+        
+        Vector3f rollAxis = Util.Axis.X.versor(); //Local
+        rollAxis.mult(start.baseMatrix); //Global
+        rollAxis.mult(parent.rotMatrix);
+        rollAxis.mult(parent.inverseBaseMatrix); //Local to parent
+        
+        Vector3f localRollTarget = hingeAxis.copy(); //Global
+        localRollTarget.mult(start.inverseRotMatrix);
+        localRollTarget.mult(start.inverseBaseMatrix);
+        float rollAngle = Util.atan2(localRollTarget.z, localRollTarget.y);
+        start.rotation.mult(Quat4f.axisAngle(rollAxis, rollAngle));
         
         start.solveRotationMatrix();
         start.solveTailPosition();
@@ -62,14 +74,5 @@ public class IKConstraint implements Solvable
         end.solveRotationMatrix();
         end.solveTailPosition();
         end.solveMatrix();
-        
-        //DEBUG RENDER
-        GL11.glColor3f(1.0f, 0.0f, 1.0f);
-        GL11.glLineWidth(1.0f);
-        GL11.glBegin(GL11.GL_LINE_STRIP);
-        start.headFinal.glVertex();
-        kneePos.glVertex();
-        target.headFinal.glVertex();
-        GL11.glEnd();
     }
 }
