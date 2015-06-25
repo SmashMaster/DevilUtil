@@ -75,7 +75,7 @@ public final class Quat4f
     
     public Quat4f()
     {
-        set(1f, 0f, 0f, 0f);
+        set();
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Mutator Methods">
@@ -88,6 +88,11 @@ public final class Quat4f
     public Quat4f set(Quat4f q)
     {
         return set(q.w, q.x, q.y, q.z);
+    }
+    
+    public Quat4f set()
+    {
+        return set(1f, 0f, 0f, 0f);
     }
 
     public Quat4f mult(Quat4f q) //Source: [0]

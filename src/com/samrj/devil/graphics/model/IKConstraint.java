@@ -1,5 +1,6 @@
 package com.samrj.devil.graphics.model;
 
+import com.samrj.devil.math.Quat4f;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vector3f;
 import java.io.DataInputStream;
@@ -8,7 +9,7 @@ import org.lwjgl.opengl.GL11;
 
 public class IKConstraint implements Solvable
 {
-    public final Bone start, end, target, poleTarget;
+    public final Bone parent, start, end, target, poleTarget;
     public final float startSqLen, endSqLen, length;
     
     public IKConstraint(DataInputStream in, Bone[] bones) throws IOException
@@ -19,6 +20,7 @@ public class IKConstraint implements Solvable
         
         end = bones[boneIndex];
         start = end.getParent();
+        parent = start.getParent();
         target = bones[targetIndex];
         poleTarget = bones[poleTargetIndex];
         
@@ -58,11 +60,16 @@ public class IKConstraint implements Solvable
         target.headFinal.glVertex();
         GL11.glEnd();
         
+        start.reachTowards(kneePos);
+        
         start.solveRotationMatrix();
         start.solveTailPosition();
         start.solveMatrix();
-        end.solveRotationMatrix();
+        
         end.solveHeadPosition();
+        end.reachTowards(target.headFinal);
+        
+        end.solveRotationMatrix();
         end.solveTailPosition();
         end.solveMatrix();
     }

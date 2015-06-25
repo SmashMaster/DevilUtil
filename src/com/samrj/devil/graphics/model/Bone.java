@@ -2,6 +2,7 @@ package com.samrj.devil.graphics.model;
 
 import com.samrj.devil.math.Matrix4f;
 import com.samrj.devil.math.Quat4f;
+import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vector3f;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -35,7 +36,10 @@ public class Bone implements Solvable
     public final Vector3f location = new Vector3f();
     public final Quat4f rotation = new Quat4f();
     public final Matrix4f matrix = new Matrix4f();
+    
+    //Rotation matrix rotates local coordinates to global.
     public final Matrix4f rotMatrix = new Matrix4f();
+    public final Matrix4f inverseRotMatrix = new Matrix4f();
     public final Vector3f headFinal = new Vector3f();
     public final Vector3f tailFinal = new Vector3f();
     
@@ -68,6 +72,8 @@ public class Bone implements Solvable
             if (inheritRotation) rotMatrix.mult(parent.rotMatrix);
             rotMatrix.mult(relativeRotMat).mult(parent.inverseBaseMatrix);
         }
+        
+        inverseRotMatrix.set(rotMatrix).invert();
     }
     
     void solveHeadPosition()
@@ -96,10 +102,8 @@ public class Bone implements Solvable
     @Override
     public void solve()
     {
-        solveRotationMatrix();
-        solveHeadPosition();
-        solveTailPosition();
-        solveMatrix();
+        solveRotationMatrix(); solveHeadPosition();
+        solveTailPosition(); solveMatrix();
     }
     
     void setParent(Bone parent)
@@ -117,6 +121,19 @@ public class Bone implements Solvable
     public Collection<Bone> getChildren()
     {
         return Collections.unmodifiableCollection(children);
+    }
+    
+    public void reachTowards(Vector3f target)
+    {
+        Vector3f dir = target.csub(headFinal); //Global
+        dir.mult(parent.inverseBaseMatrix); //Local to parent
+        dir.mult(parent.inverseRotMatrix);
+        
+        Vector3f v = Util.Axis.X.versor(); //Local
+        v.mult(baseMatrix); //Global
+        v.mult(parent.inverseBaseMatrix); //Local to parent
+        
+        rotation.set(v.rotationTo(dir));
     }
     
     public void set(Property property, int index, float value)
