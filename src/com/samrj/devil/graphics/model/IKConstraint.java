@@ -1,17 +1,15 @@
 package com.samrj.devil.graphics.model;
 
-import com.samrj.devil.math.Matrix4f;
 import com.samrj.devil.math.Quat4f;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vector3f;
 import java.io.DataInputStream;
 import java.io.IOException;
-import org.lwjgl.opengl.GL11;
 
 public class IKConstraint implements Solvable
 {
     public final Bone parent, start, end, target, poleTarget;
-    public final float startSqLen, endSqLen, length;
+    public final float startSqLen, endSqLen, startLen, endLen, length;
     
     public IKConstraint(DataInputStream in, Bone[] bones) throws IOException
     {
@@ -27,7 +25,9 @@ public class IKConstraint implements Solvable
         
         startSqLen = start.tail.squareDist(start.head);
         endSqLen = end.tail.squareDist(start.tail);
-        length = Util.sqrt(startSqLen) + Util.sqrt(endSqLen);
+        startLen = Util.sqrt(startSqLen);
+        endLen = Util.sqrt(endSqLen);
+        length = startLen + endLen;
     }
     
     @Override
@@ -42,13 +42,17 @@ public class IKConstraint implements Solvable
         
         Vector3f poleDir = poleTarget.headFinal.csub(start.headFinal).normalize();
         Vector3f hingeAxis = poleDir.copy().cross(dir).normalize();
-        Vector3f chordYDir = hingeAxis.copy().cross(dir).negate().normalize();
+        Vector3f kneePos = new Vector3f();
         
-        float chordX = (distSq - endSqLen + startSqLen)/(dist*2.0f);
-        Vector3f chordCenter = dir.cmult(chordX).add(start.headFinal);
-        
-        float chordY = Util.sqrt(startSqLen - chordX*chordX);
-        Vector3f kneePos = chordYDir.cmult(chordY).add(chordCenter);
+        if (dist < length)
+        {
+            Vector3f chordYDir = hingeAxis.copy().cross(dir).negate().normalize();
+            float chordX = (distSq - endSqLen + startSqLen)/(dist*2.0f);
+            Vector3f chordCenter = dir.cmult(chordX).add(start.headFinal);
+            float chordY = Util.sqrt(startSqLen - chordX*chordX);
+            kneePos.set(chordYDir).mult(chordY).add(chordCenter);
+        }
+        else kneePos.set(dir).mult(startLen).add(start.headFinal);
         
         start.reachTowards(kneePos);
         start.solveRotationMatrix(); //Solve rotation matrix then correct roll error
