@@ -17,6 +17,9 @@ def writePaddedJavaUTF(file, string):
 
 def vec3BlendToDevil(vector):
     return [vector[1], vector[2], vector[0]]
+    
+def mat4BlendToDevilmat3(m):
+    return [m[1][1], m[1][2], m[1][0],    m[2][1], m[2][2], m[2][0],    m[0][1], m[0][2], m[0][0]]
 
 class IKConstraint:
     def __init__(self, bone, constraint, bone_indices):
@@ -62,6 +65,9 @@ def exportArmature(file, object):
         #Write bone head and tail
         file.write(struct.pack('>3f', *vec3BlendToDevil(bone.head_local)))
         file.write(struct.pack('>3f', *vec3BlendToDevil(bone.tail_local)))
+        
+        #Write bone matrix
+        file.write(struct.pack('>9f', *mat4BlendToDevilmat3(bone.matrix_local)))
     
     #Export IK constraints
     ik_constraints = []
@@ -81,6 +87,7 @@ def exportArmature(file, object):
         file.write(struct.pack('>i', ik_constraint.bone_index))
         file.write(struct.pack('>i', ik_constraint.target_index))
         file.write(struct.pack('>i', ik_constraint.pole_target_index))
+        file.write(struct.pack('>f', ik_constraint.constraint.pole_angle))
     
     return bone_indices
 

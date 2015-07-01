@@ -1,5 +1,6 @@
 package com.samrj.devil.graphics.model;
 
+import com.samrj.devil.math.Matrix3f;
 import com.samrj.devil.math.Matrix4f;
 import com.samrj.devil.math.Quat4f;
 import com.samrj.devil.math.Util;
@@ -22,7 +23,7 @@ public class Bone implements Solvable
     public final boolean inheritRotation, localLocation;
     public final int parentIndex;
     public final Vector3f head, tail;
-    public final Matrix4f baseMatrix;
+    public final Matrix4f baseMatrix; //Base matrices rotate from local to global
     public final Matrix4f inverseBaseMatrix;
     
     private final Collection<Bone> children = new ArrayList<>();
@@ -37,7 +38,7 @@ public class Bone implements Solvable
     public final Quat4f rotation = new Quat4f();
     public final Matrix4f matrix = new Matrix4f();
     
-    //Rotation matrix rotates local coordinates to global.
+    //Rotation matrices rotate in local space.
     public final Matrix4f rotMatrix = new Matrix4f();
     public final Matrix4f inverseRotMatrix = new Matrix4f();
     public final Vector3f headFinal = new Vector3f();
@@ -56,23 +57,21 @@ public class Bone implements Solvable
         headOffset.set(head);
         tailOffset.set(tail).sub(head);
         
-        Quat4f boneDir = Quat4f.fromDir(tailOffset);
-        baseMatrix = boneDir.toMatrix4f();
-        inverseBaseMatrix = boneDir.invert().toMatrix4f();
+        Matrix3f baseMatrix3f = DevilModel.readMatrix3f(in);
+        baseMatrix = baseMatrix3f.toMatrix4f();
+        inverseBaseMatrix = baseMatrix3f.invert().toMatrix4f();
     }
     
     void solveRotationMatrix()
     {
         Matrix4f relativeRotMat = rotation.copy().normalize().toMatrix4f();
         
-        if (parent == null) rotMatrix.set(relativeRotMat);
-        else
-        {
-            rotMatrix.set(parent.baseMatrix);
-            rotMatrix.mult(relativeRotMat);
-            rotMatrix.mult(parent.inverseBaseMatrix);
-            if (inheritRotation) rotMatrix.mult(parent.rotMatrix);
-        }
+        //may be incorrect
+        rotMatrix.set(baseMatrix);
+        rotMatrix.mult(relativeRotMat);
+        rotMatrix.mult(inverseBaseMatrix);
+        
+        if (parent != null && inheritRotation) rotMatrix.mult(parent.rotMatrix);
         
         inverseRotMatrix.set(rotMatrix).invert();
     }
@@ -127,12 +126,13 @@ public class Bone implements Solvable
     public void reachTowards(Vector3f target)
     {
         Vector3f dir = target.csub(headFinal); //Global
-        dir.mult(parent.inverseBaseMatrix); //Local to parent
+        dir.mult(inverseBaseMatrix); //Local
         
         Vector3f v = Util.Axis.X.versor(); //Local
         v.mult(baseMatrix); //Global
-        v.mult(parent.rotMatrix);
-        v.mult(parent.inverseBaseMatrix); //Local to parent
+        if (inheritRotation) v.mult(parent.rotMatrix);
+        v.mult(inverseBaseMatrix); //Local again
+//        v.mult(parent.inverseBaseMatrix); //Local to parent
         
         rotation.set(v.rotationTo(dir));
     }

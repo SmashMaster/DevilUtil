@@ -9,6 +9,7 @@ import java.io.IOException;
 public class IKConstraint implements Solvable
 {
     public final Bone parent, start, end, target, poleTarget;
+    public final float poleAngle;
     public final float startSqLen, endSqLen, startLen, endLen, length;
     
     public IKConstraint(DataInputStream in, Bone[] bones) throws IOException
@@ -16,6 +17,7 @@ public class IKConstraint implements Solvable
         int boneIndex = in.readInt();
         int targetIndex = in.readInt();
         int poleTargetIndex = in.readInt();
+        poleAngle = in.readFloat();
         
         end = bones[boneIndex];
         start = end.getParent();
@@ -57,16 +59,13 @@ public class IKConstraint implements Solvable
         start.reachTowards(kneePos);
         start.solveRotationMatrix(); //Solve rotation matrix then correct roll error
         
-        Vector3f rollAxis = Util.Axis.X.versor(); //Local
-        rollAxis.mult(start.baseMatrix); //Global
-        rollAxis.mult(parent.rotMatrix);
-        rollAxis.mult(parent.inverseBaseMatrix); //Local to parent
-        
+        //Roll calculation very slightly different from Blender.
+        //Until fixed, should not use inherit rotation for first bone after IK.
         Vector3f localRollTarget = hingeAxis.copy(); //Global
         localRollTarget.mult(start.inverseRotMatrix);
         localRollTarget.mult(start.inverseBaseMatrix);
         float rollAngle = Util.atan2(localRollTarget.z, localRollTarget.y);
-        start.rotation.mult(Quat4f.axisAngle(rollAxis, rollAngle));
+        start.rotation.mult(Quat4f.axisAngle(Util.Axis.X, Util.reduceRad(rollAngle + poleAngle)));
         
         start.solveRotationMatrix();
         start.solveTailPosition();
