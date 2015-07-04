@@ -182,7 +182,7 @@ public class Vec2
      * @param v1 The second vector.
      * @return The dot product of {@code v0} and {@code v1}.
      */
-    public static float dot(Vec2 v0, Vec2 v1)
+    public static final float dot(Vec2 v0, Vec2 v1)
     {
         return v0.x*v1.x + v0.y*v1.y;
     }
