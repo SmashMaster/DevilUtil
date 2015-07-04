@@ -1,7 +1,7 @@
 package com.samrj.devil.display;
 
 import com.samrj.devil.buffer.BufferUtil;
-import com.samrj.devil.math.Vector2i;
+import com.samrj.devil.math.Vec2i;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Collections;
@@ -117,14 +117,14 @@ public final class Monitor
      * 
      * @return the position of the upper-left corner of this monitor.
      */
-    public Vector2i getPos()
+    public Vec2i getPos()
     {
         BufferUtil.clearPublicBuffers();
         GLFW.glfwGetMonitorPos(id, BufferUtil.pubBufA, BufferUtil.pubBufB);
         GLFWError.flushErrors();
         
-        return new Vector2i(BufferUtil.pubBufA.getInt(),
-                            BufferUtil.pubBufB.getInt());
+        return new Vec2i(BufferUtil.pubBufA.getInt(),
+                         BufferUtil.pubBufB.getInt());
     }
     
     /**
@@ -139,14 +139,14 @@ public final class Monitor
      * 
      * @return The size, in millimetres, of the display area of this monitor.
      */
-    public Vector2i getPhysicalSize()
+    public Vec2i getPhysicalSize()
     {
         BufferUtil.clearPublicBuffers();
         GLFW.glfwGetMonitorPhysicalSize(id, BufferUtil.pubBufA, BufferUtil.pubBufB);
         GLFWError.flushErrors();
         
-        return new Vector2i(BufferUtil.pubBufA.getInt(),
-                            BufferUtil.pubBufB.getInt());
+        return new Vec2i(BufferUtil.pubBufA.getInt(),
+                         BufferUtil.pubBufB.getInt());
     }
     
     /**

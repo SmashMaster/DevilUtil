@@ -1,7 +1,7 @@
 package com.samrj.devil.display;
 
 import com.samrj.devil.buffer.BufferUtil;
-import com.samrj.devil.math.Vector2i;
+import com.samrj.devil.math.Vec2i;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
 import org.lwjgl.glfw.GLFWWindowCloseCallback;
@@ -539,14 +539,14 @@ public class Window
      * 
      * @return The position of the upper-left corner of this window.
      */
-    public final Vector2i getPos()
+    public final Vec2i getPos()
     {
         BufferUtil.clearPublicBuffers();
         GLFW.glfwGetWindowPos(id, BufferUtil.pubBufA, BufferUtil.pubBufB);
         GLFWError.flushErrors();
         
-        return new Vector2i(BufferUtil.pubBufA.getInt(),
-                            BufferUtil.pubBufB.getInt());
+        return new Vec2i(BufferUtil.pubBufA.getInt(),
+                         BufferUtil.pubBufB.getInt());
     }
     
     /**
@@ -581,14 +581,14 @@ public class Window
      * 
      * @return The size of the client area.
      */
-    public final Vector2i getSize()
+    public final Vec2i getSize()
     {
         BufferUtil.clearPublicBuffers();
         GLFW.glfwGetWindowSize(id, BufferUtil.pubBufA, BufferUtil.pubBufB);
         GLFWError.flushErrors();
         
-        return new Vector2i(BufferUtil.pubBufA.getInt(),
-                            BufferUtil.pubBufB.getInt());
+        return new Vec2i(BufferUtil.pubBufA.getInt(),
+                         BufferUtil.pubBufB.getInt());
     }
     
     /**
@@ -623,14 +623,14 @@ public class Window
      * 
      * @return The size of the framebuffer of this window.
      */
-    public final Vector2i getFramebufferSize()
+    public final Vec2i getFramebufferSize()
     {
         BufferUtil.clearPublicBuffers();
         GLFW.glfwGetFramebufferSize(id, BufferUtil.pubBufA, BufferUtil.pubBufB);
         GLFWError.flushErrors();
         
-        return new Vector2i(BufferUtil.pubBufA.getInt(),
-                            BufferUtil.pubBufB.getInt());
+        return new Vec2i(BufferUtil.pubBufA.getInt(),
+                         BufferUtil.pubBufB.getInt());
     }
     
     /**
