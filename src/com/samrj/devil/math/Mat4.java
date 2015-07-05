@@ -3,7 +3,7 @@ package com.samrj.devil.math;
 
 public class Mat4
 {
-    ~~INCOMPLETE~~
+    //INCOMPLETE
     
     public float a, b, c, d,
                  e, f, g, h,

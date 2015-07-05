@@ -2,7 +2,7 @@ package com.samrj.devil.math;
 
 public class Mat2
 {
-    ~~INCOMPLETE~~
+    //INCOMPLETE
     
     public static final Mat2 scale(float s)
     {
@@ -47,11 +47,10 @@ public class Mat2
                  c, d;
     
     /**
-     * Creates a new 2x2 identity matrix.
+     * Creates a new 2x2 zero matrix.
      */
     public Mat2()
     {
-        a = 1.0f; d = 1.0f;
     }
     
     /**

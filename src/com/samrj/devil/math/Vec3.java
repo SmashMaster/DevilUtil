@@ -291,7 +291,7 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
      */
     public static final Vec3 add(Vec3 v0, Vec3 v1)
     {
-        final Vec3 result = new Vec3();
+        Vec3 result = new Vec3();
         add(v0, v1, result);
         return result;
     }
@@ -305,7 +305,7 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
      */
     public static final Vec3 sub(Vec3 v0, Vec3 v1)
     {
-        final Vec3 result = new Vec3();
+        Vec3 result = new Vec3();
         sub(v0, v1, result);
         return result;
     }
@@ -319,7 +319,7 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
      */
     public static final Vec3 mult(Vec3 v, float s)
     {
-        final Vec3 result = new Vec3();
+        Vec3 result = new Vec3();
         mult(v, s, result);
         return result;
     }
@@ -333,7 +333,7 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
      */
     public static final Vec3 mult(Vec3 v, Mat3 m)
     {
-        final Vec3 result = new Vec3();
+        Vec3 result = new Vec3();
         mult(v, m, result);
         return result;
     }
@@ -347,7 +347,7 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
      */
     public static final Vec3 mult(Vec3 v, Mat4 m)
     {
-        final Vec3 result = new Vec3();
+        Vec3 result = new Vec3();
         mult(v, m, result);
         return result;
     }
@@ -363,7 +363,7 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
      */
     public static final Vec3 cross(Vec3 v0, Vec3 v1)
     {
-        final Vec3 result = new Vec3();
+        Vec3 result = new Vec3();
         cross(v0, v1, result);
         return result;
     }
@@ -377,7 +377,7 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
      */
     public static final Vec3 div(Vec3 v, float s)
     {
-        final Vec3 result = new Vec3();
+        Vec3 result = new Vec3();
         div(v, s, result);
         return result;
     }
@@ -390,7 +390,7 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
      */
     public static final Vec3 normalize(Vec3 v)
     {
-        final Vec3 result = new Vec3();
+        Vec3 result = new Vec3();
         normalize(v, result);
         return result;
     }
@@ -405,7 +405,7 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
      */
     public static final Vec3 reflect(Vec3 v, Vec3 n)
     {
-        final Vec3 result = new Vec3();
+        Vec3 result = new Vec3();
         reflect(v, n, result);
         return result;
     }
@@ -420,7 +420,7 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
      */
     public static final Vec3 project(Vec3 v0, Vec3 v1)
     {
-        final Vec3 result = new Vec3();
+        Vec3 result = new Vec3();
         project(v0, v1, result);
         return result;
     }
@@ -435,7 +435,7 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
      */
     public static final Vec3 reject(Vec3 v0, Vec3 v1)
     {
-        final Vec3 result = new Vec3();
+        Vec3 result = new Vec3();
         reject(v0, v1, result);
         return result;
     }
@@ -689,7 +689,7 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
     @Override
     public String toString()
     {
-        return '(' + x + ", " + y + ", " + z + ')';
+        return "(" + x + ", " + y + ", " + z + ")";
     }
     
     @Override

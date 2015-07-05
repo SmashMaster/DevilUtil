@@ -8,7 +8,7 @@ package com.samrj.devil.math;
  */
 public class Vec2
 {
-    ~~INCOMPLETE~~
+    //INCOMPLETE
     
     // <editor-fold defaultstate="collapsed" desc="Static modifier methods">
     /**
