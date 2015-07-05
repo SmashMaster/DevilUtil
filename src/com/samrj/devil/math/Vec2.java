@@ -1,16 +1,121 @@
 package com.samrj.devil.math;
 
+import com.samrj.devil.io.Bufferable;
+import com.samrj.devil.io.Streamable;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.nio.FloatBuffer;
+
 /**
- * Two-dimensional vector.
+ * Optimized two-dimensional vector class.
  * 
  * @author SmashMaster
  * @copyright 2015 Samuel Johnson
  */
-public class Vec2
+public class Vec2 implements Bufferable<FloatBuffer>, Streamable
 {
-    //INCOMPLETE
+    // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
+    /**
+     * Returns the dot product of two given vectors.
+     * 
+     * @param v0 The first vector.
+     * @param v1 The second vector.
+     * @return The dot product of {@code v0} and {@code v1}.
+     */
+    public static final float dot(Vec2 v0, Vec2 v1)
+    {
+        return v0.x*v1.x + v0.y*v1.y;
+    }
     
-    // <editor-fold defaultstate="collapsed" desc="Static modifier methods">
+    /**
+     * Returns the z coordinate of the cross product of {@code v0} and {@code v1},
+     * implicitly taking their z coordinates to be zero.
+     * 
+     * @param v0 The vector to multiply.
+     * @param v1 The vector to multiply by.
+     * @return The cross product of {@code v0} and {@code v1}.
+     */
+    public static final float cross(Vec2 v0, Vec2 v1)
+    {
+        return v0.x*v1.y - v0.y*v1.x;
+    }
+    
+    /**
+     * Returns the square length of the given vector. Can be alternately defined
+     * as the dot product of the vector with itself.
+     * 
+     * @param v The vector to calculate the square length of.
+     * @return The square length of {@code v}.
+     */
+    public static final float squareLength(Vec2 v)
+    {
+        return v.x*v.x + v.y*v.y;
+    }
+    
+    /**
+     * Returns the length of the given vector.
+     * 
+     * @param v The vector to calculate the length of.
+     * @return The length of {@code v}.
+     */
+    public static final float length(Vec2 v)
+    {
+        return (float)Math.sqrt(squareLength(v));
+    }
+    
+    /**
+     * Returns the square distance between two given vectors.
+     *  
+     * @param v0 The first vector.
+     * @param v1 The second vector.
+     * @return The square distance between {@code v0} and {@code v1}.
+     */
+    public static final float squareDist(Vec2 v0, Vec2 v1)
+    {
+        float dx = v1.x - v0.x;
+        float dy = v1.y - v0.y;
+        return dx*dx + dy*dy;
+    }
+    
+    /**
+     * Returns the distance between two given vectors.
+     *  
+     * @param v0 The first vector.
+     * @param v1 The second vector.
+     * @return The distance between {@code v0} and {@code v1}.
+     */
+    public static final float dist(Vec2 v0, Vec2 v1)
+    {
+        return (float)Math.sqrt(squareDist(v0, v1));
+    }
+    
+    /**
+     * Returns the scalar projection of {@code v0} onto {@code v1}. {@code v1}
+     * need not be normalized.
+     * 
+     * @param v0 The vector to project.
+     * @param v1 The vector on which to project.
+     * @return The scalar projection of {@code v0} onto {@code v1}.
+     */
+    public static final float scalarProject(Vec2 v0, Vec2 v1)
+    {
+        return dot(v0, v1)/length(v1);
+    }
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Static mutator methods">
+    /**
+     * Copies {@code source} into {@code target}.
+     * 
+     * @param source The vector to copy.
+     * @param target The vector in which to store the result.
+     */
+    public static final void copy(Vec2 source, Vec2 target)
+    {
+        target.x = source.x;
+        target.y = source.y;
+    }
+    
     /**
      * Adds {@code v0} and {@code v1} and stores the result in {@code result}.
      * 
@@ -59,8 +164,8 @@ public class Vec2
      */
     public static final void mult(Vec2 v, Mat2 m, Vec2 result)
     {
-        final float x = v.x*m.a + v.y*m.b;
-        final float y = v.x*m.c + v.y*m.d;
+        float x = v.x*m.a + v.y*m.b;
+        float y = v.x*m.c + v.y*m.d;
         result.x = x; result.y = y;
     }
     
@@ -73,8 +178,8 @@ public class Vec2
      */
     public static final void mult(Vec2 v, Mat3 m, Vec2 result)
     {
-        final float x = v.x*m.a + v.y*m.b + m.c;
-        final float y = v.x*m.d + v.y*m.e + m.f;
+        float x = v.x*m.a + v.y*m.b + m.c;
+        float y = v.x*m.d + v.y*m.e + m.f;
         result.x = x; result.y = y;
     }
     
@@ -101,7 +206,49 @@ public class Vec2
      */
     public static final void normalize(Vec2 v, Vec2 result)
     {
-        div(v, v.length(), result);
+        div(v, length(v), result);
+    }
+    
+    /**
+     * Reflects {@code v} about {@code n} and stores the result in {@code result}.
+     * {@code n} must be normalized.
+     * 
+     * @param v The vector to reflect.
+     * @param n The normal vector about which to reflect.
+     * @param result The vector in which to store the result.
+     */
+    public static final void reflect(Vec2 v, Vec2 n, Vec2 result)
+    {
+        float m = 2f*dot(v, n);
+        result.x = n.x*m - v.x;
+        result.y = n.y*m - v.y;
+    }
+    
+    /**
+     * Performs a vector projection of {@code v0} onto {@code v1} and stores the
+     * result in {@code result}. {@code v1} need not be normalized.
+     * 
+     * @param v0 The vector to project.
+     * @param v1 The vector on which to project.
+     * @param result The vector in which to store the result.
+     */
+    public static final void project(Vec2 v0, Vec2 v1, Vec2 result)
+    {
+        mult(v1, dot(v0, v1)/squareLength(v1), result);
+    }
+    
+    /**
+     * Performs a vector rejection of {@code v1} from {@code v0} and stores the
+     * result in {@code result}.
+     * 
+     * @param v0 The vector to reject from.
+     * @param v1 The vector to reject by.
+     * @param result The vector in which to store the result.
+     */
+    public static final void reject(Vec2 v0, Vec2 v1, Vec2 result)
+    {
+        project(v0, v1, result);
+        sub(v0, result, result);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
@@ -114,7 +261,7 @@ public class Vec2
      */
     public static final Vec2 add(Vec2 v0, Vec2 v1)
     {
-        final Vec2 result = new Vec2();
+        Vec2 result = new Vec2();
         add(v0, v1, result);
         return result;
     }
@@ -128,7 +275,7 @@ public class Vec2
      */
     public static final Vec2 sub(Vec2 v0, Vec2 v1)
     {
-        final Vec2 result = new Vec2();
+        Vec2 result = new Vec2();
         sub(v0, v1, result);
         return result;
     }
@@ -142,22 +289,8 @@ public class Vec2
      */
     public static final Vec2 mult(Vec2 v, float s)
     {
-        final Vec2 result = new Vec2();
+        Vec2 result = new Vec2();
         mult(v, s, result);
-        return result;
-    }
-    
-    /**
-     * Multiplies {@code v} by {@code m} and returns the result in a new vector.
-     * 
-     * @param v The vector to multiply.
-     * @param m The 2x2 matrix to multiply by.
-     * @return A new vector containing the result.
-     */
-    public static final Vec2 mult(Vec2 v, Mat2 m)
-    {
-        final Vec2 result = new Vec2();
-        mult(v, m, result);
         return result;
     }
     
@@ -168,9 +301,23 @@ public class Vec2
      * @param m The 3x3 matrix to multiply by.
      * @return A new vector containing the result.
      */
+    public static final Vec2 mult(Vec2 v, Mat2 m)
+    {
+        Vec2 result = new Vec2();
+        mult(v, m, result);
+        return result;
+    }
+    
+    /**
+     * Multiplies {@code v} by {@code m} and returns the result in a new vector.
+     * 
+     * @param v The vector to multiply.
+     * @param m The 4x4 matrix to multiply by.
+     * @return A new vector containing the result.
+     */
     public static final Vec2 mult(Vec2 v, Mat3 m)
     {
-        final Vec2 result = new Vec2();
+        Vec2 result = new Vec2();
         mult(v, m, result);
         return result;
     }
@@ -184,7 +331,7 @@ public class Vec2
      */
     public static final Vec2 div(Vec2 v, float s)
     {
-        final Vec2 result = new Vec2();
+        Vec2 result = new Vec2();
         div(v, s, result);
         return result;
     }
@@ -197,28 +344,61 @@ public class Vec2
      */
     public static final Vec2 normalize(Vec2 v)
     {
-        final Vec2 result = new Vec2();
+        Vec2 result = new Vec2();
         normalize(v, result);
+        return result;
+    }
+    
+    /**
+     * Reflects {@code v} about {@code n} and stores the result in {@code result}.
+     * {@code n} must be normalized.
+     * 
+     * @param v The vector to reflect.
+     * @param n The normal vector about which to reflect.
+     * @return A new vector containing the result.
+     */
+    public static final Vec2 reflect(Vec2 v, Vec2 n)
+    {
+        Vec2 result = new Vec2();
+        reflect(v, n, result);
+        return result;
+    }
+    
+    /**
+     * Performs a vector projection of {@code v0} onto {@code v1} and stores the
+     * result in {@code result}. {@code v1} need not be normalized.
+     * 
+     * @param v0 The vector to project.
+     * @param v1 The vector on which to project.
+     * @return A new vector containing the result.
+     */
+    public static final Vec2 project(Vec2 v0, Vec2 v1)
+    {
+        Vec2 result = new Vec2();
+        project(v0, v1, result);
+        return result;
+    }
+    
+    /**
+     * Performs a vector rejection of {@code v1} from {@code v0} and stores the
+     * result in {@code result}.
+     * 
+     * @param v0 The vector to reject from.
+     * @param v1 The vector to reject by.
+     * @return A new vector containing the result.
+     */
+    public static final Vec2 reject(Vec2 v0, Vec2 v1)
+    {
+        Vec2 result = new Vec2();
+        reject(v0, v1, result);
         return result;
     }
     // </editor-fold>
     
-    /**
-     * Returns the dot product of two given vectors.
-     * 
-     * @param v0 The first vector.
-     * @param v1 The second vector.
-     * @return The dot product of {@code v0} and {@code v1}.
-     */
-    public static final float dot(Vec2 v0, Vec2 v1)
-    {
-        return v0.x*v1.x + v0.y*v1.y;
-    }
-    
     public float x, y;
     
     /**
-     * Creates a new vector whose coordinates are both zero.
+     * Creates a new zero vector.
      */
     public Vec2()
     {
@@ -226,9 +406,6 @@ public class Vec2
     
     /**
      * Creates a new vector with the given coordinates.
-     * 
-     * @param x The x coordinate of this.
-     * @param y The y coordinate of this.
      */
     public Vec2(float x, float y)
     {
@@ -245,28 +422,83 @@ public class Vec2
         x = v.x; y = v.y;
     }
     
+    // <editor-fold defaultstate="collapsed" desc="Instance accessor methods">
     /**
-     * Returns the square length of this vector. Can be alternately defined as
-     * the dot product of this with itself.
+     * Returns the dot product of this and the given vector.
      * 
-     * @return The square length of this.
+     * @param v The vector with which to calculate the dot product.
+     * @return The dot product of this and the given vector.
+     */
+    public float dot(Vec2 v)
+    {
+        return dot(this, v);
+    }
+    
+    /**
+     * Returns the z coordinate of the cross product of this and {@code v}.
+     * 
+     * @param v The vector to multiply by.
+     * @return The cross product of this and {@code v}.
+     */
+    public float cross(Vec2 v)
+    {
+        return cross(this, v);
+    }
+    
+    /**
+     * Returns the square length of this vector.
+     * 
+     * @return The square length of this vector.
      */
     public float squareLength()
     {
-        return x*x + y*y;
+        return squareLength(this);
     }
     
     /**
-     * Returns the length of this.
+     * Returns the length of this vector.
      * 
-     * @return The length of this.
+     * @return the length of this vector.
      */
     public float length()
     {
-        return (float)Math.sqrt(x*x + y*y);
+        return length(this);
     }
     
-    // <editor-fold defaultstate="collapsed" desc="Local modifier methods">
+    /**
+     * Returns the square distance between this and the given vector.
+     * 
+     * @param v The vector to calculate the square distance from.
+     * @return The square distance between this and the given vector.
+     */
+    public float squareDist(Vec2 v)
+    {
+        return squareDist(this, v);
+    }
+    
+    /**
+     * Returns the distance between this and the given vector.
+     * 
+     * @param v The vector to calculate the distance from.
+     * @return The distance between this and the given vector.
+     */
+    public float dist(Vec2 v)
+    {
+        return dist(this, v);
+    }
+    
+    /**
+     * Returns the scalar projection of this onto the given vector.
+     * 
+     * @param v The vector on which to project.
+     * @return The scalar projection of this onto the given vector.
+     */
+    public float scalarProject(Vec2 v)
+    {
+        return scalarProject(this, v);
+    }
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Instance mutator methods">
     /**
      * Sets this to the given vector.
      * 
@@ -274,7 +506,7 @@ public class Vec2
      */
     public void set(Vec2 v)
     {
-        x = v.x; y = v.y;
+        copy(v, this);
     }
     
     /**
@@ -308,7 +540,7 @@ public class Vec2
     }
     
     /**
-     * Multiplies this by the given 2x2 matrix.
+     * Multiplies this by the given 3x3 matrix.
      * 
      * @param m The 2x2 matrix to multiply this by.
      */
@@ -318,7 +550,7 @@ public class Vec2
     }
     
     /**
-     * Multiplies this by the given 3x3 matrix.
+     * Multiplies this by the given 4x4 matrix.
      * 
      * @param m The 3x3 matrix to multiply this by.
      */
@@ -345,12 +577,70 @@ public class Vec2
     {
         normalize(this, this);
     }
+    
+    /**
+     * Reflects this about the normalized vector {@code n}.
+     * 
+     * @param n The normal vector about which to reflect.
+     */
+    public void reflect(Vec2 n)
+    {
+        reflect(this, n, this);
+    }
+    
+    /**
+     * Projects this onto the given vector.
+     * 
+     * @param v The vector on which to project.
+     */
+    public void project(Vec2 v)
+    {
+        project(this, v, this);
+    }
+    
+    /**
+     * Rejects the given vector from this.
+     * 
+     * @param v The vector to reject from this.
+     */
+    public void reject(Vec2 v)
+    {
+        reject(this, v, this);
+    }
     // </editor-fold>
-    // <editor-fold defaultstate="collapsed" desc="Overriden Object methods">
+    // <editor-fold defaultstate="collapsed" desc="Overriden/implemented methods">
+    @Override
+    public void read(FloatBuffer buffer)
+    {
+        x = buffer.get();
+        y = buffer.get();
+    }
+
+    @Override
+    public void write(FloatBuffer buffer)
+    {
+        buffer.put(x);
+        buffer.put(y);
+    }
+
+    @Override
+    public void read(DataInputStream in) throws IOException
+    {
+        x = in.readFloat();
+        y = in.readFloat();
+    }
+
+    @Override
+    public void write(DataOutputStream out) throws IOException
+    {
+        out.writeFloat(x);
+        out.writeFloat(y);
+    }
+    
     @Override
     public String toString()
     {
-        return '(' + x + ", " + y + ')';
+        return "(" + x + ", " + y + ")";
     }
     
     @Override
@@ -361,7 +651,7 @@ public class Vec2
         final Vec2 v = (Vec2)o;
         return v.x == x && v.y == y;
     }
-
+    
     @Override
     public int hashCode()
     {
