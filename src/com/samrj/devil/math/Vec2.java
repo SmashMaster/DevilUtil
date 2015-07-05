@@ -107,8 +107,8 @@ public class Vec2 implements Bufferable<FloatBuffer>, Streamable
     /**
      * Copies {@code source} into {@code target}.
      * 
-     * @param source The vector to copy.
-     * @param target The vector in which to store the result.
+     * @param source The vector to copy from.
+     * @param target The vector to copy into.
      */
     public static final void copy(Vec2 source, Vec2 target)
     {
