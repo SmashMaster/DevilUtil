@@ -1,6 +1,6 @@
 package com.samrj.devil.display;
 
-import com.samrj.devil.buffer.BufferUtil;
+import com.samrj.devil.io.BufferUtil;
 import com.samrj.devil.math.Vec2i;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;

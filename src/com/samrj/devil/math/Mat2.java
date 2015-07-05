@@ -19,6 +19,30 @@ public class Mat2
                         sin,  cos);
     }
     
+    public static final void mult(Mat2 m0, Mat2 m1, Mat2 result)
+    {
+        final float a = m0.a*m1.a + m0.b*m1.c;
+        final float b = m0.a*m1.b + m0.b*m1.d;
+        
+        final float c = m0.c*m1.a + m0.d*m1.c;
+        final float d = m0.c*m1.b + m0.d*m1.d;
+        
+        result.a = a; result.b = b;
+        result.c = c; result.d = d;
+    }
+    
+    public static final void mult(Mat2 m, float s, Mat2 result)
+    {
+        result.a = m.a*s; result.b = m.b*s;
+        result.c = m.c*s; result.d = m.d*s;
+    }
+    
+    public static final void div(Mat2 m, float s, Mat2 result)
+    {
+        result.a = m.a/s; result.b = m.b/s;
+        result.c = m.c/s; result.d = m.d/s;
+    }
+    
     public float a, b,
                  c, d;
     
@@ -38,6 +62,11 @@ public class Mat2
     {
         this.a = a; this.b = b;
         this.c = c; this.d = d;
+    }
+    
+    public float determinant()
+    {
+        return a*d - b*c;
     }
     
     /**

@@ -1,4 +1,4 @@
-package com.samrj.devil.buffer;
+package com.samrj.devil.io;
 
 import java.nio.Buffer;
 
@@ -12,12 +12,12 @@ import java.nio.Buffer;
 public interface Bufferable<BUFFER_TYPE extends Buffer>
 {
     /**
-     * Writes this object's data into the given buffer.
+     * Reads data from the given buffer and sets this object's fields accordingly.
      */
-    public void writeTo(BUFFER_TYPE buffer);
+    public void read(BUFFER_TYPE buffer);
     
     /**
-     * Returns this size of this object's data in elements.
+     * Writes this object's data into the given buffer.
      */
-    public int bufferSize();
+    public void write(BUFFER_TYPE buffer);
 }

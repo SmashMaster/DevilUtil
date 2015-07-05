@@ -1,4 +1,4 @@
-package com.samrj.devil.buffer;
+package com.samrj.devil.io;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

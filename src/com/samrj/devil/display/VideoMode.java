@@ -1,6 +1,6 @@
 package com.samrj.devil.display;
 
-import com.samrj.devil.buffer.BufferUtil;
+import com.samrj.devil.io.BufferUtil;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.LinkedList;

@@ -8,6 +8,8 @@ package com.samrj.devil.math;
  */
 public class Vec2
 {
+    ~~INCOMPLETE~~
+    
     // <editor-fold defaultstate="collapsed" desc="Static modifier methods">
     /**
      * Adds {@code v0} and {@code v1} and stores the result in {@code result}.
@@ -88,8 +90,21 @@ public class Vec2
         result.x = v.x/s;
         result.y = v.y/s;
     }
+    
+    /**
+     * Sets the length of the given vector to one and stores the result in
+     * {@code result}. Has undefined behavior if the length of the given vector
+     * is zero.
+     * 
+     * @param v The vector to normalize.
+     * @param result The vector in which to store the result.
+     */
+    public static final void normalize(Vec2 v, Vec2 result)
+    {
+        div(v, v.length(), result);
+    }
     // </editor-fold>
-    // <editor-fold defaultstate="collapsed" desc="Static constructor methods">
+    // <editor-fold defaultstate="collapsed" desc="Static factory methods">
     /**
      * Returns the sum of {@code v0} and {@code v1} in a new vector.
      * 
@@ -173,6 +188,19 @@ public class Vec2
         div(v, s, result);
         return result;
     }
+    
+    /**
+     * Normalizes {@code v} and returns the result in a new vector.
+     * 
+     * @param v The vector to normalize.
+     * @return The normalized vector.
+     */
+    public static final Vec2 normalize(Vec2 v)
+    {
+        final Vec2 result = new Vec2();
+        normalize(v, result);
+        return result;
+    }
     // </editor-fold>
     
     /**
@@ -215,6 +243,17 @@ public class Vec2
     public Vec2(Vec2 v)
     {
         x = v.x; y = v.y;
+    }
+    
+    /**
+     * Returns the square length of this vector. Can be alternately defined as
+     * the dot product of this with itself.
+     * 
+     * @return The square length of this.
+     */
+    public float squareLength()
+    {
+        return x*x + y*y;
     }
     
     /**
@@ -291,7 +330,7 @@ public class Vec2
     /**
      * Divides this by the given scalar.
      * 
-     * @param s 
+     * @param s The scalar to divide by.
      */
     public void div(float s)
     {
@@ -304,7 +343,7 @@ public class Vec2
      */
     public void normalize()
     {
-        div(length());
+        normalize(this, this);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Overriden Object methods">
