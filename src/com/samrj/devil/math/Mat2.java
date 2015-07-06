@@ -40,21 +40,6 @@ public class Mat2 implements Bufferable<FloatBuffer>, Streamable
     }
     
     /**
-     * Scales {@code m} by {@code s} and stores the result in {@code r}. This is
-     * not the same as mult(Mat2, float, Mat2), which would multiply each entry
-     * in {@code m} by {@code s}, instead of just the diagonals.
-     * 
-     * @param m The matrix to scale.
-     * @param s The scalar to scale by.
-     * @param r The matrix in which to store the result.
-     */
-    public static final void scale(Mat2 m, float s, Mat2 r)
-    {
-        r.a = m.a*s; r.b = m.b;
-        r.c = m.c; r.d = m.d*s;
-    }
-    
-    /**
      * Rotates {@code m} by {@code ang} and stores the result in {@code r}.
      * 
      * @param m The matrix to rotate.
@@ -309,19 +294,6 @@ public class Mat2 implements Bufferable<FloatBuffer>, Streamable
     public void set(Mat2 mat)
     {
         copy(mat, this);
-    }
-    
-    /**
-     * Scales this matrix by the given scalar.  This is not the same as
-     * mult(float), which would multiply each entry by {@code sca}, instead of
-     * just the diagonals.
-     * 
-     * @param sca The scalar to scale by.
-     */
-    public void scale(float sca)
-    {
-        a *= sca;
-        d *= sca;
     }
     
     /**
