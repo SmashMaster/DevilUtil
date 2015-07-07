@@ -40,6 +40,42 @@ public class Mat2 implements Bufferable<FloatBuffer>, Streamable
     }
     
     /**
+     * Sets the given matrix to the identity matrix.
+     * 
+     * @param r The matrix to set to the identity matrix.
+     */
+    public static final void identity(Mat2 r)
+    {
+        scaling(1.0f, r);
+    }
+    
+    /**
+     * Sets the given matrix to a scaling matrix by the given scalar.
+     * 
+     * @param s The scalar to scale by.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void scaling(float s, Mat2 r)
+    {
+        r.a = s; r.b = 0.0f;
+        r.c = 0.0f; r.d = s;
+    }
+    
+    /**
+     * Sets the given matrix to the rotation matrix by the given angle.
+     * 
+     * @param angle The angle to rotate by.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void rotation(float angle, Mat2 r)
+    {
+        r.a = (float)Math.cos(angle); 
+        r.c = (float)Math.sin(angle);
+        r.b = -r.c;
+        r.d = r.a;
+    }
+    
+    /**
      * Rotates {@code m} by {@code ang} and stores the result in {@code r}.
      * 
      * @param m The matrix to rotate.
@@ -166,17 +202,16 @@ public class Mat2 implements Bufferable<FloatBuffer>, Streamable
     /**
      * Returns a new rotation matrix, where {@code a} is the angle to rotate by.
      * 
-     * @param a The angle to rotate by.
+     * @param angle The angle to rotate by.
      * @return A new rotation matrix.
      */
-    public static final Mat2 rotation(float a)
+    public static final Mat2 rotation(float angle)
     {
-        float sin = (float)Math.sin(a);
-        float cos = (float)Math.cos(a);
-        
-        return new Mat2(cos, -sin,
-                        sin,  cos);
+        Mat2 m = new Mat2();
+        rotation(angle, m);
+        return m;
     }
+    
     /**
      * Multiplies {@code m0} by {@code m1} and returns the result as a new matrix.
      * 
@@ -297,6 +332,34 @@ public class Mat2 implements Bufferable<FloatBuffer>, Streamable
     }
     
     /**
+     * Sets this to the identity matrix.
+     */
+    public void setIdentity()
+    {
+        identity(this);
+    }
+    
+    /**
+     * Sets this to the scaling matrix by the given scalar.
+     * 
+     * @param sca The scalar to scale by.
+     */
+    public void setScaling(float sca)
+    {
+        scaling(sca, this);
+    }
+    
+    /**
+     * Sets this to the rotation matrix by the given angle.
+     * 
+     * @param ang The angle to rotate by.
+     */
+    public void setRotation(float ang)
+    {
+        rotation(ang, this);
+    }
+    
+    /**
      * Rotates this matrix by the given angle.
      * 
      * @param ang The angle to rotate by.
@@ -317,7 +380,8 @@ public class Mat2 implements Bufferable<FloatBuffer>, Streamable
     }
     
     /**
-     * Multiplies each entry in this matrix by the given scalar.
+     * Multiplies each entry in this matrix by the given scalar. Equivalent to
+     * scaling this matrix by the given scalar.
      * 
      * @param sca The scalar to multiply by.
      */
