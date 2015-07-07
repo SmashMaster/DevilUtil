@@ -197,6 +197,18 @@ public class Vec2 implements Bufferable<FloatBuffer>, Streamable
     }
     
     /**
+     * Negates the given vector and stores the result in {@code result}.
+     * 
+     * @param v The vector to negate.
+     * @param result The vector in which to store the result.
+     */
+    public static final void negate(Vec2 v, Vec2 result)
+    {
+        result.x = -v.x;
+        result.y = -v.y;
+    }
+    
+    /**
      * Sets the length of the given vector to one and stores the result in
      * {@code result}. Has undefined behavior if the length of the given vector
      * is zero.
@@ -333,6 +345,19 @@ public class Vec2 implements Bufferable<FloatBuffer>, Streamable
     {
         Vec2 result = new Vec2();
         div(v, s, result);
+        return result;
+    }
+    
+    /**
+     * Negates the given vector and returns the result in a new vector.
+     * 
+     * @param v The vector to negate.
+     * @return A new vector containing the result.
+     */
+    public static final Vec2 negate(Vec2 v)
+    {
+        Vec2 result = new Vec2();
+        negate(result, result);
         return result;
     }
     
@@ -503,109 +528,154 @@ public class Vec2 implements Bufferable<FloatBuffer>, Streamable
      * Sets this to the given vector.
      * 
      * @param v The vector to set this to.
+     * @return This vector.
      */
-    public void set(Vec2 v)
+    public Vec2 set(Vec2 v)
     {
         copy(v, this);
+        return this;
+    }
+    
+    /**
+     * Sets the coordinates of this vector.
+     * 
+     * @return This vector.
+     */
+    public Vec2 set(float x, float y)
+    {
+        this.x = x; this.y = y;
+        return this;
     }
     
     /**
      * Adds the given vector to this.
      * 
      * @param v The vector to add to this.
+     * @return This vector.
      */
-    public void add(Vec2 v)
+    public Vec2 add(Vec2 v)
     {
         add(this, v, this);
+        return this;
     }
     
     /**
      * Subtracts the given vector from this.
      * 
      * @param v The vector to subtract from this.
+     * @return This vector.
      */
-    public void sub(Vec2 v)
+    public Vec2 sub(Vec2 v)
     {
         sub(this, v, this);
+        return this;
     }
     
     /**
      * Multiplies this by the given scalar.
      * 
      * @param s The scalar to multiply this by.
+     * @return This vector.
      */
-    public void mult(float s)
+    public Vec2 mult(float s)
     {
         mult(this, s, this);
+        return this;
     }
     
     /**
      * Multiplies this by the given 3x3 matrix.
      * 
      * @param m The 2x2 matrix to multiply this by.
+     * @return This vector.
      */
-    public void mult(Mat2 m)
+    public Vec2 mult(Mat2 m)
     {
         mult(this, m, this);
+        return this;
     }
     
     /**
      * Multiplies this by the given 4x4 matrix.
      * 
      * @param m The 3x3 matrix to multiply this by.
+     * @return This vector.
      */
-    public void mult(Mat3 m)
+    public Vec2 mult(Mat3 m)
     {
         mult(this, m, this);
+        return this;
     }
     
     /**
      * Divides this by the given scalar.
      * 
      * @param s The scalar to divide by.
+     * @return This vector.
      */
-    public void div(float s)
+    public Vec2 div(float s)
     {
         div(this, s, this);
+        return this;
+    }
+    
+    /**
+     * Negates this vector.
+     * 
+     * @return This vector.
+     */
+    public Vec2 negate()
+    {
+        negate(this, this);
+        return this;
     }
     
     /**
      * Sets the length of this to one. Has undefined behavior if the current
      * length of this is zero or close to zero.
+     * 
+     * @return This vector.
      */
-    public void normalize()
+    public Vec2 normalize()
     {
         normalize(this, this);
+        return this;
     }
     
     /**
      * Reflects this about the normalized vector {@code n}.
      * 
      * @param n The normal vector about which to reflect.
+     * @return This vector.
      */
-    public void reflect(Vec2 n)
+    public Vec2 reflect(Vec2 n)
     {
         reflect(this, n, this);
+        return this;
     }
     
     /**
      * Projects this onto the given vector.
      * 
      * @param v The vector on which to project.
+     * @return This vector.
      */
-    public void project(Vec2 v)
+    public Vec2 project(Vec2 v)
     {
         project(this, v, this);
+        return this;
     }
     
     /**
      * Rejects the given vector from this.
      * 
      * @param v The vector to reject from this.
+     * @return This vector.
      */
-    public void reject(Vec2 v)
+    public Vec2 reject(Vec2 v)
     {
         reject(this, v, this);
+        return this;
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Overriden/implemented methods">

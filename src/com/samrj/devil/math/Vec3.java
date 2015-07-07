@@ -17,8 +17,9 @@ import java.nio.FloatBuffer;
  * encourage JVM inlining, because instance methods can be polymorphic.
  * The class itself is not final, to allow for user extension.
  * 
- * Local accessor and mutator methods are provided for user convenience, but the
- * static methods should be used if optimal performance is desired.
+ * Local accessor and mutator methods (with method chaining!) are provided for
+ * user convenience, but the static methods should be used where optimal
+ * performance is desired.
  * 
  * The data fields are public to increase readability and decrease overhead.
  * 
@@ -33,6 +34,9 @@ import java.nio.FloatBuffer;
  */
 public class Vec3 implements Bufferable<FloatBuffer>, Streamable
 {
+    public static final Vec3 tempVecA = new Vec3();
+    public static final Vec3 tempVecB = new Vec3();
+    
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
      * Returns the dot product of two given vectors.
@@ -196,6 +200,27 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
     }
     
     /**
+     * Rotates the given vector by the given quaternion, and stores the result
+     * in {@code result}.
+     * 
+     * @param v The vector to rotate.
+     * @param q The quaternion to rotate by.
+     * @param result The vector in which to store the result.
+     */
+    public static final void rotate(Vec3 v, Quat q, Vec3 result)
+    {
+        //Needs to be tested.
+        //t = 2 * cross(q.xyz, v)
+        //v' = v + q.w * t + cross(q.xyz, t)
+        cross(tempVecA.set(q.x, q.y, q.z), v, tempVecB);
+        tempVecB.mult(2.0f);
+        
+        result.set(tempVecB).mult(q.w);
+        result.add(tempVecB.cross(tempVecA));
+        result.add(v);
+    }
+    
+    /**
      * Calculates the cross product between {@code v0} and {@code v1} then stores
      * the result in {@code result}.
      * 
@@ -223,6 +248,19 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
         result.x = v.x/s;
         result.y = v.y/s;
         result.z = v.z/s;
+    }
+    
+    /**
+     * Negates the given vector and stores the result in {@code result}.
+     * 
+     * @param v The vector to negate.
+     * @param result The vector in which to store the result.
+     */
+    public static final void negate(Vec3 v, Vec3 result)
+    {
+        result.x = -v.x;
+        result.y = -v.y;
+        result.z = -v.z;
     }
     
     /**
@@ -352,6 +390,20 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
         return result;
     }
     
+    /**
+     * Rotates the given vector by the given quaternion and returns the result
+     * in a new vector.
+     * 
+     * @param v The vector to rotate.
+     * @param q The quaternion to rotate by.
+     * @return A new vector containing the result.
+     */
+    public static final Vec3 rotate(Vec3 v, Quat q)
+    {
+        Vec3 result = new Vec3();
+        rotate(v, q, result);
+        return result;
+    }
     
     /**
      * Calculates the cross product between {@code v0} and {@code v1} and returns
@@ -379,6 +431,19 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
     {
         Vec3 result = new Vec3();
         div(v, s, result);
+        return result;
+    }
+    
+    /**
+     * Negates the given vector and returns the result in a new vector.
+     * 
+     * @param v The vector to negate.
+     * @return A new vector containing the result.
+     */
+    public static final Vec3 negate(Vec3 v)
+    {
+        Vec3 result = new Vec3();
+        negate(result, result);
         return result;
     }
     
@@ -538,119 +603,178 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
      * Sets this to the given vector.
      * 
      * @param v The vector to set this to.
+     * @return This vector.
      */
-    public void set(Vec3 v)
+    public Vec3 set(Vec3 v)
     {
         copy(v, this);
+        return this;
+    }
+    
+    /**
+     * Sets the coordinates of this vector.
+     * 
+     * @return This vector.
+     */
+    public Vec3 set(float x, float y, float z)
+    {
+        this.x = x; this.y = y; this.z = z;
+        return this;
     }
     
     /**
      * Adds the given vector to this.
      * 
      * @param v The vector to add to this.
+     * @return This vector.
      */
-    public void add(Vec3 v)
+    public Vec3 add(Vec3 v)
     {
         add(this, v, this);
+        return this;
     }
     
     /**
      * Subtracts the given vector from this.
      * 
      * @param v The vector to subtract from this.
+     * @return This vector.
      */
-    public void sub(Vec3 v)
+    public Vec3 sub(Vec3 v)
     {
         sub(this, v, this);
+        return this;
     }
     
     /**
      * Multiplies this by the given scalar.
      * 
      * @param s The scalar to multiply this by.
+     * @return This vector.
      */
-    public void mult(float s)
+    public Vec3 mult(float s)
     {
         mult(this, s, this);
+        return this;
     }
     
     /**
      * Multiplies this by the given 3x3 matrix.
      * 
      * @param m The 3x3 matrix to multiply this by.
+     * @return This vector.
      */
-    public void mult(Mat3 m)
+    public Vec3 mult(Mat3 m)
     {
         mult(this, m, this);
+        return this;
     }
     
     /**
      * Multiplies this by the given 4x4 matrix.
      * 
      * @param m The 4x4 matrix to multiply this by.
+     * @return This vector.
      */
-    public void mult(Mat4 m)
+    public Vec3 mult(Mat4 m)
     {
         mult(this, m, this);
+        return this;
+    }
+    
+    /**
+     * Rotates this vector by the given quaternion.
+     * 
+     * @param q The quaternion to rotate by.
+     * @return This vector.
+     */
+    public Vec3 rotate(Quat q)
+    {
+        rotate(this, q, this);
+        return this;
     }
     
     /**
      * Sets this to the cross product between this and the given vector.
      * 
      * @param v The vector to multiply this by.
+     * @return This vector.
      */
-    public void cross(Vec3 v)
+    public Vec3 cross(Vec3 v)
     {
         cross(this, v, this);
+        return this;
     }
     
     /**
      * Divides this by the given scalar.
      * 
      * @param s The scalar to divide by.
+     * @return This vector.
      */
-    public void div(float s)
+    public Vec3 div(float s)
     {
         div(this, s, this);
+        return this;
+    }
+    
+    /**
+     * Negates this vector.
+     * 
+     * @return This vector.
+     */
+    public Vec3 negate()
+    {
+        negate(this, this);
+        return this;
     }
     
     /**
      * Sets the length of this to one. Has undefined behavior if the current
      * length of this is zero or close to zero.
+     * 
+     * @return This vector.
      */
-    public void normalize()
+    public Vec3 normalize()
     {
         normalize(this, this);
+        return this;
     }
     
     /**
      * Reflects this about the normalized vector {@code n}.
      * 
      * @param n The normal vector about which to reflect.
+     * @return This vector.
      */
-    public void reflect(Vec3 n)
+    public Vec3 reflect(Vec3 n)
     {
         reflect(this, n, this);
+        return this;
     }
     
     /**
      * Projects this onto the given vector.
      * 
      * @param v The vector on which to project.
+     * @return This vector.
      */
-    public void project(Vec3 v)
+    public Vec3 project(Vec3 v)
     {
         project(this, v, this);
+        return this;
     }
     
     /**
      * Rejects the given vector from this.
      * 
      * @param v The vector to reject from this.
+     * @return This vector.
      */
-    public void reject(Vec3 v)
+    public Vec3 reject(Vec3 v)
     {
         reject(this, v, this);
+        return this;
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Overriden/implemented methods">

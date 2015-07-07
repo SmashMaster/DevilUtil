@@ -326,57 +326,83 @@ public class Mat2 implements Bufferable<FloatBuffer>, Streamable
      * 
      * @param mat The matrix to set this to.
      */
-    public void set(Mat2 mat)
+    public Mat2 set(Mat2 mat)
     {
         copy(mat, this);
+        return this;
+    }
+    
+    /**
+     * Sets the entries of this matrix.
+     * 
+     * @return This matrix.
+     */
+    public Mat2 set(float a, float b,
+                    float c, float d)
+    {
+        this.a = a; this.b = b;
+        this.c = c; this.d = d;
+        return this;
     }
     
     /**
      * Sets this to the identity matrix.
+     * 
+     * @return This matrix.
      */
-    public void setIdentity()
+    public Mat2 setIdentity()
     {
         identity(this);
+        return this;
     }
     
     /**
      * Sets this to the scaling matrix by the given scalar.
      * 
      * @param sca The scalar to scale by.
+     * @return This matrix.
      */
-    public void setScaling(float sca)
+    public Mat2 setScaling(float sca)
     {
         scaling(sca, this);
+        
+        return this;
     }
     
     /**
      * Sets this to the rotation matrix by the given angle.
      * 
      * @param ang The angle to rotate by.
+     * @return This matrix.
      */
-    public void setRotation(float ang)
+    public Mat2 setRotation(float ang)
     {
         rotation(ang, this);
+        return this;
     }
     
     /**
      * Rotates this matrix by the given angle.
      * 
      * @param ang The angle to rotate by.
+     * @return This matrix.
      */
-    public void rotate(float ang)
+    public Mat2 rotate(float ang)
     {
         rotate(this, ang, this);
+        return this;
     }
     
     /**
      * Multiplies this matrix by the given matrix.
      * 
      * @param mat The right-hand matrix to multiply by.
+     * @return This matrix.
      */
-    public void mult(Mat2 mat)
+    public Mat2 mult(Mat2 mat)
     {
         mult(this, mat, this);
+        return this;
     }
     
     /**
@@ -385,38 +411,47 @@ public class Mat2 implements Bufferable<FloatBuffer>, Streamable
      * 
      * @param sca The scalar to multiply by.
      */
-    public void mult(float sca)
+    public Mat2 mult(float sca)
     {
         mult(this, sca, this);
+        return this;
     }
     
     /**
      * Divides each entry in this matrix by the given scalar.
      * 
      * @param sca The scalar to divide by.
+     * @return This matrix.
      */
-    public void div(float sca)
+    public Mat2 div(float sca)
     {
         div(this, sca, this);
+        
+        return this;
     }
     
     /**
      * Transposes this matrix.
+     * 
+     * @return This matrix.
      */
-    public void transpose()
+    public Mat2 transpose()
     {
         transpose(this, this);
+        return this;
     }
     
     /**
      * Inverts this matrix.
      * 
+     * @return This matrix.
      * @throws com.samrj.devil.math.SingularMatrixException If this matrix is
      *         singular. (Its determinant is zero.)
      */
-    public void invert()
+    public Mat2 invert()
     {
         invert(this, this);
+        return this;
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Overriden/implemented methods">

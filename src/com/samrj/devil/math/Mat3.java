@@ -15,6 +15,7 @@ import java.nio.FloatBuffer;
  */
 public class Mat3 implements Bufferable<FloatBuffer>, Streamable 
 {
+    private static final float SQRT_2 = (float)Math.sqrt(2.0);
     private static final Mat3 tempMat = new Mat3();
     
     /**
@@ -101,6 +102,26 @@ public class Mat3 implements Bufferable<FloatBuffer>, Streamable
     }
     
     /**
+     * Sets the given matrix to a rotation matrix representation of the given
+     * quaternion.
+     * 
+     * @param q The quaternion to represent as a matrix.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void rotation(Quat q, Mat3 r)
+    {
+        float q0 = SQRT_2*q.w, q1 = SQRT_2*q.x, q2 = SQRT_2*q.y, q3 = SQRT_2*q.z;
+
+	float qda = q0*q1, qdb = q0*q2, qdc = q0*q3;
+	float qaa = q1*q1, qab = q1*q2, qac = q1*q3;
+	float qbb = q2*q2, qbc = q2*q3, qcc = q3*q3;
+        
+        r.a = 1.0f - qbb - qcc; r.b = -qdc + qab; r.c = qdb + qac;
+        r.d = qdc + qab; r.e = 1.0f - qaa - qcc; r.f = -qda + qbc;
+        r.g = -qdb + qac; r.h = qda + qbc; r.i = 1.0f - qaa - qbb;
+    }
+    
+    /**
      * Sets the given matrix to the translation matrix by the given vector.
      * 
      * @param v The vector to translate by.
@@ -126,6 +147,19 @@ public class Mat3 implements Bufferable<FloatBuffer>, Streamable
     public static final void rotate(Mat3 m, Vec3 axis, float angle, Mat3 r)
     {
         rotation(axis, angle, tempMat); //Could probably be improved.
+        mult(m, tempMat, r);
+    }
+    
+    /**
+     * Rotates {@code m} by the given quaternion and stores the result in {@code r}.
+     * 
+     * @param m The matrix to rotate.
+     * @param q The quaternion to rotate by.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void rotate(Mat3 m, Quat q, Mat3 r)
+    {
+        rotation(q, tempMat); //Could probably be improved, as above
         mult(m, tempMat, r);
     }
     
@@ -281,6 +315,19 @@ public class Mat3 implements Bufferable<FloatBuffer>, Streamable
     }
     
     /**
+     * Returns a new rotation matrix representing the given quaternion.
+     * 
+     * @param q The quaternion to represent as a matrix.
+     * @return A new rotation matrix.
+     */
+    public static final Mat3 rotation(Quat q)
+    {
+        Mat3 m = new Mat3();
+        rotation(q, m);
+        return m;
+    }
+    
+    /**
      * Returns a new translation matrix using the given vector.
      * 
      * @param v The vector to translate by.
@@ -413,21 +460,41 @@ public class Mat3 implements Bufferable<FloatBuffer>, Streamable
     }
     
     /**
-     * Sets this to the identity matrix.
+     * Sets the entries of this matrix.
+     * 
+     * @return This matrix.
      */
-    public void setIdentity()
+    public Mat3 set(float a, float b, float c,
+                    float d, float e, float f,
+                    float g, float h, float i)
+    {
+        this.a = a; this.b = b; this.c = c;
+        this.d = d; this.e = e; this.f = f;
+        this.g = g; this.h = h; this.i = i;
+        return this;
+    }
+    
+    /**
+     * Sets this to the identity matrix.
+     * 
+     * @return This matrix.
+     */
+    public Mat3 setIdentity()
     {
         identity(this);
+        return this;
     }
     
     /**
      * Sets this to the scaling matrix by the given scalar.
      * 
      * @param sca The scalar to scale by.
+     * @return This matrix.
      */
-    public void setScaling(float sca)
+    public Mat3 setScaling(float sca)
     {
         scaling(sca, this);
+        return this;
     }
     
     /**
@@ -436,20 +503,35 @@ public class Mat3 implements Bufferable<FloatBuffer>, Streamable
      * 
      * @param axis The axis to rotate around.
      * @param angle The angle to rotate by.
+     * @return This matrix.
      */
-    public void setRotation(Vec3 axis, float angle)
+    public Mat3 setRotation(Vec3 axis, float angle)
     {
         rotation(axis, angle, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to a rotation matrix representation of the given quaternion.
+     * 
+     * @return This matrix.
+     */
+    public Mat3 setRotation(Quat quat)
+    {
+        rotation(quat, this);
+        return this;
     }
     
     /**
      * Sets this to the translation matrix by the given vector.
      * 
      * @param vec The vector to translate by.
+     * @return This matrix.
      */
-    public void setTranslation(Vec2 vec)
+    public Mat3 setTranslation(Vec2 vec)
     {
         translation(vec, this);
+        return this;
     }
     
     /**
@@ -458,32 +540,50 @@ public class Mat3 implements Bufferable<FloatBuffer>, Streamable
      * 
      * @param axis The axis around which to rotate.
      * @param angle The angle to rotate by.
+     * @return This matrix.
      */
-    public void rotate(Vec3 axis, float angle)
+    public Mat3 rotate(Vec3 axis, float angle)
     {
         rotate(this, axis, angle, this);
+        return this;
+    }
+    
+    /**
+     * Rotates this matrix by the given quaternion.
+     * 
+     * @param quat The quaternion to rotate by.
+     * @return This matrix.
+     */
+    public Mat3 rotate(Quat quat)
+    {
+        rotate(this, quat, this);
+        return this;
     }
     
     /**
      * Translates this matrix by the given vector.
      * 
      * @param vec The vector to translate by.
+     * @return This matrix.
      */
-    public void translate(Vec2 vec)
+    public Mat3 translate(Vec2 vec)
     {
         c += a*vec.x + b*vec.y;
         f += d*vec.x + e*vec.y;
         i += g*vec.x + h*vec.y;
+        return this;
     }
     
     /**
      * Multiplies this matrix by the given matrix.
      * 
      * @param mat The right-hand matrix to multiply by.
+     * @return This matrix.
      */
-    public void mult(Mat3 mat)
+    public Mat3 mult(Mat3 mat)
     {
         mult(this, mat, this);
+        return this;
     }
     
     /**
@@ -491,28 +591,35 @@ public class Mat3 implements Bufferable<FloatBuffer>, Streamable
      * scaling this matrix by the given scalar.
      * 
      * @param sca The scalar to multiply by.
+     * @return This matrix.
      */
-    public void mult(float sca)
+    public Mat3 mult(float sca)
     {
         mult(this, sca, this);
+        return this;
     }
     
     /**
      * Divides each entry in this matrix by the given scalar.
      * 
      * @param sca The scalar to divide by.
+     * @return This matrix.
      */
-    public void div(float sca)
+    public Mat3 div(float sca)
     {
         div(this, sca, this);
+        return this;
     }
     
     /**
      * Transposes this matrix.
+     * 
+     * @return This matrix.
      */
-    public void transpose()
+    public Mat3 transpose()
     {
-        transpose(this, this);
+        transpose(this, this); //Could be optimized.
+        return this;
     }
     
     /**
@@ -520,10 +627,12 @@ public class Mat3 implements Bufferable<FloatBuffer>, Streamable
      * 
      * @throws com.samrj.devil.math.SingularMatrixException If this matrix is
      *         singular. (Its determinant is zero.)
+     * @return This matrix.
      */
-    public void invert()
+    public Mat3 invert()
     {
         invert(this, this);
+        return this;
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Overriden/implemented methods">
