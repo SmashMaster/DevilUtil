@@ -6,6 +6,13 @@ import com.samrj.devil.math.Vector3f;
 import java.io.DataInputStream;
 import java.io.IOException;
 
+/**
+ * DevilModel inverse kinematics constraint.
+ * 
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public class IKConstraint implements Solvable
 {
     public final Bone parent, start, end, target, poleTarget;

@@ -8,6 +8,10 @@ import org.lwjgl.opengl.GL30;
 
 /**
  * Utility OpenGL wrapper for DevilModel meshes.
+ * 
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class GLMesh
 {

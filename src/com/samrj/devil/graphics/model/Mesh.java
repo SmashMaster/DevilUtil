@@ -7,6 +7,13 @@ import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+/**
+ * DevilModel mesh.
+ * 
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public class Mesh
 {
     public final String name;
@@ -59,7 +66,7 @@ public class Mesh
         triangleIndexData.rewind();
     }
     
-    public Triangle[] getTriangles()
+    public Geometry getGeometry()
     {
         rewindBuffers();
         
@@ -71,24 +78,38 @@ public class Mesh
                                     vertexData.get());
         }
         
-        Triangle[] out = new Triangle[numTriangles];
+        Triangle[] tris = new Triangle[numTriangles];
         for (int t=0; t<numTriangles; t++)
         {
-            out[t] = new Triangle(verts[triangleIndexData.get()],
-                                  verts[triangleIndexData.get()],
-                                  verts[triangleIndexData.get()]);
+            tris[t] = new Triangle(verts[triangleIndexData.get()],
+                                   verts[triangleIndexData.get()],
+                                   verts[triangleIndexData.get()]);
         }
         
-        return out;
+        return new Geometry(verts, tris);
+    }
+    
+    public class Geometry
+    {
+        public final Vector3f[] vertices;
+        public final Triangle[] triangles;
+        
+        private Geometry(Vector3f[] vertices, Triangle[] triangles)
+        {
+            this.vertices = vertices;
+            this.triangles = triangles;
+        }
     }
     
     public class Triangle
     {
         public final Vector3f a, b, c;
+        public final Vector3f centroid;
         
         private Triangle(Vector3f a, Vector3f b, Vector3f c)
         {
             this.a = a; this.b = b; this.c = c;
+            centroid = a.copy().add(b).add(c).div(3.0f);
         }
     }
 }

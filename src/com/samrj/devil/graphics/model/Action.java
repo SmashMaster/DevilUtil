@@ -3,6 +3,13 @@ package com.samrj.devil.graphics.model;
 import java.io.DataInputStream;
 import java.io.IOException;
 
+/**
+ * DevilModel action.
+ * 
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public class Action
 {
     public final String name;

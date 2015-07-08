@@ -12,6 +12,13 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * .DVM file loader. Corresponds with the Blender python exporter.
+ * 
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public class DevilModel
 {
     public static final String readPaddedUTF(DataInputStream in) throws IOException
