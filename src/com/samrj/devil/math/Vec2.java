@@ -262,6 +262,21 @@ public class Vec2 implements Bufferable<FloatBuffer>, Streamable
         project(v0, v1, result);
         sub(v0, result, result);
     }
+    
+    /**
+     * Interpolates between the two given vectors using the given scalar, and
+     * stores the result in {@code result}.
+     * 
+     * @param v0 The 'start' vector to interpolate from.
+     * @param v1 The 'end' vector to interpolate to.
+     * @param t The scalar interpolant, between zero and one (inclusive).
+     * @param result The vector in which to store the result.
+     */
+    public static final void lerp(Vec2 v0, Vec2 v1, float t, Vec2 result)
+    {
+        result.x = Util.lerp(v0.x, v1.x, t);
+        result.y = Util.lerp(v0.y, v1.y, t);
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
     /**
@@ -375,7 +390,7 @@ public class Vec2 implements Bufferable<FloatBuffer>, Streamable
     }
     
     /**
-     * Reflects {@code v} about {@code n} and stores the result in {@code result}.
+     * Reflects {@code v} about {@code n} and returns the result in a new vector.
      * {@code n} must be normalized.
      * 
      * @param v The vector to reflect.
@@ -390,8 +405,8 @@ public class Vec2 implements Bufferable<FloatBuffer>, Streamable
     }
     
     /**
-     * Performs a vector projection of {@code v0} onto {@code v1} and stores the
-     * result in {@code result}. {@code v1} need not be normalized.
+     * Performs a vector projection of {@code v0} onto {@code v1} and returns
+     * the result in a new vector. {@code v1} need not be normalized.
      * 
      * @param v0 The vector to project.
      * @param v1 The vector on which to project.
@@ -405,8 +420,8 @@ public class Vec2 implements Bufferable<FloatBuffer>, Streamable
     }
     
     /**
-     * Performs a vector rejection of {@code v1} from {@code v0} and stores the
-     * result in {@code result}.
+     * Performs a vector rejection of {@code v1} from {@code v0} and returns the
+     * result in a new vector.
      * 
      * @param v0 The vector to reject from.
      * @param v1 The vector to reject by.
@@ -416,6 +431,22 @@ public class Vec2 implements Bufferable<FloatBuffer>, Streamable
     {
         Vec2 result = new Vec2();
         reject(v0, v1, result);
+        return result;
+    }
+    
+    /**
+     * Interpolates between the two given vectors using the given scalar and
+     * returns a new vector containing the result.
+     * 
+     * @param v0 The 'start' vector to interpolate from.
+     * @param v1 The 'end' vector to interpolate to.
+     * @param t The scalar interpolant, between zero and one (inclusive).
+     * @return A new vector containing the result.
+     */
+    public static final Vec2 lerp(Vec2 v0, Vec2 v1, float t)
+    {
+        Vec2 result = new Vec2();
+        lerp(v0, v1, t, result);
         return result;
     }
     // </editor-fold>
@@ -675,6 +706,20 @@ public class Vec2 implements Bufferable<FloatBuffer>, Streamable
     public Vec2 reject(Vec2 v)
     {
         reject(this, v, this);
+        return this;
+    }
+    
+    /**
+     * Interpolates this towards the given vector with the given scalar
+     * interpolant.
+     * 
+     * @param v The 'end' vector to interpolate to.
+     * @param t The scalar interpolant, between zero and one (inclusive).
+     * @return This vector.
+     */
+    public Vec2 lerp(Vec2 v, float t)
+    {
+        lerp(this, v, t, this);
         return this;
     }
     // </editor-fold>
