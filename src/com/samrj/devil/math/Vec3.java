@@ -207,17 +207,20 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
      * @param q The quaternion to rotate by.
      * @param result The vector in which to store the result.
      */
-    public static final void rotate(Vec3 v, Quat q, Vec3 result)
+    public static final void mult(Vec3 v, Quat q, Vec3 result)
     {
-        //Needs to be tested.
         //t = 2 * cross(q.xyz, v)
         //v' = v + q.w * t + cross(q.xyz, t)
-        cross(tempVecA.set(q.x, q.y, q.z), v, tempVecB);
-        tempVecB.mult(2.0f);
         
-        result.set(tempVecB).mult(q.w);
-        result.add(tempVecB.cross(tempVecA));
-        result.add(v);
+        tempVecA.set(q.x, q.y, q.z);
+        cross(tempVecA, v, tempVecB);
+        mult(tempVecB, 2.0f, tempVecB);
+        
+        copy(v, result); //v
+        cross(tempVecA, tempVecB, tempVecA);
+        add(result, tempVecA, result);
+        mult(tempVecB, q.w, tempVecB);
+        add(result, tempVecB, result);
     }
     
     /**
@@ -414,10 +417,10 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
      * @param q The quaternion to rotate by.
      * @return A new vector containing the result.
      */
-    public static final Vec3 rotate(Vec3 v, Quat q)
+    public static final Vec3 mult(Vec3 v, Quat q)
     {
         Vec3 result = new Vec3();
-        rotate(v, q, result);
+        mult(v, q, result);
         return result;
     }
     
@@ -720,9 +723,9 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
      * @param q The quaternion to rotate by.
      * @return This vector.
      */
-    public Vec3 rotate(Quat q)
+    public Vec3 mult(Quat q)
     {
-        rotate(this, q, this);
+        mult(this, q, this);
         return this;
     }
     

@@ -38,6 +38,20 @@ public class Util
         return x; //Implicitly handles NaN and the infinites.
     }
     
+    public static final float PI = (float)Math.PI;
+    public static final float TO_RADIANS = (float)(Math.PI/180.0);
+    public static final float TO_DEGREES = (float)(180.0/Math.PI);
+    
+    public static float toRadians(float a)
+    {
+        return a*TO_RADIANS;
+    }
+    
+    public static float toDegrees(float a)
+    {
+        return a*TO_DEGREES;
+    }
+    
     private Util()
     {
     }

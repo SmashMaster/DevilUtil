@@ -69,6 +69,54 @@ public class Quat implements Bufferable<FloatBuffer>, Streamable
     }
     
     /**
+     * Sets the given quaternion to the identity rotation.
+     * 
+     * @param result The quaternion in which to store the result.
+     */
+    public static final void identity(Quat result)
+    {
+        result.w = 1.0f;
+        result.x = 0.0f;
+        result.y = 0.0f;
+        result.z = 0.0f;
+    }
+    
+    /**
+     * Sets {@code result} to the rotation around the given axis, by the given
+     * angle. The axis must be normalized.
+     * 
+     * @param axis The axis around which to rotate.
+     * @param angle The angle to rotate by.
+     * @param result The quaternion in which to store the result.
+     */
+    public static final void rotation(Vec3 axis, float angle, Quat result)
+    {
+        float a = angle*.5f;
+        float sin = (float)Math.sin(a);
+        
+        result.w = (float)Math.cos(a);
+        result.x = axis.x*sin;
+        result.y = axis.y*sin;
+        result.z = axis.z*sin;
+    }
+    
+    /**
+     * Rotates {@code q} about the given {@code axis} by the given angle
+     * {@code angle} and stores the result in {@code result}. The axis must be
+     * normalized.
+     * 
+     * @param q The quaternion to rotate.
+     * @param axis The axis to rotate around.
+     * @param angle The angle to rotate by.
+     * @param result The matrix in which to store the result.
+     */
+    public static final void rotate(Quat q, Vec3 axis, float angle, Quat result)
+    {
+        rotation(axis, angle, tempQuat);
+        mult(q, tempQuat, result);
+    }
+    
+    /**
      * Adds the two given quaternions and stores the result in {@code result}.
      * 
      * @param q0 The first quaternion to add.
@@ -248,12 +296,55 @@ public class Quat implements Bufferable<FloatBuffer>, Streamable
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
     /**
+     * Returns a new instance of the identity quaternion.
+     * 
+     * @return A new quaternion containing the result.
+     */
+    public static final Quat identity()
+    {
+        Quat result = new Quat();
+        result.w = 1.0f;
+        return result;
+    }
+    
+    /**
+     * The rotation around the given axis, by the given angle as a new quaternion.
+     * 
+     * @param axis The axis around which to rotate.
+     * @param angle The angle to rotate by.
+     * @return A new quaternion containing the result.
+     */
+    public static final Quat rotation(Vec3 axis, float angle)
+    {
+        Quat result = new Quat();
+        rotation(axis, angle, result);
+        return result;
+    }
+    
+    /**
+     * Rotates {@code q} about the given {@code axis} by the given angle
+     * {@code angle} and returns the result as a new quaternion. The axis must
+     * be  normalized.
+     * 
+     * @param q The quaternion to rotate.
+     * @param axis The axis to rotate around.
+     * @param angle The angle to rotate by.
+     * @return A new quaternion containing the result.
+     */
+    public static final Quat rotate(Quat q, Vec3 axis, float angle)
+    {
+        Quat result = new Quat();
+        rotate(q, axis, angle, result);
+        return result;
+    }
+    
+    /**
      * Adds the two given quaternions and returns a new vector containing the
      * result.
      * 
      * @param q0 The first quaternion to add.
      * @param q1 The second quaternion to add.
-     * @return A new vector containing the result.
+     * @return A new quaternion containing the result.
      */
     public static final Quat add(Quat q0, Quat q1)
     {
@@ -268,7 +359,7 @@ public class Quat implements Bufferable<FloatBuffer>, Streamable
      * 
      * @param q0 The quaternion to subtract from.
      * @param q1 The quaternion to subtract by.
-     * @return A new vector containing the result.
+     * @return A new quaternion containing the result.
      */
     public static final Quat sub(Quat q0, Quat q1)
     {
@@ -283,7 +374,7 @@ public class Quat implements Bufferable<FloatBuffer>, Streamable
      * 
      * @param q0 The left-hand quaternion to multiply.
      * @param q1 The right-hand quaternion to multiply by.
-     * @return A new vector containing the result.
+     * @return A new quaternion containing the result.
      */
     public static final Quat mult(Quat q0, Quat q1)
     {
@@ -298,7 +389,7 @@ public class Quat implements Bufferable<FloatBuffer>, Streamable
      * 
      * @param q The quaternion to multiply.
      * @param s The scalar to multiply by.
-     * @return A new vector containing the result.
+     * @return A new quaternion containing the result.
      */
     public static final Quat mult(Quat q, float s)
     {
@@ -313,7 +404,7 @@ public class Quat implements Bufferable<FloatBuffer>, Streamable
      * 
      * @param q The quaternion to multiply.
      * @param s The scalar to multiply by.
-     * @return A new vector containing the result.
+     * @return A new quaternion containing the result.
      */
     public static final Quat div(Quat q, float s)
     {
@@ -326,7 +417,7 @@ public class Quat implements Bufferable<FloatBuffer>, Streamable
      * Negates the given quaternion and returns a new vector containing the result.
      * 
      * @param q The quaternion to negate.
-     * @return A new vector containing the result.
+     * @return A new quaternion containing the result.
      */
     public static final Quat negate(Quat q)
     {
@@ -340,7 +431,7 @@ public class Quat implements Bufferable<FloatBuffer>, Streamable
      * containing the result.
      * 
      * @param q The quaternion to conjugate.
-     * @return A new vector containing the result.
+     * @return A new quaternion containing the result.
      */
     public static final Quat conjugate(Quat q)
     {
@@ -353,7 +444,7 @@ public class Quat implements Bufferable<FloatBuffer>, Streamable
      * Normalizes the given quaternion and returns a new vector containing the result.
      * 
      * @param q The quaternion to normalize.
-     * @return A new vector containing the result.
+     * @return A new quaternion containing the result.
      */
     public static final Quat normalize(Quat q)
     {
@@ -366,7 +457,7 @@ public class Quat implements Bufferable<FloatBuffer>, Streamable
      * Inverts the given quaternion and returns a new vector containing the result.
      * 
      * @param q The quaternion to invert.
-     * @return A new vector containing the result.
+     * @return A new quaternion containing the result.
      */
     public static final Quat invert(Quat q)
     {
@@ -382,7 +473,7 @@ public class Quat implements Bufferable<FloatBuffer>, Streamable
      * @param q0 The 'start' quaternion to interpolate from.
      * @param q1 The 'end' quaternion to interpolate to.
      * @param t The scalar interpolant, between zero and one (inclusive).
-     * @return A new vector containing the result.
+     * @return A new quaternion containing the result.
      */
     public static final Quat lerp(Quat q0, Quat q1, float t)
     {
@@ -398,7 +489,7 @@ public class Quat implements Bufferable<FloatBuffer>, Streamable
      * @param q0 The 'start' quaternion to interpolate from.
      * @param q1 The 'end' quaternion to interpolate to.
      * @param t The scalar interpolant, between zero and one (inclusive).
-     * @return A new vector containing the result.
+     * @return A new quaternion containing the result.
      */
     public static final Quat slerp(Quat q0, Quat q1, float t)
     {
@@ -480,6 +571,43 @@ public class Quat implements Bufferable<FloatBuffer>, Streamable
     public Quat set(float w, float x, float y, float z)
     {
         this.w = w; this.x = x; this.y = y; this.z = z;
+        return this;
+    }
+    
+    /**
+     * Sets this to the identity quaternion.
+     * 
+     * @return This quaternion.
+     */
+    public Quat setIdentity()
+    {
+        identity(this);
+        return this;
+    }
+    
+    /**
+     * Sets this to the identity quaternion.
+     * 
+     * @param axis The axis around which to rotate.
+     * @param angle The angle to rotate by.
+     * @return This quaternion.
+     */
+    public Quat setRotation(Vec3 axis, float angle)
+    {
+        rotation(axis, angle, this);
+        return this;
+    }
+    
+    /**
+     * Rotates this quaternion around the given axis, by the given angle.
+     * 
+     * @param axis The axis around which to rotate.
+     * @param angle The angle to rotate by.
+     * @return This quaternion.
+     */
+    public Quat rotate(Vec3 axis, float angle)
+    {
+        rotate(this, axis, angle, this);
         return this;
     }
     
