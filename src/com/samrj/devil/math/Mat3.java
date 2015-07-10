@@ -65,7 +65,7 @@ public class Mat3 implements Bufferable<FloatBuffer>, Streamable
     {
         r.a = s; r.b = 0.0f; r.c = 0.0f;
         r.d = 0.0f; r.e = s; r.f = 0.0f;
-        r.g = 0.0f; r.h = 0.0f; r.i = s;
+        r.g = 0.0f; r.h = 0.0f; r.i = 1.0f;
     }
     
     /**
