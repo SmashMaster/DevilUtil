@@ -9,7 +9,8 @@ import java.util.*;
  */
 public class IdentitySet<T> extends AbstractSet<T>
 {
-    public static final int DEFAULT_CAPACITY = 16;
+    private static final int DEFAULT_CAPACITY = 16;
+    
     private final IdentityHashMap<T, T> map;
 
     public IdentitySet(int expectedMaxSize)
@@ -85,15 +86,5 @@ public class IdentitySet<T> extends AbstractSet<T>
     public int hashCode()
     {
         return map.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object other)
-    {
-        if (!(other instanceof Set)) return false;
-        Set set = (Set)other;
-        if (set.size() != size()) return false;
-        
-        return containsAll(set) && set.containsAll(this);
     }
 }

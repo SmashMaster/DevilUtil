@@ -104,12 +104,15 @@ public class Mesh
     public class Triangle
     {
         public final Vector3f a, b, c;
-        public final Vector3f centroid;
         
         private Triangle(Vector3f a, Vector3f b, Vector3f c)
         {
             this.a = a; this.b = b; this.c = c;
-            centroid = a.copy().add(b).add(c).div(3.0f);
+        }
+        
+        public Vector3f getCentroid()
+        {
+            return a.copy().add(b).add(c).div(3.0f);
         }
     }
 }

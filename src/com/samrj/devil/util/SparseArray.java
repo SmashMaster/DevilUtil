@@ -2,6 +2,8 @@ package com.samrj.devil.util;
 
 import com.samrj.devil.math.Util;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * A map between integers and objects based on a hash table with linked list
@@ -12,7 +14,7 @@ import java.util.Arrays;
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class SparseArray<T>
+public class SparseArray<T> implements Iterable<T>
 {
     private static final int triNumbers[] = {1, 3, 6, 10, 15, 21, 28, 36,
                                              45, 55, 66, 78, 91, 105, 120, 136};
@@ -60,6 +62,11 @@ public class SparseArray<T>
     public int size()
     {
         return size;
+    }
+    
+    public boolean isEmpty()
+    {
+        return size == 0;
     }
     
     public int capacity()
@@ -113,6 +120,12 @@ public class SparseArray<T>
         }
     }
     
+    public boolean contains(int key)
+    {
+        int i = search(key);
+        return keys[i] == key && !isEmpty(i);
+    }
+    
     public T get(int key)
     {
         int i = search(key);
@@ -120,27 +133,33 @@ public class SparseArray<T>
         return (T)entries[i];
     }
     
-    public void put(int key, T value)
+    public boolean put(int key, T value)
     {
-        if (value == null)
-        {
-            remove(key);
-            return;
-        }
+        if (value == null) throw new NullPointerException();
         
         int i = search(key);
         if (isEmpty(i)) size++;
         keys[i] = key;
+        Object oldEntry = entries[i];
         entries[i] = value;
         
         if (load() >= loadFactor) grow();
+        
+        return oldEntry != value;
     }
     
-    public void remove(int key)
+    public boolean remove(int key)
     {
         int i = search(key);
-        if (!isEmpty(i)) size--;
+        boolean out;
+        if (isEmpty(i)) out = false;
+        else
+        {
+            size--;
+            out = true;
+        }
         entries[i] = SENTINEL;
+        return out;
     }
     
     public void clear()
@@ -163,4 +182,48 @@ public class SparseArray<T>
 //        }
 //        stream.println("]");
 //    }
+    
+    
+    public Object[] toArray()
+    {
+        Object[] out = new Object[size];
+        int i=0;
+        for (Object o : entries) if (o != null && o != SENTINEL) out[i++] = o;
+        return out;
+    }
+    
+    public <T> T[] toArray(T[] a)
+    {
+        Object[] out;
+        if (a.length >= size) out = a;
+        else out = new Object[size];
+        
+        int i=0;
+        for (Object o : entries) if (o != null && o != SENTINEL) out[i++] = o;
+        return (T[])out;
+    }
+
+    @Override
+    public Iterator<T> iterator()
+    {
+        return new SparseArrayIterator();
+    }
+    
+    private class SparseArrayIterator implements Iterator<T>
+    {
+        private int i;
+
+        @Override
+        public boolean hasNext()
+        {
+            return i < size;
+        }
+
+        @Override
+        public T next()
+        {
+            if (!hasNext()) throw new NoSuchElementException();
+            return (T)entries[i++];
+        }
+    }
 }
