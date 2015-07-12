@@ -53,6 +53,132 @@ public class Mat4 implements Bufferable<FloatBuffer>, Streamable
     }
     
     /**
+     * Sets the given matrix to a symmetric frustum projection matrix with the
+     * given dimensions. The coordinate system of the frustum is right-handed,
+     * with +Z being backwards--towards the camera. +X is right and +Y is up.
+     * 
+     * @param width The half-width of the near plane.
+     * @param height The half-height of the near plane.
+     * @param near The near clipping distance of the frustum.
+     * @param far The far clipping distance of the frustum.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void frustum(float width, float height, float near, float far, Mat4 r)
+    {
+        float fmn = far - near;
+        float n2 = near*2.0f;
+        
+        r.a = near/width; r.b = 0.0f; r.c = 0.0f; r.d = 0.0f;
+        r.e = 0.0f; r.f = near/height; r.g = 0.0f; r.h = 0.0f;
+        r.i = 0.0f; r.j = 0.0f; r.k = -(far + near)/fmn; r.l = (-far*n2)/fmn;
+        r.m = 0.0f; r.n = 0.0f; r.o = -1.0f; r.p = 0.0f;
+    }
+    
+    /**
+     * Sets the given matrix to a frustum projection matrix with the given
+     * bounds. The coordinate system of the frustum is right-handed, with +Z
+     * being backwards--towards the camera. +X is right and +Y is up.
+     * 
+     * @param left The left bound of the near plane.
+     * @param right The right bound of the near plane.
+     * @param bottom The lower bound of the near plane.
+     * @param top The upper bound of the near plane.
+     * @param near The near clipping distance of the frustum.
+     * @param far The far clipping distance of the frustum.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void frustum(float left, float right, float bottom, float top, float near, float far, Mat4 r)
+    {
+        float rml = right - left;
+        float tmb = top - bottom;
+        float fmn = far - near;
+        float n2 = near*2.0f;
+        
+        r.a = n2/rml; r.b = 0.0f; r.c = (right + left)/rml; r.d = 0.0f;
+        r.e = 0.0f; r.f = n2/tmb; r.g = (top + bottom)/tmb; r.h = 0.0f;
+        r.i = 0.0f; r.j = 0.0f; r.k = -(far + near)/fmn; r.l = (-far*n2)/fmn;
+        r.m = 0.0f; r.n = 0.0f; r.o = -1.0f; r.p = 0.0f;
+    }
+    
+    /**
+     * Sets the given matrix to a perspective projection matrix with the given
+     * field of view, aspect ratio, and bounds. The coordinate system of the
+     * frustum is right-handed, with +Z being backwards--towards the camera.
+     * +X is right and +Y is up.
+     * 
+     * @param fov The full field of view of the frustum along its larger
+     *            dimension, in radians.
+     * @param aspect The aspect ratio of the frustum, height/width.
+     * @param near The near clipping distance of the frustum.
+     * @param far The far clipping distance of the frustum.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void perspective(float fov, float aspect, float near, float far, Mat4 r)
+    {
+        float greaterDimension = Math.abs(near)*(float)Math.tan(fov*0.5f);
+        
+        float w, h;
+        if (aspect <= 1.0f) //Width is greater or equal to height.
+        {
+            w = greaterDimension;
+            h = w*aspect;
+        }
+        else //Widgth is smaller than height.
+        {
+            h = greaterDimension;
+            w = h/aspect;
+        }
+        
+        frustum(w, h, near, far, r);
+    }
+    
+    /**
+     * Sets the given matrix to a symmetric orthographic projection matrix with
+     * the given dimensions. The coordinate system is right-handed, with +Z
+     * being backwards--towards the camera. +X is right and +Y is up.
+     * 
+     * @param width The half-width of the prism.
+     * @param height The half-height of the prism.
+     * @param near The near clipping distance of the prism.
+     * @param far The far clipping distance of the prism.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void orthographic(float width, float height, float near, float far, Mat4 r)
+    {
+        float fmn = far - near;
+        
+        r.a = 1.0f/width; r.b = 0.0f; r.c = 0.0f; r.d = 0.0f;
+        r.e = 0.0f; r.f = 1.0f/height; r.g = 0.0f; r.h = 0.0f;
+        r.i = 0.0f; r.j = 0.0f; r.k = -2.0f/fmn; r.l = -(far + near)/fmn;
+        r.m = 0.0f; r.n = 0.0f; r.o = 0.0f; r.p = 1.0f;
+    }
+    
+    /**
+     * Sets the given matrix to an orthographic projection matrix with the given
+     * bounds. The coordinate system is right-handed, with +Z being backwards--
+     * towards the camera. +X is right and +Y is up.
+     * 
+     * @param left The left bound of the prism.
+     * @param right The right bound of the prism.
+     * @param bottom The lower bound of the prism.
+     * @param top The upper bound of the prism.
+     * @param near The near clipping distance of the prism.
+     * @param far The far clipping distance of the prism.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void orthographic(float left, float right, float bottom, float top, float near, float far, Mat4 r)
+    {
+        final float rml = right - left;
+        final float tmb = top - bottom;
+        final float fmn = far - near;
+        
+        r.a = 2.0f/rml; r.b = 0.0f; r.c = 0.0f; r.d = -(right + left)/rml;
+        r.e = 0.0f; r.f = 2.0f/tmb; r.g = 0.0f; r.h = -(top + bottom)/tmb;
+        r.i = 0.0f; r.j = 0.0f; r.k = -2.0f/fmn; r.l = -(far + near)/fmn;
+        r.m = 0.0f; r.n = 0.0f; r.o = 0.0f; r.p = 1.0f;
+    }
+    
+    /**
      * Sets the given matrix to a scaling matrix by the given scalar.
      * 
      * @param s The scalar to scale by.
@@ -316,6 +442,102 @@ public class Mat4 implements Bufferable<FloatBuffer>, Streamable
     }
     
     /**
+     * Creates a new symmetric frustum projection matrix with the given
+     * dimensions. The coordinate system of the frustum is right-handed, with
+     * +Z being backwards--towards the camera. +X is right and +Y is up.
+     * 
+     * @param width The half-width of the near plane.
+     * @param height The half-height of the near plane.
+     * @param near The near clipping distance of the frustum.
+     * @param far The far clipping distance of the frustum.
+     * @return A new matrix containing the result.
+     */
+    public static final Mat4 frustum(float width, float height, float near, float far)
+    {
+        Mat4 m = new Mat4();
+        frustum(width, height, near, far, m); //Could be optimized.
+        return m;
+    }
+    
+    /**
+     * Creates a new frustum projection matrix with the given bounds. The
+     * coordinate system of the frustum is right-handed, with +Z being
+     * backwards--towards the camera. +X is right and +Y is up.
+     * 
+     * @param left The left bound of the near plane.
+     * @param right The right bound of the near plane.
+     * @param bottom The lower bound of the near plane.
+     * @param top The upper bound of the near plane.
+     * @param near The near clipping distance of the frustum.
+     * @param far The far clipping distance of the frustum.
+     * @return A new matrix containing the result.
+     */
+    public static final Mat4 frustum(float left, float right, float bottom, float top, float near, float far)
+    {
+        Mat4 m = new Mat4();
+        frustum(left, right, bottom, top, near, far, m); //Could be optimized.
+        return m;
+    }
+    
+    /**
+     * Creates a new perspective projection matrix with the given field of view,
+     * aspect ratio, and bounds. The coordinate system of the frustum is right-
+     * handed, with +Z being backwards--towards the camera. +X is right and +Y
+     * is up.
+     * 
+     * @param fov The full field of view of the frustum along its larger
+     *            dimension, in radians.
+     * @param aspect The aspect ratio of the frustum, height/width.
+     * @param near The near clipping distance of the frustum.
+     * @param far The far clipping distance of the frustum.
+     * @return A new matrix containing the result.
+     */
+    public static final Mat4 perspective(float fov, float aspect, float near, float far)
+    {
+        Mat4 m = new Mat4();
+        perspective(fov, aspect, near, far, m); //Could be optimized.
+        return m;
+    }
+    
+    /**
+     * Creates a new symmetric orthographic projection matrix with the given
+     * dimensions. The coordinate system is right-handed, with +Z being
+     * backwards--towards the camera. +X is right and +Y is up.
+     * 
+     * @param width The half-width of the prism.
+     * @param height The half-height of the prism.
+     * @param near The near clipping distance of the prism.
+     * @param far The far clipping distance of the prism.
+     * @return A new matrix containing the result.
+     */
+    public static final Mat4 orthographic(float width, float height, float near, float far)
+    {
+        Mat4 m = new Mat4();
+        orthographic(width, height, near, far, m); //Could be optimized.
+        return m;
+    }
+    
+    /**
+     * Creates a new orthographic projection matrix with the given bounds. The
+     * coordinate system is right-handed, with +Z being backwards--towards the
+     * camera. +X is right and +Y is up.
+     * 
+     * @param left The left bound of the prism.
+     * @param right The right bound of the prism.
+     * @param bottom The lower bound of the prism.
+     * @param top The upper bound of the prism.
+     * @param near The near clipping distance of the prism.
+     * @param far The far clipping distance of the prism.
+     * @return A new matrix containing the result.
+     */
+    public static final Mat4 orthographic(float left, float right, float bottom, float top, float near, float far)
+    {
+        Mat4 m = new Mat4();
+        orthographic(left, right, bottom, top, near, far, m); //Could be optimized.
+        return m;
+    }
+    
+    /**
      * Returns a new scaling matrix, where {@code s} is the scaling factor.
      * 
      * @param s The scaling factor.
@@ -520,6 +742,97 @@ public class Mat4 implements Bufferable<FloatBuffer>, Streamable
     public Mat4 setIdentity()
     {
         identity(this);
+        return this;
+    }
+    
+    /**
+     * Sets this to a symmetric frustum projection matrix with the given
+     * dimensions. The coordinate system of the frustum is right-handed, with
+     * +Z being backwards--towards the camera. +X is right and +Y is up.
+     * 
+     * @param width The half-width of the near plane.
+     * @param height The half-height of the near plane.
+     * @param near The near clipping distance of the frustum.
+     * @param far The far clipping distance of the frustum.
+     * @return This matrix.
+     */
+    public Mat4 setFrustum(float width, float height, float near, float far)
+    {
+        frustum(width, height, near, far, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to a frustum projection matrix with the given bounds. The
+     * coordinate system of the frustum is right-handed, with +Z being
+     * backwards--towards the camera. +X is right and +Y is up.
+     * 
+     * @param left The left bound of the near plane.
+     * @param right The right bound of the near plane.
+     * @param bottom The lower bound of the near plane.
+     * @param top The upper bound of the near plane.
+     * @param near The near clipping distance of the frustum.
+     * @param far The far clipping distance of the frustum.
+     * @return This matrix.
+     */
+    public Mat4 setFrustum(float left, float right, float bottom, float top, float near, float far)
+    {
+        frustum(left, right, bottom, top, near, far, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to a perspective projection matrix with the given field of
+     * view, aspect ratio, and bounds. The coordinate system of the frustum is
+     * right- handed, with +Z being backwards--towards the camera. +X is right
+     * and +Y is up.
+     * 
+     * @param fov The full field of view of the frustum along its larger
+     *            dimension, in radians.
+     * @param aspect The aspect ratio of the frustum, height/width.
+     * @param near The near clipping distance of the frustum.
+     * @param far The far clipping distance of the frustum.
+     * @return This matrix.
+     */
+    public Mat4 setPerspective(float fov, float aspect, float near, float far)
+    {
+        perspective(fov, aspect, near, far, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to a symmetric orthographic projection matrix with the given
+     * dimensions. The coordinate system is right-handed, with +Z being
+     * backwards--towards the camera. +X is right and +Y is up.
+     * 
+     * @param width The half-width of the prism.
+     * @param height The half-height of the prism.
+     * @param near The near clipping distance of the prism.
+     * @param far The far clipping distance of the prism.
+     * @return This matrix.
+     */
+    public Mat4 setOrthographic(float width, float height, float near, float far)
+    {
+        orthographic(width, height, near, far, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to a orthographic projection matrix with the given bounds. The
+     * coordinate system is right-handed, with +Z being backwards--towards the
+     * camera. +X is right and +Y is up.
+     * 
+     * @param left The left bound of the prism.
+     * @param right The right bound of the prism.
+     * @param bottom The lower bound of the prism.
+     * @param top The upper bound of the prism.
+     * @param near The near clipping distance of the prism.
+     * @param far The far clipping distance of the prism.
+     * @return This matrix.
+     */
+    public Mat4 setOrthographic(float left, float right, float bottom, float top, float near, float far)
+    {
+        orthographic(left, right, bottom, top, near, far, this);
         return this;
     }
     
