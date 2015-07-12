@@ -1,7 +1,7 @@
 package com.samrj.devil.geo2d;
 
 import com.samrj.devil.math.Util;
-import com.samrj.devil.math.Vector2f;
+import com.samrj.devil.math.Vec2;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -10,31 +10,31 @@ import com.samrj.devil.math.Vector2f;
  */
 public class Line
 {
-    public final Vector2f a = new Vector2f(), b = new Vector2f();
+    public final Vec2 a = new Vec2(), b = new Vec2();
     
-    public Line(Vector2f a, Vector2f b)
+    public Line(Vec2 a, Vec2 b)
     {
         set(a, b);
     }
     
-    public Line set(Vector2f a, Vector2f b)
+    public Line set(Vec2 a, Vec2 b)
     {
         this.a.set(a);
         this.b.set(b);
         return this;
     }
     
-    public Line translate(Vector2f v)
+    public Line translate(Vec2 v)
     {
         a.add(v);
         b.add(v);
         return this;
     }
     
-    public Vector2f intersect(Line l)
+    public Vec2 intersect(Line l)
     {
-        Vector2f r = b.csub(a);
-        Vector2f s = l.b.csub(l.a);
+        Vec2 r = Vec2.sub(b, a);
+        Vec2 s = Vec2.sub(l.b, l.a);
         
         float rxs = r.cross(s);
         
@@ -42,43 +42,43 @@ public class Line
         
         s.div(rxs);
         
-        float t = l.a.csub(a).cross(s);
+        float t = Vec2.sub(l.a, a).cross(s);
         return r.mult(t).add(a);
     }
     
-    public int side(Vector2f v)
+    public int side(Vec2 v)
     {
-        Vector2f d = b.csub(a);
-        Vector2f w = v.csub(a);
-        return Util.signum(d.cross(w));
+        Vec2 d = Vec2.sub(b, a);
+        Vec2 w = Vec2.sub(v, a);
+        return (int)Math.signum(d.cross(w));
     }
     
-    public float sigDist(Vector2f v)
+    public float sigDist(Vec2 v)
     {
-        Vector2f d = b.csub(a).normalize();
-        Vector2f w = v.csub(a);
+        Vec2 d = Vec2.sub(b, a).normalize();
+        Vec2 w = Vec2.sub(v, a);
         return d.cross(w);
     }
     
-    public float dist(Vector2f v)
+    public float dist(Vec2 v)
     {
         return Math.abs(sigDist(v));
     }
     
-    public Vector2f normal()
+    public Vec2 normal()
     {
-        Vector2f ab = b.csub(a);
-        return ab.crotCCW().normalize();
+        Vec2 ab = Vec2.sub(b, a);
+        return new Vec2(-ab.y, ab.x).normalize();
     }
     
-    public float projScalT(Vector2f v)
+    public float projScalT(Vec2 v)
     {
-        Vector2f d = v.csub(a);
-        Vector2f ab = b.csub(a);
+        Vec2 d = Vec2.sub(v, a);
+        Vec2 ab = Vec2.sub(b, a);
         return d.dot(ab)/ab.squareLength();
     }
     
-    public int projSide(Vector2f v)
+    public int projSide(Vec2 v)
     {
         float t = projScalT(v);
         if (t > 1f) return 1;
@@ -86,10 +86,10 @@ public class Line
         return 0;
     }
     
-    public Vector2f projVec(Vector2f v)
+    public Vec2 projVec(Vec2 v)
     {
-        Vector2f d = v.csub(a);
-        Vector2f ab = b.csub(a);
-        return d.projVec(ab).add(a);
+        Vec2 d = Vec2.sub(v, a);
+        Vec2 ab = Vec2.sub(b, a);
+        return d.project(ab).add(a);
     }
 }

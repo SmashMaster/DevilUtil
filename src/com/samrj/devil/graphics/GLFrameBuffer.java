@@ -1,6 +1,6 @@
 package com.samrj.devil.graphics;
 
-import static com.samrj.devil.buffer.BufferUtil.pubBufA;
+import static com.samrj.devil.io.BufferUtil.pubBufA;
 import java.nio.IntBuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;

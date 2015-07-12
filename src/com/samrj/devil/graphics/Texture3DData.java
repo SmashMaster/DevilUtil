@@ -1,6 +1,6 @@
 package com.samrj.devil.graphics;
 
-import com.samrj.devil.buffer.BufferUtil;
+import com.samrj.devil.io.BufferUtil;
 import java.nio.ByteBuffer;
 
 /**

@@ -1,6 +1,6 @@
 package com.samrj.devil.graphics.model;
 
-import com.samrj.devil.buffer.BufferUtil;
+import com.samrj.devil.io.BufferUtil;
 import com.samrj.devil.math.topo.DAG;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -76,7 +76,7 @@ public class Armature
     {
         boneMatrixBuffer.clear();
         FloatBuffer fBuffer = boneMatrixBuffer.asFloatBuffer();
-        for (Bone bone : bones) bone.matrix.putIn(fBuffer);
+        for (Bone bone : bones) bone.matrix.write(fBuffer);
         boneMatrixBuffer.rewind();
         return boneMatrixBuffer;
     }

@@ -1,6 +1,6 @@
 package com.samrj.devil.graphics;
 
-import com.samrj.devil.math.Vector2f;
+import com.samrj.devil.math.Vec3i;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL13;
@@ -107,8 +107,8 @@ public class GLTexture3D
         return id;
     }
     
-    public Vector2f size()
+    public Vec3i size()
     {
-        return new Vector2f(width, height);
+        return new Vec3i(width, height, depth);
     }
 }

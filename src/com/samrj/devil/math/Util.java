@@ -2,7 +2,7 @@ package com.samrj.devil.math;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2014 Samuel Johnson
+ * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class Util
@@ -54,16 +54,16 @@ public class Util
         Y(0, 1, 0),
         Z(0, 0, 1);
         
-        private final Vector3f dir;
+        private final Vec3 dir;
         
         private Axis(float x, float y, float z)
         {
-            this.dir = new Vector3f(x, y, z);
+            this.dir = new Vec3(x, y, z);
         }
         
-        public Vector3f versor()
+        public Vec3 versor()
         {
-            return dir.copy();
+            return new Vec3(dir);
         }
     }
     
@@ -72,86 +72,6 @@ public class Util
     public static final float PId2 = (float)(Math.PI*0.5);
     // </editor-fold>
     
-    // <editor-fold defaultstate="collapsed" desc="lang.Math Wrappers">
-    public static int signum(float v)
-    {
-        if (v > 0) return 1;
-        if (v == 0) return 0;
-        return -1;
-    }
-    
-    public static int floor(float v)
-    {
-        int vi = (int) v;
-        return v < vi ? vi - 1 : vi;
-    }
-    
-    public static int ceil(float v)
-    {
-        int vi = (int) v;
-        return v < vi ? vi : vi + 1;
-    }
-    
-    public static int round(float v)
-    {
-        return floor(v + .5f);
-    }
-    
-    public static float pow(float v, float p)
-    {
-        return (float)Math.pow(v, p);
-    }
-    
-    public static float sqrt(float v)
-    {
-        return (float)Math.sqrt(v);
-    }
-    
-    public static float cbrt(float v)
-    {
-        return (float)Math.cbrt(v);
-    }
-    
-    public static float toRadians(float a)
-    {
-        return a*(PI/180f);
-    }
-    
-    public static float toDegrees(float a)
-    {
-        return a*(180f/PI);
-    }
-    
-    public static float sin(float a)
-    {
-        return (float)Math.sin(a);
-    }
-    
-    public static float asin(float v)
-    {
-        return (float)Math.asin(v);
-    }
-    
-    public static float cos(float a)
-    {
-        return (float)Math.cos(a);
-    }
-    
-    public static float acos(float v)
-    {
-        return (float)Math.acos(v);
-    }
-    
-    public static float tan(float a)
-    {
-        return (float)Math.tan(a);
-    }
-    
-    public static float atan2(float y, float x)
-    {
-        return (float)Math.atan2(y, x);
-    }
-    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Float Math">
     public static float[] quadFormula(float a, float b, float c)
     {
@@ -174,12 +94,12 @@ public class Util
         
         if (Math.abs(d) <= dist) return target;
         
-        return f + dist*signum(d);
+        return f + dist*Math.signum(d);
     }
     
-    public static Vector2f move(Vector2f v, Vector2f target, float dist)
+    public static Vec2 move(Vec2 v, Vec2 target, float dist)
     {
-        Vector2f dif = target.csub(v);
+        Vec2 dif = Vec2.sub(target, v);
         float d = dif.length();
         if (d <= dist)
         {
@@ -200,12 +120,12 @@ public class Util
         return f;
     }
     
-    public static Vector2f clamp(Vector2f v, float maxLength)
+    public static Vec2 clamp(Vec2 v, float maxLength)
     {
         float len = v.squareLength();
         if (len <= maxLength*maxLength) return v;
         
-        len = sqrt(len);
+        len = (float)Math.sqrt(len);
         
         return v.mult(maxLength/len);
     }
@@ -230,40 +150,6 @@ public class Util
         
         float t = x%max;
         return t<0f ? t+max : t;
-    }
-    
-    public static Vector2i loop(Vector2f v, float min, float max)
-    {
-        float ox = v.x;
-        float oy = v.y;
-        
-        v.loop(min, max);
-        
-        if (v.x == ox && v.y == oy) return new Vector2i();
-        
-        final float size = max-min;
-        ox = (ox - v.x)/size;
-        oy = (oy - v.y)/size;
-        
-        return new Vector2i(ceil(ox), ceil(oy));
-    }
-    
-    public static Vector3i loop(Vector3f v, float min, float max)
-    {
-        float ox = v.x;
-        float oy = v.y;
-        float oz = v.z;
-        
-        v.loop(min, max);
-        
-        if (v.x == ox && v.y == oy && v.z == oz) return Vector3i.zero();
-        
-        final float size = max-min;
-        ox = (ox - v.x)/size;
-        oy = (oy - v.y)/size;
-        oz = (oz - v.z)/size;
-        
-        return new Vector3i(round(ox), round(oy), round(oz));
     }
     
     public static float invLerp(float a, float b, float x)
@@ -318,7 +204,7 @@ public class Util
     public static float attenuate(float x, float exp)
     {
         if (exp == 1f) return clamp(1f - x, 0f, 1f);
-        return 1f - pow(clamp(x, 0f, 1f), exp);
+        return 1f - (float)Math.pow(clamp(x, 0f, 1f), exp);
     }
     
     /**
@@ -429,22 +315,22 @@ public class Util
     
     public static float floor(float f, float size)
     {
-        return Util.floor(f/size)*size;
+        return (float)Math.floor(f/size)*size;
     }
     
     public static float round(float f, float size)
     {
-        return Util.round(f/size)*size;
+        return (float)Math.round(f/size)*size;
     }
     
-    public static Vector2f round(Vector2f f, float size)
+    public static Vec2 round(Vec2 f, float size)
     {
         return f.set(round(f.x, size), round(f.y, size));
     }
     
     public static float ceil(float f, float size)
     {
-        return Util.ceil(f/size)*size;
+        return (float)Math.ceil(f/size)*size;
     }
     
     public static int indexMin(float... values)
@@ -493,7 +379,7 @@ public class Util
     
     public static boolean isInteger(float f)
     {
-        return f == floor(f);
+        return f == (float)Math.floor(f);
     }
     
     public static float reduceSq(float sqa)
@@ -523,9 +409,9 @@ public class Util
         return 1f;
     }
     
-    public static Vector2f sqDir(float sqa)
+    public static Vec2 sqDir(float sqa)
     {
-        return new Vector2f(sqCos(sqa), sqSin(sqa));
+        return new Vec2(sqCos(sqa), sqSin(sqa));
     }
     
     public static float sqAtan2(float y, float x)
@@ -548,19 +434,19 @@ public class Util
     /**
      * Returns, in radians, the signed angle between two normalized vectors.
      */
-    public static float angleNrm(Vector2f a, Vector2f b)
+    public static float angleNrm(Vec2 a, Vec2 b)
     {
         float sin = b.cross(a);
         float cos = a.dot(b);
-        return atan2(sin, cos);
+        return (float)Math.atan2(sin, cos);
     }
     
     /**
      * Returns, in radians, the signed angle between two vectors.
      */
-    public static float angle(Vector2f a, Vector2f b)
+    public static float angle(Vec2 a, Vec2 b)
     {
-        return angleNrm(a.cnormalize(), b.cnormalize());
+        return angleNrm(Vec2.normalize(a), Vec2.normalize(b));
     }
     
     private static final int[] logTable = new int[256];
@@ -590,6 +476,25 @@ public class Util
             if (t != 0) return logTable[t] - 133;
             else return (x >> 8 != 0) ? logTable[t] - 141 : logTable[x] - 149;
         }
+    }
+    
+    public static final Mat4 expand(Mat3 m)
+    {
+        Mat4 out = new Mat4();
+        out.a = m.a; out.b = m.b; out.c = m.c;
+        out.e = m.d; out.f = m.e; out.g = m.f;
+        out.i = m.g; out.j = m.h; out.k = m.i;
+        out.p = 1.0f;
+        return out;
+    }
+    
+    public static final Mat3 contract(Mat4 m)
+    {
+        Mat3 out = new Mat3();
+        out.a = m.a; out.b = m.b; out.c = m.c;
+        out.d = m.e; out.e = m.f; out.f = m.g;
+        out.g = m.i; out.h = m.j; out.i = m.k;
+        return out;
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Integer Math">

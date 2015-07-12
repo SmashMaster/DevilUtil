@@ -1,6 +1,6 @@
 package com.samrj.devil.graphics;
 
-import com.samrj.devil.buffer.Bufferable;
+import com.samrj.devil.io.Bufferable;
 import java.nio.FloatBuffer;
 import org.lwjgl.opengl.GL11;
 
@@ -134,18 +134,21 @@ public final class Color4f implements Bufferable<FloatBuffer>
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Ocerriden Bufferable Methods">
     @Override
-    public void putIn(FloatBuffer buf)
+    public void write(FloatBuffer buffer)
     {
-        buf.put(r);
-        buf.put(g);
-        buf.put(b);
-        buf.put(a);
-}
+        buffer.put(r);
+        buffer.put(g);
+        buffer.put(b);
+        buffer.put(a);
+    }
     
     @Override
-    public int size()
+    public void read(FloatBuffer buffer)
     {
-        return 4;
+        r = buffer.get();
+        g = buffer.get();
+        b = buffer.get();
+        a = buffer.get();
     }
     // </editor-fold>
 }

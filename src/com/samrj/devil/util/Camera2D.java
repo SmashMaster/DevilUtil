@@ -1,10 +1,11 @@
 package com.samrj.devil.util;
 
 import com.samrj.devil.geo2d.AAB;
-import com.samrj.devil.math.Matrix3f;
-import com.samrj.devil.math.Matrix4f;
-import com.samrj.devil.math.Vector2f;
-import com.samrj.devil.math.Vector2i;
+import com.samrj.devil.graphics.GraphicsUtil;
+import com.samrj.devil.math.Mat3;
+import com.samrj.devil.math.Mat4;
+import com.samrj.devil.math.Vec2;
+import com.samrj.devil.math.Vec2i;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -31,21 +32,21 @@ public class Camera2D
         GL11.glLoadIdentity();
     }
     
-    public final Vector2f pos;
+    public final Vec2 pos;
     public float scale;
-    private Matrix4f proj;
-    private Vector2f mid;
-    private Vector2i res;
+    private Mat4 proj;
+    private Vec2 mid;
+    private Vec2i res;
     
-    public Camera2D(int resX, int resY, Vector2f pos, float height)
+    public Camera2D(int resX, int resY, Vec2 pos, float height)
     {
         if (height <= 0f) throw new IllegalArgumentException();
-        this.pos = pos.copy();
+        this.pos = new Vec2(pos);
         
-        res = new Vector2i(resX, resY);
-        mid = res.as2f().div(2f);
+        res = new Vec2i(resX, resY);
+        mid = new Vec2(res.x, res.y).div(2.0f);
         
-        proj = Matrix4f.ortho(mid.x, mid.y, -1f, 1f);
+        proj = Mat4.orthographic(mid.x, mid.y, -1f, 1f);
         scale = res.y/height;
     }
     
@@ -54,14 +55,14 @@ public class Camera2D
         scale = res.y/height;
     }
     
-    public Vector2f getMid()
+    public Vec2 getMid()
     {
-        return mid.copy();
+        return new Vec2(mid);
     }
     
-    public Vector2i getRes()
+    public Vec2i getRes()
     {
-        return res.copy();
+        return new Vec2i(res);
     }
     
     public float getAspectRatio()
@@ -69,19 +70,19 @@ public class Camera2D
         return res.y/(float)res.x;
     }
     
-    public Matrix4f getProj()
+    public Mat4 getProj()
     {
-        return proj.copy();
+        return new Mat4(proj);
     }
     
     public void glLoadProj()
     {
-        proj.glLoad(GL11.GL_PROJECTION);
+        GraphicsUtil.glLoadMatrix(proj, GL11.GL_PROJECTION);
     }
     
     public void glLoadView()
     {
-        getView().glLoad(GL11.GL_MODELVIEW);
+        GraphicsUtil.glLoadMatrix(getView(), GL11.GL_MODELVIEW);
     }
     
     public void glLoad()
@@ -90,40 +91,39 @@ public class Camera2D
         glLoadView();
     }
     
-    public Matrix4f getView()
+    public Mat3 getView()
     {
-        Matrix4f out = Matrix4f.scale(scale, scale, 0f);
-        out.multTranslate(-pos.x, -pos.y, 0f);
+        Mat3 out = Mat3.scaling(scale);
+        out.translate(Vec2.negate(pos));
         return out;
     }
     
-    public Matrix3f toScreen()
+    public Mat3 toScreen()
     {
-        Matrix3f out = Matrix3f.translate(mid.x, mid.y);
-        out.multScale(scale, scale);
-        out.multTranslate(-pos.x, -pos.y);
+        Mat3 out = Mat3.translation(mid);
+        out.mult(scale);
+        out.translate(Vec2.negate(pos));
         return out;
     }
     
-    public Matrix3f toWorld()
+    public Mat3 toWorld()
     {
-        Matrix3f out = Matrix3f.translate(pos.x, pos.y);
-        float invScale = 1f/scale;
-        out.multScale(invScale, invScale);
-        out.multTranslate(-mid.x, -mid.y);
+        Mat3 out = Mat3.translation(pos);
+        out.div(scale);
+        out.translate(Vec2.negate(mid));
         return out;
     }
     
     public AAB getViewBounds()
     {
-        Matrix3f toWorld = toWorld();
-        return AAB.bounds(new Vector2f().mult(toWorld),
-                          res.as2f().mult(toWorld));
+        Mat3 toWorld = toWorld();
+        return AAB.bounds(new Vec2().mult(toWorld),
+                          new Vec2(res.x, res.y).mult(toWorld));
     }
     
-    public void zoom(Vector2f pos, float factor)
+    public void zoom(Vec2 pos, float factor)
     {
-        Vector2f newPos = pos.cmult(toScreen());
+        Vec2 newPos = Vec2.mult(pos, toScreen());
         scale *= factor;
         newPos.mult(toWorld());
         this.pos.sub(newPos).add(pos);

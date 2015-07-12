@@ -1,6 +1,6 @@
 package com.samrj.devil.geo2d;
 
-import com.samrj.devil.math.Vector2f;
+import com.samrj.devil.math.Vec2;
 
 /**
  * Cubic Hermite spline.
@@ -13,11 +13,11 @@ public class Spline
 {
     public static interface Node
     {
-        public Vector2f getPos();
-        public Vector2f getTan();
+        public Vec2 getPos();
+        public Vec2 getTan();
     }
     
-    public static Vector2f getPos(Node a, Node b, float t)
+    public static Vec2 getPos(Node a, Node b, float t)
     {
         if (t == 0f) return a.getPos();
         if (t == 1f) return b.getPos();
@@ -25,15 +25,15 @@ public class Spline
         float tsq = t*t, tcu = tsq*t;
         float f3 = -2f*tcu + 3f*tsq;
         
-        Vector2f pos = a.getPos().mult(1f - f3);
-        pos.add(       a.getTan().mult(tcu - 2f*tsq + t));
-        pos.add(       b.getPos().mult(f3));
-        pos.add(       b.getTan().mult(tcu - tsq));
+        Vec2 pos = a.getPos().mult(1f - f3);
+        pos.add(   a.getTan().mult(tcu - 2f*tsq + t));
+        pos.add(   b.getPos().mult(f3));
+        pos.add(   b.getTan().mult(tcu - tsq));
         
         return pos;
     }
     
-    public static Vector2f getTan(Node a, Node b, float t)
+    public static Vec2 getTan(Node a, Node b, float t)
     {
         if (t == 0f) return a.getTan().normalize();
         if (t == 1f) return b.getTan().normalize();
@@ -41,10 +41,10 @@ public class Spline
         float tsq = t*t, tsqm3 = tsq*3f;
         float f0 = 6f*(tsq - t);
         
-        Vector2f tan = a.getPos().mult(f0);
-        tan.add(       a.getTan().mult(tsqm3 - 4f*t + 1f));
-        tan.add(       b.getPos().mult(-f0));
-        tan.add(       b.getTan().mult(tsqm3 - 2f*t));
+        Vec2 tan = a.getPos().mult(f0);
+        tan.add(   a.getTan().mult(tsqm3 - 4f*t + 1f));
+        tan.add(   b.getPos().mult(-f0));
+        tan.add(   b.getTan().mult(tsqm3 - 2f*t));
         
         return tan.normalize();
     }
@@ -60,8 +60,8 @@ public class Spline
         
         final float MAX_TANGENT_T = 4f/27f;
         
-        Vector2f aTan = a.getTan().mult(MAX_TANGENT_T);
-        Vector2f bTan = b.getTan().mult(-MAX_TANGENT_T);
+        Vec2 aTan = a.getTan().mult(MAX_TANGENT_T);
+        Vec2 bTan = b.getTan().mult(-MAX_TANGENT_T);
         
         if (aTan.x > 0f) out.x1 += aTan.x;
         else             out.x0 += aTan.x;

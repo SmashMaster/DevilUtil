@@ -1,6 +1,6 @@
 package com.samrj.devil.geo2d;
 
-import com.samrj.devil.math.Vector2f;
+import com.samrj.devil.math.Vec2;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -30,14 +30,14 @@ public class AAB
      * 
      * @param points a set of points to bound.
      */
-    public static AAB bounds(Vector2f... points)
+    public static AAB bounds(Vec2... points)
     {
         AAB out = empty();
-        for (Vector2f v : points) out.expand(v);
+        for (Vec2 v : points) out.expand(v);
         return out;
     }
     
-    public static AAB fromHalfWidth(Vector2f pos, float rx, float ry)
+    public static AAB fromHalfWidth(Vec2 pos, float rx, float ry)
     {
         return new AAB(pos.x - rx, pos.x + rx,
                        pos.y - ry, pos.y + ry);
@@ -73,7 +73,7 @@ public class AAB
         return set(x0*x, x1*x, y0*y, y1*y);
     }
     
-    public AAB mult(Vector2f v)
+    public AAB mult(Vec2 v)
     {
         return mult(v.x, v.y);
     }
@@ -92,7 +92,7 @@ public class AAB
         return this;
     }
     
-    public AAB expand(Vector2f v)
+    public AAB expand(Vec2 v)
     {
         expandX(v.x);
         expandY(v.y);
@@ -117,14 +117,14 @@ public class AAB
         return this;
     }
     
-    public AAB translate(Vector2f v)
+    public AAB translate(Vec2 v)
     {
         x0 += v.x; x1 += v.x;
         y0 += v.y; y1 += v.y;
         return this;
     }
     
-    public AAB setCenter(Vector2f v)
+    public AAB setCenter(Vec2 v)
     {
         float rx = (x1 - x0)/2f;
         float ry = (y1 - y0)/2f;
@@ -139,10 +139,10 @@ public class AAB
      */
     public boolean touches(Line l)
     {
-        int sa = l.side(new Vector2f(x0, y0));
-        int sb = l.side(new Vector2f(x0, y1));
-        int sc = l.side(new Vector2f(x1, y1));
-        int sd = l.side(new Vector2f(x1, y0));
+        int sa = l.side(new Vec2(x0, y0));
+        int sb = l.side(new Vec2(x0, y1));
+        int sc = l.side(new Vec2(x1, y1));
+        int sd = l.side(new Vec2(x1, y0));
         
         //The segment touches an edge or corner.
         if (sa == 0 || sb == 0 || sc == 0 || sd == 0) return true;
@@ -185,7 +185,7 @@ public class AAB
     /**
      * Returns true if v lies inside this.
      */
-    public boolean contains(Vector2f v)
+    public boolean contains(Vec2 v)
     {
         return v.x >= x0 && v.x <= x1 &&
                v.y >= y0 && v.y <= y1;
@@ -200,14 +200,14 @@ public class AAB
                b.y0 >= y0 && y1 >= b.y1;
     }
     
-    public Vector2f size()
+    public Vec2 size()
     {
-        return new Vector2f(x1 - x0, y1 - y0);
+        return new Vec2(x1 - x0, y1 - y0);
     }
     
-    public Vector2f center()
+    public Vec2 center()
     {
-        return new Vector2f(x0 + x1, y0 + y1).mult(.5f);
+        return new Vec2(x0 + x1, y0 + y1).mult(.5f);
     }
     
     /**
@@ -215,9 +215,9 @@ public class AAB
      * 
      * @param v the vector to find the closest point to.
      */
-    public Vector2f closest(Vector2f v)
+    public Vec2 closest(Vec2 v)
     {
-        Vector2f out = v.copy();
+        Vec2 out = new Vec2(v);
         
         if (out.x > x1) out.x = x1;
         else if (out.x < x0) out.x = x0;
@@ -242,9 +242,9 @@ public class AAB
         else return min;
     }
     
-    public float chebyDist(Vector2f v)
+    public float chebyDist(Vec2 v)
     {
-        Vector2f center = center();
+        Vec2 center = center();
         
         float dx, dy;
         if (v.x >= center.x) dx = v.x - x1;
@@ -262,7 +262,7 @@ public class AAB
      */
     public float area()
     {
-        Vector2f size = size();
+        Vec2 size = size();
         if (size.x < 0 && size.y < 0) return -size.x*size.y;
         
         return size.x*size.y;

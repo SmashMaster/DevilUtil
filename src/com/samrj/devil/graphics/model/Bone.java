@@ -1,10 +1,10 @@
 package com.samrj.devil.graphics.model;
 
-import com.samrj.devil.math.Matrix3f;
-import com.samrj.devil.math.Matrix4f;
-import com.samrj.devil.math.Quat4f;
+import com.samrj.devil.math.Mat3;
+import com.samrj.devil.math.Mat4;
+import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Util;
-import com.samrj.devil.math.Vector3f;
+import com.samrj.devil.math.Vec3;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,27 +29,27 @@ public class Bone implements Solvable
     public final String name;
     public final boolean inheritRotation, localLocation;
     public final int parentIndex;
-    public final Vector3f head, tail;
-    public final Matrix4f baseMatrix; //Base matrices rotate from local to global
-    public final Matrix4f inverseBaseMatrix;
+    public final Vec3 head, tail;
+    public final Mat4 baseMatrix; //Base matrices rotate from local to global
+    public final Mat4 inverseBaseMatrix;
     
     private final Collection<Bone> children = new ArrayList<>();
     private Bone parent = null;
     
     //Head offset from parent's tail, and tail offset from head.
-    public final Vector3f headOffset = new Vector3f();
-    public final Vector3f tailOffset = new Vector3f();
+    public final Vec3 headOffset = new Vec3();
+    public final Vec3 tailOffset = new Vec3();
     
     //Live properties
-    public final Vector3f location = new Vector3f();
-    public final Quat4f rotation = new Quat4f();
-    public final Matrix4f matrix = new Matrix4f();
+    public final Vec3 location = new Vec3();
+    public final Quat rotation = new Quat();
+    public final Mat4 matrix = new Mat4();
     
     //Rotation matrices rotate in local space.
-    public final Matrix4f rotMatrix = new Matrix4f();
-    public final Matrix4f inverseRotMatrix = new Matrix4f();
-    public final Vector3f headFinal = new Vector3f();
-    public final Vector3f tailFinal = new Vector3f();
+    public final Mat4 rotMatrix = new Mat4();
+    public final Mat4 inverseRotMatrix = new Mat4();
+    public final Vec3 headFinal = new Vec3();
+    public final Vec3 tailFinal = new Vec3();
     
     public Bone(DataInputStream in) throws IOException
     {
@@ -59,19 +59,22 @@ public class Bone implements Solvable
         int flagBits = in.readInt();
         inheritRotation = (flagBits & 1) == 1;
         localLocation = (flagBits & 2) == 2;
-        head = DevilModel.readVector3f(in);
-        tail = DevilModel.readVector3f(in);
+        head = new Vec3();
+        head.read(in);
+        tail = new Vec3();
+        tail.read(in);
         headOffset.set(head);
         tailOffset.set(tail).sub(head);
         
-        Matrix3f baseMatrix3f = DevilModel.readMatrix3f(in);
-        baseMatrix = baseMatrix3f.toMatrix4f();
-        inverseBaseMatrix = baseMatrix3f.invert().toMatrix4f();
+        Mat3 baseMatrix3f = new Mat3();
+        baseMatrix3f.read(in);
+        baseMatrix = Util.expand(baseMatrix3f);
+        inverseBaseMatrix = Util.expand(baseMatrix3f.invert());
     }
     
     void solveRotationMatrix()
     {
-        Matrix4f relativeRotMat = rotation.copy().normalize().toMatrix4f();
+        Mat4 relativeRotMat = Mat4.rotation(Quat.normalize(rotation));
         
         //may be incorrect
         rotMatrix.set(baseMatrix);
@@ -100,10 +103,10 @@ public class Bone implements Solvable
     
     void solveMatrix()
     {
-        matrix.set();
-        matrix.mult(Matrix4f.translate(headFinal));
+        matrix.setIdentity();
+        matrix.translate(headFinal);
         matrix.mult(rotMatrix);
-        matrix.mult(Matrix4f.translate(head.cnegate()));
+        matrix.translate(Vec3.negate(head));
     }
     
     @Override
@@ -130,18 +133,18 @@ public class Bone implements Solvable
         return Collections.unmodifiableCollection(children);
     }
     
-    public void reachTowards(Vector3f target)
+    public void reachTowards(Vec3 target)
     {
-        Vector3f dir = target.csub(headFinal); //Global
+        Vec3 dir = Vec3.sub(target, headFinal); //Global
         dir.mult(inverseBaseMatrix); //Local
         
-        Vector3f v = Util.Axis.X.versor(); //Local
+        Vec3 v = Util.Axis.X.versor(); //Local
         v.mult(baseMatrix); //Global
         if (inheritRotation) v.mult(parent.rotMatrix);
         v.mult(inverseBaseMatrix); //Local again
 //        v.mult(parent.inverseBaseMatrix); //Local to parent
         
-        rotation.set(v.rotationTo(dir));
+        rotation.setRotation(v, dir);
     }
     
     public void set(Property property, int index, float value)

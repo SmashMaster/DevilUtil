@@ -1,7 +1,7 @@
 package com.samrj.devil.ui;
 
 import com.samrj.devil.graphics.GLTexture2D;
-import com.samrj.devil.math.Vector2f;
+import com.samrj.devil.math.Vec2;
 import com.samrj.devil.res.Resource;
 import java.io.*;
 import org.lwjgl.opengl.GL11;
@@ -78,15 +78,16 @@ public class Font
         return height;
     }
     
-    public void draw(String text, Vector2f pos, Vector2f align)
+    public void draw(String text, Vec2 pos, Vec2 align)
     {
-        pos = pos.cadd(0f, -32f);
-        align = align.cflipY().sub(1f, 1f).mult(.5f);
-        align.mult(getWidth(text), -height);
+        pos = new Vec2(pos.x, pos.y - 32.0f);
+        align = new Vec2(align.x - 1.0f, -align.y - 1.0f).mult(0.5f);
+        align.x *= getWidth(text);
+        align.y *= -height;
         pos.add(align);
         
         GL11.glPushMatrix();
-        pos.round().glTranslate();
+        GL11.glTranslatef(Math.round(pos.x), Math.round(pos.y), 0.0f);
 
         float x0 = 0f;
         GL11.glEnable(GL11.GL_TEXTURE_2D);
@@ -117,12 +118,12 @@ public class Font
         GL11.glPopMatrix();
     }
     
-    public void draw(String text, Vector2f p, Alignment align)
+    public void draw(String text, Vec2 p, Alignment align)
     {
         draw(text, p, align.dir());
     }
     
-    public void draw(String text, Vector2f p)
+    public void draw(String text, Vec2 p)
     {
         draw(text, p, Alignment.NE);
     }

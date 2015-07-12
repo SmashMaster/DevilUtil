@@ -1,7 +1,7 @@
 package com.samrj.devil.display;
 
-import com.samrj.devil.buffer.BufferUtil;
-import com.samrj.devil.math.Vector2i;
+import com.samrj.devil.io.BufferUtil;
+import com.samrj.devil.math.Vec2i;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import org.lwjgl.glfw.GLFW;
@@ -16,31 +16,31 @@ import org.lwjgl.glfw.GLFW;
  */
 public final class GLFWUtil
 {
-    public static Vector2i getWindowPos(long window)
+    public static Vec2i getWindowPos(long window)
     {
         BufferUtil.clearPublicBuffers();
         GLFW.glfwGetWindowPos(window, BufferUtil.pubBufA, BufferUtil.pubBufB);
         
-        return new Vector2i(BufferUtil.pubBufA.getInt(),
-                            BufferUtil.pubBufB.getInt());
+        return new Vec2i(BufferUtil.pubBufA.getInt(),
+                         BufferUtil.pubBufB.getInt());
     }
     
-    public static Vector2i getWindowSize(long window)
+    public static Vec2i getWindowSize(long window)
     {
         BufferUtil.clearPublicBuffers();
         GLFW.glfwGetWindowSize(window, BufferUtil.pubBufA, BufferUtil.pubBufB);
         
-        return new Vector2i(BufferUtil.pubBufA.getInt(),
-                            BufferUtil.pubBufB.getInt());
+        return new Vec2i(BufferUtil.pubBufA.getInt(),
+                         BufferUtil.pubBufB.getInt());
     }
     
-    public static final Vector2i getFramebufferSize(long window)
+    public static final Vec2i getFramebufferSize(long window)
     {
         BufferUtil.clearPublicBuffers();
         GLFW.glfwGetFramebufferSize(window, BufferUtil.pubBufA, BufferUtil.pubBufB);
         
-        return new Vector2i(BufferUtil.pubBufA.getInt(),
-                            BufferUtil.pubBufB.getInt());
+        return new Vec2i(BufferUtil.pubBufA.getInt(),
+                         BufferUtil.pubBufB.getInt());
     }
     
     public static final FrameSize getWindowFrameSize(long window)
@@ -55,22 +55,22 @@ public final class GLFWUtil
                              BufferUtil.pubBufD.getInt());
     }
     
-    public static Vector2i getMonitorPos(long monitor)
+    public static Vec2i getMonitorPos(long monitor)
     {
         BufferUtil.clearPublicBuffers();
         GLFW.glfwGetMonitorPos(monitor, BufferUtil.pubBufA, BufferUtil.pubBufB);
         
-        return new Vector2i(BufferUtil.pubBufA.getInt(),
-                            BufferUtil.pubBufB.getInt());
+        return new Vec2i(BufferUtil.pubBufA.getInt(),
+                         BufferUtil.pubBufB.getInt());
     }
     
-    public static Vector2i getMonitorPhysicalSize(long monitor)
+    public static Vec2i getMonitorPhysicalSize(long monitor)
     {
         BufferUtil.clearPublicBuffers();
         GLFW.glfwGetMonitorPhysicalSize(monitor, BufferUtil.pubBufA, BufferUtil.pubBufB);
         
-        return new Vector2i(BufferUtil.pubBufA.getInt(),
-                            BufferUtil.pubBufB.getInt());
+        return new Vec2i(BufferUtil.pubBufA.getInt(),
+                         BufferUtil.pubBufB.getInt());
     }
     
     public static LinkedList<VideoMode> getMonitorVideoModes(long monitor)

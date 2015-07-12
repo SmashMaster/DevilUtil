@@ -1,8 +1,5 @@
 package com.samrj.devil.graphics.model;
 
-import com.samrj.devil.math.Matrix3f;
-import com.samrj.devil.math.Vector2f;
-import com.samrj.devil.math.Vector3f;
 import com.samrj.devil.res.FileRes;
 import com.samrj.devil.res.Resource;
 import java.io.DataInputStream;
@@ -31,23 +28,6 @@ public class DevilModel
         int padding = (4 - (utflen % 4)) % 4;
         if (in.skipBytes(padding) != padding) throw new IOException("Cannot skip bytes properly on this platform.");
         return out;
-    }
-    
-    public static final Vector2f readVector2f(DataInputStream in) throws IOException
-    {
-        return new Vector2f(in.readFloat(), in.readFloat());
-    }
-    
-    public static final Vector3f readVector3f(DataInputStream in) throws IOException
-    {
-        return new Vector3f(in.readFloat(), in.readFloat(), in.readFloat());
-    }
-    
-    public static final Matrix3f readMatrix3f(DataInputStream in) throws IOException
-    {
-        return new Matrix3f(in.readFloat(), in.readFloat(), in.readFloat(),
-                            in.readFloat(), in.readFloat(), in.readFloat(),
-                            in.readFloat(), in.readFloat(), in.readFloat());
     }
     
     public final Armature armature;

@@ -1,8 +1,8 @@
 package com.samrj.devil.math.proc;
 
 import com.samrj.devil.math.Util;
-import com.samrj.devil.math.Vector2f;
-import com.samrj.devil.math.Vector3f;
+import com.samrj.devil.math.Vec2;
+import com.samrj.devil.math.Vec3;
 
 /**
  * A speed-improved simplex noise algorithm for 2D, 3D and 4D in Java.
@@ -72,12 +72,12 @@ public class SimplexNoise
     }
 
     // Skewing and unskewing factors for 2, 3, and 4 dimensions
-    private static final float F2 = .5f * (Util.sqrt(3f) - 1f);
-    private static final float G2 = (3f - Util.sqrt(3f)) / 6f;
+    private static final float F2 = .5f * ((float)Math.sqrt(3f) - 1f);
+    private static final float G2 = (3f - (float)Math.sqrt(3f)) / 6f;
     private static final float F3 = 1f / 3f;
     private static final float G3 = 1f / 6f;
-    private static final float F4 = (Util.sqrt(5f) - 1f) / 4f;
-    private static final float G4 = (5f - Util.sqrt(5f)) / 20f;
+    private static final float F4 = ((float)Math.sqrt(5f) - 1f) / 4f;
+    private static final float G4 = (5f - (float)Math.sqrt(5f)) / 20f;
 
     private static float dot(Grad g, float x, float y)
     {
@@ -100,8 +100,8 @@ public class SimplexNoise
         float n0, n1, n2; // Noise contributions from the three corners
         // Skew the input space to determine which simplex cell we're in
         float s = (x + y) * F2; // Hairy factor for 2D
-        int i = Util.floor(x + s);
-        int j = Util.floor(y + s);
+        int i = (int)Math.floor(x + s);
+        int j = (int)Math.floor(y + s);
         float t = (i + j) * G2;
         float X0 = i - t; // Unskew the cell origin back to (x,y) space
         float Y0 = j - t;
@@ -169,7 +169,7 @@ public class SimplexNoise
         return 70f * (n0 + n1 + n2);
     }
     
-    public static float noise(Vector2f v)
+    public static float noise(Vec2 v)
     {
         return noise(v.x, v.y);
     }
@@ -180,9 +180,9 @@ public class SimplexNoise
         float n0, n1, n2, n3; // Noise contributions from the four corners
         // Skew the input space to determine which simplex cell we're in
         float s = (x + y + z) * F3; // Very nice and simple skew factor for 3D
-        int i = Util.floor(x + s);
-        int j = Util.floor(y + s);
-        int k = Util.floor(z + s);
+        int i = (int)Math.floor(x + s);
+        int j = (int)Math.floor(y + s);
+        int k = (int)Math.floor(z + s);
         float t = (i + j + k) * G3;
         float X0 = i - t; // Unskew the cell origin back to (x,y,z) space
         float Y0 = j - t;
@@ -321,7 +321,7 @@ public class SimplexNoise
         return 32f * (n0 + n1 + n2 + n3);
     }
     
-    public static float noise(Vector3f v)
+    public static float noise(Vec3 v)
     {
         return noise(v.x, v.y, v.z);
     }
@@ -333,10 +333,10 @@ public class SimplexNoise
         float n0, n1, n2, n3, n4; // Noise contributions from the five corners
         // Skew the (x,y,z,w) space to determine which cell of 24 simplices we're in
         float s = (x + y + z + w) * F4; // Factor for 4D skewing
-        int i = Util.floor(x + s);
-        int j = Util.floor(y + s);
-        int k = Util.floor(z + s);
-        int l = Util.floor(w + s);
+        int i = (int)Math.floor(x + s);
+        int j = (int)Math.floor(y + s);
+        int k = (int)Math.floor(z + s);
+        int l = (int)Math.floor(w + s);
         float t = (i + j + k + l) * G4; // Factor for 4D unskewing
         float X0 = i - t; // Unskew the cell origin back to (x,y,z,w) space
         float Y0 = j - t;

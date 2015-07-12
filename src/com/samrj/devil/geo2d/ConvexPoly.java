@@ -1,7 +1,7 @@
 package com.samrj.devil.geo2d;
 
 import com.samrj.devil.math.Range;
-import com.samrj.devil.math.Vector2f;
+import com.samrj.devil.math.Vec2;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -13,14 +13,14 @@ public class ConvexPoly
     /**
      * Set of vertices in this polygon, in clockwise winding order.
      */
-    public final Vector2f[] verts;
+    public final Vec2[] verts;
     
-    public ConvexPoly(Vector2f... verts)
+    public ConvexPoly(Vec2... verts)
     {
         if (verts.length <= 3) throw new IllegalArgumentException();
         
-        this.verts = new Vector2f[verts.length];
-        for (int i=0; i<verts.length; i++) this.verts[i] = verts[i].copy();
+        this.verts = new Vec2[verts.length];
+        for (int i=0; i<verts.length; i++) this.verts[i] = new Vec2(verts[i]);
         
         if (!isConvex()) throw new ConcavePolyException();
     }
@@ -32,42 +32,42 @@ public class ConvexPoly
     
     public ConvexPoly(ConvexPoly poly)
     {
-        this.verts = new Vector2f[poly.verts.length];
-        for (int i=0; i<verts.length; i++) verts[i] = poly.verts[i].copy();
+        this.verts = new Vec2[poly.verts.length];
+        for (int i=0; i<verts.length; i++) verts[i] = new Vec2(poly.verts[i]);
     }
     
     private boolean isConvex()
     {
-        Vector2f prev = null, d2 = null;
+        Vec2 prev = null, d2 = null;
         for (int i=0; i<verts.length; i++)
         {
-            Vector2f v = verts[i].copy();
+            Vec2 v = new Vec2(verts[i]);
             this.verts[i] = v;
             
-            Vector2f d1 = (prev != null) ? v.csub(prev) : null;
+            Vec2 d1 = (prev != null) ? Vec2.sub(v, prev) : null;
             if (d2 != null && d1.cross(d2) < 0f) return false;
             
             d2 = d1;
             prev = v;
         }
         
-        Vector2f v = this.verts[verts.length - 1];
-        Vector2f d1 = v.csub(prev);
+        Vec2 v = this.verts[verts.length - 1];
+        Vec2 d1 = Vec2.sub(v, prev);
         if (d1.cross(d2) < 0f) return false;
         
         return true;
     }
     
-    public ConvexPoly translate(Vector2f v)
+    public ConvexPoly translate(Vec2 v)
     {
-        for (Vector2f vert : verts) vert.add(v);
+        for (Vec2 vert : verts) vert.add(v);
         return this;
     }
     
-    public Range project(Vector2f tan)
+    public Range project(Vec2 tan)
     {
         Range out = new Range();
-        for (Vector2f vert : verts) out.expand(vert.dot(tan));
+        for (Vec2 vert : verts) out.expand(vert.dot(tan));
         return out;
     }
     
@@ -93,7 +93,7 @@ public class ConvexPoly
         {
             Seg edge = (i < verts.length) ? edge(i) : poly.edge(i - verts.length);
             
-            Vector2f nrm = edge.normal();
+            Vec2 nrm = edge.normal();
             Range thisRange = this.project(nrm);
             Range polyRange = poly.project(nrm);
             

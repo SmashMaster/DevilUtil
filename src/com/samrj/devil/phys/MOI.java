@@ -1,6 +1,6 @@
 package com.samrj.devil.phys;
 
-import com.samrj.devil.math.Matrix3f;
+import com.samrj.devil.math.Mat3;
 
 /**
  * Moment of inertia static factory. These methods return the moments of inertia
@@ -29,12 +29,12 @@ public class MOI
         float y = cx + cz;
         float z = cx + cy;
         
-        return new MOI(new Matrix3f(x,    0f,   0f,
-                                    0f,   y,    0f,
-                                    0f,   0f,   z),
-                       new Matrix3f(1f/x, 0f,   0f,
-                                    0f,   1f/y, 0f,
-                                    0f,   0f,   1f/z));
+        return new MOI(new Mat3(x,    0f,   0f,
+                                0f,   y,    0f,
+                                0f,   0f,   z),
+                       new Mat3(1f/x, 0f,   0f,
+                                0f,   1f/y, 0f,
+                                0f,   0f,   1f/z));
     }
     
     /**
@@ -53,12 +53,12 @@ public class MOI
         float y = cx + cz;
         float z = cx + cy;
         
-        return new MOI(new Matrix3f(x,    0f,   0f,
-                                    0f,   y,    0f,
-                                    0f,   0f,   z),
-                       new Matrix3f(1f/x, 0f,   0f,
-                                    0f,   1f/y, 0f,
-                                    0f,   0f,   1f/z));
+        return new MOI(new Mat3(x,    0f,   0f,
+                                0f,   y,    0f,
+                                0f,   0f,   z),
+                       new Mat3(1f/x, 0f,   0f,
+                                0f,   1f/y, 0f,
+                                0f,   0f,   1f/z));
     }
     
     /**
@@ -70,17 +70,17 @@ public class MOI
         float m = r*r*(2f/5f);
         float i = 1f/m;
         
-        return new MOI(new Matrix3f(m,  0f, 0f,
-                                    0f, m,  0f,
-                                    0f, 0f, m),
-                       new Matrix3f(i,  0f, 0f,
-                                    0f, i,  0f,
-                                    0f, 0f, i));
+        return new MOI(new Mat3(m,  0f, 0f,
+                                0f, m,  0f,
+                                0f, 0f, m),
+                       new Mat3(i,  0f, 0f,
+                                0f, i,  0f,
+                                0f, 0f, i));
     }
     
-    public final Matrix3f mat, inv;
+    public final Mat3 mat, inv;
     
-    private MOI(Matrix3f mat, Matrix3f inv)
+    private MOI(Mat3 mat, Mat3 inv)
     {
         this.mat = mat;
         this.inv = inv;
@@ -88,7 +88,7 @@ public class MOI
     
     public MOI()
     {
-        this(new Matrix3f(), new Matrix3f());
+        this(Mat3.identity(), Mat3.identity());
     }
     
     public MOI set(MOI moi)

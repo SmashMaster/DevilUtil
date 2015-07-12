@@ -2,7 +2,7 @@ package com.samrj.devil.graphics.model;
 
 import com.samrj.devil.graphics.model.Mesh.Geometry;
 import com.samrj.devil.graphics.model.Mesh.Triangle;
-import com.samrj.devil.math.Vector3f;
+import com.samrj.devil.math.Vec3;
 import java.util.ArrayList;
 
 /**
@@ -16,9 +16,9 @@ public class PartitionTree
 {
     private Node root;
     private int numTris;
-    private Vector3f[] vertices;
+    private Vec3[] vertices;
     private Triangle[] triangles;
-    private Vector3f[] centroids;
+    private Vec3[] centroids;
     
     public PartitionTree(Mesh mesh)
     {
@@ -26,7 +26,7 @@ public class PartitionTree
         vertices = geom.vertices;
         triangles = geom.triangles;
         numTris = triangles.length;
-        centroids = new Vector3f[numTris];
+        centroids = new Vec3[numTris];
         for (int i=0; i<numTris; i++) centroids[i] = triangles[i].getCentroid();
         
         root = new Node();

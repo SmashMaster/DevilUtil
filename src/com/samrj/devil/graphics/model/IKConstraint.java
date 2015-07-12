@@ -1,8 +1,8 @@
 package com.samrj.devil.graphics.model;
 
-import com.samrj.devil.math.Quat4f;
+import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Util;
-import com.samrj.devil.math.Vector3f;
+import com.samrj.devil.math.Vec3;
 import java.io.DataInputStream;
 import java.io.IOException;
 
@@ -34,8 +34,8 @@ public class IKConstraint implements Solvable
         
         startSqLen = start.tail.squareDist(start.head);
         endSqLen = end.tail.squareDist(start.tail);
-        startLen = Util.sqrt(startSqLen);
-        endLen = Util.sqrt(endSqLen);
+        startLen = (float)Math.sqrt(startSqLen);
+        endLen = (float)Math.sqrt(endSqLen);
         length = startLen + endLen;
     }
     
@@ -44,21 +44,21 @@ public class IKConstraint implements Solvable
     {
         start.solveHeadPosition();
         
-        Vector3f dir = target.headFinal.csub(start.headFinal);
+        Vec3 dir = Vec3.sub(target.headFinal, start.headFinal);
         float distSq = dir.squareLength();
-        float dist = Util.sqrt(distSq);
+        float dist = (float)Math.sqrt(distSq);
         dir.div(dist);
         
-        Vector3f poleDir = poleTarget.headFinal.csub(start.headFinal).normalize();
-        Vector3f hingeAxis = poleDir.copy().cross(dir).normalize();
-        Vector3f kneePos = new Vector3f();
+        Vec3 poleDir = Vec3.sub(poleTarget.headFinal, start.headFinal).normalize();
+        Vec3 hingeAxis = Vec3.cross(poleDir, dir).normalize();
+        Vec3 kneePos = new Vec3();
         
         if (dist < length)
         {
-            Vector3f chordYDir = hingeAxis.copy().cross(dir).negate().normalize();
+            Vec3 chordYDir = Vec3.cross(hingeAxis, dir).negate().normalize();
             float chordX = (distSq - endSqLen + startSqLen)/(dist*2.0f);
-            Vector3f chordCenter = dir.cmult(chordX).add(start.headFinal);
-            float chordY = Util.sqrt(startSqLen - chordX*chordX);
+            Vec3 chordCenter = Vec3.mult(dir, chordX).add(start.headFinal);
+            float chordY = (float)Math.sqrt(startSqLen - chordX*chordX);
             kneePos.set(chordYDir).mult(chordY).add(chordCenter);
         }
         else kneePos.set(dir).mult(startLen).add(start.headFinal);
@@ -68,11 +68,11 @@ public class IKConstraint implements Solvable
         
         //Roll calculation very slightly different from Blender.
         //Until fixed, should not use inherit rotation for first bone after IK.
-        Vector3f localRollTarget = hingeAxis.copy(); //Global
+        Vec3 localRollTarget = new Vec3(hingeAxis); //Global
         localRollTarget.mult(start.inverseRotMatrix);
         localRollTarget.mult(start.inverseBaseMatrix);
-        float rollAngle = Util.atan2(localRollTarget.z, localRollTarget.y);
-        start.rotation.mult(Quat4f.axisAngle(Util.Axis.X, Util.reduceRad(rollAngle + poleAngle)));
+        float rollAngle = (float)Math.atan2(localRollTarget.z, localRollTarget.y);
+        start.rotation.mult(Quat.rotation(Util.Axis.X.versor(), Util.reduceRad(rollAngle + poleAngle)));
         
         start.solveRotationMatrix();
         start.solveTailPosition();

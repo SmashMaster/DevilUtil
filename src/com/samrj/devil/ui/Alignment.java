@@ -1,6 +1,6 @@
 package com.samrj.devil.ui;
 
-import com.samrj.devil.math.Vector2f;
+import com.samrj.devil.math.Vec2;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -20,9 +20,9 @@ public enum Alignment
         this.x = x; this.y = y;
     }
     
-    public Vector2f dir()
+    public Vec2 dir()
     {
-        return new Vector2f(x, y);
+        return new Vec2(x, y);
     }
     
     public Alignment opp()

@@ -1,9 +1,10 @@
 package com.samrj.devil.phys;
 
-import com.samrj.devil.math.Matrix3f;
-import com.samrj.devil.math.Matrix4f;
-import com.samrj.devil.math.Quat4f;
-import com.samrj.devil.math.Vector3f;
+import com.samrj.devil.math.Mat3;
+import com.samrj.devil.math.Mat4;
+import com.samrj.devil.math.Quat;
+import com.samrj.devil.math.Util;
+import com.samrj.devil.math.Vec3;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -12,17 +13,17 @@ import com.samrj.devil.math.Vector3f;
  */
 public class RigidBody3D
 {
-    public final Vector3f pos = new Vector3f();
-    public final Vector3f vel = new Vector3f();
+    public final Vec3 pos = new Vec3();
+    public final Vec3 vel = new Vec3();
     public float mass = 0f;
     
-    public final Quat4f orient = new Quat4f();
-    public final Vector3f angVel = new Vector3f();
+    public final Quat orient = new Quat();
+    public final Vec3 angVel = new Vec3();
     public final MOI moi = new MOI();
     
-    public final Matrix4f worldToLocal = new Matrix4f();
-    public final Matrix3f worldDirToLocal = new Matrix3f();
-    public final Matrix3f localDirToWorld = new Matrix3f();
+    public final Mat4 worldToLocal = new Mat4();
+    public final Mat3 worldDirToLocal = new Mat3();
+    public final Mat3 localDirToWorld = new Mat3();
     
     public RigidBody3D(float mass, MOI moi)
     {
@@ -32,51 +33,53 @@ public class RigidBody3D
     
     public void updateMatrices()
     {
-        localDirToWorld.set(orient.toMatrix3f());
+        localDirToWorld.setRotation(orient);
         
-        Matrix3f invOrientMat3 = orient.copy().invert().toMatrix3f();
-        Matrix4f invOrientMat4 = invOrientMat3.toMatrix4f();
+        Mat3 invOrientMat3 = Mat3.rotation(Quat.invert(orient));
+        Mat4 invOrientMat4 = Util.expand(invOrientMat3);
         
         worldDirToLocal.set(invOrientMat3);
-        worldToLocal.set(Matrix4f.translate(pos.cnegate()));
+        worldToLocal.setTranslation(Vec3.negate(pos));
         worldToLocal.mult(invOrientMat4);
     }
     
-    public Vector3f getForce()
+    public Vec3 getForce()
     {
-        return new Vector3f();
+        return new Vec3();
     }
     
-    public Vector3f getTorque()
+    public Vec3 getTorque()
     {
-        return new Vector3f();
+        return new Vec3();
     }
     
-    private Matrix3f rotatedInvMOI()
+    private Mat3 rotatedInvMOI()
     {
-        return localDirToWorld.copy().mult(moi.inv).mult(worldDirToLocal);
+        return Mat3.mult(localDirToWorld, moi.inv).mult(worldDirToLocal);
     }
     
     public void step(float dt)
     {
         float hdt = dt*.5f;
         
-        Vector3f acc0 = getForce().div(mass); //Initial acceleration
-        Vector3f angAcc0 = getTorque().mult(rotatedInvMOI());
+        Vec3 acc0 = getForce().div(mass); //Initial acceleration
+        Vec3 angAcc0 = getTorque().mult(rotatedInvMOI());
         
-        Vector3f velh = acc0.cmult(hdt).add(vel); //Half-step velocity
-        Vector3f angVelh = angAcc0.cmult(hdt).add(angVel);
+        Vec3 velh = Vec3.mult(acc0, hdt).add(vel); //Half-step velocity
+        Vec3 angVelh = Vec3.mult(angAcc0, hdt).add(angVel);
         
-        pos.add(velh.cmult(dt)); //Final position
-        orient.mult(Quat4f.axisAngle(angVelh.cmult(dt)));
+        pos.add(Vec3.mult(velh, dt)); //Final position
+        Vec3 axis = Vec3.mult(angVelh, dt);
+        float angle = axis.length();
+        orient.mult(Quat.rotation(axis.div(angle), angle));
         
-        vel.add(acc0.cmult(dt)); //Approximate final velocity
-        angVel.add(angAcc0.cmult(dt));
+        vel.add(Vec3.mult(acc0, dt)); //Approximate final velocity
+        angVel.add(Vec3.mult(angAcc0, dt));
         
         updateMatrices();
         
-        Vector3f acc1 = getForce().div(mass); //Final acceleration
-        Vector3f angAcc1 = getTorque().mult(rotatedInvMOI());
+        Vec3 acc1 = getForce().div(mass); //Final acceleration
+        Vec3 angAcc1 = getTorque().mult(rotatedInvMOI());
         
         vel.set(acc1).mult(hdt).add(velh); //Final velocity
         angVel.set(angAcc1).mult(hdt).add(angVelh);
@@ -84,30 +87,29 @@ public class RigidBody3D
         updateMatrices();
     }
     
-    public void applyImpulse(Vector3f impulse)
+    public void applyImpulse(Vec3 impulse)
     {
-        vel.add(impulse.cdiv(mass));
+        vel.add(Vec3.div(impulse, mass));
     }
     
-    public void applyImpulse(Vector3f impulse, Vector3f localPosition)
+    public void applyImpulse(Vec3 impulse, Vec3 localPosition)
     {
         applyImpulse(impulse);
-        applyAngularImpulse(impulse.copy().cross(localPosition));
+        applyAngularImpulse(Vec3.cross(impulse, localPosition));
     }
     
-    public void applyAngularImpulse(Vector3f angImp)
+    public void applyAngularImpulse(Vec3 angImp)
     {
-        angVel.add(angImp.cmult(moi.inv));
+        angVel.add(Vec3.mult(angImp, moi.inv));
     }
     
-    public Vector3f getPointVelocity(Vector3f point)
+    public Vec3 getPointVelocity(Vec3 point)
     {
-        return angVel.copy().cross(point).add(vel);
+        return Vec3.cross(angVel, point).add(vel);
     }
     
-    public Vector3f getLocalPointVelocity(Vector3f localPoint)
+    public Vec3 getLocalPointVelocity(Vec3 localPoint)
     {
-        Vector3f point = localPoint.cmult(localDirToWorld);
-        return getPointVelocity(point);
+        return getPointVelocity(Vec3.mult(localPoint, localDirToWorld));
     }
 }

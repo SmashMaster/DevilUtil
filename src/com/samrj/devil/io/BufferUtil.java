@@ -1,4 +1,4 @@
-package com.samrj.devil.buffer;
+package com.samrj.devil.io;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -16,6 +16,7 @@ import java.nio.ShortBuffer;
  * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2015 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class BufferUtil
 {

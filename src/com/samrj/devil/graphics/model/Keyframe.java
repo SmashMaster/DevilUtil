@@ -1,7 +1,6 @@
 package com.samrj.devil.graphics.model;
 
-import com.samrj.devil.math.Util;
-import com.samrj.devil.math.Vector2f;
+import com.samrj.devil.math.Vec2;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,8 +28,8 @@ public class Keyframe
     {
         float width = right.coord.x - left.coord.x;
         
-        Vector2f dHandleLeft = left.handleRight.csub(left.coord);
-        Vector2f dHandleRight = right.handleLeft.csub(right.coord);
+        Vec2 dHandleLeft = Vec2.sub(left.handleRight, left.coord);
+        Vec2 dHandleRight = Vec2.sub(right.handleLeft, right.coord);
         
         float handleLeftLength = dHandleLeft.length();
         float handleRightLength = dHandleRight.length();
@@ -69,13 +68,13 @@ public class Keyframe
 
             if (d > 0.0f)
             {
-                float t = Util.sqrt(d);
-                float o = Util.cbrt(-q + t) + Util.cbrt(-q - t) - a;
+                float t = (float)Math.sqrt(d);
+                float o = (float)Math.cbrt(-q + t) + (float)Math.cbrt(-q - t) - a;
                 if (o >= 0.0f && o <= 1.0f) out.add(o);
             }
             else if (d == 0.0f)
             {
-                float t = Util.cbrt(-q);
+                float t = (float)Math.cbrt(-q);
                 float o = 2 * t - a;
                 if (o >= 0.0f && o <= 1.0f) out.add(o);
 
@@ -85,10 +84,10 @@ public class Keyframe
             else
             {
                 //Oh god please why
-                float phi = Util.acos(-q / Util.sqrt(-(p * p * p)));
-                float t = Util.sqrt(-p);
-                p = Util.cos(phi / 3);
-                q = Util.sqrt(3 - 3 * p * p);
+                float phi = (float)Math.acos(-q/(float)Math.sqrt(-(p*p*p)));
+                float t = (float)Math.sqrt(-p);
+                p = (float)Math.cos(phi / 3);
+                q = (float)Math.sqrt(3 - 3 * p * p);
                 float o = 2 * t * p - a;
                 if (o >= 0.0f && o <= 1.0f) out.add(o);
 
@@ -112,7 +111,7 @@ public class Keyframe
 
                 if (p > 0.0f)
                 {
-                    p = Util.sqrt(p);
+                    p = (float)Math.sqrt(p);
                     float o = (-b - p) / (2 * a);
                     if (o >= 0.0f && o <= 1.0f) out.add(o);
 
@@ -142,7 +141,7 @@ public class Keyframe
         return omt*(omt*omt*y0 + 3.0f*t*(omt*y1 + t*y2)) + t*t*t*y3;
     }
     
-    public static final float bezier(Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, float x)
+    public static final float bezier(Vec2 p0, Vec2 p1, Vec2 p2, Vec2 p3, float x)
     {
         List<Float> tSolutions = bezierT(p0.x, p1.x, p2.x, p3.x, x);
         float t;
@@ -174,7 +173,7 @@ public class Keyframe
      * the last keyframe's interpolation type is meaningless.
      */
     public final Interpolation interpolation;
-    public final Vector2f coord, handleLeft, handleRight;
+    public final Vec2 coord, handleLeft, handleRight;
     
     public Keyframe(DataInputStream in) throws IOException
     {
@@ -186,8 +185,8 @@ public class Keyframe
             default: throw new IllegalArgumentException();
         }
         
-        coord = DevilModel.readVector2f(in);
-        handleLeft = DevilModel.readVector2f(in);
-        handleRight = DevilModel.readVector2f(in);
+        coord = new Vec2(); coord.read(in);
+        handleLeft = new Vec2(); handleLeft.read(in);
+        handleRight = new Vec2(); handleRight.read(in);
     }
 }

@@ -1,12 +1,12 @@
 package com.samrj.devil.graphics;
 
-import com.samrj.devil.buffer.BufferUtil;
-import static com.samrj.devil.buffer.BufferUtil.pubBufA;
-import static com.samrj.devil.buffer.BufferUtil.pubBufB;
-import com.samrj.devil.buffer.Bufferable;
-import com.samrj.devil.math.Matrix2f;
-import com.samrj.devil.math.Matrix3f;
-import com.samrj.devil.math.Matrix4f;
+import com.samrj.devil.io.BufferUtil;
+import static com.samrj.devil.io.BufferUtil.pubBufA;
+import static com.samrj.devil.io.BufferUtil.pubBufB;
+import com.samrj.devil.io.Bufferable;
+import com.samrj.devil.math.Mat2;
+import com.samrj.devil.math.Mat3;
+import com.samrj.devil.math.Mat4;
 import com.samrj.devil.res.Resource;
 import java.io.*;
 import java.nio.FloatBuffer;
@@ -14,7 +14,6 @@ import java.nio.IntBuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GLContext;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -55,7 +54,7 @@ public class GLShader
     {
         FloatBuffer out = pubBufA.asFloatBuffer();
         out.clear();
-        data.putIn(out);
+        data.write(out);
         out.rewind();
         return out;
     }
@@ -250,19 +249,19 @@ public class GLShader
         GL20.glUniform4f(loc, x, y, z, w); GLDebug.check();
     }
     
-    public void glUniformMatrix2f(String name, Matrix2f matrix)
+    public void glUniformMatrix2f(String name, Mat2 matrix)
     {
         int loc = glGetUniformLocation(name);
         GL20.glUniformMatrix2fv(loc, false, buffer(matrix)); GLDebug.check();
     }
     
-    public void glUniformMatrix3f(String name, Matrix3f matrix)
+    public void glUniformMatrix3f(String name, Mat3 matrix)
     {
         int loc = glGetUniformLocation(name);
         GL20.glUniformMatrix3fv(loc, false, buffer(matrix)); GLDebug.check();
     }
     
-    public void glUniformMatrix4f(String name, Matrix4f matrix)
+    public void glUniformMatrix4f(String name, Mat4 matrix)
     {
         int loc = glGetUniformLocation(name);
         GL20.glUniformMatrix4fv(loc, false, buffer(matrix)); GLDebug.check();

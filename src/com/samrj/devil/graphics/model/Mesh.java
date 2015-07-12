@@ -1,7 +1,7 @@
 package com.samrj.devil.graphics.model;
 
-import com.samrj.devil.buffer.BufferUtil;
-import com.samrj.devil.math.Vector3f;
+import com.samrj.devil.io.BufferUtil;
+import com.samrj.devil.math.Vec3;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.FloatBuffer;
@@ -70,12 +70,12 @@ public class Mesh
     {
         rewindBuffers();
         
-        Vector3f[] verts = new Vector3f[numVertices];
+        Vec3[] verts = new Vec3[numVertices];
         for (int v=0; v<numVertices; v++)
         {
-            verts[v] = new Vector3f(vertexData.get(),
-                                    vertexData.get(),
-                                    vertexData.get());
+            verts[v] = new Vec3(vertexData.get(),
+                                vertexData.get(),
+                                vertexData.get());
         }
         
         Triangle[] tris = new Triangle[numTriangles];
@@ -91,10 +91,10 @@ public class Mesh
     
     public class Geometry
     {
-        public final Vector3f[] vertices;
+        public final Vec3[] vertices;
         public final Triangle[] triangles;
         
-        private Geometry(Vector3f[] vertices, Triangle[] triangles)
+        private Geometry(Vec3[] vertices, Triangle[] triangles)
         {
             this.vertices = vertices;
             this.triangles = triangles;
@@ -103,16 +103,16 @@ public class Mesh
     
     public class Triangle
     {
-        public final Vector3f a, b, c;
+        public final Vec3 a, b, c;
         
-        private Triangle(Vector3f a, Vector3f b, Vector3f c)
+        private Triangle(Vec3 a, Vec3 b, Vec3 c)
         {
             this.a = a; this.b = b; this.c = c;
         }
         
-        public Vector3f getCentroid()
+        public Vec3 getCentroid()
         {
-            return a.copy().add(b).add(c).div(3.0f);
+            return Vec3.add(a, b).add(c).div(3.0f);
         }
     }
 }

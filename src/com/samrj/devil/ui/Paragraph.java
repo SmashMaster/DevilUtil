@@ -1,6 +1,6 @@
 package com.samrj.devil.ui;
 
-import com.samrj.devil.math.Vector2f;
+import com.samrj.devil.math.Vec2;
 import java.util.ArrayList;
 import org.lwjgl.opengl.GL11;
 
@@ -86,7 +86,7 @@ public class Paragraph
         return font.getHeight()*lines.length;
     }
     
-    public void draw(Vector2f pos, Alignment a)
+    public void draw(Vec2 pos, Alignment a)
     {
         if (a == null) throw new IllegalArgumentException();
         
@@ -96,14 +96,14 @@ public class Paragraph
         float y = 0f;
         for (int i=0; i<lines.length; i++)
         {
-            font.draw(lines[i], new Vector2f(0f, y), a);
+            font.draw(lines[i], new Vec2(0f, y), a);
             y -= font.getHeight();
         }
         
         GL11.glPopMatrix();
     }
     
-    public void draw(Vector2f pos)
+    public void draw(Vec2 pos)
     {
         draw(pos, Alignment.W);
     }

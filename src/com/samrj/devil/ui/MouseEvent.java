@@ -1,6 +1,6 @@
 package com.samrj.devil.ui;
 
-import com.samrj.devil.math.Vector2f;
+import com.samrj.devil.math.Vec2;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -9,8 +9,8 @@ import com.samrj.devil.math.Vector2f;
  */
 public class MouseEvent
 {
-    public final Vector2f pos = new Vector2f();
-    public final Vector2f dp = new Vector2f();
+    public final Vec2 pos = new Vec2();
+    public final Vec2 dp = new Vec2();
     public int button;
     public boolean state;
     public int dWheel;

@@ -1,6 +1,6 @@
 package com.samrj.devil.geo2d;
 
-import com.samrj.devil.math.Vector2f;
+import com.samrj.devil.math.Vec2;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -9,24 +9,24 @@ import com.samrj.devil.math.Vector2f;
  */
 public class Seg extends Line
 {
-    public Seg(Vector2f a, Vector2f b)
+    public Seg(Vec2 a, Vec2 b)
     {
         super(a, b);
     }
     
-    @Override public Line set(Vector2f a, Vector2f b)
+    @Override public Line set(Vec2 a, Vec2 b)
     {
         this.a.set(a);
         this.b.set(b);
         return super.set(a, b);
     }
     
-    @Override public Line translate(Vector2f v)
+    @Override public Line translate(Vec2 v)
     {
         return super.translate(v);
     }
     
-    @Override public float dist(Vector2f v)
+    @Override public float dist(Vec2 v)
     {
         float t = projScalT(v);
         
@@ -36,12 +36,12 @@ public class Seg extends Line
         return super.dist(v);
     }
     
-    @Override public Vector2f projVec(Vector2f v)
+    @Override public Vec2 projVec(Vec2 v)
     {
         float t = projScalT(v);
         
-        if (t >= 1f) return b.copy();
-        if (t <= 0f) return a.copy();
+        if (t >= 1f) return new Vec2(b);
+        if (t <= 0f) return new Vec2(a);
         
         return super.projVec(v);
     }

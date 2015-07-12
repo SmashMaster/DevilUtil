@@ -1,6 +1,6 @@
 package com.samrj.devil.graphics;
 
-import com.samrj.devil.buffer.BufferUtil;
+import com.samrj.devil.io.BufferUtil;
 import static com.samrj.devil.math.Util.PrimType.FLOAT;
 import static com.samrj.devil.math.Util.PrimType.INT;
 import static com.samrj.devil.math.Util.sizeof;
