@@ -35,14 +35,14 @@ public class Mat3 implements Bufferable<FloatBuffer>, Streamable
     /**
      * Copies the source matrix into the target matrix. 
      * 
-     * @param m The matrix to copy from.
+     * @param s The matrix to copy from.
      * @param r The matrix to copy into.
      */
-    public static final void copy(Mat3 m, Mat3 r)
+    public static final void copy(Mat3 s, Mat3 r)
     {
-        r.a = m.a; r.b = m.b; r.c = m.c;
-        r.d = m.d; r.e = m.e; r.f = m.f;
-        r.g = m.g; r.h = m.h; r.i = m.i;
+        r.a = s.a; r.b = s.b; r.c = s.c;
+        r.d = s.d; r.e = s.e; r.f = s.f;
+        r.g = s.g; r.h = s.h; r.i = s.i;
     }
     
     /**
@@ -295,7 +295,6 @@ public class Mat3 implements Bufferable<FloatBuffer>, Streamable
         Mat3 m = new Mat3();
         m.a = s;
         m.e = s;
-        m.i = s;
         return m;
     }
     

@@ -1,7 +1,14 @@
 
 package com.samrj.devil.math;
 
-public class Mat4
+import com.samrj.devil.io.Bufferable;
+import com.samrj.devil.io.Streamable;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.nio.FloatBuffer;
+
+public class Mat4 implements Bufferable<FloatBuffer>, Streamable 
 {
     private static final float SQRT_2 = (float)Math.sqrt(2.0);
     private static final Mat4 tempMat = new Mat4();
@@ -9,30 +16,30 @@ public class Mat4
     /**
      * Returns the determinant of the given matrix.
      * 
-     * @param m The matrix to calculate the determinant of.
+     * @param x The matrix to calculate the determinant of.
      * @return The determinant of the given matrix.
      */
-    public static final float determinant(Mat4 m)
+    public static final float determinant(Mat4 x)
     {
-        return m.a*(m.f*m.k*m.p + m.g*m.l*m.n + m.h*m.j*m.o - m.f*m.l*m.o - m.g*m.j*m.p - m.h*m.k*m.n) +
-               m.b*(m.e*m.l*m.o + m.g*m.i*m.p + m.h*m.k*m.m - m.e*m.k*m.p - m.g*m.l*m.m - m.h*m.i*m.o) +
-               m.c*(m.e*m.j*m.p + m.f*m.l*m.m + m.h*m.i*m.n - m.e*m.l*m.n - m.f*m.i*m.p - m.h*m.j*m.m) +
-               m.d*(m.e*m.k*m.n + m.f*m.i*m.o + m.g*m.j*m.m - m.e*m.j*m.o - m.f*m.k*m.m - m.g*m.i*m.n);
+        return x.a*(x.f*x.k*x.p + x.g*x.l*x.n + x.h*x.j*x.o - x.f*x.l*x.o - x.g*x.j*x.p - x.h*x.k*x.n) +
+               x.b*(x.e*x.l*x.o + x.g*x.i*x.p + x.h*x.k*x.m - x.e*x.k*x.p - x.g*x.l*x.m - x.h*x.i*x.o) +
+               x.c*(x.e*x.j*x.p + x.f*x.l*x.m + x.h*x.i*x.n - x.e*x.l*x.n - x.f*x.i*x.p - x.h*x.j*x.m) +
+               x.d*(x.e*x.k*x.n + x.f*x.i*x.o + x.g*x.j*x.m - x.e*x.j*x.o - x.f*x.k*x.m - x.g*x.i*x.n);
     }
     
     // <editor-fold defaultstate="collapsed" desc="Static mutator methods">
     /**
      * Copies the source matrix into the target matrix. 
      * 
-     * @param m The matrix to copy from.
+     * @param s The matrix to copy from.
      * @param r The matrix to copy into.
      */
-    public static final void copy(Mat4 m, Mat4 r)
+    public static final void copy(Mat4 s, Mat4 r)
     {
-        r.a = m.a; r.b = m.b; r.c = m.c; r.d = m.d;
-        r.e = m.e; r.f = m.f; r.g = m.g; r.h = m.h;
-        r.i = m.i; r.j = m.j; r.k = m.k; r.l = m.l;
-        r.m = m.m; r.n = m.n; r.o = m.o; r.p = m.p;
+        r.a = s.a; r.b = s.b; r.c = s.c; r.d = s.d;
+        r.e = s.e; r.f = s.f; r.g = s.g; r.h = s.h;
+        r.i = s.i; r.j = s.j; r.k = s.k; r.l = s.l;
+        r.m = s.m; r.n = s.n; r.o = s.o; r.p = s.p;
     }
     
     /**
@@ -137,44 +144,44 @@ public class Mat4
      * {@code ang} and stores the result in {@code r}. The axis must be
      * normalized.
      * 
-     * @param m The matrix to rotate.
+     * @param x The matrix to rotate.
      * @param axis The axis to rotate around.
      * @param angle The angle to rotate by.
      * @param r The matrix in which to store the result.
      */
-    public static final void rotate(Mat4 m, Vec3 axis, float angle, Mat4 r)
+    public static final void rotate(Mat4 x, Vec3 axis, float angle, Mat4 r)
     {
         rotation(axis, angle, tempMat); //Could probably be improved.
-        mult(m, tempMat, r);
+        mult(x, tempMat, r);
     }
     
     /**
      * Rotates {@code m} by the given quaternion and stores the result in {@code r}.
      * 
-     * @param m The matrix to rotate.
+     * @param x The matrix to rotate.
      * @param q The quaternion to rotate by.
      * @param r The matrix in which to store the result.
      */
-    public static final void rotate(Mat4 m, Quat q, Mat4 r)
+    public static final void rotate(Mat4 x, Quat q, Mat4 r)
     {
         rotation(q, tempMat); //Could probably be improved, as above
-        mult(m, tempMat, r);
+        mult(x, tempMat, r);
     }
     
     /**
      * Translates {@code m} by the given vector {@code v}, and stores the result
      * in {@code r}.
      * 
-     * @param m The matrix to translate.
+     * @param x The matrix to translate.
      * @param v The vector to translate by.
      * @param r The matrix in which to store the result.
      */
-    public static final void translate(Mat4 m, Vec3 v, Mat4 r)
+    public static final void translate(Mat4 x, Vec3 v, Mat4 r)
     {
-        r.a = m.a; r.b = m.b; r.c = m.c; r.d = m.a*v.x + m.b*v.y + m.c*v.z + m.d;
-        r.e = m.e; r.f = m.f; r.g = m.g; r.h = m.e*v.x + m.f*v.y + m.g*v.z + m.h;
-        r.i = m.i; r.j = m.j; r.k = m.k; r.l = m.i*v.x + m.j*v.y + m.k*v.z + m.l;
-        r.m = m.m; r.n = m.n; r.o = m.o; r.p = m.m*v.x + m.n*v.y + m.o*v.z + m.p;
+        r.a = x.a; r.b = x.b; r.c = x.c; r.d = x.a*v.x + x.b*v.y + x.c*v.z + x.d;
+        r.e = x.e; r.f = x.f; r.g = x.g; r.h = x.e*v.x + x.f*v.y + x.g*v.z + x.h;
+        r.i = x.i; r.j = x.j; r.k = x.k; r.l = x.i*v.x + x.j*v.y + x.k*v.z + x.l;
+        r.m = x.m; r.n = x.n; r.o = x.o; r.p = x.m*v.x + x.n*v.y + x.o*v.z + x.p;
     }
     
     /**
@@ -216,74 +223,224 @@ public class Mat4
     /**
      * Multiplies each entry in the given matrix by the given scalar.
      * 
-     * @param m The matrix to multiply.
+     * @param x The matrix to multiply.
      * @param s The scalar to multiply by.
      * @param r The matrix in which to store the result.
      */
-    public static final void mult(Mat4 m, float s, Mat4 r)
+    public static final void mult(Mat4 x, float s, Mat4 r)
     {
-        r.a = m.a*s; r.b = m.b*s; r.c = m.c*s; r.d = m.d*s;
-        r.e = m.e*s; r.f = m.f*s; r.g = m.g*s; r.h = m.h*s;
-        r.i = m.i*s; r.j = m.j*s; r.k = m.k*s; r.l = m.l*s;
-        r.m = m.m*s; r.n = m.n*s; r.o = m.o*s; r.p = m.p*s;
+        r.a = x.a*s; r.b = x.b*s; r.c = x.c*s; r.d = x.d*s;
+        r.e = x.e*s; r.f = x.f*s; r.g = x.g*s; r.h = x.h*s;
+        r.i = x.i*s; r.j = x.j*s; r.k = x.k*s; r.l = x.l*s;
+        r.m = x.m*s; r.n = x.n*s; r.o = x.o*s; r.p = x.p*s;
     }
     
     /**
      * Divides the given matrix by the given scalar.
      * 
-     * @param m The matrix to divide.
+     * @param x The matrix to divide.
      * @param s The scalar to divide by.
      * @param r The matrix in which to store the result.
      */
-    public static final void div(Mat4 m, float s, Mat4 r)
+    public static final void div(Mat4 x, float s, Mat4 r)
     {
-        r.a = m.a/s; r.b = m.b/s; r.c = m.c/s; r.d = m.d/s;
-        r.e = m.e/s; r.f = m.f/s; r.g = m.g/s; r.h = m.h/s;
-        r.i = m.i/s; r.j = m.j/s; r.k = m.k/s; r.l = m.l/s;
-        r.m = m.m/s; r.n = m.n/s; r.o = m.o/s; r.p = m.p/s;
+        r.a = x.a/s; r.b = x.b/s; r.c = x.c/s; r.d = x.d/s;
+        r.e = x.e/s; r.f = x.f/s; r.g = x.g/s; r.h = x.h/s;
+        r.i = x.i/s; r.j = x.j/s; r.k = x.k/s; r.l = x.l/s;
+        r.m = x.m/s; r.n = x.n/s; r.o = x.o/s; r.p = x.p/s;
     }
     
     /**
      * Sets {@code r} to the transpose of {@code m}.
      * 
-     * @param m The matrix to compute the transpose of.
+     * @param x The matrix to compute the transpose of.
      * @param r The matrix in which to store the result.
      */
-    public static final void transpose(Mat4 m, Mat4 r)
+    public static final void transpose(Mat4 x, Mat4 r)
     {
-        float tb = m.b, tc = m.c, td = m.d;
-        float tg = m.g, th = m.h;
-        float tl = m.l;
-        r.a = m.a; r.b = m.e; r.c = m.i; r.d = m.m;
-        r.e = tb;  r.f = m.f; r.g = m.j; r.h = m.n;
-        r.i = tc;  r.j = tg;  r.k = m.k; r.l = m.o;
-        r.m = td;  r.n = th;  r.o = tl;  r.p = m.p;
+        float tb = x.b, tc = x.c, td = x.d;
+        float tg = x.g, th = x.h;
+        float tl = x.l;
+        r.a = x.a; r.b = x.e; r.c = x.i; r.d = x.m;
+        r.e = tb;  r.f = x.f; r.g = x.j; r.h = x.n;
+        r.i = tc;  r.j = tg;  r.k = x.k; r.l = x.o;
+        r.m = td;  r.n = th;  r.o = tl;  r.p = x.p;
     }
     
     /**
      * Calculates the inverse of {@code m} and stores the result in {@code r}.
      * 
-     * @param m The matrix to compute the inverse of.
+     * @param x The matrix to compute the inverse of.
      * @param r The matrix in which to store the result.
      * @throws com.samrj.devil.math.SingularMatrixException If {@code m} is
      *         a singular matrix. (Its determinant is zero.)
      */
-    public static final void invert(Mat4 m, Mat4 r)
+    public static final void invert(Mat4 x, Mat4 r)
     {
-        float a = m.e*m.i - m.f*m.h;
-        float d = m.f*m.g - m.d*m.i;
-        float g = m.d*m.h - m.e*m.g;
+        float a = x.f*x.k*x.p + x.g*x.l*x.n + x.h*x.j*x.o - x.f*x.l*x.o - x.g*x.j*x.p - x.h*x.k*x.n;
+        float e = x.e*x.l*x.o + x.g*x.i*x.p + x.h*x.k*x.m - x.e*x.k*x.p - x.g*x.l*x.m - x.h*x.i*x.o;
+        float i = x.e*x.j*x.p + x.f*x.l*x.m + x.h*x.i*x.n - x.e*x.l*x.n - x.f*x.i*x.p - x.h*x.j*x.m;
+        float m = x.e*x.k*x.n + x.f*x.i*x.o + x.g*x.j*x.m - x.e*x.j*x.o - x.f*x.k*x.m - x.g*x.i*x.n;
         
-        float det = m.a*a + m.b*d + m.c*g;
+        float det = x.a*a + x.b*e + x.c*i + x.d*m;
         if (det == 0.0f) throw new SingularMatrixException();
         
-        float b = m.c*m.h - m.b*m.i, c = m.b*m.f - m.c*m.e;
-        float e = m.a*m.i - m.c*m.g, f = m.c*m.d - m.a*m.f;
-        float h = m.g*m.b - m.a*m.h, i = m.a*m.e - m.b*m.d;
+        float b = x.b*x.l*x.o + x.c*x.j*x.p + x.d*x.k*x.n - x.b*x.k*x.p - x.c*x.l*x.n - x.d*x.j*x.o;
+        float c = x.b*x.g*x.p + x.c*x.h*x.n + x.d*x.f*x.o - x.b*x.h*x.o - x.c*x.f*x.p - x.d*x.g*x.n;
+        float d = x.b*x.h*x.k + x.c*x.f*x.l + x.d*x.g*x.j - x.b*x.g*x.l - x.c*x.h*x.j - x.d*x.f*x.k;
+        float f = x.a*x.k*x.p + x.c*x.l*x.m + x.d*x.i*x.o - x.a*x.l*x.o - x.c*x.i*x.p - x.d*x.k*x.m;
+        float g = x.a*x.h*x.o + x.c*x.e*x.p + x.d*x.g*x.m - x.a*x.g*x.p - x.c*x.h*x.m - x.d*x.e*x.o;
+        float h = x.a*x.g*x.l + x.c*x.h*x.i + x.d*x.e*x.k - x.a*x.h*x.k - x.c*x.e*x.l - x.d*x.g*x.i;
+        float j = x.a*x.l*x.n + x.b*x.i*x.p + x.d*x.j*x.m - x.a*x.j*x.p - x.b*x.l*x.m - x.d*x.i*x.n;
+        float k = x.a*x.f*x.p + x.b*x.h*x.m + x.d*x.e*x.n - x.a*x.h*x.n - x.b*x.e*x.p - x.d*x.f*x.m;
+        float l = x.a*x.h*x.j + x.b*x.e*x.l + x.d*x.f*x.i - x.a*x.f*x.l - x.b*x.h*x.i - x.d*x.e*x.j;
+        float n = x.a*x.j*x.o + x.b*x.k*x.m + x.c*x.i*x.n - x.a*x.k*x.n - x.b*x.i*x.o - x.c*x.j*x.m;
+        float o = x.a*x.g*x.n + x.b*x.e*x.o + x.c*x.f*x.m - x.a*x.f*x.o - x.b*x.g*x.m - x.c*x.e*x.n;
+        float p = x.a*x.f*x.k + x.b*x.g*x.i + x.c*x.e*x.j - x.a*x.g*x.j - x.b*x.e*x.k - x.c*x.f*x.i;
         
-        r.a = a/det; r.b = b/det; r.c = c/det;
-        r.d = d/det; r.e = e/det; r.f = f/det;
-        r.g = g/det; r.h = h/det; r.i = i/det;
+        r.a = a; r.b = b; r.c = c; r.d = d;
+        r.e = e; r.f = f; r.g = g; r.h = h;
+        r.i = i; r.j = j; r.k = k; r.l = l;
+        r.m = m; r.n = n; r.o = o; r.p = p;
+    }
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Static factory methods">
+    /**
+     * Returns a new 4x4 identity matrix.
+     * 
+     * @return A new 4x4 identity matrix.
+     */
+    public static final Mat4 identity()
+    {
+        return scaling(1.0f);
+    }
+    
+    /**
+     * Returns a new scaling matrix, where {@code s} is the scaling factor.
+     * 
+     * @param s The scaling factor.
+     * @return A new scaling matrix.
+     */
+    public static final Mat4 scaling(float s)
+    {
+        Mat4 m = new Mat4();
+        m.a = s;
+        m.f = s;
+        m.k = s;
+        return m;
+    }
+    
+    /**
+     * Returns a new rotation matrix using the given {@code axis} of rotation,
+     * and {@code ang} as the angle. The axis must be normalized.
+     * 
+     * @param axis The axis around which to rotate.
+     * @param angle The angle to rotate by.
+     * @return A new rotation matrix.
+     */
+    public static final Mat4 rotation(Vec3 axis, float angle)
+    {
+        Mat4 m = new Mat4();
+        rotation(axis, angle, m);
+        return m;
+    }
+    
+    /**
+     * Returns a new rotation matrix representing the given quaternion.
+     * 
+     * @param q The quaternion to represent as a matrix.
+     * @return A new rotation matrix.
+     */
+    public static final Mat4 rotation(Quat q)
+    {
+        Mat4 m = new Mat4();
+        rotation(q, m);
+        return m;
+    }
+    
+    /**
+     * Returns a new translation matrix using the given vector.
+     * 
+     * @param v The vector to translate by.
+     * @return A new translation matrix.
+     */
+    public static final Mat4 translation(Vec3 v)
+    {
+        Mat4 m = identity();
+        m.d = v.x;
+        m.h = v.y;
+        m.l = v.z;
+        return m;
+    }
+    
+    /**
+     * Multiplies {@code m0} by {@code m1} and returns the result as a new matrix.
+     * 
+     * @param m0 The left-hand matrix to multiply.
+     * @param m1 The right-hand matrix to multiply by.
+     * @return A new matrix containing the result.
+     */
+    public static final Mat4 mult(Mat4 m0, Mat4 m1)
+    {
+        Mat4 result = new Mat4();
+        mult(m0, m1, result);
+        return result;
+    }
+    
+    /**
+     * Multiplies {@code m} by {@code s} and returns the result as a new matrix.
+     * 
+     * @param m The matrix to multiply.
+     * @param s The scalar to multiply by.
+     * @return A new matrix containing the result.
+     */
+    public static final Mat4 mult(Mat4 m, float s)
+    {
+        Mat4 result = new Mat4();
+        mult(m, s, result);
+        return result;
+    }
+    
+    /**
+     * Divides {@code m} by {@code s} and returns the result as a new matrix.
+     * 
+     * @param m The matrix to divide.
+     * @param s The scalar to divide by.
+     * @return A new matrix containing the result.
+     */
+    public static final Mat4 div(Mat4 m, float s)
+    {
+        Mat4 result = new Mat4();
+        div(m, s, result);
+        return result;
+    }
+    
+    /**
+     * Returns the transpose of {@code m} as a new matrix.
+     * 
+     * @param m The matrix to compute the transpose of.
+     * @return A new matrix containing the result.
+     */
+    public static final Mat4 transpose(Mat4 m)
+    {
+        Mat4 result = new Mat4();
+        transpose(m, result);
+        return result;
+    }
+    
+    /**
+     * Calculates the inverse of {@code m} and returns the result as a new matrix.
+     * 
+     * @param m The matrix to compute the inverse of.
+     * @return A new matrix containing the result.
+     * @throws com.samrj.devil.math.SingularMatrixException If {@code m} is
+     *         a singular matrix. (Its determinant is zero.)
+     */
+    public static final Mat4 invert(Mat4 m)
+    {
+        Mat4 result = new Mat4();
+        invert(m, result);
+        return result;
     }
     // </editor-fold>
     
@@ -291,4 +448,282 @@ public class Mat4
                  e, f, g, h,
                  i, j, k, l,
                  m, n, o, p;
+    
+    /**
+     * Creates a new 4x4 zero matrix, NOT an identity matrix. Use identity() to
+     * create an identity matrix.
+     */
+    public Mat4()
+    {
+    }
+    
+    /**
+     * Creates a new 4x4 matrix with the given values.
+     */
+    public Mat4(float a, float b, float c, float d,
+                float e, float f, float g, float h,
+                float i, float j, float k, float l,
+                float m, float n, float o, float p)
+    {
+        this.a = a; this.b = b; this.c = c; this.d = d;
+        this.e = e; this.f = f; this.g = g; this.h = h;
+        this.i = i; this.j = j; this.k = k; this.l = l;
+        this.m = m; this.n = n; this.o = o; this.p = p;
+    }
+    
+    /**
+     * Copies the given 4x4 matrix.
+     * 
+     * @param x The matrix to copy.
+     */
+    public Mat4(Mat4 x)
+    {
+        a = x.a; b = x.b; c = x.c; d = x.d;
+        e = x.e; f = x.f; g = x.g; h = x.h;
+        i = x.i; j = x.j; k = x.k; l = x.l;
+        m = x.m; n = x.n; o = x.o; p = x.p;
+    }
+    
+    // <editor-fold defaultstate="collapsed" desc="Instance mutator methods">
+    /**
+     * Sets this to the given matrix.
+     * 
+     * @param mat The matrix to set this to.
+     */
+    public void set(Mat4 mat)
+    {
+        copy(mat, this);
+    }
+    
+    /**
+     * Sets the entries of this matrix.
+     * 
+     * @return This matrix.
+     */
+    public Mat4 set(float a, float b, float c, float d,
+                    float e, float f, float g, float h,
+                    float i, float j, float k, float l,
+                    float m, float n, float o, float p)
+    {
+        this.a = a; this.b = b; this.c = c; this.d = d;
+        this.e = e; this.f = f; this.g = g; this.h = h;
+        this.i = i; this.j = j; this.k = k; this.l = l;
+        this.m = m; this.n = n; this.o = o; this.p = p;
+        return this;
+    }
+    
+    /**
+     * Sets this to the identity matrix.
+     * 
+     * @return This matrix.
+     */
+    public Mat4 setIdentity()
+    {
+        identity(this);
+        return this;
+    }
+    
+    /**
+     * Sets this to the scaling matrix by the given scalar.
+     * 
+     * @param sca The scalar to scale by.
+     * @return This matrix.
+     */
+    public Mat4 setScaling(float sca)
+    {
+        scaling(sca, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to the rotation matrix by the given angle, around the given
+     * axis. The axis must be normalized.
+     * 
+     * @param axis The axis to rotate around.
+     * @param angle The angle to rotate by.
+     * @return This matrix.
+     */
+    public Mat4 setRotation(Vec3 axis, float angle)
+    {
+        rotation(axis, angle, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to a rotation matrix representation of the given quaternion.
+     * 
+     * @return This matrix.
+     */
+    public Mat4 setRotation(Quat quat)
+    {
+        rotation(quat, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to the translation matrix by the given vector.
+     * 
+     * @param vec The vector to translate by.
+     * @return This matrix.
+     */
+    public Mat4 setTranslation(Vec3 vec)
+    {
+        translation(vec, this);
+        return this;
+    }
+    
+    /**
+     * Rotates this matrix by the given angle, around the given axis. Assumes
+     * that the given axis is normalized.
+     * 
+     * @param axis The axis around which to rotate.
+     * @param angle The angle to rotate by.
+     * @return This matrix.
+     */
+    public Mat4 rotate(Vec3 axis, float angle)
+    {
+        rotate(this, axis, angle, this);
+        return this;
+    }
+    
+    /**
+     * Rotates this matrix by the given quaternion.
+     * 
+     * @param quat The quaternion to rotate by.
+     * @return This matrix.
+     */
+    public Mat4 rotate(Quat quat)
+    {
+        rotate(this, quat, this);
+        return this;
+    }
+    
+    /**
+     * Translates this matrix by the given vector.
+     * 
+     * @param vec The vector to translate by.
+     * @return This matrix.
+     */
+    public Mat4 translate(Vec3 vec)
+    {
+        d += a*vec.x + b*vec.y + c*vec.z;
+        h += e*vec.x + f*vec.y + g*vec.z;
+        l += i*vec.x + j*vec.y + k*vec.z;
+        p += m*vec.x + n*vec.y + o*vec.z;
+        return this;
+    }
+    
+    /**
+     * Multiplies this matrix by the given matrix.
+     * 
+     * @param mat The right-hand matrix to multiply by.
+     * @return This matrix.
+     */
+    public Mat4 mult(Mat4 mat)
+    {
+        mult(this, mat, this);
+        return this;
+    }
+    
+    /**
+     * Multiplies each entry in this matrix by the given scalar. Equivalent to
+     * scaling this matrix by the given scalar.
+     * 
+     * @param sca The scalar to multiply by.
+     * @return This matrix.
+     */
+    public Mat4 mult(float sca)
+    {
+        mult(this, sca, this);
+        return this;
+    }
+    
+    /**
+     * Divides each entry in this matrix by the given scalar.
+     * 
+     * @param sca The scalar to divide by.
+     * @return This matrix.
+     */
+    public Mat4 div(float sca)
+    {
+        div(this, sca, this);
+        return this;
+    }
+    
+    /**
+     * Transposes this matrix.
+     * 
+     * @return This matrix.
+     */
+    public Mat4 transpose()
+    {
+        transpose(this, this); //Could be optimized.
+        return this;
+    }
+    
+    /**
+     * Inverts this matrix.
+     * 
+     * @throws com.samrj.devil.math.SingularMatrixException If this matrix is
+     *         singular. (Its determinant is zero.)
+     * @return This matrix.
+     */
+    public Mat4 invert()
+    {
+        invert(this, this);
+        return this;
+    }
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Overriden/implemented methods">
+    /**
+     * WARNING: Buffered in column-major format, as per OpenGL.
+     */
+    @Override
+    public void read(FloatBuffer buffer)
+    {
+        a = buffer.get(); e = buffer.get(); i = buffer.get(); m = buffer.get();
+        b = buffer.get(); f = buffer.get(); j = buffer.get(); n = buffer.get();
+        c = buffer.get(); g = buffer.get(); k = buffer.get(); o = buffer.get();
+        d = buffer.get(); h = buffer.get(); l = buffer.get(); p = buffer.get();
+    }
+
+    @Override
+    public void write(FloatBuffer buffer)
+    {
+        buffer.put(a); buffer.put(e); buffer.put(i); buffer.put(m);
+        buffer.put(b); buffer.put(f); buffer.put(j); buffer.put(n);
+        buffer.put(c); buffer.put(g); buffer.put(k); buffer.put(o);
+        buffer.put(d); buffer.put(h); buffer.put(l); buffer.put(p);
+    }
+    
+    /**
+     * Written to/read from stream in row-major format.
+     */
+    @Override
+    public void read(DataInputStream in) throws IOException
+    {
+        a = in.readFloat(); b = in.readFloat(); c = in.readFloat(); d = in.readFloat();
+        e = in.readFloat(); f = in.readFloat(); g = in.readFloat(); h = in.readFloat();
+        i = in.readFloat(); j = in.readFloat(); k = in.readFloat(); l = in.readFloat();
+        m = in.readFloat(); n = in.readFloat(); o = in.readFloat(); p = in.readFloat();
+    }
+
+    @Override
+    public void write(DataOutputStream out) throws IOException
+    {
+        out.writeFloat(a); out.writeFloat(b); out.writeFloat(c); out.writeFloat(d);
+        out.writeFloat(e); out.writeFloat(f); out.writeFloat(g); out.writeFloat(h);
+        out.writeFloat(i); out.writeFloat(j); out.writeFloat(k); out.writeFloat(l);
+        out.writeFloat(m); out.writeFloat(n); out.writeFloat(o); out.writeFloat(p);
+    }
+    
+    @Override
+    public String toString()
+    {
+        return "[" + a + ", " + b + ", " + c + ", " + d + "]\n" +
+               "[" + e + ", " + f + ", " + g + ", " + h + "]\n" +
+               "[" + i + ", " + j + ", " + k + ", " + l + "]\n" +
+               "[" + m + ", " + n + ", " + o + ", " + p + "]";
+    }
+    // </editor-fold>
 }

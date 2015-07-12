@@ -30,13 +30,13 @@ public class Mat2 implements Bufferable<FloatBuffer>, Streamable
     /**
      * Copies the source matrix into the target matrix. 
      * 
-     * @param m The matrix to copy from.
+     * @param s The matrix to copy from.
      * @param r The matrix to copy into.
      */
-    public static final void copy(Mat2 m, Mat2 r)
+    public static final void copy(Mat2 s, Mat2 r)
     {
-        r.a = m.a; r.b = m.b;
-        r.c = m.c; r.d = m.d;
+        r.a = s.a; r.b = s.b;
+        r.c = s.c; r.d = s.d;
     }
     
     /**
