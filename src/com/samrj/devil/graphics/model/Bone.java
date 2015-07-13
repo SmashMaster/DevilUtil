@@ -68,8 +68,8 @@ public class Bone implements Solvable
         
         Mat3 baseMatrix3f = new Mat3();
         baseMatrix3f.read(in);
-        baseMatrix = Util.expand(baseMatrix3f);
-        inverseBaseMatrix = Util.expand(baseMatrix3f.invert());
+        baseMatrix = new Mat4(baseMatrix3f);
+        inverseBaseMatrix = new Mat4(baseMatrix3f.invert());
     }
     
     void solveRotationMatrix()
@@ -138,7 +138,7 @@ public class Bone implements Solvable
         Vec3 dir = Vec3.sub(target, headFinal); //Global
         dir.mult(inverseBaseMatrix); //Local
         
-        Vec3 v = Util.Axis.X.versor(); //Local
+        Vec3 v = new Vec3(1.0f, 0.0f, 0.0f); //Local
         v.mult(baseMatrix); //Global
         if (inheritRotation) v.mult(parent.rotMatrix);
         v.mult(inverseBaseMatrix); //Local again

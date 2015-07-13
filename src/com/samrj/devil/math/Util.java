@@ -1,13 +1,17 @@
 package com.samrj.devil.math;
 
 /**
+ * Mathematics utility class.
+ * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class Util
 {
-    // <editor-fold defaultstate="collapsed" desc="Globals">
+    /**
+     * Primitive type enum, to help make buffering code more readable.
+     */
     public static enum PrimType
     {
         BYTE   (Byte.SIZE,      Byte.TYPE),
@@ -37,160 +41,168 @@ public class Util
             this.type = type;
         }
         
+        /**
+         * Returns whether or not the given object is an instance of this
+         * primitive type.
+         * 
+         * @param o Any object.
+         * @return Whether the given object is an instance of this primitive.
+         */
         public boolean isType(Object o)
         {
             return type.isAssignableFrom(o.getClass());
         }
     }
     
-    public static int sizeof(PrimType type)
+    /**
+     * Returns the size, in bytes, of the primitive type corresponding with the
+     * given enum.
+     * 
+     * @param type A primitive type enum.
+     * @return The size, in bytes, of the given primitive type.
+     */
+    public static final int sizeof(PrimType type)
     {
         return type.size;
     }
     
-    public static enum Axis
+    /**
+     * Returns whether or not the given integer is a power of two.
+     * 
+     * @param n Any integer.
+     * @return Whether the given integer is a power of two.
+     */
+    public static boolean isPower2(int n)
     {
-        X(1, 0, 0),
-        Y(0, 1, 0),
-        Z(0, 0, 1);
-        
-        private final Vec3 dir;
-        
-        private Axis(float x, float y, float z)
-        {
-            this.dir = new Vec3(x, y, z);
-        }
-        
-        public Vec3 versor()
-        {
-            return new Vec3(dir);
-        }
-    }
-    
-    public static final float PIm2 = (float)(Math.PI*2.0);
-    public static final float PI = (float)Math.PI;
-    public static final float PId2 = (float)(Math.PI*0.5);
-    // </editor-fold>
-    
-    // <editor-fold defaultstate="collapsed" desc="Float Math">
-    public static float[] quadFormula(float a, float b, float c)
-    {
-        if (Util.isSubnormal(a)) return new float[0];
-        
-        float discriminant = b*b - 4f*a*c;
-        
-        if (discriminant < 0.0f || !Float.isFinite(discriminant)) return new float[0];
-        if (discriminant == 0.0f) return new float[] {-b/(a*2f)};
-        
-        float sqrtDisc = (float)Math.sqrt(discriminant);
-        
-        float a2 = a*2f;
-        return new float[] {(-b - sqrtDisc)/a2, (sqrtDisc - b)/a2};
-    }
-    
-    public static float move(float f, float target, float dist)
-    {
-        float d = target - f;
-        
-        if (Math.abs(d) <= dist) return target;
-        
-        return f + dist*Math.signum(d);
-    }
-    
-    public static Vec2 move(Vec2 v, Vec2 target, float dist)
-    {
-        Vec2 dif = Vec2.sub(target, v);
-        float d = dif.length();
-        if (d <= dist)
-        {
-            v.set(target);
-            return v;
-        }
-        
-        dif.div(d).mult(dist);
-        return v.add(dif);
-    }
-    
-    public static float clamp(float f, float min, float max)
-    {
-        if (min > max) throw new IllegalArgumentException();
-        
-        if (f < min) return min;
-        if (f > max) return max;
-        return f;
-    }
-    
-    public static Vec2 clamp(Vec2 v, float maxLength)
-    {
-        float len = v.squareLength();
-        if (len <= maxLength*maxLength) return v;
-        
-        len = (float)Math.sqrt(len);
-        
-        return v.mult(maxLength/len);
-    }
-    
-    public static float loop(float x, float min, float max)
-    {
-        if (min > max) throw new IllegalArgumentException();
-        if (max == min) return min;
-        
-        if (x >= min && x < max) return x;
-        
-        float t = (x - min)%(max - min);
-        return t<0f ? t+max : t+min;
-    }
-    
-    public static float loop(float x, float max)
-    {
-        if (max < 0f) throw new IllegalArgumentException();
-        if (max == 0f) return 0f;
-        
-        if (x < max) return x;
-        
-        float t = x%max;
-        return t<0f ? t+max : t;
-    }
-    
-    public static float invLerp(float a, float b, float x)
-    {
-        return (x - a)/(b - a);
-    }
-    
-    public static float lerp(float a, float b, float t)
-    {
-        return a + t*(b - a);
-    }
-    
-    public static float remap(float v, float min0, float max0, float min1, float max1)
-    {
-        return (max1 - min1)*(v - min0)/(max0 - min0) + min1;
-    }
-    
-    public static float clampRemap(float v, float min0, float max0, float min1, float max1)
-    {
-        return clamp(remap(v, min0, max0, min1, max1), min1, max1);
+        return (n & (n - 1)) == 0;
     }
     
     /**
-     * If x > m, returns x, otherwise, blend smoothly into n.
+     * Returns the smallest power of 2 that is greater than the given integer.
+     * 
+     * @param n Any positive integer.
+     * @return The smallest power of 2 that is greater than {@code n}.
+     */
+    public static int nextPower2(int n)
+    {
+        if (n <= 0) return 1;
+        n--;
+        n |= n >> 1;
+        n |= n >> 2;
+        n |= n >> 4;
+        n |= n >> 8;
+        n |= n >> 16;
+        n++;
+        return n;
+    }
+    
+    /**
+     * Linearly interpolates between {@code f0} and {@code f1} using the scalar
+     * interpolant {@code t}.
+     * 
+     * @param f0 The 'start' value to interpolate from.
+     * @param f1 The 'end' value to interpolate to.
+     * @param t The scalar interpolant.
+     * @return The interpolated value.
+     */
+    public static final float lerp(float f0, float f1, float t)
+    {
+        return (f1 - f0)*t + f0;
+    }
+    
+    /**
+     * Clamps {@code x} between {@code min} and {@code max} (inclusive) and
+     * returns the result. If {@code x} is NaN, returns NaN.
+     * 
+     * @param min The minimum output value.
+     * @param max The maximum output value.
+     * @param x The value to clamp.
+     * @return The clamped value.
+     */
+    public static final float clamp(float min, float max, float x)
+    {
+        if (x < min) return min;
+        if (x > max) return max;
+        return x; //Implicitly handles NaN and the infinites.
+    }
+    
+    /**
+     * Returns the smaller of the two given values. Does not check for negative
+     * zero or NaN.
+     * 
+     * @param x0 Any float.
+     * @param x1 Any float.
+     * @return The smaller of the two given values.
+     */
+    public static final float min(float x0, float x1)
+    {
+        return x0 <= x1 ? x0 : x1;
+    }
+    
+    /**
+     * Returns the greater of the two given values. Does not check for negative
+     * zero or NaN.
+     * 
+     * @param x0 Any float.
+     * @param x1 Any float.
+     * @return The greater of the two given values.
+     */
+    public static final float max(float x0, float x1)
+    {
+        return x0 >= x1 ? x0 : x1;
+    }
+    
+    /**
+     * Loops the given value into the given range.
+     * 
+     * @param x The value to loop.
+     * @param min The minimum output value, inclusive.
+     * @param max The maximum output value, exclusive.
+     * @return The value, looped to within the given range.
+     */
+    public static final float loop(float x, float min, float max)
+    {
+        if (x >= min && x < max) return x;
+        
+        float t = (x - min)%(max - min);
+        return t < 0.0f ? t + max : t + min;
+    }
+    
+    /**
+     * Loops the given value into the range between zero and the given bound.
+     * 
+     * @param x The value to loop.
+     * @param max The maximum output value, exclusive.
+     * @return The looped value.
+     */
+    public static final float loop(float x, float max)
+    {
+        if (x >= 0.0f && x < max) return x;
+        
+        float t = x%max;
+        return t < 0.0f ? t + max : t;
+    }
+    
+    /**
+     * Prevents {@code x} from reaching zero. If {@code x < m}, ease it towards
+     * {@code n}. Otherwise, simply return {@code x}.
      * 
      * Useful for values that should never reach zero, where n =/= zero.
      * 
-     * f(0) = n
-     * f(m) = m
-     * f’(0) = 0
-     * f’(m) = 1
-     * 
-     * Thanks to:
+     * Thanks to Inigo Quilez:
      * http://www.iquilezles.org/www/articles/functions/functions.htm
+     * 
+     * @param x The value to adjust.
+     * @param m The threshold at which {@code x} starts to ease towards {@code n}.
+     * @param n The value to ease towards.
+     * @return The adjusted value.
      */
-    public static float nonzero( float x, float m, float n )
+    public static final float nonzero(float x, float m, float n)
     {
-        if(x > m) return x;
+        if (x >= m) return x;
 
-        float a = 2f*n - m;
-        float b = 2f*m - 3f*n;
+        float a = 2.0f*n - m;
+        float b = 2.0f*m - 3.0f*n;
         float t = x/m;
 
         return (a*t + b)*t*t + n;
@@ -200,11 +212,137 @@ public class Util
      * Returns f(x) such that f(0) = 1 and f(1) = 0. Higher exponents make the
      * curve sharper near x = 1. Lower makes it sharper near x = 0. An exponent
      * of 1 returns clamp(1f - x, 0f, 1f).
+     * 
+     * @param x The value to attenuate.
+     * @param exp The exponent, which affects the sharpness of the curve.
+     * @return The attenuated value.
      */
-    public static float attenuate(float x, float exp)
+    public static final float attenuate(float x, float exp)
     {
-        if (exp == 1f) return clamp(1f - x, 0f, 1f);
-        return 1f - (float)Math.pow(clamp(x, 0f, 1f), exp);
+        if (exp == 1.0f) return clamp(1.0f - x, 0.0f, 1.0f);
+        return 1.0f - (float)Math.pow(clamp(x, 0.0f, 1.0f), exp);
+    }
+    
+    public static final float PI = (float)Math.PI;
+    public static final float TO_RADIANS = (float)(Math.PI/180.0);
+    public static final float TO_DEGREES = (float)(180.0/Math.PI);
+    
+    /**
+     * Reduces the given angle to its equivalent angle between -pi and pi.
+     * 
+     * @param angle The angle to reduce.
+     * @return The given angle, reduced to within -pi and pi.
+     */
+    public static final float reduceAngle(float angle)
+    {
+        return loop(angle, -PI, PI);
+    }
+    
+    /**
+     * Converts an angle in degrees to radians.
+     * 
+     * @param a An angle in degrees.
+     * @return The given angle in radians.
+     */
+    public static final float toRadians(float a)
+    {
+        return a*TO_RADIANS;
+    }
+    
+    /**
+     * Converts an angle in radians to degrees.
+     * 
+     * @param a An angle in radians.
+     * @return The given angle in degrees.
+     */
+    public static final float toDegrees(float a)
+    {
+        return a*TO_DEGREES;
+    }
+    
+    /**
+     * Loop the given square angle into the range between
+     * 
+     * @param a The square angle to reduce.
+     * @return  The reduced square angle.
+     */
+    public static final float reduceSquareAngle(float a)
+    {
+        return Util.loop(a, 8.0f);
+    }
+    
+    /**
+     * Calculates the y coordinate of the given square angle on a 2x2 square
+     * centered at the origin.
+     * 
+     * @param a A square angle.
+     * @return The y coordinate corresponding with the given angle.
+     */
+    public static final float squareSin(float a)
+    {
+        a = reduceSquareAngle(a);
+        
+        if (a >= 7.0f) return a - 8.0f;
+        if (a >= 5.0f) return -1.0f;
+        if (a >= 3.0f) return 4.0f - a;
+        if (a >= 1.0f) return 1.0f;
+        return a;
+    }
+    
+    /**
+     * Calculates the x coordinate of the given square angle on a 2x2 square
+     * centered at the origin.
+     * 
+     * @param a A square angle.
+     * @return The x coordinate corresponding with the given angle.
+     */
+    public static final float squareCos(float a)
+    {
+        a = reduceSquareAngle(a);
+        
+        if (a >= 7.0f) return 1.0f;
+        if (a >= 5.0f) return a - 6.0f;
+        if (a >= 3.0f) return -1.0f;
+        if (a >= 1.0f) return 2.0f - a;
+        return 1.0f;
+    }
+    
+    /**
+     * Calculates the position of the given square angle on a 2x2 square
+     * centered at the origin.
+     * 
+     * @param a A square angle.
+     * @return The position corresponding with the given angle.
+     */
+    public static final Vec2 squareDir(float a)
+    {
+        return new Vec2(squareCos(a), squareSin(a));
+    }
+    
+    /**
+     * Calculates the square angle corresponding with the given direction.
+     * 
+     * @param y The y coordinate of the given direction.
+     * @param x The x coordinate of the given direction.
+     * @return The square angle corresponding with the given direction.
+     */
+    public static final float squareAtan2(float y, float x)
+    {
+        float squareLength = Math.max(Math.abs(x), Math.abs(y));
+        y /= squareLength; x /= squareLength;
+        
+        int signs = (x < 0.0f ? 1 : 0) | (y < 0.0f ? 2 : 0);
+        
+        switch (signs)
+        {
+            case 0: return -x + y + 1.0f; //(+, +)
+            case 1: return -x - y + 3.0f; //(-, +)
+            case 2: return  x + y + 7.0f; //(+, -)
+            case 3: return  x - y + 5.0f; //(-, -)
+            default:
+                assert false : signs; //Shouldn't happen.
+                return Float.NaN;
+        }
     }
     
     /**
@@ -214,7 +352,7 @@ public class Util
      * @param  f a floating point number.
      * @return {@code true} if {@code f} is subnormal; {@code false} otherwise.
      */
-    public static boolean isSubnormal(float f)
+    public static final boolean isSubnormal(float f)
     {
         return Math.abs(f) < Float.MIN_NORMAL;
     }
@@ -229,10 +367,9 @@ public class Util
      * @return {@code true} if the magnitude of {@code f} is less than
      *         {@code threshold}; {@code false} otherwise.
      */
-    public static boolean isZero(float f, float threshold)
+    public static final boolean isZero(float f, float threshold)
     {
         if (threshold <= 0f) return f == 0f;
-        
         return Math.abs(f) < threshold;
     }
     
@@ -247,7 +384,7 @@ public class Util
      * @return the epsilon of {@code f} if it is finite; Float.NaN if it is NaN;
      *         or Float.POSITIVE_INFINITY if it is infinite.
      */
-    public static float getEpsilon(float f)
+    public static final float getEpsilon(float f)
     {
         if (Float.isNaN(f)) return Float.NaN;
         if (Float.isInfinite(f)) return Float.POSITIVE_INFINITY;
@@ -267,12 +404,12 @@ public class Util
      * @param  a the first float to be compare.
      * @param  b the second float to be compare.
      * @param  tolerance the number of epsilons by which {@code a} and {@code b}
-     *         may be apart and still be approximately equal.
+     *         may differ and still be approximately equal.
      * @return {@code true} if {@code a} and {@code b} are approximately equal;
      *         {@code false} otherwise.
-     * @see    gameutil.math.Util#getEpsilon(float)
+     * @see    com.samrj.devil.math.Util#getEpsilon(float)
      */
-    public static boolean epsEqual(float a, float b, int tolerance)
+    public static final boolean epsEqual(float a, float b, int tolerance)
     {
         if (a == b) return true;
         if (tolerance <= 0) return false;
@@ -283,288 +420,26 @@ public class Util
         if (sna || snb) return false;
         
         //Simply use the greater number's epsilon.
-        final float epsilon = a > b ? getEpsilon(a) : getEpsilon(b);
+        float epsilon = a > b ? getEpsilon(a) : getEpsilon(b);
         
         return Math.abs(a - b) <= epsilon*tolerance;
     }
     
-    public static boolean isFinite(float x)
+    /**
+     * Returns whether or not the given value is finite.
+     * 
+     * @param x Any float.
+     * @return False if the value is infinite or NaN, true otherwise.
+     */
+    public static final boolean isFinite(float x)
     {
         return !(Float.isInfinite(x) || Float.isNaN(x));
     }
     
     /**
-     * @return  a negative integer, zero, or a positive integer as {@code a}
-     *          is less than, equal to, or greater than {@code b}.
-     */
-    public static int compare(float a, float b)
-    {
-        if (a == b) return 0;
-        return a < b ? -1 : 1;
-    }
-    
-    public static float reduceRad(float angle)
-    {
-        return loop(angle, -PI, PI);
-    }
-    
-    public static float reduceDeg(float angle)
-    {
-        return loop(angle, -180, 180);
-    }
-    
-    public static float floor(float f, float size)
-    {
-        return (float)Math.floor(f/size)*size;
-    }
-    
-    public static float round(float f, float size)
-    {
-        return (float)Math.round(f/size)*size;
-    }
-    
-    public static Vec2 round(Vec2 f, float size)
-    {
-        return f.set(round(f.x, size), round(f.y, size));
-    }
-    
-    public static float ceil(float f, float size)
-    {
-        return (float)Math.ceil(f/size)*size;
-    }
-    
-    public static int indexMin(float... values)
-    {
-        if (values.length == 0) throw new IllegalArgumentException();
-        if (values.length == 1) return 0;
-        
-        float min = values[0];
-        int out = 0;
-        
-        for (int i=1; i<values.length; i++) if (values[i] < min)
-        {
-            min = values[i];
-            out = i;
-        }
-        
-        return out;
-    }
-    
-    public static float min(float... values)
-    {
-        return values[indexMin(values)];
-    }
-    
-    public static int indexMax(float... values)
-    {
-        if (values.length == 0) throw new IllegalArgumentException();
-        if (values.length == 1) return 0;
-        
-        float max = values[0];
-        int out = 0;
-        
-        for (int i=1; i<values.length; i++) if (values[i] > max)
-        {
-            max = values[i];
-            out = i;
-        }
-        
-        return out;
-    }
-    
-    public static float max(float... values)
-    {
-        return values[indexMax(values)];
-    }
-    
-    public static boolean isInteger(float f)
-    {
-        return f == (float)Math.floor(f);
-    }
-    
-    public static float reduceSq(float sqa)
-    {
-        return Util.loop(sqa, 8f);
-    }
-    
-    public static float sqSin(float sqa)
-    {
-        sqa = reduceSq(sqa);
-        
-        if (sqa >= 7f) return sqa - 8f;
-        if (sqa >= 5f) return -1f;
-        if (sqa >= 3f) return 4f - sqa;
-        if (sqa >= 1f) return 1f;
-        return sqa;
-    }
-    
-    public static float sqCos(float sqa)
-    {
-        sqa = reduceSq(sqa);
-        
-        if (sqa >= 7f) return 1f;
-        if (sqa >= 5f) return sqa - 6f;
-        if (sqa >= 3f) return -1f;
-        if (sqa >= 1f) return 2f - sqa;
-        return 1f;
-    }
-    
-    public static Vec2 sqDir(float sqa)
-    {
-        return new Vec2(sqCos(sqa), sqSin(sqa));
-    }
-    
-    public static float sqAtan2(float y, float x)
-    {
-        float chebLen = max(Math.abs(x), Math.abs(y));
-        y /= chebLen; x /= chebLen;
-        
-        int signs = (x >= 0f ? 0 : 1) | (y >= 0f ? 0 : 2);
-        
-        switch (signs)
-        {
-            case 0: return -x + y + 1f; //(+, +)
-            case 1: return -x - y + 3f; //(-, +)
-            case 2: return  x + y + 7f; //(+, -)
-            case 3: return  x - y + 5f; //(-, -)
-            default: return -1f;
-        }
-    }
-    
-    /**
-     * Returns, in radians, the signed angle between two normalized vectors.
-     */
-    public static float angleNrm(Vec2 a, Vec2 b)
-    {
-        float sin = b.cross(a);
-        float cos = a.dot(b);
-        return (float)Math.atan2(sin, cos);
-    }
-    
-    /**
-     * Returns, in radians, the signed angle between two vectors.
-     */
-    public static float angle(Vec2 a, Vec2 b)
-    {
-        return angleNrm(Vec2.normalize(a), Vec2.normalize(b));
-    }
-    
-    private static final int[] logTable = new int[256];
-    
-    static
-    {
-        logTable[0] = logTable[1] = 0;
-        for (int i=2; i<256; i++) logTable[i] = 1 + logTable[i/2];
-        logTable[0] = -1;
-    }
-    
-    /**
-     * Quickly calculates the floored log base 2 of the given float.
-     * 
-     * Undefined for negatives, zero, infinites and NaN.
-     */
-    public static final int log2(float f)
-    {
-        int x = Float.floatToIntBits(f);
-        int c = x >> 23;
-
-        if (c != 0) return c - 127; //Compute directly from exponent.
-        else //Subnormal, must compute from mantissa.
-        {
-            int t = x >> 16;
-            // Note that LogTable256 was defined earlier
-            if (t != 0) return logTable[t] - 133;
-            else return (x >> 8 != 0) ? logTable[t] - 141 : logTable[x] - 149;
-        }
-    }
-    
-    public static final Mat4 expand(Mat3 m)
-    {
-        Mat4 out = new Mat4();
-        out.a = m.a; out.b = m.b; out.c = m.c;
-        out.e = m.d; out.f = m.e; out.g = m.f;
-        out.i = m.g; out.j = m.h; out.k = m.i;
-        out.p = 1.0f;
-        return out;
-    }
-    
-    public static final Mat3 contract(Mat4 m)
-    {
-        Mat3 out = new Mat3();
-        out.a = m.a; out.b = m.b; out.c = m.c;
-        out.d = m.e; out.e = m.f; out.f = m.g;
-        out.g = m.i; out.h = m.j; out.i = m.k;
-        return out;
-    }
-    // </editor-fold>
-    // <editor-fold defaultstate="collapsed" desc="Integer Math">
-    public static int clamp(int i, int min, int max)
-    {
-        if (min > max) throw new IllegalArgumentException();
-        
-        if (i < min) return min;
-        else if (i > max) return max;
-        return i;
-    }
-    
-    public static int loop(int x, int min, int max)
-    {
-        if (max < min) throw new IllegalArgumentException();
-        if (max == min) return min;
-        
-        if (x >= min && x < max) return x;
-        
-        int t = (x - min)%(max - min);
-        return t<0 ? t+max : t+min;
-    }
-    
-    public static boolean isPower2(int n)
-    {
-        return (n & (n - 1)) == 0;
-    }
-    
-    /**
-     * @param n Any positive integer.
-     * @return The smallest power of 2 that is greater than n.
-     */
-    public static int nextPower2(int n)
-    {
-        if (n <= 0) return 1;
-        n--;
-        n |= n >> 1;
-        n |= n >> 2;
-        n |= n >> 4;
-        n |= n >> 8;
-        n |= n >> 16;
-        n++;
-        return n;
-    }
-    
-    public static int indexMax(int... values)
-    {
-        if (values.length == 0) throw new IllegalArgumentException();
-        if (values.length == 1) return 0;
-        
-        int max = values[0];
-        int out = 0;
-        
-        for (int i=1; i<values.length; i++) if (values[i] > max)
-        {
-            max = values[i];
-            out = i;
-        }
-        
-        return out;
-    }
-    
-    public static int max(int... values)
-    {
-        return values[indexMax(values)];
-    }
-    // </editor-fold>
-    
-    /**
      * Don't let anyone instantiate this.
      */
-    private Util() {}
+    private Util()
+    {
+    }
 }

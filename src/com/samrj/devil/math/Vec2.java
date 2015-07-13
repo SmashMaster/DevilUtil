@@ -103,6 +103,37 @@ public class Vec2 implements Bufferable<FloatBuffer>, Streamable
     {
         return dot(v0, v1)/length(v1);
     }
+    
+    /**
+     * Returns whether the given vector is close to zero, such that each of its
+     * components absolute values are smaller than the given threshold.
+     * 
+     * @param v The vector to check.
+     * @param threshold The distance from zero the vector can be.
+     * @return Whether the given vector is close to zero.
+     */
+    public static final boolean isZero(Vec2 v, float threshold)
+    {
+        return Util.isZero(v.x, threshold) &&
+               Util.isZero(v.y, threshold);
+    }
+    
+    /**
+     * Returns whether or not {@code v0} and {@code v1} are approximately equal,
+     * based on their individual components epsilons and a tolerance factor.
+     * 
+     * @param v0 The first vector.
+     * @param v1 The second vector.
+     * @param tolerance The number of epsilons by which {@code v0} and {@code v1}
+     *                  may differ and still be approximately equal.
+     * @return Whether the two given vectors are approximately equal.
+     * @see com.samrj.devil.math.Util#getEpsilon(float)
+     */
+    public static final boolean epsEqual(Vec2 v0, Vec2 v1, int tolerance)
+    {
+        return Util.epsEqual(v0.x, v1.x, tolerance) &&
+               Util.epsEqual(v0.y, v1.y, tolerance);
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static mutator methods">
     /**
@@ -553,6 +584,33 @@ public class Vec2 implements Bufferable<FloatBuffer>, Streamable
     public float scalarProject(Vec2 v)
     {
         return scalarProject(this, v);
+    }
+    
+    /**
+     * Returns whether this vector is close to zero, such that each of its
+     * components absolute values are smaller than the given threshold.
+     * 
+     * @param threshold The distance from zero the vector can be.
+     * @return Whether this vector is close to zero.
+     */
+    public boolean isZero(float threshold)
+    {
+        return isZero(this, threshold);
+    }
+    
+    /**
+     * Returns whether or not this and {@code v} are approximately equal,
+     * based on their individual components epsilons and a tolerance factor.
+     * 
+     * @param v A vector.
+     * @param tolerance The number of epsilons by which this and and {@code v}
+     *                  may differ and still be approximately equal.
+     * @return Whether this is approximately equal to the given vector.
+     * @see com.samrj.devil.math.Util#getEpsilon(float)
+     */
+    public boolean epsEqual(Vec2 v, int tolerance)
+    {
+        return epsEqual(this, v, tolerance);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Instance mutator methods">

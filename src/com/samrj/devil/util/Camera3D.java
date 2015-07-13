@@ -105,8 +105,8 @@ public class Camera3D
         float midx = resX*.5f;
         float midy = resY*.5f;
         dir = new Vec3(dir);
-        dir.mult(Util.contract(getView()));
-        dir.mult(Util.contract(proj));
+        dir.mult(new Mat3(getView()));
+        dir.mult(new Mat3(proj));
         dir.x = dir.x*midx/dir.z + midx;
         dir.y = dir.y*midy/dir.z + midy;
         return dir;

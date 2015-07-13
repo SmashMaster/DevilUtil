@@ -34,6 +34,19 @@ public class Mat3 implements Bufferable<FloatBuffer>, Streamable
     
     // <editor-fold defaultstate="collapsed" desc="Static mutator methods">
     /**
+     * Expands and copies the source matrix into the target matrix. 
+     * 
+     * @param s The matrix to copy from.
+     * @param r The matrix to copy into.
+     */
+    public static final void copy(Mat2 s, Mat3 r)
+    {
+        r.a = s.a; r.b = s.b; r.c = 0.0f;
+        r.d = s.c; r.e = s.d; r.f = 0.0f;
+        r.g = 0.0f; r.h = 0.0f; r.i = 1.0f;
+    }
+    
+    /**
      * Copies the source matrix into the target matrix. 
      * 
      * @param s The matrix to copy from.
@@ -44,6 +57,19 @@ public class Mat3 implements Bufferable<FloatBuffer>, Streamable
         r.a = s.a; r.b = s.b; r.c = s.c;
         r.d = s.d; r.e = s.e; r.f = s.f;
         r.g = s.g; r.h = s.h; r.i = s.i;
+    }
+    
+    /**
+     * Contracts and copies the source matrix into the target matrix. 
+     * 
+     * @param s The matrix to copy from.
+     * @param r The matrix to copy into.
+     */
+    public static final void copy(Mat4 s, Mat3 r)
+    {
+        r.a = s.a; r.b = s.b; r.c = s.c;
+        r.d = s.e; r.e = s.f; r.f = s.g;
+        r.g = s.i; r.h = s.j; r.i = s.k;
     }
     
     /**
@@ -437,6 +463,18 @@ public class Mat3 implements Bufferable<FloatBuffer>, Streamable
     }
     
     /**
+     * Expands and copies the given 2x2 matrix.
+     * 
+     * @param mat The matrix to copy.
+     */
+    public Mat3(Mat2 mat)
+    {
+        a = mat.a; b = mat.b;
+        d = mat.c; e = mat.d;
+        i = 1.0f;
+    }
+    
+    /**
      * Copies the given 3x3 matrix.
      * 
      * @param mat The matrix to copy.
@@ -448,15 +486,53 @@ public class Mat3 implements Bufferable<FloatBuffer>, Streamable
         g = mat.g; h = mat.h; i = mat.i;
     }
     
+    /**
+     * Contracts and copies the given 4x4 matrix.
+     * 
+     * @param mat The matrix to copy.
+     */
+    public Mat3(Mat4 mat)
+    {
+        a = mat.a; b = mat.b; c = mat.c;
+        d = mat.e; e = mat.f; f = mat.g;
+        g = mat.i; h = mat.j; i = mat.k;
+    }
+    
     // <editor-fold defaultstate="collapsed" desc="Instance mutator methods">
+    /**
+     * Sets this to the given matrix, expanded.
+     * 
+     * @param mat The matrix to set this to.
+     * @return This matrix.
+     */
+    public Mat3 set(Mat2 mat)
+    {
+        copy(mat, this);
+        return this;
+    }
+    
     /**
      * Sets this to the given matrix.
      * 
      * @param mat The matrix to set this to.
+     * @return This matrix.
      */
-    public void set(Mat3 mat)
+    public Mat3 set(Mat3 mat)
     {
         copy(mat, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to the upper left corner of the given matrix.
+     * 
+     * @param mat The matrix to set this to.
+     * @return This matrix.
+     */
+    public Mat3 set(Mat4 mat)
+    {
+        copy(mat, this);
+        return this;
     }
     
     /**

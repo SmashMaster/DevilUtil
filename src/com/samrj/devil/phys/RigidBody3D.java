@@ -36,7 +36,7 @@ public class RigidBody3D
         localDirToWorld.setRotation(orient);
         
         Mat3 invOrientMat3 = Mat3.rotation(Quat.invert(orient));
-        Mat4 invOrientMat4 = Util.expand(invOrientMat3);
+        Mat4 invOrientMat4 = new Mat4(invOrientMat3);
         
         worldDirToLocal.set(invOrientMat3);
         worldToLocal.setTranslation(Vec3.negate(pos));

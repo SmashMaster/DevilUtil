@@ -72,7 +72,8 @@ public class IKConstraint implements Solvable
         localRollTarget.mult(start.inverseRotMatrix);
         localRollTarget.mult(start.inverseBaseMatrix);
         float rollAngle = (float)Math.atan2(localRollTarget.z, localRollTarget.y);
-        start.rotation.mult(Quat.rotation(Util.Axis.X.versor(), Util.reduceRad(rollAngle + poleAngle)));
+        start.rotation.mult(Quat.rotation(new Vec3(1.0f, 0.0f, 0.0f), 
+                                          Util.reduceAngle(rollAngle + poleAngle)));
         
         start.solveRotationMatrix();
         start.solveTailPosition();

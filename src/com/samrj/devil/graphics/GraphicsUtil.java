@@ -16,7 +16,7 @@ public class GraphicsUtil
         GL11.glBegin(mode);
         for (float t=0.0f; t<8.0f; t+=dt)
         {
-            Vec2 p = Util.sqDir(t).normalize().mult(radius).add(pos);
+            Vec2 p = Util.squareDir(t).normalize().mult(radius).add(pos);
             GL11.glVertex2f(p.x, p.y);
         }
         GL11.glEnd();
@@ -38,7 +38,7 @@ public class GraphicsUtil
         
         FloatBuffer buffer = BufferUtil.pubBufA.asFloatBuffer();
         buffer.clear();
-        Util.expand(m).write(buffer);
+        new Mat4(m).write(buffer);
         buffer.rewind();
         GL11.glLoadMatrixf(buffer);
     }

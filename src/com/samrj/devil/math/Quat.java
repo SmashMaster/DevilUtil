@@ -2,7 +2,6 @@ package com.samrj.devil.math;
 
 import com.samrj.devil.io.Bufferable;
 import com.samrj.devil.io.Streamable;
-import com.samrj.devil.math.Util.Axis;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -116,7 +115,7 @@ public class Quat implements Bufferable<FloatBuffer>, Streamable
         Vec3 v1 = Vec3.normalize(end);
 
         float dot = v0.dot(v1);
-        if (dot == 1.0f) //this and v have same direction.
+        if (Util.epsEqual(dot, 1.0f, 1<<6)) //this and v have same direction.
         {
             result.setIdentity();
             return;
@@ -124,19 +123,19 @@ public class Quat implements Bufferable<FloatBuffer>, Streamable
         
         //this and v have opposite direction. Rotate 180 degrees about an
         //arbitrary axis normal to this.
-        if (Util.epsEqual(dot, -1f, 1<<6))
+        if (Util.epsEqual(dot, -1.0f, 1<<6))
         {
-            Vec3 axis = Axis.X.versor().cross(v0);
+            Vec3 axis = new Vec3(1.0f, 0.0f, 0.0f).cross(v0);
             //this lies along X axis and v is our opposite, so we can optimize.
             if (axis.x == 0.0f && axis.y == 0.0f && axis.z == 0.0f)
-                result.set(0f, 0f, 0f, -1f);
+                result.set(0.0f, 0.0f, 0.0f, -1.0f);
             else result.setRotation(axis.normalize(), Util.PI);
             return;
         }
         
         v0.cross(v1);
         float s = (float)Math.sqrt(2f + dot*2f);
-        result.set(.5f*s, v0.x/s, v0.y/s, v0.z/s).normalize();
+        result.set(s*0.5f, v0.x/s, v0.y/s, v0.z/s).normalize();
     }
     
     /**

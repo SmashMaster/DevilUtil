@@ -41,6 +41,30 @@ public class Mat2 implements Bufferable<FloatBuffer>, Streamable
     }
     
     /**
+     * Contracts and copies the source matrix into the target matrix. 
+     * 
+     * @param s The matrix to copy from.
+     * @param r The matrix to copy into.
+     */
+    public static final void copy(Mat3 s, Mat2 r)
+    {
+        r.a = s.a; r.b = s.b;
+        r.c = s.d; r.d = s.e;
+    }
+    
+    /**
+     * Contracts and copies the source matrix into the target matrix. 
+     * 
+     * @param s The matrix to copy from.
+     * @param r The matrix to copy into.
+     */
+    public static final void copy(Mat4 s, Mat2 r)
+    {
+        r.a = s.a; r.b = s.b;
+        r.c = s.e; r.d = s.f;
+    }
+    
+    /**
      * Sets the given matrix to the identity matrix.
      * 
      * @param r The matrix to set to the identity matrix.
@@ -316,6 +340,33 @@ public class Mat2 implements Bufferable<FloatBuffer>, Streamable
         c = mat.c; d = mat.d;
     }
     
+    /**
+     * Contracts the given 3x3 matrix.
+     * 
+     * @param mat The matrix to copy.
+     */
+    public Mat2(Mat3 mat)
+    {
+        a = mat.a; b = mat.b;
+        c = mat.d; d = mat.e;
+    }
+    
+    /**
+     * Contracts the given 4x4 matrix.
+     * 
+     * @param mat The matrix to copy.
+     */
+    public Mat2(Mat4 mat)
+    {
+        a = mat.a; b = mat.b;
+        c = mat.e; d = mat.f;
+    }
+    
+    /**
+     * Returns the determinant of this matrix.
+     * 
+     * @return The determinant of this matrix.
+     */
     public float determinant()
     {
         return determinant(this);
@@ -326,8 +377,33 @@ public class Mat2 implements Bufferable<FloatBuffer>, Streamable
      * Sets this to the given matrix.
      * 
      * @param mat The matrix to set this to.
+     * @return This matrix.
      */
     public Mat2 set(Mat2 mat)
+    {
+        copy(mat, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to the upper left corner of the given matrix.
+     * 
+     * @param mat The matrix to set this to.
+     * @return This matrix.
+     */
+    public Mat2 set(Mat3 mat)
+    {
+        copy(mat, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to the upper left corner of the given matrix.
+     * 
+     * @param mat The matrix to set this to.
+     * @return This matrix.
+     */
+    public Mat2 set(Mat4 mat)
     {
         copy(mat, this);
         return this;
