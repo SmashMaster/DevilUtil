@@ -42,7 +42,7 @@ public class Bone implements Solvable
     
     //Live properties
     public final Vec3 location = new Vec3();
-    public final Quat rotation = new Quat();
+    public final Quat rotation = Quat.identity();
     public final Mat4 matrix = new Mat4();
     
     //Rotation matrices rotate in local space.

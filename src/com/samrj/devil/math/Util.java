@@ -119,7 +119,7 @@ public class Util
      * @param x The value to clamp.
      * @return The clamped value.
      */
-    public static final float clamp(float min, float max, float x)
+    public static final float clamp(float x, float min, float max)
     {
         if (x < min) return min;
         if (x > max) return max;
@@ -223,7 +223,32 @@ public class Util
         return 1.0f - (float)Math.pow(clamp(x, 0.0f, 1.0f), exp);
     }
     
+    /**
+     * Solves the quadratic formula with the given coefficients.
+     * 
+     * @param a The quadratic coefficient.
+     * @param b The linear coefficient.
+     * @param c The constant coefficient.
+     * @return A float array of length 0, 1, or 2.
+     */
+    public static float[] quadFormula(float a, float b, float c)
+    {
+        if (Util.isSubnormal(a)) return new float[0];
+        
+        float discriminant = b*b - 4f*a*c;
+        
+        if (discriminant < 0.0f || !Float.isFinite(discriminant)) return new float[0];
+        if (discriminant == 0.0f) return new float[] {-b/(a*2f)};
+        
+        float sqrtDisc = (float)Math.sqrt(discriminant);
+        
+        float a2 = a*2f;
+        return new float[] {(-b - sqrtDisc)/a2, (sqrtDisc - b)/a2};
+    }
+    
     public static final float PI = (float)Math.PI;
+    public static final float PIm2 = (float)(Math.PI*2.0);
+    public static final float PId2 = (float)(Math.PI/2.0);
     public static final float TO_RADIANS = (float)(Math.PI/180.0);
     public static final float TO_DEGREES = (float)(180.0/Math.PI);
     

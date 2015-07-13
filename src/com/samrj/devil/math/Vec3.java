@@ -495,7 +495,7 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
     public static final Vec3 negate(Vec3 v)
     {
         Vec3 result = new Vec3();
-        negate(result, result);
+        negate(v, result);
         return result;
     }
     

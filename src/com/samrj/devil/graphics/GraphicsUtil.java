@@ -5,6 +5,7 @@ import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
+import com.samrj.devil.math.Vec3;
 import java.nio.FloatBuffer;
 import org.lwjgl.opengl.GL11;
 
@@ -15,10 +16,7 @@ public class GraphicsUtil
         float dt = 8.0f/segments;
         GL11.glBegin(mode);
         for (float t=0.0f; t<8.0f; t+=dt)
-        {
-            Vec2 p = Util.squareDir(t).normalize().mult(radius).add(pos);
-            GL11.glVertex2f(p.x, p.y);
-        }
+            glVertex(Util.squareDir(t).normalize().mult(radius).add(pos));
         GL11.glEnd();
     }
     
@@ -52,6 +50,16 @@ public class GraphicsUtil
         m.write(buffer);
         buffer.rewind();
         GL11.glLoadMatrixf(buffer);
+    }
+    
+    public static void glVertex(Vec2 v)
+    {
+        GL11.glVertex2f(v.x, v.y);
+    }
+    
+    public static void glVertex(Vec3 v)
+    {
+        GL11.glVertex3f(v.x, v.y, v.z);
     }
     
     private GraphicsUtil()
