@@ -3,7 +3,6 @@ package com.samrj.devil.graphics.model;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Quat;
-import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 import java.io.DataInputStream;
 import java.io.IOException;
