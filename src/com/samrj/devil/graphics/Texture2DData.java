@@ -1,5 +1,6 @@
 package com.samrj.devil.graphics;
 
+import com.samrj.devil.io.BufferUtil;
 import com.samrj.devil.res.FileRes;
 import com.samrj.devil.res.Resource;
 import java.awt.image.BufferedImage;
@@ -49,7 +50,7 @@ public class Texture2DData
         if (bands == -1) throw new IllegalArgumentException("Illegal format specified.");
         
         int length = width*height*bands;
-        buffer = ByteBuffer.allocateDirect(length);
+        buffer = BufferUtil.createByteBuffer(length);
         buffer.put(new byte[length]);
     }
     
@@ -137,7 +138,7 @@ public class Texture2DData
     
     private void load(Raster raster)
     {
-        buffer = ByteBuffer.allocateDirect(width*height*bands);
+        buffer = BufferUtil.createByteBuffer(width*height*bands);
         
         for (int y=height-1; y>=0; y--)
             for (int x=0; x<width; x++)
@@ -164,5 +165,12 @@ public class Texture2DData
     public GLTexture2D makeTexture2D()
     {
         return new GLTexture2D(this);
+    }
+    
+    @Override
+    public String toString()
+    {
+        return "W: " + width + " H: " + height + " Format: " + TexUtil.formatToString(format) +
+               " Base Format: " + TexUtil.formatToString(baseFormat) + " Bands: " + bands;
     }
 }

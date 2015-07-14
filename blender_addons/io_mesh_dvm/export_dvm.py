@@ -190,7 +190,7 @@ class LoopVertexPointer:
         self.loop_vertex = loop_vertex
         loop_vertex.pointers.append(self)
         
-def loopVerticesEqual(lva, lvb):
+def loopVerticesEqual(lva, lvb, use_tangents):
     #Ensure indices are equal
     if lva.loop.vertex_index != lvb.loop.vertex_index:
         return False
@@ -199,6 +199,12 @@ def loopVerticesEqual(lva, lvb):
     for a, b in zip(lva.loop.normal, lvb.loop.normal):
         if a != b:
             return False
+    
+    #Ensure tangents are equal
+    if use_tangents:
+        for a, b in zip(lva.loop.tangent, lvb.loop.tangent):
+            if a != b:
+                return False
     
     #Ensure uvs are equal
     lva_has_uv = lva.uv_loop is not None
@@ -224,10 +230,10 @@ def loopVerticesEqual(lva, lvb):
     
     return True
 
-def prepareMesh(mesh):
+def prepareMesh(mesh, use_tangents):
     #Make sure we have all of the data we need
     mesh.calc_tessface()
-    mesh.calc_normals_split()
+    mesh.calc_tangents()
     
     has_uvs = False
     has_vertex_colors = False
@@ -274,7 +280,7 @@ def prepareMesh(mesh):
         for loop_vertex in loop_vertices:
             identical = None
             for new_loop_vertex in new_loop_vertices:
-                if loopVerticesEqual(loop_vertex, new_loop_vertex):
+                if loopVerticesEqual(loop_vertex, new_loop_vertex, use_tangents):
                     identical = new_loop_vertex
                     for pointer in loop_vertex.pointers:
                         pointer.loop_vertex = new_loop_vertex
@@ -301,9 +307,9 @@ def prepareMesh(mesh):
 DVM_MESH_FLAG_HAS_UVS = 1
 DVM_MESH_FLAG_HAS_VERTEX_COLORS = 2
 
-def exportMesh(file, object, armature_bone_indices):
+def exportMesh(file, object, armature_bone_indices, use_tangents):
     mesh = object.data
-    vertices, triangles, has_uvs, has_vertex_colors = prepareMesh(mesh)
+    vertices, triangles, has_uvs, has_vertex_colors = prepareMesh(mesh, use_tangents)
     
     #Write mesh name
     writePaddedJavaUTF(file, object.name)
@@ -347,6 +353,10 @@ def exportMesh(file, object, armature_bone_indices):
     #Normals
     for vertex in vertices:
         file.write(struct.pack('>3f', *vec3BlendToDevil(vertex.loop.normal)))
+    #Tangents
+    if use_tangents:
+        for vertex in vertices:
+            file.write(struct.pack('>3f', *vec3BlendToDevil(vertex.loop.tangent)))
     #UVs
     if has_uvs:
         for vertex in vertices: 
@@ -397,9 +407,9 @@ def exportMesh(file, object, armature_bone_indices):
         for pointer in triangle.loop_vertex_pointers:
             file.write(struct.pack('>i', pointer.loop_vertex.index))
 
-def export(filepath):
+def export(filepath, use_tangents):
     os.system("cls")
-
+    
     # Exit edit mode before exporting, so current object states are exported properly.
     if bpy.ops.object.mode_set.poll():
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -435,9 +445,10 @@ def export(filepath):
         else:
             file.write(struct.pack('>i', False))
         
+        file.write(struct.pack('>i', use_tangents))
         file.write(struct.pack('>i', len(meshes)))
         for mesh in meshes:
-            exportMesh(file, mesh, armature_bone_indices)
+            exportMesh(file, mesh, armature_bone_indices, use_tangents)
     finally:
         file.close()
     

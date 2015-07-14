@@ -92,6 +92,63 @@ public class TexUtil
             default: return -1;
         }
     }
+    
+    /**
+     * Returns the OpenGL field name for the given format.
+     * 
+     * @param format An OpenGL texture format.
+     * @return The OpenGL field name for the given format.
+     */
+    public static String formatToString(int format)
+    {
+        switch (format)
+        {
+            case GL11.GL_DEPTH_COMPONENT: return "GL_DEPTH_COMPONENT";
+            case GL14.GL_DEPTH_COMPONENT16: return "GL_DEPTH_COMPONENT16";
+            case GL14.GL_DEPTH_COMPONENT24: return "GL_DEPTH_COMPONENT24";
+            case GL14.GL_DEPTH_COMPONENT32: return "GL_DEPTH_COMPONENT32";
+            case GL30.GL_DEPTH_COMPONENT32F: return "GL_DEPTH_COMPONENT32F";
+                
+            case GL11.GL_RED: return "GL_RED";
+            case GL30.GL_R8: return "GL_R8";
+            case GL30.GL_R16: return "GL_R16";
+            case GL30.GL_R16F: return "GL_R16F";
+            case GL30.GL_R16I: return "GL_R16I";
+            case GL30.GL_R32F: return "GL_R32F";
+            case GL30.GL_R32I: return "GL_R32I";
+                
+            case GL30.GL_DEPTH_STENCIL: return "GL_DEPTH_STENCIL";
+            case GL30.GL_DEPTH24_STENCIL8: return "GL_DEPTH24_STENCIL8";
+            case GL30.GL_DEPTH32F_STENCIL8: return "GL_DEPTH32F_STENCIL8";
+                
+            case GL30.GL_RG: return "GL_RG";
+            case GL30.GL_RG8: return "GL_RG8";
+            case GL30.GL_RG16: return "GL_RG16";
+            case GL30.GL_RG16F: return "GL_RG16F";
+            case GL30.GL_RG16I: return "GL_RG16I";
+            case GL30.GL_RG32F: return "GL_RG32F";
+            case GL30.GL_RG32I: return "GL_RG32I";
+                
+            case GL11.GL_RGB: return "GL_RGB";
+            case GL11.GL_RGB8: return "GL_RGB8";
+            case GL11.GL_RGB16: return "GL_RGB16";
+            case GL30.GL_RGB16F: return "GL_RGB16F";
+            case GL30.GL_RGB16I: return "GL_RGB16I";
+            case GL30.GL_RGB32F: return "GL_RGB32F";
+            case GL30.GL_RGB32I: return "GL_RGB32I";
+                
+            case GL11.GL_RGBA: return "GL_RGBA";
+            case GL11.GL_RGBA8: return "GL_RGBA8";
+            case GL11.GL_RGBA16: return "GL_RGBA16";
+            case GL30.GL_RGBA16F: return "GL_RGBA16F";
+            case GL30.GL_RGBA16I: return "GL_RGBA16I";
+            case GL30.GL_RGBA32F: return "GL_RGBA32F";
+            case GL30.GL_RGBA32I: return "GL_RGBA32I";
+                
+            default: return "UNSUPPORTED_FORMAT";
+        }
+    }
+    
     /**
      * @param bands the number of color channels for a format.
      * @return the 'best guess' format compatible with the given number of

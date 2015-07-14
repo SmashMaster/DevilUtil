@@ -17,7 +17,7 @@ public class GLMesh
 {
     private final GLShader shader;
     private final Mesh mesh;
-    private final int posOffset, normalOffset, uvOffset, colorOffset, groupsOffset, weightsOffset;
+    private final int posOffset, normalOffset, tangentOffset, uvOffset, colorOffset, groupsOffset, weightsOffset;
     
     private int vertexArray;
     private int vertexBuffer, elementBuffer;
@@ -30,7 +30,8 @@ public class GLMesh
         //Set up offsets based on previous offset.
         posOffset = 0;
         normalOffset = posOffset + mesh.numVertices*3*4; //3 components for position X 4 bytes per component
-        uvOffset = normalOffset + mesh.numVertices*3*4; //UV offset is the same whether UVs exist or not
+        tangentOffset = normalOffset + mesh.numVertices*3*4;
+        uvOffset = tangentOffset + mesh.numVertices*(mesh.hasTangents ? 3 : 0)*4;
         colorOffset = uvOffset + mesh.numVertices*(mesh.hasUVs ? 2 : 0)*4;
         groupsOffset = colorOffset + mesh.numVertices*(mesh.hasVertexColors ? 3 : 0)*4;
         weightsOffset = groupsOffset + mesh.numVertices*mesh.numVertexGroups*4;
@@ -79,6 +80,12 @@ public class GLMesh
     {
         int location = getEnableLocation(name);
         GL20.glVertexAttribPointer(location, 3, GL11.GL_FLOAT, false, 0, normalOffset);
+    }
+    
+    public void setTangentName(String name)
+    {
+        int location = getEnableLocation(name);
+        GL20.glVertexAttribPointer(location, 3, GL11.GL_FLOAT, false, 0, tangentOffset);
     }
     
     public void setUVName(String name)

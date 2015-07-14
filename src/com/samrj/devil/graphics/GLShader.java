@@ -7,6 +7,7 @@ import com.samrj.devil.io.Bufferable;
 import com.samrj.devil.math.Mat2;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
+import com.samrj.devil.math.Vec3;
 import com.samrj.devil.res.Resource;
 import java.io.*;
 import java.nio.FloatBuffer;
@@ -241,6 +242,11 @@ public class GLShader
     {
         int loc = glGetUniformLocation(name);
         GL20.glUniform3f(loc, x, y, z); GLDebug.check();
+    }
+    
+    public void glUniform3f(String name, Vec3 v)
+    {
+        glUniform3f(name, v.x, v.y, v.z);
     }
     
     public void glUniform4f(String name, float x, float y, float z, float w)

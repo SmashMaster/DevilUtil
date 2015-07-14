@@ -43,7 +43,7 @@ public class GLTexture2D
             enabling = true;
         }
         id = GL11.glGenTextures();
-        glBind();
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, id);
         
         this.width = data.width;
         this.height = data.height;

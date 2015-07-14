@@ -16,7 +16,7 @@ import java.nio.IntBuffer;
 public class Mesh
 {
     public final String name;
-    public final boolean hasUVs, hasVertexColors;
+    public final boolean hasTangents, hasUVs, hasVertexColors;
     public final String[] textures;
     public final int numVertexGroups;
     
@@ -25,11 +25,12 @@ public class Mesh
     public final int numTriangles;
     public final IntBuffer triangleIndexData;
     
-    public Mesh(DataInputStream in, Armature armature) throws IOException
+    public Mesh(DataInputStream in, Armature armature, boolean hasTangents) throws IOException
     {
         name = DevilModel.readPaddedUTF(in);
         
         int bitFlags = in.readInt();
+        this.hasTangents = hasTangents;
         hasUVs = (bitFlags & 1) == 1;
         hasVertexColors = (bitFlags & 2) == 2;
         
@@ -42,6 +43,7 @@ public class Mesh
         
         //The order and length of vertex data is defined in export_dvm.py
         int floatsPerVertex = 3 + 3;
+        if (hasTangents) floatsPerVertex += 3;
         if (hasUVs) floatsPerVertex += 2;
         if (hasVertexColors) floatsPerVertex += 3;
         floatsPerVertex += numVertexGroups*2;

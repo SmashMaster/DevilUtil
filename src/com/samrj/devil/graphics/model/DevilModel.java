@@ -65,13 +65,14 @@ public class DevilModel
                 actionIndices = null;
             }
             
+            boolean hasTangents = in.readInt() != 0;
             
             int numMeshes = in.readInt();
             meshes = new Mesh[numMeshes];
             meshIndices = new HashMap<>(numMeshes);
             for (int i=0; i<numMeshes; i++)
             {
-                meshes[i] = new Mesh(in, armature);
+                meshes[i] = new Mesh(in, armature, hasTangents);
                 meshIndices.put(meshes[i].name, i);
             }
         }
