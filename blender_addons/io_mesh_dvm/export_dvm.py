@@ -233,7 +233,10 @@ def loopVerticesEqual(lva, lvb, use_tangents):
 def prepareMesh(mesh, use_tangents):
     #Make sure we have all of the data we need
     mesh.calc_tessface()
-    mesh.calc_tangents()
+    if use_tangents:
+        mesh.calc_tangents()
+    else:
+        mesh.calc_normals_split()
     
     has_uvs = False
     has_vertex_colors = False
@@ -409,6 +412,7 @@ def exportMesh(file, object, armature_bone_indices, use_tangents):
 
 def export(filepath, use_tangents):
     os.system("cls")
+    print("EXPORTING DVM...")
     
     # Exit edit mode before exporting, so current object states are exported properly.
     if bpy.ops.object.mode_set.poll():
@@ -452,4 +456,5 @@ def export(filepath, use_tangents):
     finally:
         file.close()
     
+    print("DVM EXPORT SUCCESSFUL.")
     return {'FINISHED'}

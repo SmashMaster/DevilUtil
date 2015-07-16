@@ -56,7 +56,7 @@ public class Bone implements Solvable
         parentIndex = in.readInt();
         
         int flagBits = in.readInt();
-        inheritRotation = (flagBits & 1) == 1;
+        inheritRotation = parentIndex >= 0 && (flagBits & 1) == 1;
         localLocation = (flagBits & 2) == 2;
         head = new Vec3();
         head.read(in);

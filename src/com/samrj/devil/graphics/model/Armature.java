@@ -60,7 +60,7 @@ public class Armature
                 solveGraph.addEdge(ikConstraint, child);
             
             solveGraph.addEdge(ikConstraint.target, ikConstraint);
-            solveGraph.addEdge(ikConstraint.poleTarget, ikConstraint);
+            solveGraph.addEdge(ikConstraint.pole, ikConstraint);
         }
         
         solveOrder = solveGraph.sort();
