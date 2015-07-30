@@ -25,10 +25,10 @@ public class GLShader
 {
     public static GLShader getCurrentShader()
     {
-        int id = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM); GLDebug.check();
+        int id = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
         if (id == 0) return null;
         
-        int numShaders = GL20.glGetProgrami(id, GL20.GL_ATTACHED_SHADERS); GLDebug.check();
+        int numShaders = GL20.glGetProgrami(id, GL20.GL_ATTACHED_SHADERS);
         if (numShaders != 2) return null;
         
         BufferUtil.clearPublicBuffers();
@@ -36,7 +36,7 @@ public class GLShader
         IntBuffer countBuf = pubBufB.asIntBuffer();
         countBuf.put(1);
         countBuf.rewind();
-        GL20.glGetAttachedShaders(id, countBuf, shadBuf); GLDebug.check();
+        GL20.glGetAttachedShaders(id, countBuf, shadBuf);
         
         int vertid = shadBuf.get(0);
         int fragid = shadBuf.get(1);
@@ -72,12 +72,12 @@ public class GLShader
     public GLShader(Resource vert, Resource frag, boolean shouldComplete) throws IOException, ShaderException
     {
         if (vert == null || frag == null) throw new NullPointerException();
-        id = GL20.glCreateProgram(); GLDebug.check();
+        id = GL20.glCreateProgram();
         vertid = loadShader(vert, GL20.GL_VERTEX_SHADER);
         fragid = loadShader(frag, GL20.GL_FRAGMENT_SHADER);
         
-        GL20.glAttachShader(id, vertid); GLDebug.check();
-        GL20.glAttachShader(id, fragid); GLDebug.check();
+        GL20.glAttachShader(id, vertid);
+        GL20.glAttachShader(id, fragid);
 
         if (shouldComplete) glComplete();
     }
@@ -89,8 +89,8 @@ public class GLShader
         vertid = loadShader(vert.getSource(), GL20.GL_VERTEX_SHADER);
         fragid = loadShader(frag.getSource(), GL20.GL_FRAGMENT_SHADER);
         
-        GL20.glAttachShader(id, vertid); GLDebug.check();
-        GL20.glAttachShader(id, fragid); GLDebug.check();
+        GL20.glAttachShader(id, vertid);
+        GL20.glAttachShader(id, fragid);
 
         if (shouldComplete) glComplete();
     }
@@ -128,13 +128,13 @@ public class GLShader
     
     public void glLink() throws ShaderException
     {
-        GL20.glLinkProgram(id); GLDebug.check();
+        GL20.glLinkProgram(id);
         checkProgramStatus(GL20.GL_LINK_STATUS);
     }
     
     public void glValidate() throws ShaderException
     {
-        GL20.glValidateProgram(id); GLDebug.check();
+        GL20.glValidateProgram(id);
         checkProgramStatus(GL20.GL_VALIDATE_STATUS);
     }
     
@@ -142,8 +142,7 @@ public class GLShader
     {
         if (GL20.glGetProgrami(id, type) != GL11.GL_TRUE)
         {
-            GLDebug.check();
-            String log = GL20.glGetProgramInfoLog(id, GL20.glGetProgrami(id, GL20.GL_INFO_LOG_LENGTH)); GLDebug.check();
+            String log = GL20.glGetProgramInfoLog(id, GL20.glGetProgrami(id, GL20.GL_INFO_LOG_LENGTH));
             throw new ShaderException(log);
         }
     }
@@ -167,16 +166,15 @@ public class GLShader
     {
         if (source == null) throw new NullPointerException();
         
-        int shader = GL20.glCreateShader(type); GLDebug.check();
+        int shader = GL20.glCreateShader(type);
         if (shader == 0) return 0;
         
-        GL20.glShaderSource(shader, source); GLDebug.check();
-        GL20.glCompileShader(shader); GLDebug.check();
+        GL20.glShaderSource(shader, source);
+        GL20.glCompileShader(shader);
         
         if (GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) != GL11.GL_TRUE)
         {
-            GLDebug.check();
-            String log = GL20.glGetShaderInfoLog(shader, GL20.glGetShaderi(shader, GL20.GL_INFO_LOG_LENGTH)); GLDebug.check();
+            String log = GL20.glGetShaderInfoLog(shader, GL20.glGetShaderi(shader, GL20.GL_INFO_LOG_LENGTH));
             throw new ShaderException(log);
         }
         
@@ -185,29 +183,29 @@ public class GLShader
     
     public void glUse()
     {
-        GL20.glUseProgram(id); GLDebug.check();
+        GL20.glUseProgram(id);
     }
     
     public void glUnuse()
     {
-        GL20.glUseProgram(0); GLDebug.check();
+        GL20.glUseProgram(0);
     }
     
     public boolean glInUse()
     {
-        boolean out = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM) == id; GLDebug.check();
+        boolean out = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM) == id;
         return out;
     }
     
     public void glBindFragDataLocation(int colorNumber, String name)
     {
-        GL30.glBindFragDataLocation(id, colorNumber, name); GLDebug.check();
+        GL30.glBindFragDataLocation(id, colorNumber, name);
     }
     
     public int glGetAttribLocation(String name)
     {
         if (!glInUse()) throw new IllegalStateException();
-        int out = GL20.glGetAttribLocation(id, name); GLDebug.check();
+        int out = GL20.glGetAttribLocation(id, name);
         if (out < 0) throw new LocationNotFoundException();
         return out;
     }
@@ -215,7 +213,7 @@ public class GLShader
     public int glGetUniformLocation(String name)
     {
         if (!glInUse()) throw new IllegalStateException();
-        int out = GL20.glGetUniformLocation(id, name); GLDebug.check();
+        int out = GL20.glGetUniformLocation(id, name);
         if (out < 0) throw new LocationNotFoundException();
         return out;
     }
@@ -223,25 +221,25 @@ public class GLShader
     public void glUniform1i(String name, int x)
     {
         int loc = glGetUniformLocation(name);
-        GL20.glUniform1i(loc, x); GLDebug.check();
+        GL20.glUniform1i(loc, x);
     }
     
     public void glUniform1f(String name, float x)
     {
         int loc = glGetUniformLocation(name);
-        GL20.glUniform1f(loc, x); GLDebug.check();
+        GL20.glUniform1f(loc, x);
     }
     
     public void glUniform2f(String name, float x, float y)
     {
         int loc = glGetUniformLocation(name);
-        GL20.glUniform2f(loc, x, y); GLDebug.check();
+        GL20.glUniform2f(loc, x, y);
     }
     
     public void glUniform3f(String name, float x, float y, float z)
     {
         int loc = glGetUniformLocation(name);
-        GL20.glUniform3f(loc, x, y, z); GLDebug.check();
+        GL20.glUniform3f(loc, x, y, z);
     }
     
     public void glUniform3f(String name, Vec3 v)
@@ -252,25 +250,25 @@ public class GLShader
     public void glUniform4f(String name, float x, float y, float z, float w)
     {
         int loc = glGetUniformLocation(name);
-        GL20.glUniform4f(loc, x, y, z, w); GLDebug.check();
+        GL20.glUniform4f(loc, x, y, z, w);
     }
     
     public void glUniformMatrix2f(String name, Mat2 matrix)
     {
         int loc = glGetUniformLocation(name);
-        GL20.glUniformMatrix2fv(loc, false, buffer(matrix)); GLDebug.check();
+        GL20.glUniformMatrix2fv(loc, false, buffer(matrix));
     }
     
     public void glUniformMatrix3f(String name, Mat3 matrix)
     {
         int loc = glGetUniformLocation(name);
-        GL20.glUniformMatrix3fv(loc, false, buffer(matrix)); GLDebug.check();
+        GL20.glUniformMatrix3fv(loc, false, buffer(matrix));
     }
     
     public void glUniformMatrix4f(String name, Mat4 matrix)
     {
         int loc = glGetUniformLocation(name);
-        GL20.glUniformMatrix4fv(loc, false, buffer(matrix)); GLDebug.check();
+        GL20.glUniformMatrix4fv(loc, false, buffer(matrix));
     }
     
     public int id()
@@ -280,9 +278,9 @@ public class GLShader
     
     public void glDelete()
     {
-        GL20.glDeleteProgram(id); GLDebug.check();
-        GL20.glDeleteShader(vertid); GLDebug.check();
-        GL20.glDeleteShader(fragid); GLDebug.check();
+        GL20.glDeleteProgram(id);
+        GL20.glDeleteShader(vertid);
+        GL20.glDeleteShader(fragid);
         id = -1;
         vertid = -1;
         fragid = -1;
