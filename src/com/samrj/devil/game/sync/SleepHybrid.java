@@ -13,7 +13,6 @@ package com.samrj.devil.game.sync;
 public class SleepHybrid extends SleepMethod
 {
     private final MovingLongAvg sleepAvg;
-    private long busyError;
     
     /**
      * Creates a new hybrid sleep object.
@@ -65,7 +64,7 @@ public class SleepHybrid extends SleepMethod
         }
         
         //Busy wait until we pass our target.
-        while (now + busyError < end) now = System.nanoTime();
+        while (now < end) now = System.nanoTime();
         
         return now;
     }
