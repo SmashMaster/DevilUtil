@@ -1,6 +1,5 @@
-package com.samrj.devil.config.field;
+package com.samrj.devil.config;
 
-import com.samrj.devil.config.CfgField;
 import com.samrj.devil.math.Util;
 
 /**

@@ -1,13 +1,16 @@
 package com.samrj.devil.game;
 
+import com.samrj.devil.config.CfgAngle;
+import com.samrj.devil.config.CfgBoolean;
+import com.samrj.devil.config.CfgFloat;
+import com.samrj.devil.config.CfgInteger;
 import com.samrj.devil.config.Configuration;
-import com.samrj.devil.config.field.CfgBoolean;
-import com.samrj.devil.config.field.CfgInteger;
-import com.samrj.devil.config.field.CfgResolution;
+import com.samrj.devil.config.CfgResolution;
 import com.samrj.devil.display.GLFWUtil;
 import com.samrj.devil.display.VideoMode;
 import com.samrj.devil.game.sync.SleepHybrid;
 import com.samrj.devil.game.sync.Sync;
+import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2i;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
@@ -24,6 +27,18 @@ import org.lwjgl.opengl.OpenGLException;
  */
 public abstract class Game
 {
+    private static Configuration defaultConfig()
+    {
+        Configuration config = new Configuration();
+        config.addField("fullscreen", new CfgBoolean(false));
+        config.addField("borderless", new CfgBoolean(false));
+        config.addField("res", new CfgResolution(1280, 720));
+        config.addField("vsync", new CfgBoolean(false));
+        config.addField("fps", new CfgInteger(60));
+        config.addField("msaa", new CfgInteger(0));
+        return config;
+    }
+    
     private boolean running;
     
     public final Configuration config;
@@ -40,12 +55,12 @@ public abstract class Game
         if (config == null) throw new NullPointerException();
         this.config = config;
         
-        boolean fullscreen = ((CfgBoolean)config.getField("fullscreen")).value;
-        boolean borderless = ((CfgBoolean)config.getField("borderless")).value;
-        int msaa = ((CfgInteger)config.getField("msaa")).value;
+        boolean fullscreen = config.getBoolean("fullscreen");
+        boolean borderless = config.getBoolean("borderless");
         CfgResolution res = config.getField("res");
-        boolean vsync = ((CfgBoolean)config.getField("vsync")).value;
-        int fps = ((CfgInteger)config.getField("fps")).value;
+        boolean vsync = config.getBoolean("vsync");
+        int fps = config.getInt("fps");
+        int msaa = config.getInt("msaa");
         
         // <editor-fold defaultstate="collapsed" desc="Initialize Window">
         {
@@ -125,6 +140,11 @@ public abstract class Game
         // </editor-fold>
         
         context.checkGLError();
+    }
+    
+    public Game() throws OpenGLException
+    {
+        this(defaultConfig());
     }
     
     public abstract void onMouseMoved(float x, float y, float dx, float dy);

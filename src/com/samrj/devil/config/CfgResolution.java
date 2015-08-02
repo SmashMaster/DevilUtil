@@ -1,6 +1,4 @@
-package com.samrj.devil.config.field;
-
-import com.samrj.devil.config.CfgField;
+package com.samrj.devil.config;
 
 /**
  * Configuration field for resolution values--a pair of integer values separated
