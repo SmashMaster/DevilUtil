@@ -91,10 +91,14 @@ public class Mouse
         return states[button];
     }
     
+    public void setCursorMode(int glfwCursorModeEnum)
+    {
+        GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, glfwCursorModeEnum);
+    }
+    
     public void setGrabbed(boolean grabbed)
     {
-        int mode = grabbed ? GLFW.GLFW_CURSOR_DISABLED : GLFW.GLFW_CURSOR_NORMAL;
-        GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, mode);
+        setCursorMode(grabbed ? GLFW.GLFW_CURSOR_DISABLED : GLFW.GLFW_CURSOR_NORMAL);
     }
     
     public boolean isGrabbed()
