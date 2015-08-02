@@ -83,4 +83,12 @@ public final class CfgLoader
         reader.close();
         return config;
     }
+    
+    /**
+     * @return The default configuration for this loader.
+     */
+    public Configuration loadDefault()
+    {
+        return new Configuration(fields);
+    }
 }

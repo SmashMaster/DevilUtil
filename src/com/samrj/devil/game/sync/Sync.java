@@ -20,6 +20,7 @@ public class Sync
         if (sleepMethod == null) throw new NullPointerException();
         
         dt = Math.round(1_000_000_000.0/fps);
+        
         this.sleepMethod = sleepMethod;
     }
     
@@ -35,7 +36,12 @@ public class Sync
     {
         long t = System.nanoTime();
         
-        if (initialized) t = sleepMethod.sleep(t, frameStart + dt);
+        if (initialized)
+        {
+            long frameEnd = frameStart + dt;
+            t = sleepMethod.sleep(t, frameStart + dt);
+            frameStart = frameEnd;
+        }
         else
         {
             frameStart = t;
