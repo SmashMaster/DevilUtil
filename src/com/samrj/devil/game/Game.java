@@ -1,8 +1,6 @@
 package com.samrj.devil.game;
 
-import com.samrj.devil.config.CfgAngle;
 import com.samrj.devil.config.CfgBoolean;
-import com.samrj.devil.config.CfgFloat;
 import com.samrj.devil.config.CfgInteger;
 import com.samrj.devil.config.Configuration;
 import com.samrj.devil.config.CfgResolution;
@@ -10,7 +8,6 @@ import com.samrj.devil.display.GLFWUtil;
 import com.samrj.devil.display.VideoMode;
 import com.samrj.devil.game.sync.SleepHybrid;
 import com.samrj.devil.game.sync.Sync;
-import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2i;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
@@ -40,6 +37,7 @@ public abstract class Game
     }
     
     private boolean running;
+    private long lastFrameTime;
     
     public final Configuration config;
     public final long monitor, window;
@@ -48,6 +46,7 @@ public abstract class Game
     public final Keyboard keyboard;
     
     private final Sync sync;
+    private final long frameTime;
     private final EventBuffer eventBuffer;
     
     public Game(Configuration config) throws OpenGLException
@@ -99,11 +98,21 @@ public abstract class Game
             if (msaa > 0) GL11.glEnable(GL13.GL_MULTISAMPLE);
         }
         // </editor-fold>
-        {//Initialize frame synchronizer
+        // <editor-fold defaultstate="collapsed" desc="Initialize Sync">
+        {
             if (!vsync && fps > 0)
+            {
                 sync = new Sync(fps, new SleepHybrid());
-            else sync = null;
+                frameTime = sync.getFrameTime();
+            }
+            else
+            {
+                sync = null;
+                VideoMode mode = GLFWUtil.getPrimaryMonitorVideoMode();
+                frameTime = Math.round(1_000_000_000.0/mode.refreshRate);
+            }
         }
+        // </editor-fold>
         // <editor-fold defaultstate="collapsed" desc="Initialize Input">
         {
             mouse = new Mouse(window)
@@ -159,7 +168,7 @@ public abstract class Game
         running = true;
         GLFW.glfwShowWindow(window);
         
-        long lastFrameStart = System.nanoTime();
+        long lastFrameStart = System.nanoTime() - frameTime;
         
         while (running) try
         {
@@ -175,7 +184,7 @@ public abstract class Game
             {
                 final float segmentLength = 1.0f/120.0f;
 
-                long lastFrameTime = frameStart - lastFrameStart;
+                lastFrameTime = frameStart - lastFrameStart;
                 float dt = (float)(lastFrameTime/1_000_000_000.0);
                 
                 if (dt <= segmentLength) step(dt);
@@ -210,6 +219,11 @@ public abstract class Game
     public final void stop()
     {
         running = false;
+    }
+    
+    public final long lastFrameTime()
+    {
+        return lastFrameTime;
     }
     
     public abstract void onDestroy();

@@ -50,4 +50,9 @@ public class Sync
         
         return t;
     }
+    
+    public long getFrameTime()
+    {
+        return dt;
+    }
 }
