@@ -49,9 +49,9 @@ public abstract class Game
     private final long frameTime;
     private final EventBuffer eventBuffer;
     
-    public Game(Configuration config) throws OpenGLException
+    public Game(String title, Configuration config) throws OpenGLException
     {
-        if (config == null) throw new NullPointerException();
+        if (title == null || config == null) throw new NullPointerException();
         this.config = config;
         
         boolean fullscreen = config.getBoolean("fullscreen");
@@ -74,8 +74,8 @@ public abstract class Game
             GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_DEBUG_CONTEXT, GL11.GL_TRUE);
 
             monitor = fullscreen ? GLFW.glfwGetPrimaryMonitor() : 0;
-            window = GLFW.glfwCreateWindow(res.width, res.height, "Nocturne", monitor, 0);
-
+            window = GLFW.glfwCreateWindow(res.width, res.height, title, monitor, 0);
+            
             GLFW.glfwMakeContextCurrent(window);
             GLFW.glfwSwapInterval(vsync ? 1 : 0);
             GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
@@ -153,7 +153,12 @@ public abstract class Game
     
     public Game() throws OpenGLException
     {
-        this(defaultConfig());
+        this("Game", defaultConfig());
+    }
+    
+    public final void setTitle(String title)
+    {
+        GLFW.glfwSetWindowTitle(window, title);
     }
     
     public abstract void onMouseMoved(float x, float y, float dx, float dy);

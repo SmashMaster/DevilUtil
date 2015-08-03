@@ -198,6 +198,22 @@ public class BufferUtil
         return buffer;
     }
     
+    /**
+     * Utility float buffer method. Can only fit up to 32 floats. Uses pubBufA
+     * for buffering--you can't use this for two bufferables at the same time.
+     * 
+     * @param data The data to buffer.
+     * @return A rewound buffer containing the given data.
+     */
+    public static FloatBuffer fBuffer(Bufferable<FloatBuffer> data)
+    {
+        FloatBuffer out = pubBufA.asFloatBuffer();
+        out.clear();
+        data.write(out);
+        out.rewind();
+        return out;
+    }
+    
     private BufferUtil()
     {
     }

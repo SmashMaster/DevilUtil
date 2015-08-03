@@ -39,8 +39,13 @@ public class Sync
         if (initialized)
         {
             long frameEnd = frameStart + dt;
-            t = sleepMethod.sleep(t, frameStart + dt);
-            frameStart = frameEnd;
+            
+            if (t < frameEnd)
+            {
+                t = sleepMethod.sleep(t, frameStart + dt);
+                frameStart = frameEnd;
+            }
+            else frameStart = t;
         }
         else
         {

@@ -3,14 +3,12 @@ package com.samrj.devil.graphics;
 import com.samrj.devil.io.BufferUtil;
 import static com.samrj.devil.io.BufferUtil.pubBufA;
 import static com.samrj.devil.io.BufferUtil.pubBufB;
-import com.samrj.devil.io.Bufferable;
 import com.samrj.devil.math.Mat2;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.res.Resource;
 import java.io.*;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
@@ -49,15 +47,6 @@ public class GLShader
         }
         
         return new GLShader(id, vertid, fragid);
-    }
-    
-    private static FloatBuffer buffer(Bufferable<FloatBuffer> data)
-    {
-        FloatBuffer out = pubBufA.asFloatBuffer();
-        out.clear();
-        data.write(out);
-        out.rewind();
-        return out;
     }
     
     private int id, vertid, fragid;
@@ -256,19 +245,19 @@ public class GLShader
     public void glUniformMatrix2f(String name, Mat2 matrix)
     {
         int loc = glGetUniformLocation(name);
-        GL20.glUniformMatrix2fv(loc, false, buffer(matrix));
+        GL20.glUniformMatrix2fv(loc, false, BufferUtil.fBuffer(matrix));
     }
     
     public void glUniformMatrix3f(String name, Mat3 matrix)
     {
         int loc = glGetUniformLocation(name);
-        GL20.glUniformMatrix3fv(loc, false, buffer(matrix));
+        GL20.glUniformMatrix3fv(loc, false, BufferUtil.fBuffer(matrix));
     }
     
     public void glUniformMatrix4f(String name, Mat4 matrix)
     {
         int loc = glGetUniformLocation(name);
-        GL20.glUniformMatrix4fv(loc, false, buffer(matrix));
+        GL20.glUniformMatrix4fv(loc, false, BufferUtil.fBuffer(matrix));
     }
     
     public int id()

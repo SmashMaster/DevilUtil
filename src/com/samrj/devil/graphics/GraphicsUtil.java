@@ -6,7 +6,6 @@ import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
-import java.nio.FloatBuffer;
 import org.lwjgl.opengl.GL11;
 
 public class GraphicsUtil
@@ -33,23 +32,25 @@ public class GraphicsUtil
     public static void glLoadMatrix(Mat3 m, int mode)
     {
         GL11.glMatrixMode(mode);
-        
-        FloatBuffer buffer = BufferUtil.pubBufA.asFloatBuffer();
-        buffer.clear();
-        new Mat4(m).write(buffer);
-        buffer.rewind();
-        GL11.glLoadMatrixf(buffer);
+        GL11.glLoadMatrixf(BufferUtil.fBuffer(new Mat4(m)));
+    }
+    
+    public static void glMultMatrix(Mat3 m, int mode)
+    {
+        GL11.glMatrixMode(mode);
+        GL11.glMultMatrixf(BufferUtil.fBuffer(new Mat4(m)));
     }
     
     public static void glLoadMatrix(Mat4 m, int mode)
     {
         GL11.glMatrixMode(mode);
-        
-        FloatBuffer buffer = BufferUtil.pubBufA.asFloatBuffer();
-        buffer.clear();
-        m.write(buffer);
-        buffer.rewind();
-        GL11.glLoadMatrixf(buffer);
+        GL11.glLoadMatrixf(BufferUtil.fBuffer(m));
+    }
+    
+    public static void glMultMatrix(Mat4 m, int mode)
+    {
+        GL11.glMatrixMode(mode);
+        GL11.glMultMatrixf(BufferUtil.fBuffer(m));
     }
     
     public static void glVertex(Vec2 v)
