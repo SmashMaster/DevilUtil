@@ -37,7 +37,7 @@ public final class EventBuffer
         mouseButtonCallback = GLFW.GLFWMouseButtonCallback(this::mouseButtonCallback);
         scrollCallback = GLFW.GLFWScrollCallback(this::mouseScrollCallback);
         keyCallback = GLFW.GLFWKeyCallback(this::keyCallback);
-
+        
         GLFW.glfwSetCursorPosCallback(window, cursorPosCallback);
         GLFW.glfwSetMouseButtonCallback(window, mouseButtonCallback);
         GLFW.glfwSetScrollCallback(window, scrollCallback);

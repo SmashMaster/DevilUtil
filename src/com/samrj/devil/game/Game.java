@@ -42,10 +42,10 @@ public abstract class Game
     public final Configuration config;
     public final long monitor, window;
     public final GLContext context;
+    public final Sync sync;
     public final Mouse mouse;
     public final Keyboard keyboard;
     
-    private final Sync sync;
     private final long frameTime;
     private final EventBuffer eventBuffer;
     
