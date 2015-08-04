@@ -39,7 +39,6 @@ public class AtlasFont
     private final String name;
     private final int lineHeight, baseHeight;
     private final GLTexture2D texture;
-    private float texSize;
     private final Char[] chars;
     private final int firstCharID;
     
@@ -50,6 +49,7 @@ public class AtlasFont
         InputStream inputStream = Resource.open(directory + fontFile);
         LittleEndianInputStream in = new LittleEndianInputStream(inputStream);
         
+        //HEADER
         ensureByte(in, 66, MSG_ERROR_FORMAT);
         ensureByte(in, 77, MSG_ERROR_FORMAT);
         ensureByte(in, 70, MSG_ERROR_FORMAT);
