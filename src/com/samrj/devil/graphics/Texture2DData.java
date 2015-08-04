@@ -20,7 +20,8 @@ import javax.imageio.ImageIO;
  */
 public class Texture2DData
 {
-    public final int width, height, format, baseFormat, bands;
+    public final int width, height;
+    public int format, baseFormat, bands;
     private ByteBuffer buffer;
     
     // <editor-fold defaultstate="collapsed" desc="Constructors">

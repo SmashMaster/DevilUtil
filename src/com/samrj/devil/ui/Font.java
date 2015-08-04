@@ -15,6 +15,7 @@ public class Font
 {
     private GLTexture2D tex;
     private float[] widths;
+    private float cellHeight;
     private float height;
     
     public Font(GLTexture2D tex, Resource wPath, float height) throws IOException
@@ -23,6 +24,7 @@ public class Font
         if (tex == null) throw new NullPointerException();
         this.tex = tex;
         this.height = height;
+        cellHeight = tex.height/16.0f;
         widths = new float[256];
         
         InputStream in = wPath.open();
@@ -80,12 +82,13 @@ public class Font
     
     public void draw(String text, Vec2 pos, Vec2 align)
     {
-        pos = new Vec2(pos.x, pos.y - 32.0f);
+        pos = new Vec2(pos.x, pos.y - cellHeight);
         align = new Vec2(align.x - 1.0f, -align.y - 1.0f).mult(0.5f);
         align.x *= getWidth(text);
         align.y *= -height;
         pos.add(align);
         
+        GL11.glMatrixMode(GL11.GL_MODELVIEW);
         GL11.glPushMatrix();
         GL11.glTranslatef(Math.round(pos.x), Math.round(pos.y), 0.0f);
 
@@ -103,11 +106,11 @@ public class Font
             float u1 = fontposx/16f;
             float v1 = fontposy/16f;
 
-            float x1 = x0 + 32f;
+            float x1 = x0 + cellHeight;
 
             GL11.glTexCoord2f(u0, v0); GL11.glVertex2f(x0, 0f);
-            GL11.glTexCoord2f(u0, v1); GL11.glVertex2f(x0, 32f);
-            GL11.glTexCoord2f(u1, v1); GL11.glVertex2f(x1, 32f);
+            GL11.glTexCoord2f(u0, v1); GL11.glVertex2f(x0, cellHeight);
+            GL11.glTexCoord2f(u1, v1); GL11.glVertex2f(x1, cellHeight);
             GL11.glTexCoord2f(u1, v0); GL11.glVertex2f(x1, 0f);
 
             x0 += getWidth(text.charAt(i));
@@ -126,5 +129,11 @@ public class Font
     public void draw(String text, Vec2 p)
     {
         draw(text, p, Alignment.NE);
+    }
+    
+    public void delete()
+    {
+        tex.glDelete();
+        tex = null;
     }
 }
