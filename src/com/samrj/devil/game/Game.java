@@ -38,6 +38,7 @@ public abstract class Game
     
     private boolean running;
     private long lastFrameTime;
+    private long frameStart;
     
     public final Configuration config;
     public final long monitor, window;
@@ -149,6 +150,7 @@ public abstract class Game
         // </editor-fold>
         
         context.checkGLError();
+        frameStart = System.nanoTime();
     }
     
     public Game() throws OpenGLException
@@ -173,11 +175,11 @@ public abstract class Game
         running = true;
         GLFW.glfwShowWindow(window);
         
-        long lastFrameStart = System.nanoTime() - frameTime;
+        long lastFrameStart = frameStart - frameTime;
         
         while (running) try
         {
-            long frameStart = System.nanoTime();
+            frameStart = System.nanoTime();
             
             {//Input
                 GLFW.glfwPollEvents();
@@ -229,6 +231,11 @@ public abstract class Game
     public final long lastFrameTime()
     {
         return lastFrameTime;
+    }
+    
+    public final long frameStart()
+    {
+        return frameStart;
     }
     
     public abstract void onDestroy();
