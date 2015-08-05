@@ -184,6 +184,27 @@ public class Util
     }
     
     /**
+     * Compares two floats for order. Returns a negative integer,
+     * zero, or a positive integer as the first float is less than, equal
+     * to, or greater than the second. The two floats are considered to be equal
+     * if they are closer than the given tolerance.
+     * 
+     * Has undefined behavior for NaN.
+     * 
+     * @param f0 The first float to compare.
+     * @param f1 The second float to compare.
+     * @param tolerance The amount by which f0 and f1 may differ.
+     * @return A negative integer, zero, or a positive integer as the first
+     *         float is less than, equal to, or greater than the second.
+     */
+    public static final int compare(float f0, float f1, float tolerance)
+    {
+        float d = f0 - f1;
+        if (Math.abs(d) <= tolerance) return 0;
+        return d < 0 ? -1 : 1;
+    }
+    
+    /**
      * Prevents {@code x} from reaching zero. If {@code x < m}, ease it towards
      * {@code n}. Otherwise, simply return {@code x}.
      * 

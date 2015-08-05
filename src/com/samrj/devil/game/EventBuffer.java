@@ -1,12 +1,13 @@
 package com.samrj.devil.game;
 
+import com.samrj.devil.display.GLFWUtil;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWScrollCallback;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
+import org.lwjgl.glfw.GLFWScrollCallback;
 
 /**
  * GLFW event buffer class.
@@ -27,6 +28,7 @@ public final class EventBuffer
     
     private final Mouse mouse;
     private final Keyboard keyboard;
+    private final int windowHeight;
     
     public EventBuffer(long window, Mouse mouse, Keyboard keyboard)
     {
@@ -45,6 +47,7 @@ public final class EventBuffer
         
         this.mouse = mouse;
         this.keyboard = keyboard;
+        windowHeight = GLFWUtil.getWindowSize(window).y;
     }
     
     public void flushEvents()
@@ -60,7 +63,7 @@ public final class EventBuffer
     private void cursorPosCallback(long window, double xpos, double ypos)
     {
         assert(this.window == window);
-        eventQueue.offer(() -> {mouse.cursorPos((float)xpos, (float)ypos);});
+        eventQueue.offer(() -> {mouse.cursorPos((float)xpos, (float)(windowHeight - ypos));});
     }
     
     private void mouseButtonCallback(long window, int button, int action, int mods)

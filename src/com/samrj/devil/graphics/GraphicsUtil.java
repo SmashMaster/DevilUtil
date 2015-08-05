@@ -58,9 +58,19 @@ public class GraphicsUtil
         GL11.glVertex2f(v.x, v.y);
     }
     
+    public static void glVertex(Vec2... vecs)
+    {
+        for (Vec2 v : vecs) glVertex(v);
+    }
+    
     public static void glVertex(Vec3 v)
     {
         GL11.glVertex3f(v.x, v.y, v.z);
+    }
+    
+    public static void glVertex(Vec3... vecs)
+    {
+        for (Vec3 v : vecs) glVertex(v);
     }
     
     private GraphicsUtil()
