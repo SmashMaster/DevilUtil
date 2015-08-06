@@ -583,6 +583,7 @@ public class Mat4 implements Bufferable<FloatBuffer>, Streamable
         m.a = s;
         m.f = s;
         m.k = s;
+        m.p = 1.0f;
         return m;
     }
     
