@@ -97,6 +97,34 @@ public class Util
     }
     
     /**
+     * Returns the first integer that is larger than the given float.
+     * Has undefined behavior for NaN and the infinities.
+     * 
+     * @param f A finite float.
+     * @return The first integer that is larger than f.
+     */
+    public static final int ceil(float f)
+    {
+        int i = (int)f;
+        if (i < f) i++;
+        return i;
+    }
+    
+    /**
+     * Returns the first integer that is smaller than the given float.
+     * Has undefined behavior for NaN and the infinities.
+     * 
+     * @param f A finite float.
+     * @return The first integer that is smaller than f.
+     */
+    public static final int floor(float f)
+    {
+        int i = (int)f;
+        if (i > f) i--;
+        return i;
+    }
+    
+    /**
      * Linearly interpolates between {@code f0} and {@code f1} using the scalar
      * interpolant {@code t}.
      * 
