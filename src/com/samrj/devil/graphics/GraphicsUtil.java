@@ -6,9 +6,18 @@ import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import org.lwjgl.opengl.GL11;
 
-public class GraphicsUtil
+/**
+ * Graphics utility class.
+ * 
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2015 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
+public final class GraphicsUtil
 {
     public static void drawCircle(Vec2 pos, float radius, int segments, int mode)
     {
@@ -29,16 +38,28 @@ public class GraphicsUtil
         drawCircle(pos, radius, segments, GL11.GL_TRIANGLE_FAN);
     }
     
+    private static FloatBuffer bMat3(ByteBuffer byteBuffer, Mat3 m)
+    {
+        FloatBuffer b = byteBuffer.asFloatBuffer();
+        b.clear();
+        b.put(m.a); b.put(m.d); b.put(m.g); b.put(0.0f);
+        b.put(m.b); b.put(m.e); b.put(m.h); b.put(0.0f);
+        b.put(m.c); b.put(m.f); b.put(m.i); b.put(0.0f);
+        b.put(0.0f); b.put(0.0f); b.put(0.0f); b.put(1.0f);
+        b.rewind();
+        return b;
+    }
+    
     public static void glLoadMatrix(Mat3 m, int mode)
     {
         GL11.glMatrixMode(mode);
-        GL11.glLoadMatrixf(BufferUtil.fBuffer(new Mat4(m)));
+        GL11.glLoadMatrixf(bMat3(BufferUtil.pubBufA, m));
     }
     
     public static void glMultMatrix(Mat3 m, int mode)
     {
         GL11.glMatrixMode(mode);
-        GL11.glMultMatrixf(BufferUtil.fBuffer(new Mat4(m)));
+        GL11.glMultMatrixf(bMat3(BufferUtil.pubBufA, m));
     }
     
     public static void glLoadMatrix(Mat4 m, int mode)
