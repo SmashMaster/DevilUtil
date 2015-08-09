@@ -2,14 +2,16 @@ package com.samrj.devil.game;
 
 import com.samrj.devil.config.CfgBoolean;
 import com.samrj.devil.config.CfgInteger;
-import com.samrj.devil.config.Configuration;
 import com.samrj.devil.config.CfgResolution;
+import com.samrj.devil.config.Configuration;
+import com.samrj.devil.display.DisplayException;
 import com.samrj.devil.display.GLFWUtil;
 import com.samrj.devil.display.VideoMode;
 import com.samrj.devil.game.sync.SleepHybrid;
 import com.samrj.devil.game.sync.Sync;
 import com.samrj.devil.math.Vec2i;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GLContext;
@@ -24,6 +26,10 @@ import org.lwjgl.opengl.OpenGLException;
  */
 public abstract class Game
 {
+    private static boolean errorCallInit;
+    private static boolean initialized;
+    private static Thread mainThread;
+    
     private static Configuration defaultConfig()
     {
         Configuration config = new Configuration();
@@ -34,6 +40,46 @@ public abstract class Game
         config.addField("fps", new CfgInteger(60));
         config.addField("msaa", new CfgInteger(0));
         return config;
+    }
+    
+    private static void ensureMainThread()
+    {
+        if (Thread.currentThread() !=  mainThread)
+            throw new IllegalThreadStateException("Not on main thread.");
+    }
+    
+    /**
+     * Initializes the windowing system. Whichever thread calls this becomes
+     * the main thread, and only classes on the main thread may construct and
+     * run games.
+     */
+    public static final void init()
+    {
+        if (initialized) throw new IllegalStateException("Already initialized.");
+        
+        if (!errorCallInit)
+        {
+            GLFWErrorCallback errorCallback = GLFW.GLFWErrorCallback(DisplayException::glfwThrow);
+            GLFW.glfwSetErrorCallback(errorCallback);
+            errorCallInit = true;
+        }
+        
+        GLFW.glfwInit();
+        mainThread = Thread.currentThread();
+        initialized = true;
+    }
+    
+    /**
+     * Terminates the windowing system. Must be called on the main thread.
+     */
+    public static final void terminate()
+    {
+        if (!initialized) throw new IllegalStateException("Not initialized.");
+        ensureMainThread();
+        
+        initialized = false;
+        mainThread = null;
+        GLFW.glfwTerminate();
     }
     
     private boolean running;
@@ -50,9 +96,32 @@ public abstract class Game
     private final long frameTime;
     private final EventBuffer eventBuffer;
     
+    private boolean destroyed;
+    
+    /**
+     * Creates a new game object. Initializes the window with the given config.
+     * 
+     * The configuration must have the following fields:
+     * 
+     * fullscreen (boolean)
+     * borderless (boolean)
+     * res (resolution)
+     * vsync (boolean)
+     * fps (integer)
+     * msaa (integer)
+     * 
+     * It may have other fields as well, but they will not affect window
+     * creation.
+     * 
+     * @param title The title of the window.
+     * @param config The configuration to use.
+     * @throws OpenGLException If there is an OpenGL error.
+     */
     public Game(String title, Configuration config) throws OpenGLException
     {
         if (title == null || config == null) throw new NullPointerException();
+        if (!initialized) throw new IllegalStateException("Game.init() not called.");
+        ensureMainThread();
         this.config = config;
         
         boolean fullscreen = config.getBoolean("fullscreen");
@@ -153,97 +222,214 @@ public abstract class Game
         frameStart = System.nanoTime();
     }
     
+    /**
+     * Creates a new game window with the default title "Game" and the default
+     * configuration. The default config creates a decorated window at 1280p.
+     * 
+     * @throws OpenGLException If there is an OpenGL error.
+     */
     public Game() throws OpenGLException
     {
         this("Game", defaultConfig());
     }
     
+    /**
+     * Sets the title of this window.
+     * 
+     * @param title The title to set to.
+     */
     public final void setTitle(String title)
     {
+        ensureMainThread();
         GLFW.glfwSetWindowTitle(window, title);
     }
     
+    // <editor-fold defaultstate="collapsed" desc="Abstract Methods">
+    /**
+     * Called whenever the mouse is moved. Always called before step() and
+     * render(). The coordinates are relative to the bottom left corner of the
+     * display.
+     * 
+     * @param x The x position of the mouse.
+     * @param y The y position of the mouse.
+     * @param dx The amount the x position has changed since the last call.
+     * @param dy The amount the y position has changed since the last call.
+     */
     public abstract void onMouseMoved(float x, float y, float dx, float dy);
+    
+    /**
+     * Called whenever a mouse button is pressed. Always called before step()
+     * and render(). The key modifier bit field is defined by GLFW:
+     * 
+     * http://www.glfw.org/docs/latest/group__mods.html
+     * 
+     * @param button The GLFW enum representing which button was affected.
+     * @param action One of GLFW_PRESS or GLFW_RELEASE.
+     * @param mods Bit field describing which modifier keys were held down.
+     */
     public abstract void onMouseButton(int button, int action, int mods);
+    
+    /**
+     * Called whenever the scroll wheel is moved. Always called before step()
+     * and render().
+     * 
+     * @param dx The horizontal scroll offset.
+     * @param dy The vertical scroll offset.
+     */
     public abstract void onMouseScroll(float dx, float dy);
+    
+    /**
+     * Called whenever a key is pressed. Always called before step() and
+     * render(). The key modifier bit field is defined by GLFW:
+     * 
+     * http://www.glfw.org/docs/latest/group__mods.html
+     * 
+     * @param key The GLFW enum representing which key was affected.
+     * @param action One of GLFW_PRESS, GLFW_RELEASE or GLFW_REPEAT.
+     * @param mods Bit field describing which modifier keys were held down.
+     */
     public abstract void onKey(int key, int action, int mods);
+    
+    /**
+     * Steps the simulation by a given amount of time. Called after input and
+     * before rendering. The time step is not constant, but based on the system
+     * clock. May be called multiple times per frame to limit the maximum time
+     * step.
+     * 
+     * @param dt The time step, in seconds.
+     */
     public abstract void step(float dt);
+    
+    /**
+     * Called once per frame after all input and time steps, should be used for
+     * any rendering code with OpenGL.
+     */
     public abstract void render();
     
+    /**
+     * Called when this game is destroyed. Should release any system resources
+     * associated with this game.
+     */
+    public abstract void onDestroy();
+    // </editor-fold>
+    
+    /**
+     * Runs the game, showing the window and beginning the game loop. Must be
+     * called on the main thread, and the game cannot be destroyed.
+     */
     public final void run()
     {
-        running = true;
-        GLFW.glfwShowWindow(window);
+        if (!initialized) throw new IllegalStateException("Game.init() not called.");
+        ensureMainThread();
+        if (destroyed) throw new IllegalStateException("Game has been destroyed.");
         
-        long lastFrameStart = frameStart - frameTime;
-        
-        while (running) try
+        try
         {
-            frameStart = System.nanoTime();
-            
-            {//Input
-                GLFW.glfwPollEvents();
-                eventBuffer.flushEvents();
-                if (GLFW.glfwWindowShouldClose(window) == GL11.GL_TRUE) stop();
-            }
-            
-            // <editor-fold defaultstate="collapsed" desc="Time Step">
+            running = true;
+            if (!context.isCurrent()) context.makeCurrent(window);
+            GLFW.glfwShowWindow(window);
+
+            long lastFrameStart = frameStart - frameTime;
+
+            while (running)
             {
-                final float segmentLength = 1.0f/120.0f;
+                frameStart = System.nanoTime();
 
-                lastFrameTime = frameStart - lastFrameStart;
-                float dt = (float)(lastFrameTime/1_000_000_000.0);
-                
-                if (dt <= segmentLength) step(dt);
-                else
+                {//Input
+                    GLFW.glfwPollEvents();
+                    eventBuffer.flushEvents();
+                    if (GLFW.glfwWindowShouldClose(window) == GL11.GL_TRUE) stop();
+                }
+
+                // <editor-fold defaultstate="collapsed" desc="Time Step">
                 {
-                    float remainder = dt % segmentLength;
-                    int numSegments = Math.round((dt - remainder)/segmentLength);
+                    final float segmentLength = 1.0f/120.0f;
 
-                    if (remainder > segmentLength/4.0f)
-                    {
-                        for (int s=0; s<numSegments; s++) step(segmentLength);
-                        step(remainder);
-                    }
+                    lastFrameTime = frameStart - lastFrameStart;
+                    float dt = (float)(lastFrameTime/1_000_000_000.0);
+
+                    if (dt <= segmentLength) step(dt);
                     else
                     {
-                        float segdt = dt/numSegments;
-                        for (int s=0; s<numSegments; s++) step(segdt);
+                        float remainder = dt % segmentLength;
+                        int numSegments = Math.round((dt - remainder)/segmentLength);
+
+                        if (remainder > segmentLength/4.0f)
+                        {
+                            for (int s=0; s<numSegments; s++) step(segmentLength);
+                            step(remainder);
+                        }
+                        else
+                        {
+                            float segdt = dt/numSegments;
+                            for (int s=0; s<numSegments; s++) step(segdt);
+                        }
                     }
+
+                    lastFrameStart = frameStart;
                 }
-                
-                lastFrameStart = frameStart;
+                // </editor-fold>
+                render();
+
+                if (sync != null) sync.sync();
+                GLFW.glfwSwapBuffers(window);
             }
-            // </editor-fold>
-            render();
-            
-            if (sync != null) sync.sync();
-            GLFW.glfwSwapBuffers(window);
         }
-        catch (InterruptedException e) {stop();}
+        catch (InterruptedException e)
+        {
+            throw new RuntimeException("Thread interrupted.", e);
+        }
+        finally
+        {
+            stop();
+        }
     }
     
+    /**
+     * Stops this game. May be called from any thread.
+     */
     public final void stop()
     {
         running = false;
     }
     
+    /**
+     * @return How long, in nanoseconds, the duration of the previous frame.
+     */
     public final long lastFrameTime()
     {
         return lastFrameTime;
     }
     
+    /**
+     * @return The time, as measured by System.nanoTime(), when this frame
+     *         started. This is also the time that the previous frame ended.
+     */
     public final long frameStart()
     {
         return frameStart;
     }
     
-    public abstract void onDestroy();
-    
+    /**
+     * Destroys this game and window, and releases any resources associated
+     * resources.
+     */
     public final void destroy()
     {
+        ensureMainThread();
+        if (destroyed) return;
+        destroyed = true;
+        
         onDestroy();
         context.destroy();
         GLFW.glfwDestroyWindow(window);
+    }
+    
+    /**
+     * @return Whether this game has been destroyed.
+     */
+    public final boolean isDestroyed()
+    {
+        return destroyed;
     }
 }
