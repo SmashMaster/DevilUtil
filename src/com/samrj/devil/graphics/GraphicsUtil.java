@@ -1,14 +1,13 @@
 package com.samrj.devil.graphics;
 
-import com.samrj.devil.io.Block;
-import com.samrj.devil.io.BufferUtil;
+import com.samrj.devil.io.Memory.Block;
+import static com.samrj.devil.io.BufferUtil.memUtil;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -41,8 +40,8 @@ public final class GraphicsUtil
     
     private static Block allocMat3(Mat3 m)
     {
-        Block block = BufferUtil.alloc(16*4);
-        ByteBuffer b = BufferUtil.read(block);
+        Block block = memUtil.alloc(16*4);
+        ByteBuffer b = block.read();
         b.putFloat(m.a);  b.putFloat(m.d);  b.putFloat(m.g);  b.putFloat(0.0f);
         b.putFloat(m.b);  b.putFloat(m.e);  b.putFloat(m.h);  b.putFloat(0.0f);
         b.putFloat(m.c);  b.putFloat(m.f);  b.putFloat(m.i);  b.putFloat(0.0f);
@@ -54,32 +53,32 @@ public final class GraphicsUtil
     {
         Block b = allocMat3(m);
         GL11.glMatrixMode(mode);
-        GL11.glLoadMatrixf(BufferUtil.read(b));
-        BufferUtil.free(b);
+        GL11.glLoadMatrixf(b.readUnsafe());
+        b.free();
     }
     
     public static void glMultMatrix(Mat3 m, int mode)
     {
         Block b = allocMat3(m);
         GL11.glMatrixMode(mode);
-        GL11.glMultMatrixf(BufferUtil.read(b));
-        BufferUtil.free(b);
+        GL11.glMultMatrixf(b.readUnsafe());
+        b.free();
     }
     
     public static void glLoadMatrix(Mat4 m, int mode)
     {
-        Block b = BufferUtil.alloc(m);
+        Block b = memUtil.alloc(m);
         GL11.glMatrixMode(mode);
-        GL11.glLoadMatrixf(BufferUtil.read(b));
-        BufferUtil.free(b);
+        GL11.glLoadMatrixf(b.readUnsafe());
+        b.free();
     }
     
     public static void glMultMatrix(Mat4 m, int mode)
     {
-        Block b = BufferUtil.alloc(m);
+        Block b = memUtil.alloc(m);
         GL11.glMatrixMode(mode);
-        GL11.glMultMatrixf(BufferUtil.read(b));
-        BufferUtil.free(b);
+        GL11.glMultMatrixf(b.readUnsafe());
+        b.free();
     }
     
     public static void glVertex(Vec2 v)

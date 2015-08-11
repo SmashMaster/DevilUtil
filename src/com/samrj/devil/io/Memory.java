@@ -1,6 +1,7 @@
 package com.samrj.devil.io;
 
 import com.samrj.devil.math.Util;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import org.lwjgl.system.MemoryUtil;
@@ -15,44 +16,40 @@ import org.lwjgl.system.MemoryUtil;
  */
 public final class Memory
 {
-    private static Block allocSearch(Block parent, int blockSize)
+    /**
+     * Enum for different memory block types.
+     */
+    public static enum Type
     {
-        if (parent.type == Block.Type.FREE)
+        FREE(true), PARENT(false), ALLOCATED(false), WASTED(true);
+
+        public final boolean mergable;
+
+        private Type(boolean mergable)
         {
-            if (parent.size == blockSize) return parent;
-            else if (parent.size > blockSize)
-            {
-                int size = parent.size >> 1;
-                parent.type = Block.Type.PARENT;
-                parent.left = new Block(parent, parent.offset, size);
-                parent.right = new Block(parent, parent.offset + size, size);
-            }
-        }
-        
-        if (parent.type == Block.Type.PARENT)
-        {
-            Block block = allocSearch(parent.left, blockSize);
-            if (block != null) return block;
-            return allocSearch(parent.right, blockSize);
-        }
-        
-        return null;
-    }
-    
-    private static void merge(Block block)
-    {
-        if (block != null && block.left.type.mergable && block.right.type.mergable)
-        {
-            block.left = null;
-            block.right = null;
-            block.type = Block.Type.FREE;
-            merge(block.parent);
+            this.mergable = mergable;
         }
     }
     
-    private final ByteBuffer buffer;
-    private final Block root;
-    private final long address;
+    /**
+     * The capacity of this memory block, in bytes.
+     */
+    public final int capacity;
+    
+    /**
+     * The backing buffer for this memory block.
+     */
+    public final ByteBuffer buffer;
+    
+    /**
+     * The root memory block.
+     */
+    public final Block root;
+    
+    /**
+     * The address of this memory block. Inherently unsafe to use.
+     */
+    public final long address;
     
     /**
      * Creates a new direct byte buffer with the given capacity, and sets up
@@ -65,17 +62,10 @@ public final class Memory
         if (!Util.isPower2(capacity)) throw new IllegalArgumentException(
             "Main buffer capacity must be power of two.");
         
+        this.capacity = capacity;
         buffer = ByteBuffer.allocateDirect(capacity).order(ByteOrder.nativeOrder());
         root = new Block(capacity);
         address = MemoryUtil.memAddress0(buffer);
-    }
-    
-    /**
-     * @return The capacity, in bytes, of this memory.
-     */
-    public int capacity()
-    {
-        return root.size;
     }
     
     /**
@@ -90,48 +80,22 @@ public final class Memory
      */
     public Block alloc(int size)
     {
-        Block parent = allocSearch(root, Util.nextPower2(size));
+        if (size <= 0) throw new IllegalArgumentException();
+        
+        Block parent = root.search(Util.nextPower2(size));
         
         if (parent == null) throw new OutOfMemoryException();
         
         if (parent.size == size)
         {
-            parent.type = Block.Type.ALLOCATED;
+            parent.type = Type.ALLOCATED;
             return parent;
         }
         
-        parent.type = Block.Type.PARENT;
-        parent.left = new Block(parent, parent.offset, size, Block.Type.ALLOCATED);
-        parent.right = new Block(parent, parent.offset + size, parent.size - size, Block.Type.WASTED);
+        parent.type = Type.PARENT;
+        parent.left = new Block(parent, parent.offset, size, Type.ALLOCATED);
+        parent.right = new Block(parent, parent.offset + size, parent.size - size, Type.WASTED);
         return parent.left;
-    }
-    
-    /**
-     * Frees the given block of memory
-     * @param block 
-     */
-    public void free(Block block)
-    {
-        if (block.type != Block.Type.ALLOCATED) throw new IllegalArgumentException();
-        block.type = Block.Type.FREE;
-        merge(block.parent);
-    }
-    
-    /**
-     * Reads a block of memory as a new buffer. Its mark is set to the beginning
-     * of the block, so you can use reset() to read the block multiple times.
-     * 
-     * @param block The block of memory to read.
-     * @return A new ByteBuffer for the given block.
-     */
-    public ByteBuffer read(Block block)
-    {
-        ByteBuffer b = buffer.slice();
-        b.order(ByteOrder.nativeOrder()); //One can only wonder...
-        b.limit(block.offset + block.size);
-        b.position(block.offset);
-        b.mark();
-        return b;
     }
     
     /**
@@ -143,7 +107,9 @@ public final class Memory
     public Block wrap(byte... array)
     {
         Block block = alloc(array.length);
-        read(block).put(array);
+        buffer.clear();
+        buffer.position(block.offset);
+        buffer.put(array);
         return block;
     }
     
@@ -156,7 +122,9 @@ public final class Memory
     public Block wraps(short... array)
     {
         Block block = alloc(array.length*2);
-        read(block).asShortBuffer().put(array);
+        buffer.clear();
+        buffer.position(block.offset);
+        for (short s : array) buffer.putShort(s);
         return block;
     }
     
@@ -169,7 +137,9 @@ public final class Memory
     public Block wrapi(int... array)
     {
         Block block = alloc(array.length*4);
-        read(block).asIntBuffer().put(array);
+        buffer.clear();
+        buffer.position(block.offset);
+        for (int i : array) buffer.putInt(i);
         return block;
     }
     
@@ -182,7 +152,9 @@ public final class Memory
     public Block wrapf(float... array)
     {
         Block block = alloc(array.length*4);
-        read(block).asFloatBuffer().put(array);
+        buffer.clear();
+        buffer.position(block.offset);
+        for (float f : array) buffer.putFloat(f);
         return block;
     }
     
@@ -195,36 +167,217 @@ public final class Memory
     public Block alloc(Bufferable obj)
     {
         Block block = alloc(obj.bufferSize());
-        obj.write(read(block));
+        buffer.clear();
+        buffer.position(block.offset);
+        obj.write(buffer);
         return block;
     }
     
     /**
-     * Returns the address of this memory block. Is inherently unsafe.
-     * 
-     * @return The address of this memory block.
-     */
-    public long address()
+    * Class representing a block of memory within a ByteBuffer.
+    */
+    public final class Block
     {
-        return address;
-    }
-    
-    /**
-     * Returns the address of the given memory block. Is inherently unsafe.
-     * 
-     * @param block The block to return the memory address of.
-     * @return The address of the given memory block.
-     */
-    public long address(Block block)
-    {
-        return address + block.offset;
-    }
-    
-    /**
-     * @return The root block for this memory.
-     */
-    public Block root()
-    {
-        return root;
+        /**
+         * The parent of this memory block.
+         */
+        public final Block parent;
+        
+        /**
+         * The offset of this memory block, in bytes.
+         */
+        public final int offset;
+        
+        /**
+         * The size of this memory block, in bytes.
+         */
+        public final int size;
+        
+        private Type type;
+        private Block left, right;
+
+        private Block(Block parent, int offset, int size, Type type)
+        {
+            this.parent = parent;
+            this.offset = offset;
+            this.size = size;
+            this.type = type;
+        }
+
+        private Block(Block parent, int offset, int size)
+        {
+            this(parent, offset, size, Type.FREE);
+        }
+
+        private Block(int size)
+        {
+            this(null, 0, size, Type.FREE);
+        }
+        
+        private void merge()
+        {
+            if (left.type.mergable && right.type.mergable)
+            {
+                left = null;
+                right = null;
+                type = Type.FREE;
+                if (parent != null) parent.merge();
+            }
+        }
+        
+        private Block search(int blockSize)
+        {
+            if (type == Type.FREE)
+            {
+                if (size == blockSize) return this;
+                else if (size > blockSize)
+                {
+                    int childSize = size >> 1;
+                    type = Type.PARENT;
+                    left = new Block(this, offset, childSize);
+                    right = new Block(this, offset + childSize, childSize);
+                }
+            }
+
+            if (type == Type.PARENT)
+            {
+                Block block = left.search(blockSize);
+                if (block != null) return block;
+                return right.search(blockSize);
+            }
+
+            return null;
+        }
+        
+        /**
+         * Frees this memory block, allowing the memory to be recycled.
+         */
+        public void free()
+        {
+            if (type != Type.ALLOCATED) throw new IllegalArgumentException();
+            type = Type.FREE;
+            if (parent != null) parent.merge();
+        }
+        
+        /**
+         * @return A new ByteBuffer representing this memory block.
+         */
+        public ByteBuffer read()
+        {
+            buffer.clear(); //Don't know if this is necessary
+            ByteBuffer b = buffer.slice();
+            b.order(ByteOrder.nativeOrder()); //One can only wonder...
+            b.limit(offset + size);
+            b.position(offset);
+            b.mark();
+            return b;
+        }
+        
+        /**
+         * @return The backing buffer for this memory block, *not* a copy.
+         */
+        public ByteBuffer readUnsafe()
+        {
+            buffer.limit(offset + size);
+            buffer.position(offset);
+            buffer.mark();
+            return buffer;
+        }
+        
+        /**
+         * @return The first byte in this memory block.
+         */
+        public byte readByte()
+        {
+            return buffer.get(offset);
+        }
+        
+        /**
+         * @return The first short in this memory block.
+         */
+        public short readShort()
+        {
+            if (size < 2) throw new BufferOverflowException();
+            return buffer.getShort(offset);
+        }
+        
+        /**
+         * @return The first integer in this memory block.
+         */
+        public int readInt()
+        {
+            if (size < 4) throw new BufferOverflowException();
+            return buffer.getInt(offset);
+        }
+        
+        /**
+         * @return The first long in this memory block.
+         */
+        public long readLong()
+        {
+            if (size < 8) throw new BufferOverflowException();
+            return buffer.getLong(offset);
+        }
+        
+        /**
+         * @return The first float in this memory block.
+         */
+        public float readFloat()
+        {
+            if (size < 4) throw new BufferOverflowException();
+            return buffer.getFloat(offset);
+        }
+        
+        /**
+         * @return The first long in this memory block.
+         */
+        public double readDouble()
+        {
+            if (size < 8) throw new BufferOverflowException();
+            return buffer.getDouble(offset);
+        }
+        
+        /**
+         * @return The first long in this memory block.
+         */
+        public char readChar()
+        {
+            if (size < 2) throw new BufferOverflowException();
+            return buffer.getChar(offset);
+        }
+        
+        /**
+         * Returns the address for this memory block. Inherently unsafe.
+         * 
+         * @return The address for this memory block.
+         */
+        public long address()
+        {
+            return address + offset;
+        }
+
+        /**
+         * @return The type of this memory block.
+         */
+        public Type type()
+        {
+            return type;
+        }
+
+        /**
+         * @return The lower-addressed child of this block.
+         */
+        public Block left()
+        {
+            return left;
+        }
+
+        /**
+         * @return The higher-addressed child of this block.
+         */
+        public Block right()
+        {
+            return right;
+        }
     }
 }
