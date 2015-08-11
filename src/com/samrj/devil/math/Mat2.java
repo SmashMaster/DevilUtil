@@ -5,7 +5,7 @@ import com.samrj.devil.io.Streamable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.FloatBuffer;
+import java.nio.ByteBuffer;
 
 /**
  * 2x2 matrix class.
@@ -14,7 +14,7 @@ import java.nio.FloatBuffer;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Mat2 implements Bufferable<FloatBuffer>, Streamable 
+public class Mat2 implements Bufferable, Streamable 
 {
     /**
      * Returns the determinant of the given matrix.
@@ -536,17 +536,23 @@ public class Mat2 implements Bufferable<FloatBuffer>, Streamable
      * WARNING: Buffered in column-major format, as per OpenGL.
      */
     @Override
-    public void read(FloatBuffer buffer)
+    public void read(ByteBuffer buffer)
     {
-        a = buffer.get(); c = buffer.get();
-        b = buffer.get(); d = buffer.get();
+        a = buffer.getFloat(); c = buffer.getFloat();
+        b = buffer.getFloat(); d = buffer.getFloat();
     }
 
     @Override
-    public void write(FloatBuffer buffer)
+    public void write(ByteBuffer buffer)
     {
-        buffer.put(a); buffer.put(c);
-        buffer.put(b); buffer.put(d);
+        buffer.putFloat(a); buffer.putFloat(c);
+        buffer.putFloat(b); buffer.putFloat(d);
+    }
+    
+    @Override
+    public int bufferSize()
+    {
+        return 4*4;
     }
     
     /**

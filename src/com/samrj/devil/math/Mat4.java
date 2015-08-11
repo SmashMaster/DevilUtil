@@ -5,7 +5,7 @@ import com.samrj.devil.io.Streamable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.FloatBuffer;
+import java.nio.ByteBuffer;
 
 /**
  * 4x4 matrix class.
@@ -14,7 +14,7 @@ import java.nio.FloatBuffer;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Mat4 implements Bufferable<FloatBuffer>, Streamable 
+public class Mat4 implements Bufferable, Streamable 
 {
     private static final float SQRT_2 = (float)Math.sqrt(2.0);
     private static final Mat4 tempMat = new Mat4();
@@ -1078,21 +1078,27 @@ public class Mat4 implements Bufferable<FloatBuffer>, Streamable
      * WARNING: Buffered in column-major format, as per OpenGL.
      */
     @Override
-    public void read(FloatBuffer buffer)
+    public void read(ByteBuffer buffer)
     {
-        a = buffer.get(); e = buffer.get(); i = buffer.get(); m = buffer.get();
-        b = buffer.get(); f = buffer.get(); j = buffer.get(); n = buffer.get();
-        c = buffer.get(); g = buffer.get(); k = buffer.get(); o = buffer.get();
-        d = buffer.get(); h = buffer.get(); l = buffer.get(); p = buffer.get();
+        a = buffer.getFloat(); e = buffer.getFloat(); i = buffer.getFloat(); m = buffer.getFloat();
+        b = buffer.getFloat(); f = buffer.getFloat(); j = buffer.getFloat(); n = buffer.getFloat();
+        c = buffer.getFloat(); g = buffer.getFloat(); k = buffer.getFloat(); o = buffer.getFloat();
+        d = buffer.getFloat(); h = buffer.getFloat(); l = buffer.getFloat(); p = buffer.getFloat();
     }
 
     @Override
-    public void write(FloatBuffer buffer)
+    public void write(ByteBuffer buffer)
     {
-        buffer.put(a); buffer.put(e); buffer.put(i); buffer.put(m);
-        buffer.put(b); buffer.put(f); buffer.put(j); buffer.put(n);
-        buffer.put(c); buffer.put(g); buffer.put(k); buffer.put(o);
-        buffer.put(d); buffer.put(h); buffer.put(l); buffer.put(p);
+        buffer.putFloat(a); buffer.putFloat(e); buffer.putFloat(i); buffer.putFloat(m);
+        buffer.putFloat(b); buffer.putFloat(f); buffer.putFloat(j); buffer.putFloat(n);
+        buffer.putFloat(c); buffer.putFloat(g); buffer.putFloat(k); buffer.putFloat(o);
+        buffer.putFloat(d); buffer.putFloat(h); buffer.putFloat(l); buffer.putFloat(p);
+    }
+    
+    @Override
+    public int bufferSize()
+    {
+        return 16*4;
     }
     
     /**

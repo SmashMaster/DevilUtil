@@ -5,7 +5,7 @@ import com.samrj.devil.io.Streamable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.FloatBuffer;
+import java.nio.ByteBuffer;
 
 /**
  * 2D vector class.
@@ -14,7 +14,7 @@ import java.nio.FloatBuffer;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Vec2 implements Bufferable<FloatBuffer>, Streamable
+public class Vec2 implements Bufferable, Streamable
 {
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
@@ -784,17 +784,23 @@ public class Vec2 implements Bufferable<FloatBuffer>, Streamable
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Overriden/implemented methods">
     @Override
-    public void read(FloatBuffer buffer)
+    public void read(ByteBuffer buffer)
     {
-        x = buffer.get();
-        y = buffer.get();
+        x = buffer.getFloat();
+        y = buffer.getFloat();
     }
 
     @Override
-    public void write(FloatBuffer buffer)
+    public void write(ByteBuffer buffer)
     {
-        buffer.put(x);
-        buffer.put(y);
+        buffer.putFloat(x);
+        buffer.putFloat(y);
+    }
+    
+    @Override
+    public int bufferSize()
+    {
+        return 2*4;
     }
 
     @Override

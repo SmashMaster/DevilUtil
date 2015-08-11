@@ -5,7 +5,7 @@ import com.samrj.devil.io.Streamable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.FloatBuffer;
+import java.nio.ByteBuffer;
 
 /**
  * Optimized three-dimensional vector class. The design of this class is based
@@ -32,7 +32,7 @@ import java.nio.FloatBuffer;
  * @author SmashMaster
  * @copyright 2015 Samuel Johnson
  */
-public class Vec3 implements Bufferable<FloatBuffer>, Streamable
+public class Vec3 implements Bufferable, Streamable
 {
     public static final Vec3 tempVecA = new Vec3();
     public static final Vec3 tempVecB = new Vec3();
@@ -888,19 +888,25 @@ public class Vec3 implements Bufferable<FloatBuffer>, Streamable
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Overriden/implemented methods">
     @Override
-    public void read(FloatBuffer buffer)
+    public void read(ByteBuffer buffer)
     {
-        x = buffer.get();
-        y = buffer.get();
-        z = buffer.get();
+        x = buffer.getFloat();
+        y = buffer.getFloat();
+        z = buffer.getFloat();
     }
 
     @Override
-    public void write(FloatBuffer buffer)
+    public void write(ByteBuffer buffer)
     {
-        buffer.put(x);
-        buffer.put(y);
-        buffer.put(z);
+        buffer.putFloat(x);
+        buffer.putFloat(y);
+        buffer.putFloat(z);
+    }
+    
+    @Override
+    public int bufferSize()
+    {
+        return 3*4;
     }
 
     @Override

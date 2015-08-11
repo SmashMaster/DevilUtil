@@ -1,6 +1,6 @@
 package com.samrj.devil.io;
 
-import java.nio.Buffer;
+import java.nio.ByteBuffer;
 
 /**
  * Interface for anything than can be written to memory. (Everything)
@@ -8,17 +8,23 @@ import java.nio.Buffer;
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
- * @param <BUFFER_TYPE> The type of buffer this object can be written to.
  */
-public interface Bufferable<BUFFER_TYPE extends Buffer>
+public interface Bufferable
 {
     /**
      * Reads data from the given buffer and sets this object's fields accordingly.
+     * @param buffer The buffer to read from.
      */
-    public void read(BUFFER_TYPE buffer);
+    public void read(ByteBuffer buffer);
     
     /**
      * Writes this object's data into the given buffer.
+     * @param buffer The buffer to write into.
      */
-    public void write(BUFFER_TYPE buffer);
+    public void write(ByteBuffer buffer);
+    
+    /**
+     * @return The size of this Bufferable, in elements.
+     */
+    public int bufferSize();
 }

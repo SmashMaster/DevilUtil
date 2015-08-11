@@ -3,8 +3,7 @@ package com.samrj.devil.graphics.model;
 import com.samrj.devil.io.BufferUtil;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
+import java.nio.ByteBuffer;
 
 /**
  * DevilModel mesh.
@@ -21,9 +20,9 @@ public class Mesh
     public final int numVertexGroups;
     
     public final int numVertices;
-    public final FloatBuffer vertexData;
+    public final ByteBuffer vertexData;
     public final int numTriangles;
-    public final IntBuffer triangleIndexData;
+    public final ByteBuffer triangleIndexData;
     
     public Mesh(DataInputStream in, Armature armature, boolean hasTangents) throws IOException
     {
@@ -50,15 +49,15 @@ public class Mesh
         
         numVertices = in.readInt();
         int vertexDataLength = numVertices*floatsPerVertex;
-        vertexData = BufferUtil.createFloatBuffer(vertexDataLength);
+        vertexData = BufferUtil.createByteBuffer(vertexDataLength*4);
         for (int i=0; i<vertexDataLength; i++)
-            vertexData.put(in.readFloat());
+            vertexData.putFloat(in.readFloat());
         
         numTriangles = in.readInt();
         int triangleIndexDataLength = numTriangles*3;
-        triangleIndexData = BufferUtil.createIntBuffer(triangleIndexDataLength);
+        triangleIndexData = BufferUtil.createByteBuffer(triangleIndexDataLength*4);
         for (int i=0; i<triangleIndexDataLength; i++)
-            triangleIndexData.put(in.readInt());
+            triangleIndexData.putInt(in.readInt());
     }
     
     public final void rewindBuffers()

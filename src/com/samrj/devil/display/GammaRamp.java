@@ -1,5 +1,6 @@
 package com.samrj.devil.display;
 
+import com.samrj.devil.io.Block;
 import com.samrj.devil.io.BufferUtil;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
@@ -56,18 +57,19 @@ public final class GammaRamp
         MemoryUtil.memByteBuffer(pBlueArray, 2*256).asShortBuffer().get(blue);
     }
     
-    ByteBuffer toBuffer()
+    Block[] allocate()
     {
-        ShortBuffer redBuffer = BufferUtil.wrapShorts(red);
-        ShortBuffer greenBuffer = BufferUtil.wrapShorts(green);
-        ShortBuffer blueBuffer = BufferUtil.wrapShorts(blue);
+        Block redBlock = BufferUtil.wraps(red);
+        Block greenBlock = BufferUtil.wraps(green);
+        Block blueBlock = BufferUtil.wraps(blue);
+        Block pointerBlock = BufferUtil.alloc(4*8);
         
-        ByteBuffer out = BufferUtil.createByteBuffer(4*8);
-        out.putLong(MemoryUtil.memAddress(redBuffer));
-        out.putLong(MemoryUtil.memAddress(greenBuffer));
-        out.putLong(MemoryUtil.memAddress(blueBuffer));
-        out.putLong(256);
-        out.rewind();
-        return out;
+        ByteBuffer pointerBuffer = BufferUtil.read(pointerBlock);
+        pointerBuffer.putLong(MemoryUtil.memAddress(BufferUtil.read(redBlock)));
+        pointerBuffer.putLong(MemoryUtil.memAddress(BufferUtil.read(greenBlock)));
+        pointerBuffer.putLong(MemoryUtil.memAddress(BufferUtil.read(blueBlock)));
+        pointerBuffer.putLong(256);
+        
+        return new Block[]{redBlock, greenBlock, blueBlock, pointerBlock};
     }
 }

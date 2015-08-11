@@ -5,7 +5,7 @@ import com.samrj.devil.io.Streamable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.FloatBuffer;
+import java.nio.ByteBuffer;
 
 /**
  * 3x3 matrix class.
@@ -14,7 +14,7 @@ import java.nio.FloatBuffer;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Mat3 implements Bufferable<FloatBuffer>, Streamable 
+public class Mat3 implements Bufferable, Streamable 
 {
     private static final float SQRT_2 = (float)Math.sqrt(2.0);
     private static final Mat3 tempMat = new Mat3();
@@ -716,19 +716,25 @@ public class Mat3 implements Bufferable<FloatBuffer>, Streamable
      * WARNING: Buffered in column-major format, as per OpenGL.
      */
     @Override
-    public void read(FloatBuffer buffer)
+    public void read(ByteBuffer buffer)
     {
-        a = buffer.get(); d = buffer.get(); g = buffer.get();
-        b = buffer.get(); e = buffer.get(); h = buffer.get();
-        c = buffer.get(); f = buffer.get(); i = buffer.get();
+        a = buffer.getFloat(); d = buffer.getFloat(); g = buffer.getFloat();
+        b = buffer.getFloat(); e = buffer.getFloat(); h = buffer.getFloat();
+        c = buffer.getFloat(); f = buffer.getFloat(); i = buffer.getFloat();
     }
 
     @Override
-    public void write(FloatBuffer buffer)
+    public void write(ByteBuffer buffer)
     {
-        buffer.put(a); buffer.put(d); buffer.put(g);
-        buffer.put(b); buffer.put(e); buffer.put(h);
-        buffer.put(c); buffer.put(f); buffer.put(i);
+        buffer.putFloat(a); buffer.putFloat(d); buffer.putFloat(g);
+        buffer.putFloat(b); buffer.putFloat(e); buffer.putFloat(h);
+        buffer.putFloat(c); buffer.putFloat(f); buffer.putFloat(i);
+    }
+    
+    @Override
+    public int bufferSize()
+    {
+        return 9*4;
     }
     
     /**

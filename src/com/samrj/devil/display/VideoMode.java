@@ -1,10 +1,6 @@
 package com.samrj.devil.display;
 
-import com.samrj.devil.io.BufferUtil;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.util.LinkedList;
-import org.lwjgl.glfw.GLFW;
 
 /**
  * Video mode class.
@@ -15,18 +11,6 @@ import org.lwjgl.glfw.GLFW;
  */
 public final class VideoMode
 {
-    static LinkedList<VideoMode> getAll(long monitor)
-    {
-        IntBuffer countBuffer = BufferUtil.createIntBuffer(1);
-        countBuffer.put(0);
-        countBuffer.rewind();
-        
-        IntBuffer buffer = GLFW.glfwGetVideoModes(monitor, countBuffer).asIntBuffer();
-        LinkedList<VideoMode> modes = new LinkedList<>();
-        while (buffer.hasRemaining()) modes.add(new VideoMode(buffer));
-        return modes;
-    }
-    
     /**
      * The width, in screen coordinates, of the video mode.
      */
@@ -57,19 +41,14 @@ public final class VideoMode
      */
     public final int refreshRate;
     
-    VideoMode(IntBuffer buffer)
-    {
-        width = buffer.get();
-        height = buffer.get();
-        redBits = buffer.get();
-        greenBits = buffer.get();
-        blueBits = buffer.get();
-        refreshRate = buffer.get();
-    }
-    
     VideoMode(ByteBuffer buffer)
     {
-        this(buffer.asIntBuffer());
+        width = buffer.getInt();
+        height = buffer.getInt();
+        redBits = buffer.getInt();
+        greenBits = buffer.getInt();
+        blueBits = buffer.getInt();
+        refreshRate = buffer.getInt();
     }
     
     @Override

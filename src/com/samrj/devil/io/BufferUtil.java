@@ -10,9 +10,8 @@ import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 
 /**
- * Static factory class for nio buffers. Also has some small, public buffers.
- * 
- * The public buffers are not thread-safe at all, so watch out.
+ * Static utility wrapper for a small block of native memory. Also includes some
+ * factory classes for nio buffers in case you want to make your own buffers.
  * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2015 Samuel Johnson
@@ -20,26 +19,13 @@ import java.nio.ShortBuffer;
  */
 public class BufferUtil
 {
-    public static final ByteBuffer pubBufA = createByteBuffer(128);
-    public static final ByteBuffer pubBufB = createByteBuffer(128);
-    public static final ByteBuffer pubBufC = createByteBuffer(128);
-    public static final ByteBuffer pubBufD = createByteBuffer(128);
-    
-    /**
-     * Clears each of the public utility buffers.
-     */
-    public static void clearPublicBuffers()
-    {
-        pubBufA.clear();
-        pubBufB.clear();
-        pubBufC.clear();
-        pubBufD.clear();
-    }
+    private static final Memory utilMem = new Memory(4096);
     
     /**
      * Creates a byte buffer whose capacity (in bytes) is the given value.
      */
-    public static ByteBuffer createByteBuffer(int size)
+    @Deprecated
+    public static final ByteBuffer createByteBuffer(int size)
     {
         return ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder());
     }
@@ -47,7 +33,8 @@ public class BufferUtil
     /**
      * Creates a short buffer whose capacity (in shorts) is the given value.
      */
-    public static ShortBuffer createShortBuffer(int size)
+    @Deprecated
+    public static final ShortBuffer createShortBuffer(int size)
     {
         return createByteBuffer(size << 1).asShortBuffer();
     }
@@ -55,7 +42,8 @@ public class BufferUtil
     /**
      * Creates an int buffer whose capacity (in ints) is the given value.
      */
-    public static IntBuffer createIntBuffer(int size)
+    @Deprecated
+    public static final IntBuffer createIntBuffer(int size)
     {
         return createByteBuffer(size << 2).asIntBuffer();
     }
@@ -63,7 +51,8 @@ public class BufferUtil
     /**
      * Creates a long buffer whose capacity (in longs) is the given value.
      */
-    public static LongBuffer createLongBuffer(int size)
+    @Deprecated
+    public static final LongBuffer createLongBuffer(int size)
     {
         return createByteBuffer(size << 3).asLongBuffer();
     }
@@ -71,7 +60,8 @@ public class BufferUtil
     /**
      * Creates a float buffer whose capacity (in floats) is the given value.
      */
-    public static FloatBuffer createFloatBuffer(int size)
+    @Deprecated
+    public static final FloatBuffer createFloatBuffer(int size)
     {
         return createByteBuffer(size << 2).asFloatBuffer();
     }
@@ -79,7 +69,8 @@ public class BufferUtil
     /**
      * Creates a double buffer whose capacity (in doubles) is the given value.
      */
-    public static DoubleBuffer createDoubleBuffer(int size)
+    @Deprecated
+    public static final DoubleBuffer createDoubleBuffer(int size)
     {
         return createByteBuffer(size << 3).asDoubleBuffer();
     }
@@ -87,134 +78,89 @@ public class BufferUtil
     /**
      * Creates a char buffer whose capacity (in chars) is the given value.
      */
-    public static CharBuffer createCharBuffer(int size)
+    @Deprecated
+    public static final CharBuffer createCharBuffer(int size)
     {
         return createByteBuffer(size << 1).asCharBuffer();
     }
     
     /**
-     * Creates a byte buffer whose capacity is the length of the given array,
-     * fills that buffer with the contents of the array, and then rewinds the
-     * buffer.
+     * @see com.samrj.devil.io.Memory#capacity() 
      */
-    public static ByteBuffer wrapBytes(byte... array)
+    public static final int capacity()
     {
-        ByteBuffer buffer = createByteBuffer(array.length);
-        //Actually faster than bulk put due to bounds checking.
-        for (byte b : array) buffer.put(b);
-        buffer.rewind();
-        return buffer;
+        return utilMem.capacity();
     }
     
     /**
-     * Creates a short buffer whose capacity is the length of the given array,
-     * fills that buffer with the contents of the array, and then rewinds the
-     * buffer.
+     * @see com.samrj.devil.io.Memory#alloc(int) 
      */
-    public static ShortBuffer wrapShorts(short... array)
+    public static final Block alloc(int capacity)
     {
-        ShortBuffer buffer = createShortBuffer(array.length);
-        for (short s : array) buffer.put(s);
-        buffer.rewind();
-        return buffer;
+        return utilMem.alloc(capacity);
     }
     
     /**
-     * Creates an int buffer whose capacity is the length of the given array,
-     * fills that buffer with the contents of the array, and then rewinds the
-     * buffer.
+     * @see com.samrj.devil.io.Memory#free(com.samrj.devil.io.Block) 
      */
-    public static IntBuffer wrapInts(int... array)
+    public static final void free(Block block)
     {
-        IntBuffer buffer = createIntBuffer(array.length);
-        for (int i : array) buffer.put(i);
-        buffer.rewind();
-        return buffer;
+        utilMem.free(block);
     }
     
     /**
-     * Creates a long buffer whose capacity is the length of the given array,
-     * fills that buffer with the contents of the array, and then rewinds the
-     * buffer.
+     * @see com.samrj.devil.io.Memory#read(com.samrj.devil.io.Block) 
      */
-    public static LongBuffer wrapLongs(long... array)
+    public static final ByteBuffer read(Block block)
     {
-        LongBuffer buffer = createLongBuffer(array.length);
-        for (long l : array) buffer.put(l);
-        buffer.rewind();
-        return buffer;
+        return utilMem.read(block);
     }
     
     /**
-     * Creates a float buffer whose capacity is the length of the given array,
-     * fills that buffer with the contents of the array, and then rewinds the
-     * buffer.
+     * @see com.samrj.devil.io.Memory#wrap(byte...) 
      */
-    public static FloatBuffer wrapFloats(float... array)
+    public static final Block wrap(byte... array)
     {
-        FloatBuffer buffer = createFloatBuffer(array.length);
-        for (float f : array) buffer.put(f);
-        buffer.rewind();
-        return buffer;
+        return utilMem.wrap(array);
     }
     
     /**
-     * Creates a double buffer whose capacity is the length of the given array,
-     * fills that buffer with the contents of the array, and then rewinds the
-     * buffer.
+     * @see com.samrj.devil.io.Memory#wraps(short...) 
      */
-    public static DoubleBuffer wrapDoubles(double... array)
+    public static final Block wraps(short... array)
     {
-        DoubleBuffer buffer = createDoubleBuffer(array.length);
-        for (double d : array) buffer.put(d);
-        buffer.rewind();
-        return buffer;
+        return utilMem.wraps(array);
     }
     
     /**
-     * Creates a char buffer whose capacity is the length of the given array,
-     * fills that buffer with the contents of the array, and then rewinds the
-     * buffer.
+     * @see com.samrj.devil.io.Memory#wrapi(int...) 
      */
-    public static CharBuffer wrapChars(char... array)
+    public static final Block wrapi(int... array)
     {
-        CharBuffer buffer = createCharBuffer(array.length);
-        for (char c : array) buffer.put(c);
-        buffer.rewind();
-        return buffer;
+        return utilMem.wrapi(array);
     }
     
     /**
-     * Creates a char buffer whose capacity is the length of the given string,
-     * fills that buffer with the contents of the string, and then rewinds the
-     * buffer.
+     * @see com.samrj.devil.io.Memory#wrapf(float...) 
      */
-    public static CharBuffer wrapString(CharSequence string)
+    public static final Block wrapf(float... array)
     {
-        final int length = string.length();
-        CharBuffer buffer = createCharBuffer(string.length());
-        for (int i=0; i<length; i++) buffer.put(string.charAt(i));
-        buffer.rewind();
-        return buffer;
+        return utilMem.wrapf(array);
     }
     
     /**
-     * Utility float buffer method. Can only fit up to 32 floats. Uses pubBufA
-     * for buffering--you can't use this for two bufferables at the same time.
-     * 
-     * @param data The data to buffer.
-     * @return A rewound buffer containing the given data.
+     * @see com.samrj.devil.io.Memory#alloc(com.samrj.devil.io.Bufferable) 
      */
-    public static FloatBuffer fBuffer(Bufferable<FloatBuffer> data)
+    public static final Block alloc(Bufferable obj)
     {
-        FloatBuffer out = pubBufA.asFloatBuffer();
-        out.clear();
-        data.write(out);
-        out.rewind();
-        return out;
+        return utilMem.alloc(obj);
     }
     
-    private BufferUtil()
+    /**
+     * @see com.samrj.devil.io.Memory#root() 
+     */
+    public static final Block root()
     {
+        return utilMem.root();
     }
 }

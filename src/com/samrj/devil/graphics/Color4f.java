@@ -1,7 +1,7 @@
 package com.samrj.devil.graphics;
 
 import com.samrj.devil.io.Bufferable;
-import java.nio.FloatBuffer;
+import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -9,7 +9,7 @@ import org.lwjgl.opengl.GL11;
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class Color4f implements Bufferable<FloatBuffer>
+public final class Color4f implements Bufferable
 {
     // <editor-fold defaultstate="collapsed" desc="Factory Methods">
     public static Color4f black()
@@ -134,21 +134,27 @@ public final class Color4f implements Bufferable<FloatBuffer>
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Ocerriden Bufferable Methods">
     @Override
-    public void write(FloatBuffer buffer)
+    public void read(ByteBuffer buffer)
     {
-        buffer.put(r);
-        buffer.put(g);
-        buffer.put(b);
-        buffer.put(a);
+        r = buffer.getFloat();
+        g = buffer.getFloat();
+        b = buffer.getFloat();
+        a = buffer.getFloat();
     }
     
     @Override
-    public void read(FloatBuffer buffer)
+    public void write(ByteBuffer buffer)
     {
-        r = buffer.get();
-        g = buffer.get();
-        b = buffer.get();
-        a = buffer.get();
+        buffer.putFloat(r);
+        buffer.putFloat(g);
+        buffer.putFloat(b);
+        buffer.putFloat(a);
+    }
+    
+    @Override
+    public int bufferSize()
+    {
+        return 4*4;
     }
     // </editor-fold>
 }

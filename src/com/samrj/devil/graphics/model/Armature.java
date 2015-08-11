@@ -75,8 +75,7 @@ public class Armature
     public ByteBuffer bufferBoneMatrices()
     {
         boneMatrixBuffer.clear();
-        FloatBuffer fBuffer = boneMatrixBuffer.asFloatBuffer();
-        for (Bone bone : bones) bone.matrix.write(fBuffer);
+        for (Bone bone : bones) bone.matrix.write(boneMatrixBuffer);
         boneMatrixBuffer.rewind();
         return boneMatrixBuffer;
     }

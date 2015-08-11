@@ -5,7 +5,7 @@ import com.samrj.devil.io.Streamable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.FloatBuffer;
+import java.nio.ByteBuffer;
 
 /**
  * Quaternion class.
@@ -14,7 +14,7 @@ import java.nio.FloatBuffer;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Quat implements Bufferable<FloatBuffer>, Streamable
+public class Quat implements Bufferable, Streamable
 {
     private static final Quat tempQuat = new Quat();
     
@@ -815,21 +815,27 @@ public class Quat implements Bufferable<FloatBuffer>, Streamable
      * WARNING: W buffered last instead of first, for GLSL.
      */
     @Override
-    public void read(FloatBuffer buffer)
+    public void read(ByteBuffer buffer)
     {
-        x = buffer.get();
-        y = buffer.get();
-        z = buffer.get();
-        w = buffer.get();
+        x = buffer.getFloat();
+        y = buffer.getFloat();
+        z = buffer.getFloat();
+        w = buffer.getFloat();
     }
 
     @Override
-    public void write(FloatBuffer buffer)
+    public void write(ByteBuffer buffer)
     {
-        buffer.put(x);
-        buffer.put(y);
-        buffer.put(z);
-        buffer.put(w);
+        buffer.putFloat(x);
+        buffer.putFloat(y);
+        buffer.putFloat(z);
+        buffer.putFloat(w);
+    }
+    
+    @Override
+    public int bufferSize()
+    {
+        return 4*4;
     }
 
     @Override

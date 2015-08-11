@@ -24,4 +24,10 @@ public class Vec3i
     {
         x = v.x; y = v.y; z = v.z;
     }
+    
+    @Override
+    public String toString()
+    {
+        return "(" + x + ", " + y + ", " + z + ")";
+    }
 }
