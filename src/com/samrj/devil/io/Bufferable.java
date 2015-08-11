@@ -24,7 +24,7 @@ public interface Bufferable
     public void write(ByteBuffer buffer);
     
     /**
-     * @return The size of this Bufferable, in elements.
+     * @return The size of this Bufferable, in bytes.
      */
     public int bufferSize();
 }

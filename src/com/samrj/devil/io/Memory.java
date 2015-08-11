@@ -1,9 +1,11 @@
 package com.samrj.devil.io;
 
 import com.samrj.devil.math.Util;
+import com.samrj.devil.util.SortedArray;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Comparator;
 import org.lwjgl.system.MemoryUtil;
 
 /**
@@ -17,21 +19,6 @@ import org.lwjgl.system.MemoryUtil;
 public final class Memory
 {
     /**
-     * Enum for different memory block types.
-     */
-    public static enum Type
-    {
-        FREE(true), PARENT(false), ALLOCATED(false), WASTED(true);
-
-        public final boolean mergable;
-
-        private Type(boolean mergable)
-        {
-            this.mergable = mergable;
-        }
-    }
-    
-    /**
      * The capacity of this memory block, in bytes.
      */
     public final int capacity;
@@ -42,14 +29,12 @@ public final class Memory
     public final ByteBuffer buffer;
     
     /**
-     * The root memory block.
-     */
-    public final Block root;
-    
-    /**
      * The address of this memory block. Inherently unsafe to use.
      */
     public final long address;
+    
+    private Block firstBlock;
+    private final SortedArray<Block> blockArray;
     
     /**
      * Creates a new direct byte buffer with the given capacity, and sets up
@@ -64,8 +49,35 @@ public final class Memory
         
         this.capacity = capacity;
         buffer = ByteBuffer.allocateDirect(capacity).order(ByteOrder.nativeOrder());
-        root = new Block(capacity);
         address = MemoryUtil.memAddress0(buffer);
+        firstBlock = new Block(capacity);
+        blockArray = new SortedArray<>(32, new BlockSizeComparator());
+        blockArray.insert(firstBlock);
+    }
+    
+    /**
+     * Returns the index of the first block larger than or equal to the given
+     * size.
+     * 
+     * @param size The minimum size of block to search for.
+     * @return The index of the first block larger than the given size.
+     */
+    private int search(int size)
+    {
+        int low = 0;
+        int high = blockArray.size() - 1;
+        
+        while (low <= high)
+        {
+            int mid = (low + high) >>> 1;
+            int midValue = blockArray.get(mid).size;
+            
+            if (midValue < size) low = mid + 1;
+            else if (midValue > size) high = mid - 1;
+            else return mid;
+        }
+        
+        return low;
     }
     
     /**
@@ -82,20 +94,34 @@ public final class Memory
     {
         if (size <= 0) throw new IllegalArgumentException();
         
-        Block parent = root.search(Util.nextPower2(size));
+        int index = search(size);
+        if (index >= blockArray.size()) throw new OutOfMemoryException();
         
-        if (parent == null) throw new OutOfMemoryException();
-        
-        if (parent.size == size)
+        Block block = blockArray.get(index);
+        if (block.size == size)
         {
-            parent.type = Type.ALLOCATED;
-            return parent;
+            block.allocated = true;
+            blockArray.remove(index);
+            return block;
         }
-        
-        parent.type = Type.PARENT;
-        parent.left = new Block(parent, parent.offset, size, Type.ALLOCATED);
-        parent.right = new Block(parent, parent.offset + size, parent.size - size, Type.WASTED);
-        return parent.left;
+        else
+        {
+            Block out = new Block(block.offset, size, true);
+            out.prev = block.prev;
+            out.next = block;
+            
+            if (out.prev != null) out.prev.next = out;
+            else firstBlock = out;
+            
+            block.prev = out;
+            block.offset += size;
+            block.size -= size;
+            
+            if (block.prev != out || out.next != block) throw new Error("how?");
+            
+            blockArray.resort();
+            return out;
+        }
     }
     
     /**
@@ -174,79 +200,37 @@ public final class Memory
     }
     
     /**
+     * @return The first block in this memory.
+     */
+    public Block firstBlock()
+    {
+        return firstBlock;
+    }
+    
+    /**
     * Class representing a block of memory within a ByteBuffer.
     */
     public final class Block
     {
-        /**
-         * The parent of this memory block.
-         */
-        public final Block parent;
-        
-        /**
-         * The offset of this memory block, in bytes.
-         */
-        public final int offset;
-        
-        /**
-         * The size of this memory block, in bytes.
-         */
-        public final int size;
-        
-        private Type type;
-        private Block left, right;
+        private int offset, size;
+        private boolean allocated;
+        private Block prev, next;
 
-        private Block(Block parent, int offset, int size, Type type)
+        private Block(int offset, int size, boolean allocated)
         {
-            this.parent = parent;
             this.offset = offset;
             this.size = size;
-            this.type = type;
+            this.allocated = allocated;
         }
 
-        private Block(Block parent, int offset, int size)
+        private Block(int offset, int size)
         {
-            this(parent, offset, size, Type.FREE);
+            this(offset, size, false);
         }
 
         private Block(int size)
         {
-            this(null, 0, size, Type.FREE);
-        }
-        
-        private void merge()
-        {
-            if (left.type.mergable && right.type.mergable)
-            {
-                left = null;
-                right = null;
-                type = Type.FREE;
-                if (parent != null) parent.merge();
-            }
-        }
-        
-        private Block search(int blockSize)
-        {
-            if (type == Type.FREE)
-            {
-                if (size == blockSize) return this;
-                else if (size > blockSize)
-                {
-                    int childSize = size >> 1;
-                    type = Type.PARENT;
-                    left = new Block(this, offset, childSize);
-                    right = new Block(this, offset + childSize, childSize);
-                }
-            }
-
-            if (type == Type.PARENT)
-            {
-                Block block = left.search(blockSize);
-                if (block != null) return block;
-                return right.search(blockSize);
-            }
-
-            return null;
+            this(0, size, false);
         }
         
         /**
@@ -254,9 +238,31 @@ public final class Memory
          */
         public void free()
         {
-            if (type != Type.ALLOCATED) throw new IllegalArgumentException();
-            type = Type.FREE;
-            if (parent != null) parent.merge();
+            if (!allocated) throw new IllegalStateException("Already free.");
+            allocated = false;
+            
+            if (next != null && !next.allocated)
+            {
+                size += next.size;
+                blockArray.remove(next);
+                next = next.next;
+                
+                if (next != null) next.prev = this;
+            }
+            
+            if (prev == null)
+            {
+                firstBlock = this;
+                blockArray.insert(this);
+            }
+            else if (!prev.allocated)
+            {
+                prev.size += size;
+                prev.next = next;
+                
+                if (next != null) next.prev = prev;
+            }
+            else blockArray.insert(this);
         }
         
         /**
@@ -347,6 +353,22 @@ public final class Memory
         }
         
         /**
+         * @return The offset, in bytes, of this block.
+         */
+        public int offset()
+        {
+            return offset;
+        }
+        
+        /**
+         * @return The size, in bytes, of this block.
+         */
+        public int size()
+        {
+            return size;
+        }
+        
+        /**
          * Returns the address for this memory block. Inherently unsafe.
          * 
          * @return The address for this memory block.
@@ -357,27 +379,49 @@ public final class Memory
         }
 
         /**
-         * @return The type of this memory block.
+         * @return Whether this block has been allocated or not.
          */
-        public Type type()
+        public boolean allocated()
         {
-            return type;
+            return allocated;
         }
-
+        
         /**
-         * @return The lower-addressed child of this block.
+         * @return The previous block, or null if no such block exists.
          */
-        public Block left()
+        public Block prev()
         {
-            return left;
+            return prev;
         }
-
+        
         /**
-         * @return The higher-addressed child of this block.
+         * @return The next block, or null if no such block exists.
          */
-        public Block right()
+        public Block next()
         {
-            return right;
+            return next;
+        }
+        
+        @Override
+        public String toString()
+        {
+            return "offs: " + offset + " size: " + size + " allc: " + allocated;
+        }
+    }
+    
+    private final class BlockSizeComparator implements Comparator<Block>
+    {
+        @Override
+        public int compare(Block o1, Block o2)
+        {
+            if (o1 == o2) return 0;
+            if (o1 == null) return 1;
+            if (o2 == null) return -1;
+            
+            int sizeDiff = o1.size - o2.size;
+            if (sizeDiff == 0) //Same size, must have consistent order.
+                return System.identityHashCode(o1) - System.identityHashCode(o2);
+            return sizeDiff;
         }
     }
 }
