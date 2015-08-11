@@ -1,9 +1,8 @@
 package com.samrj.devil.display;
 
-import com.samrj.devil.io.Block;
-import com.samrj.devil.io.BufferUtil;
+import com.samrj.devil.io.Memory.Block;
+import static com.samrj.devil.io.BufferUtil.memUtil;
 import java.nio.ByteBuffer;
-import java.nio.ShortBuffer;
 import org.lwjgl.system.MemoryUtil;
 
 /**
@@ -59,15 +58,15 @@ public final class GammaRamp
     
     Block[] allocate()
     {
-        Block redBlock = BufferUtil.wraps(red);
-        Block greenBlock = BufferUtil.wraps(green);
-        Block blueBlock = BufferUtil.wraps(blue);
-        Block pointerBlock = BufferUtil.alloc(4*8);
+        Block redBlock = memUtil.wraps(red);
+        Block greenBlock = memUtil.wraps(green);
+        Block blueBlock = memUtil.wraps(blue);
+        Block pointerBlock = memUtil.alloc(4*8);
         
-        ByteBuffer pointerBuffer = BufferUtil.read(pointerBlock);
-        pointerBuffer.putLong(MemoryUtil.memAddress(BufferUtil.read(redBlock)));
-        pointerBuffer.putLong(MemoryUtil.memAddress(BufferUtil.read(greenBlock)));
-        pointerBuffer.putLong(MemoryUtil.memAddress(BufferUtil.read(blueBlock)));
+        ByteBuffer pointerBuffer = pointerBlock.read();
+        pointerBuffer.putLong(redBlock.address());
+        pointerBuffer.putLong(greenBlock.address());
+        pointerBuffer.putLong(blueBlock.address());
         pointerBuffer.putLong(256);
         
         return new Block[]{redBlock, greenBlock, blueBlock, pointerBlock};

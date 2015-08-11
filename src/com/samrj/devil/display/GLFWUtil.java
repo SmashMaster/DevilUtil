@@ -1,7 +1,7 @@
 package com.samrj.devil.display;
 
-import com.samrj.devil.io.Block;
-import com.samrj.devil.io.BufferUtil;
+import com.samrj.devil.io.Memory.Block;
+import static com.samrj.devil.io.BufferUtil.memUtil;
 import com.samrj.devil.math.Vec2i;
 import java.nio.ByteBuffer;
 import org.lwjgl.glfw.GLFW;
@@ -132,8 +132,8 @@ public final class GLFWUtil
     public static void setMonitorGammaRamp(long monitor, GammaRamp gammaRamp)
     {
         Block[] blocks = gammaRamp.allocate();
-        GLFW.glfwSetGammaRamp(monitor, BufferUtil.read(blocks[3]));
-        for (Block block : blocks) BufferUtil.free(block);
+        GLFW.glfwSetGammaRamp(monitor, blocks[3].read());
+        for (Block block : blocks) block.free();
     }
     
     private GLFWUtil()
@@ -146,22 +146,22 @@ public final class GLFWUtil
         
         private IntBlock()
         {
-            block = BufferUtil.alloc(4);
+            block = memUtil.alloc(4);
         }
         
         private ByteBuffer buf()
         {
-            return BufferUtil.read(block);
+            return block.read();
         }
         
         private int read()
         {
-            return BufferUtil.read(block).getInt();
+            return block.readInt();
         }
         
         private void free()
         {
-            BufferUtil.free(block);
+            block.free();
         }
     }
 }

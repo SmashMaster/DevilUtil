@@ -1,7 +1,7 @@
 package com.samrj.devil.graphics;
 
-import com.samrj.devil.io.Block;
-import com.samrj.devil.io.BufferUtil;
+import com.samrj.devil.io.Memory.Block;
+import static com.samrj.devil.io.BufferUtil.memUtil;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
@@ -65,9 +65,9 @@ public class GLFrameBuffer
         for (int i=0; i<a.length; i++) if (a[i] < GL30.GL_COLOR_ATTACHMENT0)
             a[i] += GL30.GL_COLOR_ATTACHMENT0;
         
-        Block block = BufferUtil.wrapi(a);
-        GL20.glDrawBuffers(BufferUtil.read(block).asIntBuffer());
-        BufferUtil.free(block);
+        Block block = memUtil.wrapi(a);
+        GL20.glDrawBuffers(block.readUnsafe().asIntBuffer());
+        block.free();
     }
     
     public void glTexture2D(GLTexture2D t, int attachment)

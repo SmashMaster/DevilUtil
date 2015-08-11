@@ -1,7 +1,7 @@
 package com.samrj.devil.graphics;
 
-import com.samrj.devil.io.Block;
-import com.samrj.devil.io.BufferUtil;
+import com.samrj.devil.io.Memory.Block;
+import static com.samrj.devil.io.BufferUtil.memUtil;
 import com.samrj.devil.math.Mat2;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
@@ -28,17 +28,17 @@ public class GLShader
         int numShaders = GL20.glGetProgrami(id, GL20.GL_ATTACHED_SHADERS);
         if (numShaders != 2) return null;
         
-        Block countBlock = BufferUtil.wrapi(1);
-        Block shadBlock = BufferUtil.alloc(8);
-        ByteBuffer shadBuf = BufferUtil.read(shadBlock);
+        Block countBlock = memUtil.wrapi(1);
+        Block shadBlock = memUtil.alloc(8);
+        ByteBuffer shadBuf = shadBlock.read();
         
-        GL20.glGetAttachedShaders(id, BufferUtil.read(countBlock).asIntBuffer(), shadBuf.asIntBuffer());
+        GL20.glGetAttachedShaders(id, countBlock.read().asIntBuffer(), shadBuf.asIntBuffer());
         
-        BufferUtil.free(countBlock);
+        countBlock.free();
         shadBuf.reset();
         int vertid = shadBuf.getInt();
         int fragid = shadBuf.getInt();
-        BufferUtil.free(shadBlock);
+        shadBlock.free();
         
         if (GL20.glGetShaderi(fragid, GL20.GL_SHADER_TYPE) == GL20.GL_VERTEX_SHADER)
         {
@@ -245,26 +245,26 @@ public class GLShader
     
     public void glUniformMatrix2f(String name, Mat2 matrix)
     {
-        Block b = BufferUtil.alloc(matrix);
+        Block b = memUtil.alloc(matrix);
         int loc = glGetUniformLocation(name);
-        GL20.glUniformMatrix2fv(loc, false, BufferUtil.read(b).asFloatBuffer());
-        BufferUtil.free(b);
+        GL20.glUniformMatrix2fv(loc, false, b.readUnsafe().asFloatBuffer());
+        b.free();
     }
     
     public void glUniformMatrix3f(String name, Mat3 matrix)
     {
-        Block b = BufferUtil.alloc(matrix);
+        Block b = memUtil.alloc(matrix);
         int loc = glGetUniformLocation(name);
-        GL20.glUniformMatrix3fv(loc, false, BufferUtil.read(b).asFloatBuffer());
-        BufferUtil.free(b);
+        GL20.glUniformMatrix3fv(loc, false, b.readUnsafe().asFloatBuffer());
+        b.free();
     }
     
     public void glUniformMatrix4f(String name, Mat4 matrix)
     {
-        Block b = BufferUtil.alloc(matrix);
+        Block b = memUtil.alloc(matrix);
         int loc = glGetUniformLocation(name);
-        GL20.glUniformMatrix4fv(loc, false, BufferUtil.read(b).asFloatBuffer());
-        BufferUtil.free(b);
+        GL20.glUniformMatrix4fv(loc, false, b.readUnsafe().asFloatBuffer());
+        b.free();
     }
     
     public int id()
