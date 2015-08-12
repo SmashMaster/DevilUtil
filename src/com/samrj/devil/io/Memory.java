@@ -33,8 +33,10 @@ public final class Memory
      */
     public final long address;
     
-    private Block firstBlock;
-    private final SortedArray<Block> blockArray;
+    /**
+     * The first block in this memory.
+     */
+    public final Block root;
     
     /**
      * Creates a new direct byte buffer with the given capacity, and sets up
@@ -50,34 +52,30 @@ public final class Memory
         this.capacity = capacity;
         buffer = ByteBuffer.allocateDirect(capacity).order(ByteOrder.nativeOrder());
         address = MemoryUtil.memAddress0(buffer);
-        firstBlock = new Block(capacity);
-        blockArray = new SortedArray<>(32, new BlockSizeComparator());
-        blockArray.insert(firstBlock);
+        root = new Block(capacity);
     }
     
-    /**
-     * Returns the index of the first block larger than or equal to the given
-     * size.
-     * 
-     * @param size The minimum size of block to search for.
-     * @return The index of the first block larger than the given size.
-     */
-    private int search(int size)
+    //Single merge
+    private void merge(Block block)
     {
-        int low = 0;
-        int high = blockArray.size() - 1;
-        
-        while (low <= high)
+        if (block.allocated) return;
+        while (block.next != null && !block.next.allocated)
         {
-            int mid = (low + high) >>> 1;
-            int midValue = blockArray.get(mid).size;
-            
-            if (midValue < size) low = mid + 1;
-            else if (midValue > size) high = mid - 1;
-            else return mid;
+            block.size += block.next.size;
+            block.next = block.next.next;
         }
+    }
+    
+    //Total merge
+    private void merge()
+    {
+        Block block = root;
         
-        return low;
+        while (block != null)
+        {
+            merge(block);
+            block = block.next;
+        }
     }
     
     /**
@@ -88,40 +86,28 @@ public final class Memory
      * @return A newly allocated block of memory.
      * @throws OutOfMemoryException If there is no free block of memory as large
      *                              as or larger than the desired size.
-     *                          
      */
     public Block alloc(int size)
     {
         if (size <= 0) throw new IllegalArgumentException();
         
-        int index = search(size);
-        if (index >= blockArray.size()) throw new OutOfMemoryException();
+        Block block = root;
+        while (block != null && (block.allocated || block.size < size))
+            block = block.next;
+        if (block == null) throw new OutOfMemoryException();
         
-        Block block = blockArray.get(index);
-        if (block.size == size)
+        block.allocated = true;
+        
+        if (block.size != size)
         {
-            block.allocated = true;
-            blockArray.remove(index);
-            return block;
+            Block remaining = new Block(block.offset + size, block.size - size);
+            remaining.next = block.next;
+            merge(remaining);
+            block.next = remaining;
+            block.size = size;
         }
-        else
-        {
-            Block out = new Block(block.offset, size, true);
-            out.prev = block.prev;
-            out.next = block;
-            
-            if (out.prev != null) out.prev.next = out;
-            else firstBlock = out;
-            
-            block.prev = out;
-            block.offset += size;
-            block.size -= size;
-            
-            if (block.prev != out || out.next != block) throw new Error("how?");
-            
-            blockArray.resort();
-            return out;
-        }
+        
+        return block;
     }
     
     /**
@@ -200,21 +186,13 @@ public final class Memory
     }
     
     /**
-     * @return The first block in this memory.
-     */
-    public Block firstBlock()
-    {
-        return firstBlock;
-    }
-    
-    /**
     * Class representing a block of memory within a ByteBuffer.
     */
     public final class Block
     {
         private int offset, size;
         private boolean allocated;
-        private Block prev, next;
+        private Block next;
 
         private Block(int offset, int size, boolean allocated)
         {
@@ -240,29 +218,7 @@ public final class Memory
         {
             if (!allocated) throw new IllegalStateException("Already free.");
             allocated = false;
-            
-            if (next != null && !next.allocated)
-            {
-                size += next.size;
-                blockArray.remove(next);
-                next = next.next;
-                
-                if (next != null) next.prev = this;
-            }
-            
-            if (prev == null)
-            {
-                firstBlock = this;
-                blockArray.insert(this);
-            }
-            else if (!prev.allocated)
-            {
-                prev.size += size;
-                prev.next = next;
-                
-                if (next != null) next.prev = prev;
-            }
-            else blockArray.insert(this);
+            merge();
         }
         
         /**
@@ -387,14 +343,6 @@ public final class Memory
         }
         
         /**
-         * @return The previous block, or null if no such block exists.
-         */
-        public Block prev()
-        {
-            return prev;
-        }
-        
-        /**
          * @return The next block, or null if no such block exists.
          */
         public Block next()
@@ -406,22 +354,6 @@ public final class Memory
         public String toString()
         {
             return "offs: " + offset + " size: " + size + " allc: " + allocated;
-        }
-    }
-    
-    private final class BlockSizeComparator implements Comparator<Block>
-    {
-        @Override
-        public int compare(Block o1, Block o2)
-        {
-            if (o1 == o2) return 0;
-            if (o1 == null) return 1;
-            if (o2 == null) return -1;
-            
-            int sizeDiff = o1.size - o2.size;
-            if (sizeDiff == 0) //Same size, must have consistent order.
-                return System.identityHashCode(o1) - System.identityHashCode(o2);
-            return sizeDiff;
         }
     }
 }
