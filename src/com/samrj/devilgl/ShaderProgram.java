@@ -5,7 +5,9 @@ import com.samrj.devil.io.Memory;
 import com.samrj.devil.io.Memory.Block;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryUtil;
@@ -17,60 +19,6 @@ import org.lwjgl.system.MemoryUtil;
  */
 public class ShaderProgram
 {
-    public static enum AttType
-    {
-        FLOAT(4,  1, GL11.GL_FLOAT),
-        VEC2 (8,  1, GL20.GL_FLOAT_VEC2),
-        VEC3 (12, 1, GL20.GL_FLOAT_VEC3),
-        VEC4 (16, 1, GL20.GL_FLOAT_VEC4),
-        MAT2 (8,  2, GL20.GL_FLOAT_MAT2),
-        MAT3 (12, 3, GL20.GL_FLOAT_MAT3),
-        MAT4 (16, 4, GL20.GL_FLOAT_MAT4),
-        INT  (4,  1, GL11.GL_INT),
-        VEC2I(8,  1, GL20.GL_INT_VEC2),
-        VEC3I(12, 1, GL20.GL_INT_VEC3),
-        VEC4I(16, 1, GL20.GL_INT_VEC4);
-
-        /**
-         * The size, in bytes, of one element of this attribute.
-         */
-        public final int size;
-
-        /**
-         * The number of locations this attribute occupies.
-         */
-        public final int layers;
-
-        /**
-         * The OpenGL enumerator for this attribute.
-         */
-        public final int glEnum;
-
-        private AttType(int size, int layers, int glEnum)
-        {
-            this.size = size; this.layers = layers; this.glEnum = glEnum;
-        }
-    }
-
-    public static final AttType getAttType(int glEnum)
-    {
-        switch (glEnum)
-        {
-            case GL11.GL_FLOAT:      return AttType.FLOAT;
-            case GL20.GL_FLOAT_VEC2: return AttType.VEC2;
-            case GL20.GL_FLOAT_VEC3: return AttType.VEC3;
-            case GL20.GL_FLOAT_VEC4: return AttType.VEC4;
-            case GL20.GL_FLOAT_MAT2: return AttType.MAT2;
-            case GL20.GL_FLOAT_MAT3: return AttType.MAT3;
-            case GL20.GL_FLOAT_MAT4: return AttType.MAT4;
-            case GL11.GL_INT:        return AttType.INT;
-            case GL20.GL_INT_VEC2:   return AttType.VEC2I;
-            case GL20.GL_INT_VEC3:   return AttType.VEC3I;
-            case GL20.GL_INT_VEC4:   return AttType.VEC4I;
-            default: return null;
-        }
-    }
-    
     public static final ShaderProgram load(Memory mem, String path) throws IOException
     {
         Shader vertShader = new Shader(mem, path + ".vert", GL20.GL_VERTEX_SHADER);
@@ -94,7 +42,7 @@ public class ShaderProgram
      */
     public final int id;
     
-    private Attribute[] attributes;
+    private List<Attribute> attributes;
     
     /**
      * Creates a new shader program.
@@ -152,8 +100,9 @@ public class ShaderProgram
         checkStatus(GL20.GL_LINK_STATUS);
         
         int numAttributes = GL20.glGetProgrami(id, GL20.GL_ACTIVE_ATTRIBUTES);
-        attributes = new Attribute[numAttributes];
-        for (int i=0; i<numAttributes; i++) attributes[i] = getActiveAttribute(i);
+        ArrayList<Attribute> attList = new ArrayList<>(numAttributes);
+        for (int i=0; i<numAttributes; i++) attList.add(getActiveAttribute(i));
+        attributes = Collections.unmodifiableList(attList);
     }
     
     /**
@@ -167,11 +116,19 @@ public class ShaderProgram
     }
     
     /**
+     * Use this shader for any subsequent draw calls.
+     */
+    public void use()
+    {
+        GL20.glUseProgram(id);
+    }
+    
+    /**
      * @return An array of every vertex attribute associated with this program.
      */
-    public Attribute[] getAttributes()
+    public List<Attribute> getAttributes()
     {
-        return Arrays.copyOf(attributes, attributes.length);
+        return attributes;
     }
     
     /**
@@ -187,7 +144,7 @@ public class ShaderProgram
         /**
          * The type of this attribute.
          */
-        public final AttType type;
+        public final AttributeType type;
         
         /**
          * The number of elements in this attribute array, if this attribute is
@@ -203,7 +160,7 @@ public class ShaderProgram
         private Attribute(String name, int type, int size, int location)
         {
             this.name = name;
-            this.type = getAttType(type);
+            this.type = AttributeType.get(type);
             if (this.type == null) throw new IllegalArgumentException();
             this.size = size;
             this.location = location;
