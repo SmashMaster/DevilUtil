@@ -4,8 +4,13 @@ import static com.samrj.devil.io.BufferUtil.memUtil;
 import com.samrj.devil.io.Bufferable;
 import com.samrj.devil.io.Memory;
 import com.samrj.devil.io.Memory.Block;
+import com.samrj.devil.math.Mat2;
+import com.samrj.devil.math.Mat3;
+import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Vec2;
+import com.samrj.devil.math.Vec2i;
 import com.samrj.devil.math.Vec3;
+import com.samrj.devil.math.Vec3i;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +19,11 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2015 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilGL/blob/master/LICENSE
+ */
 public class VertexData
 {
     private static enum State
@@ -78,24 +88,37 @@ public class VertexData
                 "Attribute '" + name + "' already registered.");
     }
     
+    private <T extends Attribute> T regAtt(String name, T att)
+    {
+        vertexSize += att.type.size*att.type.layers;
+        attributes.add(att);
+        attMap.put(name, att);
+        return att;
+    }
+    
     private <T extends Bufferable> T regAtt(T obj, String name, AttributeType type)
     {
-        Attribute a = new BufferableAttribute(obj, type, vertexSize);
-        vertexSize += type.size*type.layers;
-        attributes.add(a);
-        attMap.put(name, a);
+        regAtt(name, new BufferableAttribute(obj, type, vertexSize));
         return obj;
     }
     
     /**
-     * If one doesn't already exist, registers a new Vec2 attribute with the
-     * given name. Then returns the attribute object corresponding with that
-     * name.
+     * Registers a new floating-point attribute for this vertex data.
      * 
      * @param name The name of the attribute to register.
-     * @return The attribute object corresponding with the given name.
-     * @throws java.lang.IllegalStateException If any vertices have been emitted
-     *         by this.
+     * @return A new attribute data object.
+     */
+    public FloatAttribute afloat(String name)
+    {
+        ensureAttNotReg(name);
+        return regAtt(name, new FloatAttribute(vertexSize));
+    }
+    
+    /**
+     * Registers a 2d vector attribute for this vertex data.
+     * 
+     * @param name The name of the attribute to register.
+     * @return A new attribute data object.
      */
     public Vec2 vec2(String name)
     {
@@ -104,19 +127,87 @@ public class VertexData
     }
     
     /**
-     * If one doesn't already exist, registers a new Vec3 attribute with the
-     * given name. Then returns the attribute object corresponding with that
-     * name.
+     * Registers a 3d vector attribute for this vertex data.
      * 
      * @param name The name of the attribute to register.
-     * @return The attribute object corresponding with the given name.
-     * @throws java.lang.IllegalStateException If any vertices have been emitted
-     *         by this.
+     * @return A new attribute data object.
      */
     public Vec3 vec3(String name)
     {
         ensureAttNotReg(name);
         return regAtt(new Vec3(), name, AttributeType.VEC3);
+    }
+    
+    /**
+     * Registers a 2x2 matrix attribute for this vertex data.
+     * 
+     * @param name The name of the attribute to register.
+     * @return A new attribute data object.
+     */
+    public Mat2 mat2(String name)
+    {
+        ensureAttNotReg(name);
+        return regAtt(new Mat2(), name, AttributeType.MAT2);
+    }
+    
+    /**
+     * Registers a 3x3 matrix attribute for this vertex data.
+     * 
+     * @param name The name of the attribute to register.
+     * @return A new attribute data object.
+     */
+    public Mat3 mat3(String name)
+    {
+        ensureAttNotReg(name);
+        return regAtt(new Mat3(), name, AttributeType.MAT3);
+    }
+    
+    /**
+     * Registers a 4x4 matrix attribute for this vertex data.
+     * 
+     * @param name The name of the attribute to register.
+     * @return A new attribute data object.
+     */
+    public Mat4 mat4(String name)
+    {
+        ensureAttNotReg(name);
+        return regAtt(new Mat4(), name, AttributeType.MAT4);
+    }
+    
+    /**
+     * Registers a new integer attribute for this vertex data.
+     * 
+     * @param name The name of the attribute to register.
+     * @return A new attribute data object.
+     */
+    public IntAttribute aint(String name)
+    {
+        ensureAttNotReg(name);
+        return regAtt(name, new IntAttribute(vertexSize));
+    }
+    
+    /**
+     * Registers a 2d integer vector attribute for this vertex data.
+     * 
+     * @param name The name of the attribute to register.
+     * @return A new attribute data object.
+     */
+    public Vec2i vec2i(String name)
+    {
+        ensureAttNotReg(name);
+        return regAtt(new Vec2i(), name, AttributeType.VEC2);
+    }
+    
+    /**
+     * Registers a 3d integer vector attribute for this vertex data.
+     * 
+     * @param name The name of the attribute to register.
+     * @return A new attribute data object.
+     */
+    public Vec3i vec3i(String name)
+    {
+        ensureAttNotReg(name);
+        return regAtt(new Vec3i(), name, AttributeType.VEC3);
     }
     
     /**
@@ -216,16 +307,19 @@ public class VertexData
         
         for (ShaderProgram.Attribute satt : shader.getAttributes())
         {
+            AttributeType type  = satt.type;
             Attribute att = attMap.get(satt.name);
-            if (att != null && att.type == satt.type)
+            
+            if (att != null && att.type == type) for (int layer=0; layer<type.layers; layer++)
             {
-                GL20.glEnableVertexAttribArray(satt.location);
-                GL20.glVertexAttribPointer(satt.location,
+                int location = satt.location + layer;
+                GL20.glEnableVertexAttribArray(location);
+                GL20.glVertexAttribPointer(location,
                                            satt.type.components,
                                            satt.type.glComponent,
                                            false,
                                            vertexSize,
-                                           att.offset);
+                                           att.offset + layer*type.size);
             }
             else GL20.glDisableVertexAttribArray(satt.location);
         }
@@ -277,7 +371,7 @@ public class VertexData
     
     private abstract class Attribute
     {
-        private final AttributeType type;
+        protected final AttributeType type;
         private final int offset;
         
         private Attribute(AttributeType type, int offset)
@@ -289,7 +383,39 @@ public class VertexData
         abstract void write(ByteBuffer buffer);
     }
     
-    private class BufferableAttribute extends Attribute
+    public final class FloatAttribute extends Attribute
+    {
+        public float x;
+        
+        private FloatAttribute(int offset)
+        {
+            super(AttributeType.FLOAT, offset);
+        }
+
+        @Override
+        void write(ByteBuffer buffer)
+        {
+            buffer.putFloat(x);
+        }
+    }
+    
+    public final class IntAttribute extends Attribute
+    {
+        public int x;
+        
+        private IntAttribute(int offset)
+        {
+            super(AttributeType.INT, offset);
+        }
+
+        @Override
+        void write(ByteBuffer buffer)
+        {
+            buffer.putInt(x);
+        }
+    }
+    
+    private final class BufferableAttribute extends Attribute
     {
         private final Bufferable obj;
         

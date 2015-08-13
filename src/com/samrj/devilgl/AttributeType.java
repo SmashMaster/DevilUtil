@@ -42,12 +42,12 @@ public enum AttributeType
     }
 
     /**
-     * The size, in bytes, of one element of this attribute type.
+     * The size, in bytes, of one layer of this attribute type.
      */
     public final int size;
     
     /**
-     * The number of components per element for this attribute type.
+     * The number of components per layer for this attribute type.
      */
     public final int components;
 
@@ -55,7 +55,7 @@ public enum AttributeType
      * The number of locations this attribute type occupies.
      */
     public final int layers;
-
+    
     /**
      * The OpenGL enumerator for this attribute type.
      */
