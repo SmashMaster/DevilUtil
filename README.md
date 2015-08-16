@@ -12,10 +12,9 @@ Here's how you draw a triangle in immediate mode, using LWJGL:
     GL11.glVertex2f( 1.0f, -1.0f);
     GL11.glEnd();
 
-3 vertices and 5 lines. It took me 30 seconds to write and it ran first time without error.
-The "getting shit done" to "lines of code" ratio here should make you happy. It makes *me* happy.
+3 vertices and 5 lines. It took me 30 seconds to write. The "getting shit done" to "lines of code" ratio here should make you happy. It makes *me* happy.
 
-Here's how you draw the same triangle in forward-compatible OpenGL. The *right* way:
+Here's how you draw the same triangle in forward-compatible OpenGL. The 'right' way:
 
     float[] vertices = new float[]{
         -1.0f, -1.0f,
@@ -53,18 +52,21 @@ Clear, consice, simple, and elegant. Every programmer's dream! And it only took 
 
 This is a problem.
 
-This is a barrier to entry; this is an extra hour of work in between inspiration and your idea appearing on screen. If you want to make games from scratch, you have to either deal with this or use deprecated OpenGL. That's *bullshit*.
+This is a barrier to entry; this is an extra hour of work in between inspiration and your idea appearing on screen. You simply have to deal with this if you want to use OpenGL properly. It's *bullshit*.
 
 So here's my alternative:
 
-    DGL.use(shader);
-    Attribute pos = DGL.getAttribute("in_pos");
-    DGL.use(pos);
-
-    DGL.draw(DGL.Mesh.RAW);
-        pos.set(-1.0f, -1.0f); DGL.vertex();
-        pos.set( 0.0f,  1.0f); DGL.vertex();
-        pos.set( 1.0f, -1.0f); DGL.vertex();
-    DGL.end();
-
-That's more like it. DevilGL is doing all the hard work in the background; mostly in the end() function. This retains almost all of the power and speed of modern OpenGL, without sacrificing the simplicity or ease of use of deprecated OpenGL.
+    VertexData vData = new VertexData(3);
+    Vec2 pos = vData.vec2("in_pos");
+    
+    vData.begin();
+        pos.set(-1.0f, -1.0f); vData.vertex();
+        pos.set( 0.0f,  1.0f); vData.vertex();
+        pos.set( 1.0f, -1.0f); vData.vertex();
+    vData.upload();
+    
+    vData.bind(shader);
+    vData.draw(GL11.GL_TRIANGLES);
+    vData.destroy();
+    
+That's more like it. DevilGL is doing all the hard work in the background. This retains the power and speed of modern OpenGL, without sacrificing the simplicity or ease of use of classic OpenGL.
