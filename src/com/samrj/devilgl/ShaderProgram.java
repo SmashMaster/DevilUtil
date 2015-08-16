@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.lwjgl.opengl.ContextCapabilities;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryUtil;
@@ -50,6 +51,8 @@ public class ShaderProgram
     public ShaderProgram()
     {
         id = GL20.glCreateProgram();
+        
+        ContextCapabilities capabilities = DGL.getCapabilities();
     }
     
     private void checkStatus(int type)
@@ -156,7 +159,7 @@ public class ShaderProgram
          * The location of this attribute.
          */
         public final int location;
-
+        
         private Attribute(String name, int type, int size, int location)
         {
             this.name = name;

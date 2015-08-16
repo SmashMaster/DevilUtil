@@ -16,10 +16,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
 
 /**
+ * Vertex builder for unmodifiable vertex data. Suitable for data that is built
+ * once on CPU, uploaded to the GPU, then drawn many times.
+ * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilGL/blob/master/LICENSE
@@ -44,7 +45,7 @@ public class VertexData
     private int numVertices, numIndices;
     
     //Fields for complete state
-    private int glVertexArray;
+    private VertexArrayObject vao;
     private int glVBO, glEBO;
     
     public VertexData(Memory memory, int maxVertices, int maxIndices)
@@ -282,8 +283,8 @@ public class VertexData
         ensureState(State.INCOMPLETE);
         state = State.COMPLETE;
         
-        glVertexArray = GL30.glGenVertexArrays();
-        GL30.glBindVertexArray(glVertexArray);
+        vao = VertexArrayObject.gen();
+        vao.bind();
         
         glVBO = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, glVBO);
@@ -295,12 +296,14 @@ public class VertexData
         if (maxIndices > 0)
         {
             glEBO = GL15.glGenBuffers();
-            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, glEBO);
+            vao.bindElementArrayBuffer(glEBO);
             GL15.nglBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, numIndices*4, indexBlock.address(), GL15.GL_STATIC_DRAW);
             indexBlock.free();
             indexBlock = null;
             indexBuffer = null;
         }
+        
+        vao.unbind();
     }
     
     /**
@@ -312,7 +315,7 @@ public class VertexData
     public void bind(ShaderProgram shader)
     {
         ensureState(State.COMPLETE);
-        GL30.glBindVertexArray(glVertexArray);
+        vao.bind();
         
         for (ShaderProgram.Attribute satt : shader.getAttributes())
         {
@@ -322,16 +325,18 @@ public class VertexData
             if (att != null && att.type == type) for (int layer=0; layer<type.layers; layer++)
             {
                 int location = satt.location + layer;
-                GL20.glEnableVertexAttribArray(location);
-                GL20.glVertexAttribPointer(location,
-                                           satt.type.components,
-                                           satt.type.glComponent,
-                                           false,
-                                           vertexSize,
-                                           att.offset + layer*type.size);
+                vao.enableVertexAttribArray(location);
+                vao.vertexAttribPointer(location,
+                                        satt.type.components,
+                                        satt.type.glComponent,
+                                        false,
+                                        vertexSize,
+                                        att.offset + layer*type.size);
             }
-            else GL20.glDisableVertexAttribArray(satt.location);
+            else vao.disableVertexAttribArray(satt.location);
         }
+        
+        vao.unbind();
     }
     
     /**
@@ -342,9 +347,10 @@ public class VertexData
     public void draw(int mode)
     {
         ensureState(State.COMPLETE);
-        GL30.glBindVertexArray(glVertexArray);
+        vao.bind();
         if (maxIndices <= 0) GL11.glDrawArrays(mode, 0, numVertices);
         else GL11.glDrawElements(mode, numIndices, GL11.GL_UNSIGNED_INT, 0);
+        vao.unbind();
     }
     
     /**
@@ -370,7 +376,7 @@ public class VertexData
         }
         else if (state == State.COMPLETE)
         {
-            GL30.glDeleteVertexArrays(glVertexArray);
+            vao.delete();
             GL15.glDeleteBuffers(glVBO);
             if (maxIndices > 0) GL15.glDeleteBuffers(glEBO);
         }
