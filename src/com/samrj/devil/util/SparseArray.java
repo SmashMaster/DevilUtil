@@ -183,7 +183,6 @@ public class SparseArray<T> implements Iterable<T>
 //        stream.println("]");
 //    }
     
-    
     public Object[] toArray()
     {
         Object[] out = new Object[size];
@@ -212,18 +211,36 @@ public class SparseArray<T> implements Iterable<T>
     private class SparseArrayIterator implements Iterator<T>
     {
         private int i;
+        
+        private SparseArrayIterator()
+        {
+            findNext();
+        }
+        
+        private void findNext()
+        {
+            while (true)
+            {
+                if (i >= entries.length) break;
+                Object entry = entries[i];
+                if (entry != null && entry != SENTINEL) break;
+                i++;
+            }
+        }
 
         @Override
         public boolean hasNext()
         {
-            return i < size;
+            return i < entries.length;
         }
 
         @Override
         public T next()
         {
             if (!hasNext()) throw new NoSuchElementException();
-            return (T)entries[i++];
+            T entry = (T)entries[i++];
+            findNext();
+            return entry;
         }
     }
 }

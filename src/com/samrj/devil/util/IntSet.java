@@ -102,7 +102,15 @@ public class IntSet
     }
     
     /**
-     * @return The number of entries in this array.
+     * Clears this set.
+     */
+    public void clear()
+    {
+        size = 0;
+    }
+    
+    /**
+     * @return The number of entries in this set.
      */
     public int size()
     {
@@ -110,7 +118,7 @@ public class IntSet
     }
     
     /**
-     * @return The current capacity of this array.
+     * @return The current capacity of this set.
      */
     public int capacity()
     {
