@@ -75,6 +75,14 @@ public class VertexData
         this(memUtil, maxVertices, -1);
     }
     
+    /**
+     * @return Whether this vertex data is indexed.
+     */
+    public boolean isIndexed()
+    {
+        return maxIndices > 0;
+    }
+    
     private void ensureState(State state)
     {
         if (this.state != state) throw new IllegalStateException(
@@ -195,7 +203,7 @@ public class VertexData
     public Vec2i vec2i(String name)
     {
         ensureAttNotReg(name);
-        return regAtt(new Vec2i(), name, AttributeType.VEC2);
+        return regAtt(new Vec2i(), name, AttributeType.VEC2I);
     }
     
     /**
@@ -207,7 +215,7 @@ public class VertexData
     public Vec3i vec3i(String name)
     {
         ensureAttNotReg(name);
-        return regAtt(new Vec3i(), name, AttributeType.VEC3);
+        return regAtt(new Vec3i(), name, AttributeType.VEC3I);
     }
     
     /**
@@ -259,8 +267,9 @@ public class VertexData
         ensureState(State.INCOMPLETE);
         if (numIndices >= maxIndices) throw new IllegalStateException(
                 "Index capacity reached.");
-        if (index < 0 || index >= numIndices) throw new ArrayIndexOutOfBoundsException();
+        if (index < 0 || index >= numVertices) throw new ArrayIndexOutOfBoundsException();
         
+        numIndices++;
         indexBuffer.putInt(index);
     }
     
@@ -334,8 +343,8 @@ public class VertexData
     {
         ensureState(State.COMPLETE);
         GL30.glBindVertexArray(glVertexArray);
-        if (maxIndices > 0) GL11.glDrawElements(mode, numVertices, GL11.GL_UNSIGNED_INT, 0);
-        else GL11.glDrawArrays(mode, 0, numVertices);
+        if (maxIndices <= 0) GL11.glDrawArrays(mode, 0, numVertices);
+        else GL11.glDrawElements(mode, numIndices, GL11.GL_UNSIGNED_INT, 0);
     }
     
     /**
