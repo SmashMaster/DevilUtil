@@ -42,7 +42,6 @@ public class SortedArray<T>
     public T get(int index)
     {
         if (index >= size) throw new ArrayIndexOutOfBoundsException();
-        
         return (T)array[index];
     }
     

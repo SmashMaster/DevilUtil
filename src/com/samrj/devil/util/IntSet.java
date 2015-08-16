@@ -34,9 +34,27 @@ public class IntSet
         this(DEFAULT_CAPACITY);
     }
     
-    private int index(int entry)
+    /**
+     * Returns the index in this set's backing array at which the given entry
+     * lies, or a negative number if this set does not contain the given entry.
+     * 
+     * @param entry The entry to search for.
+     */
+    public int index(int entry)
     {
         return Arrays.binarySearch(array, 0, size, entry);
+    }
+    
+    /**
+     * Returns the entry at the given index.
+     * 
+     * @param index The index to return the entry at.
+     * @return The entry at the given index.
+     */
+    public int get(int index)
+    {
+        if (index >= size) throw new ArrayIndexOutOfBoundsException();
+        return array[index];
     }
     
     /**
