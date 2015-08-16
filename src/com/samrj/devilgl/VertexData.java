@@ -27,28 +27,52 @@ import org.lwjgl.opengl.GL15;
  */
 public class VertexData
 {
-    private static enum State
+    public static enum State
     {
-        EMPTY, INCOMPLETE, COMPLETE, DESTROYED;
+        /**
+         * The vertex builder may register attributes, but it is not ready to
+         * emit vertices or indices, or be drawn.
+         */
+        NEW,
+        
+        /**
+         * The vertex builder is ready to emit new vertices and indices. It may
+         * or may not be ready to draw. It can no longer register attributes.
+         */
+        READY,
+        
+        /**
+         * The vertex builder is ready to be drawn, but may not emit any new
+         * vertices or indices.
+         */
+        COMPLETE,
+        
+        /**
+         * The vertex builder may not register new attributes, emit vertices or
+         * indices, or be drawn. All associated resources have been released.
+         */
+        DESTROYED;
     }
     
     private final Memory memory;
     private final int maxVertices, maxIndices;
     private final ArrayList<Attribute> attributes;
     private final HashMap<String, Attribute> attMap;
+    private final boolean streamed;
     private State state;
     
     //Fields for incomplete state
     private int vertexSize;
     private Block vertexBlock, indexBlock;
     private ByteBuffer vertexBuffer, indexBuffer;
-    private int numVertices, numIndices;
+    private int bufferedVerts, bufferedInds;
+    private int uploadedVerts, uploadedInds;
     
     //Fields for complete state
     private VertexArrayObject vao;
     private int glVBO, glEBO;
     
-    public VertexData(Memory memory, int maxVertices, int maxIndices)
+    public VertexData(Memory memory, int maxVertices, int maxIndices, boolean streamed)
     {
         if (memory == null) throw new NullPointerException();
         if (maxVertices < 1) throw new IllegalArgumentException();
@@ -57,23 +81,24 @@ public class VertexData
         this.maxIndices = maxIndices;
         attributes = new ArrayList<>(16);
         attMap = new HashMap<>();
-        state = State.EMPTY;
+        state = State.NEW;
         vertexSize = 0;
+        this.streamed = streamed;
     }
     
-    public VertexData(Memory memory, int maxVertices)
+    public VertexData(Memory memory, int maxVertices, boolean streamed)
     {
-        this(memory, maxVertices, -1);
+        this(memory, maxVertices, -1, streamed);
     }
     
-    public VertexData(int maxVertices, int maxIndices)
+    public VertexData(int maxVertices, int maxIndices, boolean streamed)
     {
-        this(memUtil, maxVertices, maxIndices);
+        this(memUtil, maxVertices, maxIndices, streamed);
     }
     
-    public VertexData(int maxVertices)
+    public VertexData(int maxVertices, boolean streamed)
     {
-        this(memUtil, maxVertices, -1);
+        this(memUtil, maxVertices, -1, streamed);
     }
     
     /**
@@ -84,15 +109,23 @@ public class VertexData
         return maxIndices > 0;
     }
     
+    /**
+     * @return Whether this vertex data is streamed.
+     */
+    public boolean isStreamed()
+    {
+        return streamed;
+    }
+    
     private void ensureState(State state)
     {
         if (this.state != state) throw new IllegalStateException(
-                "Expected state '" + state + "', is actually " + this.state);
+                "Expected state '" + state + "', is actually '" + this.state + "'");
     }
     
     private void ensureAttNotReg(String name)
     {
-        ensureState(State.EMPTY);
+        ensureState(State.NEW);
         if (attMap.containsKey(name)) throw new IllegalArgumentException(
                 "Attribute '" + name + "' already registered.");
     }
@@ -219,15 +252,50 @@ public class VertexData
         return regAtt(new Vec3i(), name, AttributeType.VEC3I);
     }
     
+    private void initGLBuffers()
+    {
+        vao = VertexArrayObject.gen();
+        vao.bind();
+        
+        glVBO = GL15.glGenBuffers();
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, glVBO);
+        int vertCapacity = streamed ? maxVertices : bufferedVerts;
+        int usage = streamed ? GL15.GL_DYNAMIC_DRAW : GL15.GL_STATIC_DRAW;
+        GL15.nglBufferData(GL15.GL_ARRAY_BUFFER, vertCapacity*vertexSize, vertexBlock.address(), usage);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+        
+        if (!streamed)
+        {
+            vertexBlock.free();
+            vertexBlock = null;
+            vertexBuffer = null;
+        }
+        
+        if (maxIndices > 0)
+        {
+            glEBO = GL15.glGenBuffers();
+            vao.bindElementArrayBuffer(glEBO);
+            int indCapacity = streamed ? maxIndices : bufferedInds;
+            GL15.nglBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indCapacity*4, indexBlock.address(), usage);
+            
+            if (!streamed)
+            {
+                indexBlock.free();
+                indexBlock = null;
+                indexBuffer = null;
+            }
+        }
+        
+        vao.unbind();
+    }
+    
     /**
      * Finalizes this VertexData's attributes and allocates memory for vertex
      * and index data.
      */
     public void begin()
     {
-        ensureState(State.EMPTY);
-        state = State.INCOMPLETE;
-        
+        ensureState(State.NEW);
         if (attributes.isEmpty()) throw new IllegalStateException(
                 "Must have at least one registered attribute.");
         
@@ -239,6 +307,9 @@ public class VertexData
             indexBlock = memory.alloc(maxIndices*4);
             indexBuffer = indexBlock.read();
         }
+        
+        if (streamed) initGLBuffers();
+        state = State.READY;
     }
     
     /**
@@ -249,11 +320,12 @@ public class VertexData
      */
     public int vertex()
     {
-        ensureState(State.INCOMPLETE);
-        if (numVertices >= maxVertices) throw new IllegalStateException(
+        ensureState(State.READY);
+        
+        if (bufferedVerts >= maxVertices) throw new IllegalStateException(
                 "Vertex capacity reached.");
         
-        int index = numVertices++;
+        int index = bufferedVerts++;
         for (Attribute attribute : attributes) attribute.write(vertexBuffer);
         return index;
     }
@@ -265,45 +337,58 @@ public class VertexData
      */
     public void index(int index)
     {
-        ensureState(State.INCOMPLETE);
-        if (numIndices >= maxIndices) throw new IllegalStateException(
-                "Index capacity reached.");
-        if (index < 0 || index >= numVertices) throw new ArrayIndexOutOfBoundsException();
+        ensureState(State.READY);
         
-        numIndices++;
+        if (bufferedInds >= maxIndices) throw new IllegalStateException(
+                "Index capacity reached.");
+        if (index < 0 || index >= bufferedVerts) throw new ArrayIndexOutOfBoundsException();
+        
+        bufferedInds++;
         indexBuffer.putInt(index);
+    }
+    
+    /**
+     * Clears this vertex data.
+     */
+    public void clear()
+    {
+        ensureState(State.READY);
+        bufferedVerts = 0;
+        bufferedInds = 0;
     }
     
     /**
      * Completes this vertex data, sending it to the GPU so that it is ready to
      * be rendered.
      */
-    public void end()
+    public void upload()
     {
-        ensureState(State.INCOMPLETE);
-        state = State.COMPLETE;
+        ensureState(State.READY);
         
-        vao = VertexArrayObject.gen();
-        vao.bind();
-        
-        glVBO = GL15.glGenBuffers();
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, glVBO);
-        GL15.nglBufferData(GL15.GL_ARRAY_BUFFER, numVertices*vertexSize, vertexBlock.address(), GL15.GL_STATIC_DRAW);
-        vertexBlock.free();
-        vertexBlock = null;
-        vertexBuffer = null;
-
-        if (maxIndices > 0)
+        if (streamed)
         {
-            glEBO = GL15.glGenBuffers();
-            vao.bindElementArrayBuffer(glEBO);
-            GL15.nglBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, numIndices*4, indexBlock.address(), GL15.GL_STATIC_DRAW);
-            indexBlock.free();
-            indexBlock = null;
-            indexBuffer = null;
+            GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, glVBO);
+            GL15.nglBufferSubData(GL15.GL_ARRAY_BUFFER, 0, bufferedVerts*vertexSize, vertexBlock.address());
+            GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+            vertexBuffer.reset();
+            uploadedVerts = bufferedVerts;
+            
+            if (maxIndices > 0)
+            {
+                GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, glEBO);
+                GL15.nglBufferSubData(GL15.GL_ELEMENT_ARRAY_BUFFER, 0, bufferedInds*4, indexBlock.address());
+                GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+                indexBuffer.reset();
+                uploadedInds = bufferedInds;
+            }
         }
-        
-        vao.unbind();
+        else
+        {
+            initGLBuffers();
+            uploadedVerts = bufferedVerts;
+            uploadedInds = bufferedInds;
+            state = State.COMPLETE;
+        }
     }
     
     /**
@@ -314,8 +399,11 @@ public class VertexData
      */
     public void bind(ShaderProgram shader)
     {
-        ensureState(State.COMPLETE);
+        if (streamed) ensureState(State.READY);
+        else ensureState(State.COMPLETE);
+        
         vao.bind();
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, glVBO);
         
         for (ShaderProgram.Attribute satt : shader.getAttributes())
         {
@@ -336,6 +424,7 @@ public class VertexData
             else vao.disableVertexAttribArray(satt.location);
         }
         
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         vao.unbind();
     }
     
@@ -346,10 +435,12 @@ public class VertexData
      */
     public void draw(int mode)
     {
-        ensureState(State.COMPLETE);
+        if (streamed) ensureState(State.READY);
+        else ensureState(State.COMPLETE);
+        
         vao.bind();
-        if (maxIndices <= 0) GL11.glDrawArrays(mode, 0, numVertices);
-        else GL11.glDrawElements(mode, numIndices, GL11.GL_UNSIGNED_INT, 0);
+        if (maxIndices <= 0) GL11.glDrawArrays(mode, 0, uploadedVerts);
+        else GL11.glDrawElements(mode, uploadedInds, GL11.GL_UNSIGNED_INT, 0);
         vao.unbind();
     }
     
@@ -361,7 +452,7 @@ public class VertexData
         attributes.clear();
         attMap.clear();
         
-        if (state == State.INCOMPLETE)
+        if (streamed || state == State.READY)
         {
             vertexBlock.free();
             vertexBlock = null;
@@ -374,7 +465,8 @@ public class VertexData
                 indexBuffer = null;
             }
         }
-        else if (state == State.COMPLETE)
+        
+        if ((streamed && state == State.READY) || (!streamed && state == State.COMPLETE))
         {
             vao.delete();
             GL15.glDeleteBuffers(glVBO);
