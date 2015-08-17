@@ -6,6 +6,7 @@ import com.samrj.devil.config.CfgResolution;
 import com.samrj.devil.config.Configuration;
 import com.samrj.devil.display.DisplayException;
 import com.samrj.devil.display.GLFWUtil;
+import com.samrj.devil.display.HintSet;
 import com.samrj.devil.display.VideoMode;
 import com.samrj.devil.game.sync.SleepHybrid;
 import com.samrj.devil.game.sync.Sync;
@@ -114,10 +115,11 @@ public abstract class Game
      * creation.
      * 
      * @param title The title of the window.
+     * @param hints The window hints to use.
      * @param config The configuration to use.
      * @throws OpenGLException If there is an OpenGL error.
      */
-    public Game(String title, Configuration config) throws OpenGLException
+    public Game(String title, HintSet hints, Configuration config)
     {
         if (title == null || config == null) throw new NullPointerException();
         if (!initialized) throw new IllegalStateException("Game.init() not called.");
@@ -140,6 +142,7 @@ public abstract class Game
             GLFW.glfwWindowHint(GLFW.GLFW_FLOATING, GL11.GL_FALSE);
             GLFW.glfwWindowHint(GLFW.GLFW_STENCIL_BITS, 0);
             GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, msaa);
+            if (hints != null) hints.glfw();
             
             GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_DEBUG_CONTEXT, GL11.GL_TRUE);
 
@@ -223,12 +226,23 @@ public abstract class Game
     }
     
     /**
+     * Creates a new game object. Initializes the window with the given config.
+     * 
+     * @param title The title of the window.
+     * @param config The configuration to use.
+     */
+    public Game(String title, Configuration config)
+    {
+        this(title, null, config);
+    }
+    
+    /**
      * Creates a new game window with the default title "Game" and the default
      * configuration. The default config creates a decorated window at 1280p.
      * 
      * @throws OpenGLException If there is an OpenGL error.
      */
-    public Game() throws OpenGLException
+    public Game()
     {
         this("Game", defaultConfig());
     }
