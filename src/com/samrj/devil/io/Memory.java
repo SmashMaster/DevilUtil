@@ -1,11 +1,8 @@
 package com.samrj.devil.io;
 
-import com.samrj.devil.math.Util;
-import com.samrj.devil.util.SortedArray;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Comparator;
 import org.lwjgl.system.MemoryUtil;
 
 /**
@@ -46,8 +43,7 @@ public final class Memory
      */
     public Memory(int capacity)
     {
-        if (!Util.isPower2(capacity)) throw new IllegalArgumentException(
-            "Main buffer capacity must be power of two.");
+        if (capacity <= 0) throw new IllegalArgumentException();
         
         this.capacity = capacity;
         buffer = ByteBuffer.allocateDirect(capacity).order(ByteOrder.nativeOrder());
