@@ -1,9 +1,6 @@
 package com.samrj.devilgl;
 
-import static com.samrj.devil.io.BufferUtil.memUtil;
 import com.samrj.devil.io.Bufferable;
-import com.samrj.devil.io.Memory;
-import com.samrj.devil.io.Memory.Block;
 import com.samrj.devil.math.Mat2;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
@@ -14,22 +11,25 @@ import com.samrj.devil.math.Vec3i;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import org.lwjgl.opengl.GL11;
+import java.util.Map;
 import org.lwjgl.opengl.GL15;
 
 /**
- * Vertex builder for unmodifiable vertex data. Suitable for data that is built
- * once on CPU, uploaded to the GPU, then drawn many times.
+ * Vertex data abstract class. Used to keep track of vertex attributes, indices,
+ * etc. and prepare vertex data for OpenGL rendering.
  * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilGL/blob/master/LICENSE
  */
-public class VertexData
+public abstract class VertexData
 {
     public static enum State
     {
         /**
+         * The vertex builder may register attributes, but it is not ready to
+         * emit vertices or indices, or be drawn.
+         *//**
          * The vertex builder may register attributes, but it is not ready to
          * emit vertices or indices, or be drawn.
          */
@@ -51,78 +51,35 @@ public class VertexData
          * The vertex builder may not register new attributes, emit vertices or
          * indices, or be drawn. All associated resources have been released.
          */
-        DESTROYED;
+        DELETED;
     }
     
-    private final Memory memory;
-    private final int maxVertices, maxIndices;
     private final ArrayList<Attribute> attributes;
-    private final HashMap<String, Attribute> attMap;
-    private final boolean streamed;
-    private State state;
-    
-    //Fields for incomplete state
+    private final Map<String, Attribute> attMap;
+    private final VAO vao;
     private int vertexSize;
-    private Block vertexBlock, indexBlock;
-    private ByteBuffer vertexBuffer, indexBuffer;
-    private int bufferedVerts, bufferedInds;
-    private int uploadedVerts, uploadedInds;
     
-    //Fields for complete state
-    private VertexArrayObject vao;
-    private int glVBO, glEBO;
-    
-    public VertexData(Memory memory, int maxVertices, int maxIndices, boolean streamed)
+    VertexData()
     {
-        if (memory == null) throw new NullPointerException();
-        if (maxVertices < 1) throw new IllegalArgumentException();
-        this.memory = memory;
-        this.maxVertices = maxVertices;
-        this.maxIndices = maxIndices;
         attributes = new ArrayList<>(16);
         attMap = new HashMap<>();
-        state = State.NEW;
+        vao = DGL.genVAO();
         vertexSize = 0;
-        this.streamed = streamed;
-    }
-    
-    public VertexData(Memory memory, int maxVertices, boolean streamed)
-    {
-        this(memory, maxVertices, -1, streamed);
-    }
-    
-    public VertexData(int maxVertices, int maxIndices, boolean streamed)
-    {
-        this(memUtil, maxVertices, maxIndices, streamed);
-    }
-    
-    public VertexData(int maxVertices, boolean streamed)
-    {
-        this(memUtil, maxVertices, -1, streamed);
     }
     
     /**
-     * @return Whether this vertex data is indexed.
+     * @return The state of this vertex data.
      */
-    public boolean isIndexed()
+    public abstract State getState();
+    
+    final void ensureState(State state)
     {
-        return maxIndices > 0;
+        State curState = getState();
+        if (curState != state) throw new IllegalStateException(
+                "Expected state '" + state + "', is actually '" + curState + "'");
     }
     
-    /**
-     * @return Whether this vertex data is streamed.
-     */
-    public boolean isStreamed()
-    {
-        return streamed;
-    }
-    
-    private void ensureState(State state)
-    {
-        if (this.state != state) throw new IllegalStateException(
-                "Expected state '" + state + "', is actually '" + this.state + "'");
-    }
-    
+    // <editor-fold defaultstate="collapsed" desc="Attribute registration">
     private void ensureAttNotReg(String name)
     {
         ensureState(State.NEW);
@@ -150,7 +107,7 @@ public class VertexData
      * @param name The name of the attribute to register.
      * @return A new attribute data object.
      */
-    public FloatAttribute afloat(String name)
+    public final FloatAttribute afloat(String name)
     {
         ensureAttNotReg(name);
         return regAtt(name, new FloatAttribute(vertexSize));
@@ -162,7 +119,7 @@ public class VertexData
      * @param name The name of the attribute to register.
      * @return A new attribute data object.
      */
-    public Vec2 vec2(String name)
+    public final Vec2 vec2(String name)
     {
         ensureAttNotReg(name);
         return regAtt(new Vec2(), name, AttributeType.VEC2);
@@ -174,7 +131,7 @@ public class VertexData
      * @param name The name of the attribute to register.
      * @return A new attribute data object.
      */
-    public Vec3 vec3(String name)
+    public final Vec3 vec3(String name)
     {
         ensureAttNotReg(name);
         return regAtt(new Vec3(), name, AttributeType.VEC3);
@@ -186,7 +143,7 @@ public class VertexData
      * @param name The name of the attribute to register.
      * @return A new attribute data object.
      */
-    public Mat2 mat2(String name)
+    public final Mat2 mat2(String name)
     {
         ensureAttNotReg(name);
         return regAtt(new Mat2(), name, AttributeType.MAT2);
@@ -198,7 +155,7 @@ public class VertexData
      * @param name The name of the attribute to register.
      * @return A new attribute data object.
      */
-    public Mat3 mat3(String name)
+    public final Mat3 mat3(String name)
     {
         ensureAttNotReg(name);
         return regAtt(new Mat3(), name, AttributeType.MAT3);
@@ -210,7 +167,7 @@ public class VertexData
      * @param name The name of the attribute to register.
      * @return A new attribute data object.
      */
-    public Mat4 mat4(String name)
+    public final Mat4 mat4(String name)
     {
         ensureAttNotReg(name);
         return regAtt(new Mat4(), name, AttributeType.MAT4);
@@ -222,7 +179,7 @@ public class VertexData
      * @param name The name of the attribute to register.
      * @return A new attribute data object.
      */
-    public IntAttribute aint(String name)
+    public final IntAttribute aint(String name)
     {
         ensureAttNotReg(name);
         return regAtt(name, new IntAttribute(vertexSize));
@@ -234,7 +191,7 @@ public class VertexData
      * @param name The name of the attribute to register.
      * @return A new attribute data object.
      */
-    public Vec2i vec2i(String name)
+    public final Vec2i vec2i(String name)
     {
         ensureAttNotReg(name);
         return regAtt(new Vec2i(), name, AttributeType.VEC2I);
@@ -246,164 +203,93 @@ public class VertexData
      * @param name The name of the attribute to register.
      * @return A new attribute data object.
      */
-    public Vec3i vec3i(String name)
+    public final Vec3i vec3i(String name)
     {
         ensureAttNotReg(name);
         return regAtt(new Vec3i(), name, AttributeType.VEC3I);
     }
+    // </editor-fold>
     
-    private void initGLBuffers()
+    int getVertexSize()
     {
-        vao = VertexArrayObject.gen();
-        vao.bind();
-        
-        glVBO = GL15.glGenBuffers();
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, glVBO);
-        int vertCapacity = streamed ? maxVertices : bufferedVerts;
-        int usage = streamed ? GL15.GL_DYNAMIC_DRAW : GL15.GL_STATIC_DRAW;
-        GL15.nglBufferData(GL15.GL_ARRAY_BUFFER, vertCapacity*vertexSize, vertexBlock.address(), usage);
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-        
-        if (!streamed)
-        {
-            vertexBlock.free();
-            vertexBlock = null;
-            vertexBuffer = null;
-        }
-        
-        if (maxIndices > 0)
-        {
-            glEBO = GL15.glGenBuffers();
-            vao.bindElementArrayBuffer(glEBO);
-            int indCapacity = streamed ? maxIndices : bufferedInds;
-            GL15.nglBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indCapacity*4, indexBlock.address(), usage);
-            
-            if (!streamed)
-            {
-                indexBlock.free();
-                indexBlock = null;
-                indexBuffer = null;
-            }
-        }
-        
-        vao.unbind();
+        return vertexSize;
     }
     
     /**
-     * Finalizes this VertexData's attributes and allocates memory for vertex
+     * Called when this vertex data finalizes its attributes and prepares to
+     * emit vertex data.
+     */
+    abstract void onBegin();
+    
+    /**
+     * Finalizes this vertex data's attributes and allocates memory for vertex
      * and index data.
      */
-    public void begin()
+    public final void begin()
     {
         ensureState(State.NEW);
         if (attributes.isEmpty()) throw new IllegalStateException(
                 "Must have at least one registered attribute.");
         
-        vertexBlock = memory.alloc(maxVertices*vertexSize);
-        vertexBuffer = vertexBlock.read();
-        
-        if (maxIndices > 0)
-        {
-            indexBlock = memory.alloc(maxIndices*4);
-            indexBuffer = indexBlock.read();
-        }
-        
-        if (streamed) initGLBuffers();
-        state = State.READY;
+        onBegin();
+    }
+    
+    final void bufferVertex(ByteBuffer buffer)
+    {
+        for (Attribute attribute : attributes) attribute.write(buffer);
     }
     
     /**
-     * Emits a new vertex with all currently active attributes, and returns its
-     * index.
+     * Emits a new vertex with all active attributes, and returns its index.
      * 
      * @return The index of the emitted vertex.
      */
-    public int vertex()
-    {
-        ensureState(State.READY);
-        
-        if (bufferedVerts >= maxVertices) throw new IllegalStateException(
-                "Vertex capacity reached.");
-        
-        int index = bufferedVerts++;
-        for (Attribute attribute : attributes) attribute.write(vertexBuffer);
-        return index;
-    }
+    public abstract int vertex();
     
     /**
      * Emits an index.
      * 
      * @param index The index to emit.
      */
-    public void index(int index)
-    {
-        ensureState(State.READY);
-        
-        if (bufferedInds >= maxIndices) throw new IllegalStateException(
-                "Index capacity reached.");
-        if (index < 0 || index >= bufferedVerts) throw new ArrayIndexOutOfBoundsException();
-        
-        bufferedInds++;
-        indexBuffer.putInt(index);
-    }
+    public abstract void index(int index);
     
     /**
-     * Clears this vertex data.
+     * @return Whether this vertex data can be bound--whether it has memory
+     *         allocated on the GPU and is ready to upload data.
      */
-    public void clear()
+    abstract boolean canBind();
+    
+    abstract int getVBO();
+    abstract int getEBO();
+    
+    final void bind()
     {
-        ensureState(State.READY);
-        bufferedVerts = 0;
-        bufferedInds = 0;
+        if (!canBind()) throw new IllegalStateException("Vertex data not ready to bind.");
+        DGL.bindVAO(vao);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, getVBO());
+        vao.bindElementArrayBuffer(getEBO());
     }
     
-    /**
-     * Completes this vertex data, sending it to the GPU so that it is ready to
-     * be rendered.
-     */
-    public void upload()
+    final void unbind()
     {
-        ensureState(State.READY);
+        if (!canBind()) throw new IllegalStateException("Vertex data not ready to unbind.");
+        //Throwing this exception might seem really dumb, but it's there to
+        //prevent even dumber programming mistakes.
         
-        if (streamed)
-        {
-            GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, glVBO);
-            GL15.nglBufferSubData(GL15.GL_ARRAY_BUFFER, 0, bufferedVerts*vertexSize, vertexBlock.address());
-            GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-            vertexBuffer.reset();
-            uploadedVerts = bufferedVerts;
-            
-            if (maxIndices > 0)
-            {
-                GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, glEBO);
-                GL15.nglBufferSubData(GL15.GL_ELEMENT_ARRAY_BUFFER, 0, bufferedInds*4, indexBlock.address());
-                GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
-                indexBuffer.reset();
-                uploadedInds = bufferedInds;
-            }
-        }
-        else
-        {
-            initGLBuffers();
-            uploadedVerts = bufferedVerts;
-            uploadedInds = bufferedInds;
-            state = State.COMPLETE;
-        }
+        DGL.bindVAO(null);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
     }
     
     /**
-     * Binds this VertexData to the given shader program, enabling attributes it
+     * Links this VertexData to the given shader program, enabling attributes it
      * shares in common with this.
      * 
      * @param shader The shader to bind with.
      */
-    public void bind(ShaderProgram shader)
+    public void link(ShaderProgram shader)
     {
-        if (streamed) ensureState(State.READY);
-        else ensureState(State.COMPLETE);
-        
-        vao.bind();
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, glVBO);
+        if (DGL.currentData() != this) throw new IllegalStateException(
+                "Vertex data must be bound to link shader.");
         
         for (ShaderProgram.Attribute satt : shader.getAttributes())
         {
@@ -415,65 +301,40 @@ public class VertexData
                 int location = satt.location + layer;
                 vao.enableVertexAttribArray(location);
                 vao.vertexAttribPointer(location,
-                                        satt.type.components,
-                                        satt.type.glComponent,
+                                        type.components,
+                                        type.glComponent,
                                         false,
                                         vertexSize,
                                         att.offset + layer*type.size);
             }
             else vao.disableVertexAttribArray(satt.location);
         }
-        
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-        vao.unbind();
     }
     
     /**
-     * Draws this vertex data. Assumes that the correct shader is bound.
+     * Draws this vertex data.
      * 
      * @param mode An OpenGL primitive drawing mode.
      */
-    public void draw(int mode)
-    {
-        if (streamed) ensureState(State.READY);
-        else ensureState(State.COMPLETE);
-        
-        vao.bind();
-        if (maxIndices <= 0) GL11.glDrawArrays(mode, 0, uploadedVerts);
-        else GL11.glDrawElements(mode, uploadedInds, GL11.GL_UNSIGNED_INT, 0);
-        vao.unbind();
-    }
+    abstract void draw(int mode);
+    
+    /**
+     * Called when deleting this vertex data.
+     */
+    abstract void onDelete();
     
     /**
      * Releases any resources associated with this vertex data.
      */
-    public void destroy()
+    final void delete()
     {
+        if (getState() == State.DELETED) return;
+        
+        DGL.deleteVAO(vao);
         attributes.clear();
         attMap.clear();
-        
-        if (streamed || state == State.READY)
-        {
-            vertexBlock.free();
-            vertexBlock = null;
-            vertexBuffer = null;
-            
-            if (maxIndices > 0)
-            {
-                indexBlock.free();
-                indexBlock = null;
-                indexBuffer = null;
-            }
-        }
-        
-        if ((streamed && state == State.READY) || (!streamed && state == State.COMPLETE))
-        {
-            vao.delete();
-            GL15.glDeleteBuffers(glVBO);
-            if (maxIndices > 0) GL15.glDeleteBuffers(glEBO);
-        }
-        
-        state = State.DESTROYED;
+        vertexSize = 0;
+        onDelete();
     }
     
     private abstract class Attribute

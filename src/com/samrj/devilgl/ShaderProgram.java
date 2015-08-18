@@ -1,58 +1,61 @@
 package com.samrj.devilgl;
 
 import static com.samrj.devil.io.BufferUtil.memUtil;
-import com.samrj.devil.io.Memory;
 import com.samrj.devil.io.Memory.Block;
-import java.io.IOException;
+import com.samrj.devil.util.QuickIdentitySet;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.lwjgl.opengl.ContextCapabilities;
+import java.util.Set;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryUtil;
 
 /**
+ * OpenGL shader program wrapper.
+ * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilGL/blob/master/LICENSE
  */
-public class ShaderProgram
+public final class ShaderProgram
 {
-    public static final ShaderProgram load(Memory mem, String path) throws IOException
+    public static enum State
     {
-        Shader vertShader = new Shader(mem, path + ".vert", GL20.GL_VERTEX_SHADER);
-        Shader fragShader = new Shader(mem, path + ".frag", GL20.GL_FRAGMENT_SHADER);
-        
-        ShaderProgram shader = new ShaderProgram();
-        shader.attach(vertShader);
-        shader.attach(fragShader);
-        shader.link();
-        shader.validate();
-        return shader;
-    }
-    
-    public static final ShaderProgram load(String path) throws IOException
-    {
-        return load(memUtil, path);
+        NEW, LINKED, COMPLETE, DELETED;
     }
     
     /**
      * The OpenGL id of this shader program.
      */
-    public final int id;
+    final int id;
     
+    private final Set<Shader> shaders;
     private List<Attribute> attributes;
+    private State state;
     
-    /**
-     * Creates a new shader program.
-     */
-    public ShaderProgram()
+    ShaderProgram()
     {
         id = GL20.glCreateProgram();
+        shaders = new QuickIdentitySet<>();
+        state = State.NEW;
+    }
+    
+    /**
+     * Attaches the given shader to this program.
+     * 
+     * @param shader The shader to attach to this program.
+     */
+    public void attach(Shader shader)
+    {
+        if (state != State.NEW) throw new IllegalStateException(
+                "Shader program must be new to attach shaders.");
+        if (shader.state() != Shader.State.COMPILED) throw new IllegalStateException(
+                "Cannot attach shader that is not compiled.");
         
-        ContextCapabilities capabilities = DGL.getCapabilities();
+        GL20.glAttachShader(id, shader.id);
+        shaders.add(shader);
     }
     
     private void checkStatus(int type)
@@ -66,46 +69,40 @@ public class ShaderProgram
     }
     
     /**
-     * Attaches the given shader to this program.
-     * 
-     * @param shader The shader to attach to this program.
-     */
-    public void attach(Shader shader)
-    {
-        GL20.glAttachShader(id, shader.id);
-    }
-    
-    private Attribute getActiveAttribute(int index)
-    {
-        Block block = memUtil.alloc(4 + 4 + 4 + 32);
-        long ptr = block.address();
-        long namePtr = ptr + 12;
-        GL20.nglGetActiveAttrib(id, index, 31, ptr, ptr + 4, ptr + 8, namePtr);
-        
-        ByteBuffer buffer = block.readUnsafe();
-        buffer.position(buffer.position() + 4);
-        int size = buffer.getInt();
-        int type = buffer.getInt();
-        String name = MemoryUtil.memDecodeASCII(namePtr);
-        int location = GL20.nglGetAttribLocation(id, namePtr);
-        
-        block.free();
-        
-        return new Attribute(name, type, size, location);
-    }
-    
-    /**
-     * Links this shader program, creating executables that may run on the GPU.
+     * Links this shader program, creating executables that may run on the GPU
+     * and compiling a list of input attributes.
      */
     public void link()
     {
+        if (state != State.NEW) throw new IllegalStateException(
+                "Shader program must be new to link.");
+        
         GL20.glLinkProgram(id);
         checkStatus(GL20.GL_LINK_STATUS);
         
         int numAttributes = GL20.glGetProgrami(id, GL20.GL_ACTIVE_ATTRIBUTES);
         ArrayList<Attribute> attList = new ArrayList<>(numAttributes);
-        for (int i=0; i<numAttributes; i++) attList.add(getActiveAttribute(i));
+        for (int index=0; index<numAttributes; index++)
+        {
+            Block block = memUtil.alloc(4 + 4 + 4 + 32);
+            long ptr = block.address();
+            long namePtr = ptr + 12;
+            GL20.nglGetActiveAttrib(id, index, 31, ptr, ptr + 4, ptr + 8, namePtr);
+
+            ByteBuffer buffer = block.readUnsafe();
+            buffer.position(buffer.position() + 4);
+            int size = buffer.getInt();
+            int type = buffer.getInt();
+            String name = MemoryUtil.memDecodeASCII(namePtr);
+            int location = GL20.nglGetAttribLocation(id, namePtr);
+
+            block.free();
+
+            attList.add(new Attribute(name, type, size, location));
+        }
         attributes = Collections.unmodifiableList(attList);
+        
+        state = State.LINKED;
     }
     
     /**
@@ -114,24 +111,60 @@ public class ShaderProgram
      */
     public void validate()
     {
+        if (state != State.LINKED) throw new IllegalStateException(
+                "Shader program must be linked to validate.");
+        
         GL20.glValidateProgram(id);
         checkStatus(GL20.GL_VALIDATE_STATUS);
+        
+        state = State.COMPLETE;
     }
     
     /**
      * Use this shader for any subsequent draw calls.
      */
-    public void use()
+    void use()
     {
+        if (state != State.COMPLETE) throw new IllegalStateException(
+                "Shader must be complete to use.");
         GL20.glUseProgram(id);
     }
     
     /**
-     * @return An array of every vertex attribute associated with this program.
+     * 
+     * @return A set of each shader attached to this program.
+     */
+    public Set<Shader> getShaders()
+    {
+        return Collections.unmodifiableSet(shaders);
+    }
+    
+    /**
+     * @return A list of every vertex attribute associated with this program.
      */
     public List<Attribute> getAttributes()
     {
+        if (state != State.LINKED && state != State.COMPLETE)
+            throw new IllegalStateException("Shader must be linked or complete to have attributes.");
         return attributes;
+    }
+    
+    /**
+     * @return The state of this shader program.
+     */
+    public State state()
+    {
+        return state;
+    }
+    
+    void delete()
+    {
+        if (state == State.DELETED) return;
+        
+        if (attributes != null) attributes = null;
+        GL20.glDeleteProgram(id);
+        
+        state = State.DELETED;
     }
     
     /**
