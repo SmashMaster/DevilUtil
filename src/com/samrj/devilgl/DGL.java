@@ -289,6 +289,22 @@ public final class DGL
     }
     
     /**
+     * Generates a new vertex buffer of the given capacity, using the given
+     * memory.
+     * 
+     * @param memory The memory to buffer within.
+     * @param maxVertices The maximum number of vertices to buffer.
+     * @param maxIndices The maximum number of indices to buffer.
+     * @return A new vertex buffer.
+     */
+    public static VertexStream genVertexStream(Memory memory, int maxVertices, int maxIndices)
+    {
+        VertexStream stream = new VertexStream(memory, maxVertices, maxIndices);
+        datas.add(stream);
+        return stream;
+    }
+    
+    /**
      * Binds the given vertex data so that all subsequent draw calls use it.
      * 
      * @param vertexData The vertex data to bind.
