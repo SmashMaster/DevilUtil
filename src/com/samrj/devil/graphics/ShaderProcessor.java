@@ -69,16 +69,6 @@ public class ShaderProcessor
             System.out.println(i++ + ": " + line);
     }
     
-    public static GLShader makeShader(String vertName, String fragName, boolean shouldComplete) throws ShaderException
-    {
-        return new GLShader(loudGet(vertName), loudGet(fragName), shouldComplete);
-    }
-    
-    public static GLShader makeShader(String vertName, String fragName) throws ShaderException
-    {
-        return makeShader(vertName, fragName, true);
-    }
-    
     public static void unload()
     {
         sources.clear();

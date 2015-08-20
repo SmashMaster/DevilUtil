@@ -1,6 +1,6 @@
 package com.samrj.devil.graphics.model;
 
-import com.samrj.devil.graphics.GLShader;
+import com.samrj.devil.gl.ShaderProgram;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
@@ -15,14 +15,14 @@ import org.lwjgl.opengl.GL30;
  */
 public class GLMesh
 {
-    private final GLShader shader;
+    private final ShaderProgram shader;
     private final Mesh mesh;
     private final int posOffset, normalOffset, tangentOffset, uvOffset, colorOffset, groupsOffset, weightsOffset;
     
     private int vertexArray;
     private int vertexBuffer, elementBuffer;
     
-    public GLMesh(GLShader shader, Mesh mesh)
+    public GLMesh(ShaderProgram shader, Mesh mesh)
     {
         this.shader = shader;
         this.mesh = mesh;
@@ -53,7 +53,8 @@ public class GLMesh
     
     private int getEnableLocation(String name)
     {
-        int location = shader.glGetAttribLocation(name);
+        int location = shader.getAttributeLocation(name);
+        if (location < 0) throw new IllegalArgumentException("No attribute with name " + name + " found.");
         GL20.glEnableVertexAttribArray(location);
         return location;
     }

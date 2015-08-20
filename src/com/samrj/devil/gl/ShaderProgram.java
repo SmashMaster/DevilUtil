@@ -2,6 +2,11 @@ package com.samrj.devil.gl;
 
 import static com.samrj.devil.io.BufferUtil.memUtil;
 import com.samrj.devil.io.Memory.Block;
+import com.samrj.devil.math.Mat2;
+import com.samrj.devil.math.Mat3;
+import com.samrj.devil.math.Mat4;
+import com.samrj.devil.math.Vec2;
+import com.samrj.devil.math.Vec3;
 import com.samrj.devil.util.QuickIdentitySet;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -128,6 +133,193 @@ public final class ShaderProgram
         if (state != State.COMPLETE) throw new IllegalStateException(
                 "Shader must be complete to use.");
         GL20.glUseProgram(id);
+    }
+    
+    /**
+     * Returns the location of the attribute with the given name, or -1 if none
+     * with the given name exists.
+     * 
+     * @param name The name of the attribute to find.
+     * @return The location of the attribute.
+     */
+    public int getAttributeLocation(String name)
+    {
+        return GL20.glGetAttribLocation(id, name);
+    }
+    
+    /**
+     * Returns the location of the uniform with the given name, or -1 if none
+     * with the given name exists.
+     * 
+     * @param name The name of the uniform to find.
+     * @return The location of a uniform.
+     */
+    public int getUniformLocation(String name)
+    {
+        return GL20.glGetUniformLocation(id, name);
+    }
+    
+    /**
+     * Specifies the value of a uniform variable for this program. Program must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform to specify.
+     * @param x The value to set the uniform to.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean glUniform1i(String name, int x)
+    {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
+        int loc = GL20.glGetUniformLocation(id, name);
+        if (loc < 0) return false;
+        GL20.glUniform1i(loc, x);
+        return true;
+    }
+    
+    /**
+     * Specifies the value of a uniform variable for this program. Program must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform to specify.
+     * @param x The value to set the uniform to.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean glUniform1f(String name, float x)
+    {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
+        int loc = GL20.glGetUniformLocation(id, name);
+        if (loc < 0) return false;
+        GL20.glUniform1f(loc, x);
+        return true;
+    }
+    
+    /**
+     * Specifies the value of a uniform variable for this program. Program must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform to specify.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean glUniform2f(String name, float x, float y)
+    {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
+        int loc = GL20.glGetUniformLocation(id, name);
+        if (loc < 0) return false;
+        GL20.glUniform2f(loc, x, y);
+        return true;
+    }
+    
+    /**
+     * Specifies the value of a uniform variable for this program. Program must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform to specify.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean glUniform2f(String name, Vec2 v)
+    {
+        return glUniform2f(name, v.x, v.y);
+    }
+    
+    /**
+     * Specifies the value of a uniform variable for this program. Program must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform to specify.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean glUniform3f(String name, float x, float y, float z)
+    {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
+        int loc = GL20.glGetUniformLocation(id, name);
+        if (loc < 0) return false;
+        GL20.glUniform3f(loc, x, y, z);
+        return true;
+    }
+    
+    /**
+     * Specifies the value of a uniform variable for this program. Program must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform to specify.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean glUniform3f(String name, Vec3 v)
+    {
+        return glUniform3f(name, v.x, v.y, v.z);
+    }
+    
+    /**
+     * Specifies the value of a uniform variable for this program. Program must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform to specify.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean glUniform4f(String name, float x, float y, float z, float w)
+    {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
+        int loc = GL20.glGetUniformLocation(id, name);
+        if (loc < 0) return false;
+        GL20.glUniform4f(loc, x, y, z, w);
+        return true;
+    }
+    
+    /**
+     * Specifies the value of a uniform variable for this program. Program must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform to specify.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean glUniformMatrix2f(String name, Mat2 matrix)
+    {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
+        int loc = GL20.glGetUniformLocation(id, name);
+        if (loc < 0) return false;
+        
+        Block b = memUtil.alloc(matrix);
+        GL20.glUniformMatrix2fv(loc, false, b.readUnsafe().asFloatBuffer());
+        b.free();
+        return true;
+    }
+    
+    /**
+     * Specifies the value of a uniform variable for this program. Program must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform to specify.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean glUniformMatrix3f(String name, Mat3 matrix)
+    {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
+        int loc = GL20.glGetUniformLocation(id, name);
+        if (loc < 0) return false;
+        
+        Block b = memUtil.alloc(matrix);
+        GL20.glUniformMatrix3fv(loc, false, b.readUnsafe().asFloatBuffer());
+        b.free();
+        return true;
+    }
+    
+    /**
+     * Specifies the value of a uniform variable for this program. Program must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform to specify.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean glUniformMatrix4f(String name, Mat4 matrix)
+    {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
+        int loc = GL20.glGetUniformLocation(id, name);
+        if (loc < 0) return false;
+        
+        Block b = memUtil.alloc(matrix);
+        GL20.glUniformMatrix4fv(loc, false, b.readUnsafe().asFloatBuffer());
+        b.free();
+        return true;
     }
     
     /**
