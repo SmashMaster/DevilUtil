@@ -7,6 +7,7 @@ import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
+import com.samrj.devil.math.Vec4;
 import com.samrj.devil.util.QuickIdentitySet;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -263,6 +264,18 @@ public final class ShaderProgram
         if (loc < 0) return false;
         GL20.glUniform4f(loc, x, y, z, w);
         return true;
+    }
+    
+    /**
+     * Specifies the value of a uniform variable for this program. Program must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform to specify.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean uniformVec4(String name, Vec4 v)
+    {
+        return uniform4f(name, v.x, v.y, v.z, v.w);
     }
     
     /**
