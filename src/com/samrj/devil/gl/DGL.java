@@ -138,10 +138,28 @@ public final class DGL
      * 
      * @return A new shader program.
      */
-    public static ShaderProgram genShaderProgram()
+    public static ShaderProgram genProgram()
     {
         ShaderProgram program = new ShaderProgram();
         programs.add(program);
+        return program;
+    }
+    
+    /**
+     * Generates, loads, compiles, links, and validates a new shader program
+     * using the two given shaders.
+     * 
+     * @param vertexShader The vertex shader to use.
+     * @param fragmentShader The fragment shader to use.
+     * @return A new, complete shader program.
+     */
+    public static ShaderProgram loadProgram(Shader vertexShader, Shader fragmentShader)
+    {
+        ShaderProgram program = genProgram();
+        program.attach(vertexShader);
+        program.attach(fragmentShader);
+        program.link();
+        program.validate();
         return program;
     }
     
@@ -156,21 +174,11 @@ public final class DGL
      * @return A new, complete shader program.
      * @throws IOException 
      */
-    public static ShaderProgram loadShaderProgram(Memory memory, String path) throws IOException
+    public static ShaderProgram loadProgram(Memory memory, String path) throws IOException
     {
-        ShaderProgram program = genShaderProgram();
-        
-        Shader vertShader = genShader(GL20.GL_VERTEX_SHADER);
-        vertShader.source(memory, path + ".vert");
-        program.attach(vertShader);
-        
-        Shader fragShader = genShader(GL20.GL_FRAGMENT_SHADER);
-        fragShader.source(memory, path + ".frag");
-        program.attach(fragShader);
-        
-        program.link();
-        program.validate();
-        return program;
+        Shader vertShader = loadShader(memory, path + ".vert", GL20.GL_VERTEX_SHADER);
+        Shader fragShader = loadShader(memory, path + ".frag", GL20.GL_FRAGMENT_SHADER);
+        return loadProgram(vertShader, fragShader);
     }
     
     /**
@@ -184,9 +192,9 @@ public final class DGL
      * @return A new, complete shader program.
      * @throws IOException 
      */
-    public static ShaderProgram loadShaderProgram(String path) throws IOException
+    public static ShaderProgram loadProgram(String path) throws IOException
     {
-        return loadShaderProgram(memUtil, path);
+        return loadProgram(memUtil, path);
     }
     
     /**
@@ -366,7 +374,6 @@ public final class DGL
         for (Shader shader : shaders) shader.delete();
         for (VertexData data : datas) data.delete();
         for (VAO vao : vaos) vao.delete();
-        
         
         shaders.clear();
         programs.clear();
