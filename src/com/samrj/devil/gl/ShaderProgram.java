@@ -167,7 +167,7 @@ public final class ShaderProgram
      * @param x The value to set the uniform to.
      * @return Whether or not the uniform exists and is active.
      */
-    public boolean glUniform1i(String name, int x)
+    public boolean uniform1i(String name, int x)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
         int loc = GL20.glGetUniformLocation(id, name);
@@ -184,7 +184,7 @@ public final class ShaderProgram
      * @param x The value to set the uniform to.
      * @return Whether or not the uniform exists and is active.
      */
-    public boolean glUniform1f(String name, float x)
+    public boolean uniform1f(String name, float x)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
         int loc = GL20.glGetUniformLocation(id, name);
@@ -200,7 +200,7 @@ public final class ShaderProgram
      * @param name The name of the uniform to specify.
      * @return Whether or not the uniform exists and is active.
      */
-    public boolean glUniform2f(String name, float x, float y)
+    public boolean uniform2f(String name, float x, float y)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
         int loc = GL20.glGetUniformLocation(id, name);
@@ -216,9 +216,9 @@ public final class ShaderProgram
      * @param name The name of the uniform to specify.
      * @return Whether or not the uniform exists and is active.
      */
-    public boolean glUniform2f(String name, Vec2 v)
+    public boolean uniformVec2(String name, Vec2 v)
     {
-        return glUniform2f(name, v.x, v.y);
+        return uniform2f(name, v.x, v.y);
     }
     
     /**
@@ -228,7 +228,7 @@ public final class ShaderProgram
      * @param name The name of the uniform to specify.
      * @return Whether or not the uniform exists and is active.
      */
-    public boolean glUniform3f(String name, float x, float y, float z)
+    public boolean uniform3f(String name, float x, float y, float z)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
         int loc = GL20.glGetUniformLocation(id, name);
@@ -244,9 +244,9 @@ public final class ShaderProgram
      * @param name The name of the uniform to specify.
      * @return Whether or not the uniform exists and is active.
      */
-    public boolean glUniform3f(String name, Vec3 v)
+    public boolean uniformVec3(String name, Vec3 v)
     {
-        return glUniform3f(name, v.x, v.y, v.z);
+        return uniform3f(name, v.x, v.y, v.z);
     }
     
     /**
@@ -256,7 +256,7 @@ public final class ShaderProgram
      * @param name The name of the uniform to specify.
      * @return Whether or not the uniform exists and is active.
      */
-    public boolean glUniform4f(String name, float x, float y, float z, float w)
+    public boolean uniform4f(String name, float x, float y, float z, float w)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
         int loc = GL20.glGetUniformLocation(id, name);
@@ -272,7 +272,7 @@ public final class ShaderProgram
      * @param name The name of the uniform to specify.
      * @return Whether or not the uniform exists and is active.
      */
-    public boolean glUniformMatrix2f(String name, Mat2 matrix)
+    public boolean uniformMat2(String name, Mat2 matrix)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
         int loc = GL20.glGetUniformLocation(id, name);
@@ -291,7 +291,7 @@ public final class ShaderProgram
      * @param name The name of the uniform to specify.
      * @return Whether or not the uniform exists and is active.
      */
-    public boolean glUniformMatrix3f(String name, Mat3 matrix)
+    public boolean uniformMat3(String name, Mat3 matrix)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
         int loc = GL20.glGetUniformLocation(id, name);
@@ -310,7 +310,7 @@ public final class ShaderProgram
      * @param name The name of the uniform to specify.
      * @return Whether or not the uniform exists and is active.
      */
-    public boolean glUniformMatrix4f(String name, Mat4 matrix)
+    public boolean uniformMat4(String name, Mat4 matrix)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
         int loc = GL20.glGetUniformLocation(id, name);
