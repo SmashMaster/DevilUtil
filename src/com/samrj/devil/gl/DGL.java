@@ -1,4 +1,4 @@
-package com.samrj.devilgl;
+package com.samrj.devil.gl;
 
 import static com.samrj.devil.io.BufferUtil.memUtil;
 import com.samrj.devil.io.Memory;

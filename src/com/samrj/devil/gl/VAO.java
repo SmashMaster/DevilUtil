@@ -1,4 +1,4 @@
-package com.samrj.devilgl;
+package com.samrj.devil.gl;
 
 /**
  * OpenGL VAO wrapper/emulator superclass.

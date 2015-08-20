@@ -1,4 +1,4 @@
-package com.samrj.devilgl;
+package com.samrj.devil.gl;
 
 import com.samrj.devil.util.IntSet;
 import com.samrj.devil.util.SparseArray;

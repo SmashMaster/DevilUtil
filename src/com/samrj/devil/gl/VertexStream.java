@@ -1,4 +1,4 @@
-package com.samrj.devilgl;
+package com.samrj.devil.gl;
 
 import com.samrj.devil.io.Memory;
 import com.samrj.devil.io.Memory.Block;

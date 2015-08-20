@@ -1,4 +1,4 @@
-package com.samrj.devilgl;
+package com.samrj.devil.gl;
 
 import com.samrj.devil.io.Bufferable;
 import com.samrj.devil.math.Mat2;
