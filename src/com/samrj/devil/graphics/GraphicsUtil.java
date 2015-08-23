@@ -1,12 +1,13 @@
 package com.samrj.devil.graphics;
 
-import com.samrj.devil.io.Memory.Block;
 import static com.samrj.devil.io.BufferUtil.memUtil;
+import com.samrj.devil.io.Memory.Block;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
+import com.samrj.devil.math.Vec4;
 import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL11;
 
@@ -99,6 +100,16 @@ public final class GraphicsUtil
     public static void glVertex(Vec3... vecs)
     {
         for (Vec3 v : vecs) glVertex(v);
+    }
+    
+    public static void glColor(Vec3 v)
+    {
+        GL11.glColor3f(v.x, v.y, v.z);
+    }
+    
+    public static void glColor(Vec4 v)
+    {
+        GL11.glColor4f(v.x, v.y, v.z, v.w);
     }
     
     private GraphicsUtil()
