@@ -115,12 +115,15 @@ public class DevilModel
      */
     public void destroy()
     {
-        if (armature != null) armature.destroy();
-        for (Mesh mesh : meshes) mesh.destroy();
+        if (armature != null)
+        {
+            armature.destroy();
+            Arrays.fill(actions, null);
+            actionIndices.clear();
+        }
         
-        Arrays.fill(actions, null);
+        for (Mesh mesh : meshes) mesh.destroy();
         Arrays.fill(meshes, null);
-        actionIndices.clear();
         meshIndices.clear();
     }
 }
