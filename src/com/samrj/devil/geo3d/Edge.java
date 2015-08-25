@@ -74,6 +74,6 @@ public class Edge
         Vec3 cp = Vec3.lerp(cast.p0, cast.p1, t);
         Vec3 p = edgeDir.mult(f).add(a);
         Vec3 n = Vec3.sub(cp, p).normalize();
-        return new EdgeContact(t, dist, p, n, this, f);
+        return new EdgeContact(t, dist, cp, p, n, this, f);
     }
 }

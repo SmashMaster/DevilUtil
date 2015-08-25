@@ -13,9 +13,9 @@ public final class VertexContact extends Contact<Vertex>
 {
     public final Vertex point;
     
-    VertexContact(float t, float d, Vertex p, Vec3 n)
+    VertexContact(float t, float d, Vec3 cp, Vertex p, Vec3 n)
     {
-        super(Type.POINT, t, d, p, n);
+        super(Type.POINT, t, d, cp, p, n);
         this.point = p;
     }
 

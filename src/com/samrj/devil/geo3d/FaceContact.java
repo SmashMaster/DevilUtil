@@ -21,9 +21,9 @@ public class FaceContact extends Contact<Face>
      */
     public final Vec3 fbc;
     
-    FaceContact(float t, float d, Vec3 p, Vec3 n, Face face, Vec3 fbc)
+    FaceContact(float t, float d, Vec3 cp, Vec3 p, Vec3 n, Face face, Vec3 fbc)
     {
-        super(Type.FACE, t, d, p, n);
+        super(Type.FACE, t, d, cp, p, n);
         this.face = face;
         this.fbc = fbc;
     }

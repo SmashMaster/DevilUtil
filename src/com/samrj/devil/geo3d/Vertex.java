@@ -62,8 +62,9 @@ public class Vertex extends Vec3
         if (t <= 0.0f || (cast.terminated && t >= 1.0f))
             return null; //Moving away, or won't get there in time.
         
+        Vec3 cp = Vec3.lerp(cast.p0, cast.p1, t);
         float dist = cast.p0.dist(p1)*t;
-        Vec3 n = Vec3.lerp(p0, p1, t).sub(a).normalize();
-        return new VertexContact(t, dist, this, n);
+        Vec3 n = Vec3.sub(cp, this).normalize();
+        return new VertexContact(t, dist, cp, this, n);
     }
 }

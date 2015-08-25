@@ -34,7 +34,12 @@ public abstract class Contact<TYPE>
     public final float d;
     
     /**
-     * The position of the contact.
+     * The position of the cast at the time of the contact.
+     */
+    public final Vec3 cp;
+    
+    /**
+     * The surface position of the contact.
      */
     public final Vec3 p;
     
@@ -43,11 +48,12 @@ public abstract class Contact<TYPE>
      */
     public final Vec3 n;
     
-    Contact(Type type, float t, float d, Vec3 p, Vec3 n)
+    Contact(Type type, float t, float d, Vec3 cp, Vec3 p, Vec3 n)
     {
         this.type = type;
         this.t = t;
         this.d = d;
+        this.cp = cp;
         this.p = p;
         this.n = n;
     }

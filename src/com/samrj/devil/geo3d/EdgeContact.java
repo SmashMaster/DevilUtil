@@ -21,9 +21,9 @@ public class EdgeContact extends Contact<Edge>
      */
     public final float et;
     
-    EdgeContact(float t, float d, Vec3 p, Vec3 n, Edge edge, float et)
+    EdgeContact(float t, float d, Vec3 cp, Vec3 p, Vec3 n, Edge edge, float et)
     {
-        super(Type.EDGE, t, d, p, n);
+        super(Type.EDGE, t, d, cp, p, n);
         this.edge = edge;
         this.et = et;
     }

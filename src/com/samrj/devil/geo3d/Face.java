@@ -31,40 +31,66 @@ public class Face
     
     private static Vec3 barycentric(Vec3 a, Vec3 b, Vec3 c, Vec3 p)
     {
-        // Unnormalized triangle normal
-        Vec3 m = Vec3.sub(b, a).cross(Vec3.sub(c, a));
-        // Nominators and one-over-denominator for u and v ratios
-        float nu, nv, ood;
-        // Absolute components for determining projection plane
-        float x = Math.abs(m.x), y = Math.abs(m.y), z = Math.abs(m.z);
-        // Compute areas in plane of largest projection
-        if (x >= y && x >= z)
-        {
-            // x is largest, project to the yz plane
-            nu = triArea2D(p.y, p.z, b.y, b.z, c.y, c.z); // Area of PBC in yz plane
-            nv = triArea2D(p.y, p.z, c.y, c.z, a.y, a.z); // Area of PCA in yz plane
-            ood = 1.0f/m.x; // 1/(2*area of ABC in yz plane)
-        }
-        else if (y >= x && y >= z)
-        {
-            // y is largest, project to the xz plane
-            nu = triArea2D(p.x, p.z, b.x, b.z, c.x, c.z);
-            nv = triArea2D(p.x, p.z, c.x, c.z, a.x, a.z);
-            ood = 1.0f/-m.y;
-        }
-        else
-        {
-            // z is largest, project to the xy plane
-            nu = triArea2D(p.x, p.y, b.x, b.y, c.x, c.y);
-            nv = triArea2D(p.x, p.y, c.x, c.y, a.x, a.y);
-            ood = 1.0f/m.z;
-        }
+//        //TYPE 1
+//        // Unnormalized triangle normal
+//        Vector3f m = b.csub(a).cross(c.csub(a));
+//        // Nominators and one-over-denominator for u and v ratios
+//        float nu, nv, ood;
+//        // Absolute components for determining projection plane
+//        float x = Math.abs(m.x), y = Math.abs(m.y), z = Math.abs(m.z);
+//        // Compute areas in plane of largest projection
+//        if (x >= y && x >= z)
+//        {
+//            // x is largest, project to the yz plane
+//            nu = triArea2D(p.y, p.z, b.y, b.z, c.y, c.z); // Area of PBC in yz plane
+//            nv = triArea2D(p.y, p.z, c.y, c.z, a.y, a.z); // Area of PCA in yz plane
+//            ood = 1.0f / m.x; // 1/(2*area of ABC in yz plane)
+//        }
+//        else if (y >= x && y >= z)
+//        {
+//            // y is largest, project to the xz plane
+//            nu = triArea2D(p.x, p.z, b.x, b.z, c.x, c.z);
+//            nv = triArea2D(p.x, p.z, c.x, c.z, a.x, a.z);
+//            ood = 1.0f / -m.y;
+//        }
+//        else
+//        {
+//            // z is largest, project to the xy plane
+//            nu = triArea2D(p.x, p.y, b.x, b.y, c.x, c.y);
+//            nv = triArea2D(p.x, p.y, c.x, c.y, a.x, a.y);
+//            ood = 1.0f / m.z;
+//        }
+//        
+//        Vector3f coords = new Vector3f();
+//        coords.x = nu * ood;
+//        coords.y = nv * ood;
+//        coords.z = 1.0f - coords.x - coords.y;
+//        return coords;
+        
+        //TYPE 2
+        Vec3 v0 = Vec3.sub(b, a), v1 = Vec3.sub(c, a), v2 = Vec3.sub(p, a);
+        float d00 = v0.dot(v0);
+        float d01 = v0.dot(v1);
+        float d11 = v1.dot(v1);
+        float d20 = v2.dot(v0);
+        float d21 = v2.dot(v1);
+        float denom = d00*d11 - d01*d01;
         
         Vec3 coords = new Vec3();
-        coords.x = nu*ood;
-        coords.y = nv*ood;
-        coords.z = 1.0f - coords.x - coords.y;
+        coords.y = (d11*d20 - d01*d21)/denom;
+        coords.z = (d00*d21 - d01*d20)/denom;
+        coords.x = 1.0f - coords.y - coords.z;
         return coords;
+        
+//        //TYPE 3
+//        Vec3 u = Vec3.sub(b, a), v = Vec3.sub(c, a), n = Vec3.cross(u, v), w = Vec3.sub(p, a);
+//        float nSqLen = n.squareLength();
+//        
+//        Vec3 coords = new Vec3();
+//        coords.y = u.cross(w).dot(n)/nSqLen;
+//        coords.z = w.cross(v).dot(n)/nSqLen;
+//        coords.x = 1.0f - coords.y - coords.z;
+//        return coords;
     }
     
     public Vertex a, b, c;
@@ -127,7 +153,7 @@ public class Face
         n.normalize();
         Vec3 bc = new Vec3(u, v, w);
         
-        return new FaceContact(t, dist, p, n, this, bc);
+        return new FaceContact(t, dist, p, p, n, this, bc);
     }
     
     /**
@@ -162,6 +188,6 @@ public class Face
         float dist = cast.p0.dist(cast.p1)*t;
         Vec3 p = Vec3.mult(a, bc.x).madd(b, bc.y).madd(c, bc.z);
         Vec3 n = Vec3.sub(cp, p).normalize();
-        return new FaceContact(t, dist, p, n, this, bc);
+        return new FaceContact(t, dist, cp, p, n, this, bc);
     }
 }
