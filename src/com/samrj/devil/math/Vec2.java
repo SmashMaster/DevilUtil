@@ -188,6 +188,20 @@ public class Vec2 implements Bufferable, Streamable
     }
     
     /**
+     * Multiplies each component of {@code v0} by the respective component of
+     * {@code v1} and stores the result in {@code result}.
+     * 
+     * @param v0 The first vector to multiply.
+     * @param v1 The second vector to multiply.
+     * @param result The vector in which to store the result.
+     */
+    public static final void mult(Vec2 v0, Vec2 v1, Vec2 result)
+    {
+        result.x = v0.x*v1.x;
+        result.y = v0.y*v1.y;
+    }
+    
+    /**
      * Multiplies {@code v1} by {@code s}, adds {@code v0}, and stores the
      * result in {@code result}.
      * 
@@ -241,6 +255,20 @@ public class Vec2 implements Bufferable, Streamable
     {
         result.x = v.x/s;
         result.y = v.y/s;
+    }
+    
+    /**
+     * Divides each component of {@code v0} by the respective component of
+     * {@code v1} and stores the result in {@code result}.
+     * 
+     * @param v0 The vector to divide.
+     * @param v1 The vector to divide by.
+     * @param result The vector in which to store the result.
+     */
+    public static final void div(Vec2 v0, Vec2 v1, Vec2 result)
+    {
+        result.x = v0.x/v1.x;
+        result.y = v0.y/v1.y;
     }
     
     /**
@@ -369,6 +397,21 @@ public class Vec2 implements Bufferable, Streamable
     }
     
     /**
+     * Multiplies each component of {@code v0} by the respective component of
+     * {@code v1} and stores the result in a new vector.
+     * 
+     * @param v0 The first vector to multiply.
+     * @param v1 The second vector to multiply.
+     * @return A new vector containing the result.
+     */
+    public static final Vec2 mult(Vec2 v0, Vec2 v1)
+    {
+        Vec2 result = new Vec2();
+        mult(v0, v1, result);
+        return result;
+    }
+    
+    /**
      * Multiplies {@code v1} by {@code s}, adds {@code v0}, and returns a new
      * vector contain the result.
      * 
@@ -423,6 +466,21 @@ public class Vec2 implements Bufferable, Streamable
     {
         Vec2 result = new Vec2();
         div(v, s, result);
+        return result;
+    }
+    
+    /**
+     * Divides each component of {@code v0} by the respective component of
+     * {@code v1} and stores the result in a new vector.
+     * 
+     * @param v0 The vector to divide.
+     * @param v1 The vector to divide by.
+     * @return A new vector containing the result.
+     */
+    public static final Vec2 div(Vec2 v0, Vec2 v1)
+    {
+        Vec2 result = new Vec2();
+        div(v0, v1, result);
         return result;
     }
     
@@ -705,6 +763,19 @@ public class Vec2 implements Bufferable, Streamable
     }
     
     /**
+     * Multiplies each component of this by the respective component of the
+     * given vector.
+     * 
+     * @param v The vector to multiply this by.
+     * @return This vector.
+     */
+    public Vec2 mult(Vec2 v)
+    {
+        mult(this, v, this);
+        return this;
+    }
+    
+    /**
      * Multiplies the given vector by the given scalar, and adds the result to
      * this.
      * 
@@ -751,6 +822,19 @@ public class Vec2 implements Bufferable, Streamable
     public Vec2 div(float s)
     {
         div(this, s, this);
+        return this;
+    }
+    
+    /**
+     * Divides each component of this by the respective component of the
+     * given vector.
+     * 
+     * @param v The vector to divide this by.
+     * @return This vector.
+     */
+    public Vec2 div(Vec2 v)
+    {
+        div(this, v, this);
         return this;
     }
     
