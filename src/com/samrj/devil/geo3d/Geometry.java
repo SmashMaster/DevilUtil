@@ -1,6 +1,7 @@
 package com.samrj.devil.geo3d;
 
 import com.samrj.devil.graphics.model.Mesh;
+import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -18,6 +19,43 @@ import java.util.List;
  */
 public class Geometry
 {
+    static final float solveQuadratic(float a, float b, float c)
+    {
+        float[] solutions = Util.quadFormula(a, b, c);
+        
+        switch (solutions.length)
+        {
+            case 0: return Float.NaN;
+            case 1: return solutions[0];
+            case 2:
+                float s1 = solutions[0];
+                float s2 = solutions[1];
+                
+                if (s1 < 0.0f || s2 < 0.0f)
+                     return s1 > s2 ? s1 : s2; //If either are negative, return the larger one.
+                else return s1 < s2 ? s1 : s2; //Otherwise, return the smaller one.
+            default:
+                assert(false);
+                throw new Error();
+        }
+    }
+    
+    static final Vec3 div(Vec3 v, Vec3 d)
+    {
+        v.x /= d.x;
+        v.y /= d.y;
+        v.z /= d.z;
+        return v;
+    }
+    
+    static final Vec3 mult(Vec3 v, Vec3 d)
+    {
+        v.x *= d.x;
+        v.y *= d.y;
+        v.z *= d.z;
+        return v;
+    }
+    
     private static void replace(List<Edge> edges, List<Face> faces, Vertex ov, Vertex nv)
     {
         for (Edge edge : edges)

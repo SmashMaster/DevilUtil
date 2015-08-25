@@ -40,12 +40,30 @@ public class Vertex extends Vec3
      * Returns a new vertex contact if the given ellipsoid cast hits this
      * vertex, or null if it doesn't.
      * 
-     * @param ellipsoid The ellipsoid cast to test against this vertex.
+     * @param cast The ellipsoid cast to test against this vertex.
      * @return A new vertex contact if the given ellipsoid cast hits this vertex,
      *         or null if it doesn't.
      */
-    public VertexContact cast(EllipsoidCast ellipsoid)
+    public VertexContact cast(EllipsoidCast cast)
     {
-        return null;
+        Vec3 p0 = Geometry.div(new Vec3(cast.p0), cast.radius);
+        Vec3 p1 = Geometry.div(new Vec3(cast.p1), cast.radius);
+        Vec3 cDir = Vec3.sub(p1, p0);
+        float cSqLen = cDir.squareLength();
+        
+        Vec3 a = Geometry.div(new Vec3(this), cast.radius);
+        Vec3 dir = Geometry.div(new Vec3(cast.p0), cast.radius).sub(a);
+
+        float t = Geometry.solveQuadratic(cSqLen,
+                                          2.0f*cDir.dot(dir),
+                                          dir.squareLength() - 1.0f);
+
+        if (Float.isNaN(t)) return null; //We miss the vertex.
+        if (t <= 0.0f || (cast.terminated && t >= 1.0f))
+            return null; //Moving away, or won't get there in time.
+        
+        float dist = cast.p0.dist(p1)*t;
+        Vec3 n = Vec3.lerp(p0, p1, t).sub(a).normalize();
+        return new VertexContact(t, dist, this, n);
     }
 }
