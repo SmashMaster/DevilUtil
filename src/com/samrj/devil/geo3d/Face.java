@@ -11,14 +11,14 @@ import com.samrj.devil.math.Vec3;
  */
 public class Face
 {
-    public Vec3 a, b, c;
+    public Vertex a, b, c;
     public Edge ab, bc, ca;
     
     public Face()
     {
     }
     
-    public Face(Vec3 a, Vec3 b, Vec3 c)
+    public Face(Vertex a, Vertex b, Vertex c)
     {
         this.a = a; this.b = b; this.c = c;
         ab = new Edge(a, b);
@@ -34,7 +34,7 @@ public class Face
      * @return A face contact if the given ray hits this face, or null if it
      *         does not.
      */
-    public FaceContact ray(RayCast ray)
+    public FaceContact cast(RayCast ray)
     {
         Vec3 qp = Vec3.sub(ray.p0, ray.p1);
         Vec3 ab = Vec3.sub(b, a);
@@ -72,5 +72,18 @@ public class Face
         Vec3 bc = new Vec3(u, v, w);
         
         return new FaceContact(t, dist, p, n, this, bc);
+    }
+    
+    /**
+     * Returns a new face contact if the given ellipsoid cast hits this face,
+     * or null if it doesn't.
+     * 
+     * @param ellipsoid The ellipsoid cast to test against this face.
+     * @return A new face contact if the given ellipsoid cast hits this face,
+     *         or null if it doesn't.
+     */
+    public FaceContact cast(EllipsoidCast ellipsoid)
+    {
+        return null;
     }
 }

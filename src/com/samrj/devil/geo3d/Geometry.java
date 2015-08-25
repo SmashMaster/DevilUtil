@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class Geometry
 {
-    private static void replace(List<Edge> edges, List<Face> faces, Vec3 ov, Vec3 nv)
+    private static void replace(List<Edge> edges, List<Face> faces, Vertex ov, Vertex nv)
     {
         for (Edge edge : edges)
         {
@@ -34,13 +34,13 @@ public class Geometry
         }
     }
     
-    private static Edge findEdge(List<Edge> edges, Vec3 a, Vec3 b)
+    private static Edge findEdge(List<Edge> edges, Vertex a, Vertex b)
     {
         for (Edge edge : edges) if (edge.equals(a, b)) return edge;
         return null;
     }
     
-    public final List<Point> verts;
+    public final List<Vertex> verts;
     public final List<Edge> edges;
     public final List<Face> faces;
     
@@ -52,7 +52,7 @@ public class Geometry
         verts = new ArrayList<>(mesh.numVertices);
         for (int i=0; i<mesh.numVertices; i++)
         {
-            Point p = new Point();
+            Vertex p = new Vertex();
             p.read(vertexData);
             verts.add(p);
         }
@@ -99,19 +99,19 @@ public class Geometry
         {//Weld vertices
             vertWeldDist *= vertWeldDist;
             
-            Deque<Point> unchecked = new LinkedList<>();
+            Deque<Vertex> unchecked = new LinkedList<>();
             unchecked.addAll(verts);
             verts.clear();
 
             while (!unchecked.isEmpty())
             {
-                Point vertex = unchecked.pop();
+                Vertex vertex = unchecked.pop();
                 float sum = 0.0f;
 
-                Iterator<Point> it = unchecked.iterator();
+                Iterator<Vertex> it = unchecked.iterator();
                 while (it.hasNext())
                 {
-                    Point v = it.next();
+                    Vertex v = it.next();
                     if (v.squareDist(vertex) <= vertWeldDist)
                     {
                         vertex.mult(sum).add(v).div(++sum);
@@ -183,25 +183,62 @@ public class Geometry
     }
     
     /**
-     * Traces a ray through this geometry and returns a list of contacts.
+     * Casts a ray through this geometry and returns a list of contacts.
      * 
      * @param p0 The start of the ray.
      * @param p1 The end of the ray.
      * @param terminate Whether to stop at the end of ray, or continue past.
      * @return A new RayCast object;
      */
-    public RayCast ray(Vec3 p0, Vec3 p1, boolean terminate)
+    public RayCast castRay(Vec3 p0, Vec3 p1, boolean terminate)
     {
         p0 = new Vec3(p0);
         p1 = new Vec3(p1);
-        RayCast trace = new RayCast(p0, p1, terminate);
+        RayCast cast = new RayCast(p0, p1, terminate);
         
         for (Face face : faces)
         {
-            FaceContact contact = face.ray(trace);
-            if (contact != null) trace.contacts.insert(contact);
+            FaceContact contact = face.cast(cast);
+            if (contact != null) cast.contacts.insert(contact);
         }
         
-        return trace;
+        return cast;
+    }
+    
+    /**
+     * Casts an ellipsoid through this geometry and returns a list of contacts.
+     * 
+     * @param p0 The starting position of the ellipsoid.
+     * @param p1 The end position of the ellipsoid.
+     * @param radius The radii of the ellipsoid, along each axis.
+     * @param terminated Whether to stop at the end position, or continue past.
+     * @return A new EllipsoidCast object.
+     */
+    public EllipsoidCast castEllpsoid(Vec3 p0, Vec3 p1, Vec3 radius, boolean terminated)
+    {
+        p0 = new Vec3(p0);
+        p1 = new Vec3(p1);
+        radius = new Vec3(radius);
+        EllipsoidCast cast = new EllipsoidCast(p0, p1, radius, terminated);
+        
+        for (Vertex vertex : verts)
+        {
+            VertexContact contact = vertex.cast(cast);
+            if (contact != null) cast.contacts.insert(contact);
+        }
+        
+        for (Edge edge : edges)
+        {
+            EdgeContact contact = edge.cast(cast);
+            if (contact != null) cast.contacts.insert(contact);
+        }
+        
+        for (Face face : faces)
+        {
+            FaceContact contact = face.cast(cast);
+            if (contact != null) cast.contacts.insert(contact);
+        }
+        
+        return cast;
     }
 }

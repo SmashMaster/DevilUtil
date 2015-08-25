@@ -59,6 +59,9 @@ public abstract class Contact<TYPE>
         @Override
         public int compare(Contact c1, Contact c2)
         {
+            if (c1 == c2) return 0;
+            if (c1 == null) return 1;
+            if (c2 == null) return -1;
             return Util.compare(c1.t, c2.t, 0.0f);
         }
     }

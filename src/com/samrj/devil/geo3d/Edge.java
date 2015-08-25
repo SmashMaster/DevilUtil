@@ -1,7 +1,5 @@
 package com.samrj.devil.geo3d;
 
-import com.samrj.devil.math.Vec3;
-
 /**
  * 3D edge class.
  * 
@@ -11,9 +9,9 @@ import com.samrj.devil.math.Vec3;
  */
 public class Edge
 {
-    public Vec3 a, b;
+    public Vertex a, b;
     
-    public Edge(Vec3 a, Vec3 b)
+    public Edge(Vertex a, Vertex b)
     {
         this.a = a; this.b = b;
     }
@@ -22,7 +20,7 @@ public class Edge
     {
     }
     
-    public boolean equals(Vec3 a, Vec3 b)
+    public boolean equals(Vertex a, Vertex b)
     {
         return (this.a == a && this.b == b) ||
                (this.a == b && this.b == a);
@@ -31,5 +29,18 @@ public class Edge
     public boolean equals(Edge edge)
     {
         return equals(edge.a, edge.b);
+    }
+    
+    /**
+     * Returns a new edge contact if the given ellipsoid cast hits this edge,
+     * or null if it doesn't.
+     * 
+     * @param ellipsoid The ellipsoid cast to test against this edge.
+     * @return A new edge contact if the given ellipsoid cast hits this edge,
+     *         or null if it doesn't.
+     */
+    public EdgeContact cast(EllipsoidCast ellipsoid)
+    {
+        return null;
     }
 }

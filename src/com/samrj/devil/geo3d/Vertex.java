@@ -9,19 +9,19 @@ import com.samrj.devil.math.Vec3;
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Point extends Vec3
+public class Vertex extends Vec3
 {
     /**
      * Creates a new zero point.
      */
-    public Point()
+    public Vertex()
     {
     }
     
     /**
      * Creates a new point with the given coordinates.
      */
-    public Point(float x, float y, float z)
+    public Vertex(float x, float y, float z)
     {
         this.x = x; this.y = y; this.z = z;
     }
@@ -31,8 +31,21 @@ public class Point extends Vec3
      * 
      * @param v The vector to copy.
      */
-    public Point(Vec3 v)
+    public Vertex(Vec3 v)
     {
         x = v.x; y = v.y; z = v.z;
+    }
+    
+    /**
+     * Returns a new vertex contact if the given ellipsoid cast hits this
+     * vertex, or null if it doesn't.
+     * 
+     * @param ellipsoid The ellipsoid cast to test against this vertex.
+     * @return A new vertex contact if the given ellipsoid cast hits this vertex,
+     *         or null if it doesn't.
+     */
+    public VertexContact cast(EllipsoidCast ellipsoid)
+    {
+        return null;
     }
 }
