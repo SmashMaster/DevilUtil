@@ -2,16 +2,17 @@ package com.samrj.devil.util;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Iterator;
 
-public class SortedArray<T>
+public class SortedArray<T> implements Iterable<T>
 {
-    private Object[] array;
+    private T[] array;
     private int size;
     private final Comparator<? super T> comparator;
     
     public SortedArray(int capacity, Comparator<? super T> comparator)
     {
-        array = new Object[capacity];
+        array = (T[])new Object[capacity];
         this.comparator = comparator;
     }
     
@@ -30,7 +31,7 @@ public class SortedArray<T>
      */
     public int index(T entry)
     {
-        return Arrays.binarySearch((T[])array, 0, size, entry, comparator);
+        return Arrays.binarySearch(array, 0, size, entry, comparator);
     }
     
     /**
@@ -42,7 +43,7 @@ public class SortedArray<T>
     public T get(int index)
     {
         if (index >= size) throw new ArrayIndexOutOfBoundsException();
-        return (T)array[index];
+        return array[index];
     }
     
     /**
@@ -62,7 +63,7 @@ public class SortedArray<T>
         {
             int newCapacity = array.length << 1;
             if (newCapacity < array.length) throw new ArrayIndexOutOfBoundsException();
-            Object[] newArray = new Object[newCapacity];
+            T[] newArray = (T[])new Object[newCapacity];
             
             System.arraycopy(array, 0, newArray, 0, index);
             newArray[index] = entry;
@@ -112,7 +113,7 @@ public class SortedArray<T>
      */
     public void resort()
     {
-        Arrays.sort((T[])array, 0, size, comparator);
+        Arrays.sort(array, 0, size, comparator);
     }
     
     /**
@@ -129,5 +130,29 @@ public class SortedArray<T>
     public int capacity()
     {
         return array.length;
+    }
+
+    @Override
+    public Iterator<T> iterator()
+    {
+        return new SAIterator();
+    }
+    
+    private class SAIterator implements Iterator<T>
+    {
+        private int i;
+
+        @Override
+        public boolean hasNext()
+        {
+            return i < size;
+        }
+
+        @Override
+        public T next()
+        {
+            if (i >= size) throw new IllegalStateException();
+            return array[i++];
+        }
     }
 }

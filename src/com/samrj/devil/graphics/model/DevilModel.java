@@ -81,6 +81,7 @@ public class DevilModel
         }
     }
     
+    @Deprecated
     public DevilModel(InputStream inputStream) throws IOException
     {
         this(inputStream, null);
@@ -91,6 +92,7 @@ public class DevilModel
         this(Resource.open(path), memory);
     }
     
+    @Deprecated
     public DevilModel(String path) throws IOException
     {
         this(path, null);

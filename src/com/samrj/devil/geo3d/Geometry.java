@@ -4,12 +4,18 @@ import com.samrj.devil.graphics.model.Mesh;
 import com.samrj.devil.math.Vec3;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * 3D geometry class.
+ * 
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2014 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public class Geometry
 {
     private static void replace(List<Edge> edges, List<Face> faces, Vec3 ov, Vec3 nv)
@@ -36,40 +42,36 @@ public class Geometry
     
     public static final void optimize(Geometry geom, float vertWeldDist)
     {
-        ArrayList<Vec3> verts = new ArrayList<>(Arrays.asList(geom.verts));
-        ArrayList<Edge> edges = new ArrayList<>(Arrays.asList(geom.edges));
-        ArrayList<Face> faces = new ArrayList<>(Arrays.asList(geom.faces));
-        
         {//Weld vertices
             vertWeldDist *= vertWeldDist;
             
-            Deque<Vec3> unchecked = new LinkedList<>();
-            unchecked.addAll(verts);
-            verts.clear();
+            Deque<Point> unchecked = new LinkedList<>();
+            unchecked.addAll(geom.verts);
+            geom.verts.clear();
 
             while (!unchecked.isEmpty())
             {
-                Vec3 vertex = unchecked.pop();
+                Point vertex = unchecked.pop();
                 float sum = 0.0f;
 
-                Iterator<Vec3> it = unchecked.iterator();
+                Iterator<Point> it = unchecked.iterator();
                 while (it.hasNext())
                 {
-                    Vec3 v = it.next();
+                    Point v = it.next();
                     if (v.squareDist(vertex) < vertWeldDist)
                     {
                         vertex.mult(sum).add(v).div(++sum);
                         it.remove();
-                        replace(edges, faces, v, vertex);
+                        replace(geom.edges, geom.faces, v, vertex);
                     }
                 }
 
-                verts.add(vertex);
+                geom.verts.add(vertex);
             }
         }
         
         {//Remove degenerate edges
-            Iterator<Edge> it = edges.iterator();
+            Iterator<Edge> it = geom.edges.iterator();
             
             while (it.hasNext())
             {
@@ -79,7 +81,7 @@ public class Geometry
         }
         
         {//Remove degenerate faces
-            Iterator<Face> it = faces.iterator();
+            Iterator<Face> it = geom.faces.iterator();
             
             while (it.hasNext())
             {
@@ -90,8 +92,8 @@ public class Geometry
         
         {//Remove redundant edges
             Deque<Edge> unchecked = new LinkedList<>();
-            unchecked.addAll(edges);
-            edges.clear();
+            unchecked.addAll(geom.edges);
+            geom.edges.clear();
 
             while (!unchecked.isEmpty())
             {
@@ -104,15 +106,15 @@ public class Geometry
                     if (edge.equals(e)) it.remove();
                 }
 
-                edges.add(edge);
+                geom.edges.add(edge);
             }
         }
         
-        for (Face face : faces) //Compute adjacency
+        for (Face face : geom.faces) //Compute adjacency
         {
-            face.ab = findEdge(edges, face.a, face.b);
-            face.bc = findEdge(edges, face.b, face.c);
-            face.ca = findEdge(edges, face.c, face.a);
+            face.ab = findEdge(geom.edges, face.a, face.b);
+            face.bc = findEdge(geom.edges, face.b, face.c);
+            face.ca = findEdge(geom.edges, face.c, face.a);
         }
         
         /**
@@ -124,46 +126,74 @@ public class Geometry
          * -Faces with zero surface area. (All vertices collinear)
          * -Faces contained by faces.
          */
-        
-        geom.verts = verts.toArray(new Vec3[verts.size()]);
-        geom.edges = edges.toArray(new Edge[edges.size()]);
-        geom.faces = faces.toArray(new Face[faces.size()]);
     }
     
-    public Vec3[] verts;
-    public Edge[] edges;
-    public Face[] faces;
+    public final List<Point> verts;
+    public final List<Edge> edges;
+    public final List<Face> faces;
     
     public Geometry(Mesh mesh)
     {
         mesh.rewindBuffers();
         
         ByteBuffer vertexData = mesh.vertexData();
-        verts = new Vec3[mesh.numVertices];
+        verts = new ArrayList<>(mesh.numVertices);
         for (int i=0; i<mesh.numVertices; i++)
         {
-            Vec3 v = new Vec3();
-            v.read(vertexData);
-            verts[i] = v;
+            Point p = new Point();
+            p.read(vertexData);
+            verts.add(p);
         }
         
         ByteBuffer indexData = mesh.indexData();
-        faces = new Face[mesh.numTriangles];
-        edges = new Edge[mesh.numTriangles*3];
+        faces = new ArrayList<>(mesh.numTriangles);
+        edges = new ArrayList<>(mesh.numTriangles*3);
         for (int i=0; i<mesh.numTriangles; i++)
         {
-            Face f = new Face(verts[indexData.getInt()],
-                              verts[indexData.getInt()],
-                              verts[indexData.getInt()]);
-            faces[i] = f;
-            int ie = i*3;
-            edges[ie++] = f.ab;
-            edges[ie++] = f.bc;
-            edges[ie]   = f.ca;
+            Face f = new Face(verts.get(indexData.getInt()),
+                              verts.get(indexData.getInt()),
+                              verts.get(indexData.getInt()));
+            faces.add(f);
+            edges.add(f.ab);
+            edges.add(f.bc);
+            edges.add(f.ca);
         }
+    }
+    
+    public Geometry(Geometry geom)
+    {
+        verts = new ArrayList<>(geom.verts);
+        faces = new ArrayList<>(geom.faces);
+        edges = new ArrayList<>(geom.edges);
     }
     
     public Geometry()
     {
+        verts = new ArrayList<>();
+        faces = new ArrayList<>();
+        edges = new ArrayList<>();
+    }
+    
+    /**
+     * Traces a ray through this geometry and returns a list of contacts.
+     * 
+     * @param p0 The start of the ray.
+     * @param p1 The end of the ray.
+     * @param terminate Whether to stop at the end of ray, or continue past.
+     * @return A new RayCast object;
+     */
+    public RayCast ray(Vec3 p0, Vec3 p1, boolean terminate)
+    {
+        p0 = new Vec3(p0);
+        p1 = new Vec3(p1);
+        RayCast trace = new RayCast(p0, p1, terminate);
+        
+        for (Face face : faces)
+        {
+            FaceContact contact = face.ray(trace);
+            if (contact != null) trace.contacts.insert(contact);
+        }
+        
+        return trace;
     }
 }

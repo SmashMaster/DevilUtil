@@ -188,6 +188,21 @@ public class Vec2 implements Bufferable, Streamable
     }
     
     /**
+     * Multiplies {@code v1} by {@code s}, adds {@code v0}, and stores the
+     * result in {@code result}.
+     * 
+     * @param v0 The vector to add to.
+     * @param v1 The vector to multiply by {@code s} and then add to {@code v0}.
+     * @param s The scalar by which to multiply {@code v1}.
+     * @param result The vector in which to store the result.
+     */
+    public static final void madd(Vec2 v0, Vec2 v1, float s, Vec2 result)
+    {
+        result.x = v0.x + v1.x*s;
+        result.y = v0.y + v1.y*s;
+    }
+    
+    /**
      * Multiplies {@code v} by {@code m} and stores the result in {@code result}.
      * 
      * @param v The vector to multiply.
@@ -350,6 +365,22 @@ public class Vec2 implements Bufferable, Streamable
     {
         Vec2 result = new Vec2();
         mult(v, s, result);
+        return result;
+    }
+    
+    /**
+     * Multiplies {@code v1} by {@code s}, adds {@code v0}, and returns a new
+     * vector contain the result.
+     * 
+     * @param v0 The vector to add to.
+     * @param v1 The vector to multiply by {@code s} and then add to {@code v0}.
+     * @param s The scalar by which to multiply {@code v1}.
+     * @return A new vector containing the result.
+     */
+    public static final Vec2 madd(Vec2 v0, Vec2 v1, float s)
+    {
+        Vec2 result = new Vec2();
+        madd(v0, v1, s, result);
         return result;
     }
     
@@ -670,6 +701,20 @@ public class Vec2 implements Bufferable, Streamable
     public Vec2 mult(float s)
     {
         mult(this, s, this);
+        return this;
+    }
+    
+    /**
+     * Multiplies the given vector by the given scalar, and adds the result to
+     * this.
+     * 
+     * @param v The vector to multiply-add.
+     * @param s The scalar to multiply {@code v} by.
+     * @return This vector.
+     */
+    public Vec2 madd(Vec2 v, float s)
+    {
+        madd(this, v, s, this);
         return this;
     }
     
