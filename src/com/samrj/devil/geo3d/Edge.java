@@ -9,7 +9,7 @@ import com.samrj.devil.math.Vec3;
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Edge implements EllipsoidCast.Testable
+public class Edge implements EllipsoidCast.Testable, EllipsoidClip.Testable
 {
     public Vertex a, b;
     
@@ -78,12 +78,14 @@ public class Edge implements EllipsoidCast.Testable
         return new EdgeContact(t, dist, cp, p, n, f);
     }
     
+    @Override
+    public EdgeIntersection test(EllipsoidClip clip)
+    {
+        return null;
+    }
+    
     /**
      * Contact class for edges.
-     * 
-     * @author Samuel Johnson (SmashMaster)
-     * @copyright 2014 Samuel Johnson
-     * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
      */
     public class EdgeContact extends Contact<Edge>
     {
@@ -94,12 +96,44 @@ public class Edge implements EllipsoidCast.Testable
 
         EdgeContact(float t, float d, Vec3 cp, Vec3 p, Vec3 n, float et)
         {
-            super(Type.EDGE, t, d, cp, p, n);
+            super(t, d, cp, p, n);
             this.et = et;
+        }
+        
+        @Override
+        public Type type()
+        {
+            return Type.EDGE;
         }
 
         @Override
-        public Edge contact()
+        public Edge contacted()
+        {
+            return Edge.this;
+        }
+    }
+    
+    public final class EdgeIntersection extends Intersection<Edge>
+    {
+        /**
+         * The edge interpolant.
+         */
+        public final float et;
+        
+        EdgeIntersection(float d, Vec3 p, Vec3 n, float et)
+        {
+            super(d, p, n);
+            this.et = et;
+        }
+        
+        @Override
+        public Type type()
+        {
+            return Type.EDGE;
+        }
+        
+        @Override
+        public Edge intersected()
         {
             return Edge.this;
         }

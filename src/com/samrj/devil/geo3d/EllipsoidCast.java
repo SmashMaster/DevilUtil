@@ -16,6 +16,8 @@ public class EllipsoidCast
     public final Vec3 p0, p1;
     public final Vec3 radius;
     public final boolean terminated;
+    
+    /** List of contacts in ascending order of time. **/
     public final SortedArray<Contact> contacts;
     
     EllipsoidCast(Vec3 p0, Vec3 p1, Vec3 radius, boolean terminated)

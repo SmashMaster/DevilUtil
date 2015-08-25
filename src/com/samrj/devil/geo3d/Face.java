@@ -9,7 +9,7 @@ import com.samrj.devil.math.Vec3;
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Face implements EllipsoidCast.Testable, RayCast.Testable
+public class Face implements EllipsoidCast.Testable, RayCast.Testable, EllipsoidClip.Testable
 {
     private static float sweepSpherePlane(Vec3 p0, Vec3 v, Vec3 n, Vec3 a, float r)
     {
@@ -140,12 +140,14 @@ public class Face implements EllipsoidCast.Testable, RayCast.Testable
         return new FaceContact(t, dist, cp, p, n, bc);
     }
     
+    @Override
+    public FaceIntersection test(EllipsoidClip clip)
+    {
+        return null;
+    }
+    
     /**
      * Contact class for faces.
-     * 
-     * @author Samuel Johnson (SmashMaster)
-     * @copyright 2014 Samuel Johnson
-     * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
      */
     public class FaceContact extends Contact<Face>
     {
@@ -156,12 +158,44 @@ public class Face implements EllipsoidCast.Testable, RayCast.Testable
 
         FaceContact(float t, float d, Vec3 cp, Vec3 p, Vec3 n, Vec3 fbc)
         {
-            super(Type.FACE, t, d, cp, p, n);
+            super(t, d, cp, p, n);
             this.fbc = fbc;
+        }
+        
+        @Override
+        public Type type()
+        {
+            return Type.FACE;
         }
 
         @Override
-        public Face contact()
+        public Face contacted()
+        {
+            return Face.this;
+        }
+    }
+    
+    public final class FaceIntersection extends Intersection<Face>
+    {
+        /**
+         * The face barycentric coordinates.
+         */
+        public final Vec3 fbc;
+        
+        FaceIntersection(float d, Vec3 p, Vec3 n, Vec3 fbc)
+        {
+            super(d, p, n);
+            this.fbc = fbc;
+        }
+        
+        @Override
+        public Type type()
+        {
+            return Type.FACE;
+        }
+        
+        @Override
+        public Face intersected()
         {
             return Face.this;
         }

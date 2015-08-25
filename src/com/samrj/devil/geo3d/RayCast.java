@@ -15,6 +15,8 @@ public class RayCast
 {
     public final Vec3 p0, p1;
     public final boolean terminated;
+    
+    /** List of contacts in ascending order of time. **/
     public final SortedArray<FaceContact> contacts;
     
     RayCast(Vec3 p0, Vec3 p1, boolean terminated)

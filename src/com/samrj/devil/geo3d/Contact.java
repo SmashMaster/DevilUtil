@@ -18,10 +18,8 @@ public abstract class Contact<TYPE>
     
     public enum Type
     {
-        FACE, EDGE, POINT;
+        FACE, EDGE, VERTEX;
     }
-    
-    public final Type type;
     
     /**
      * The contact interpolant.
@@ -48,9 +46,8 @@ public abstract class Contact<TYPE>
      */
     public final Vec3 n;
     
-    Contact(Type type, float t, float d, Vec3 cp, Vec3 p, Vec3 n)
+    Contact(float t, float d, Vec3 cp, Vec3 p, Vec3 n)
     {
-        this.type = type;
         this.t = t;
         this.d = d;
         this.cp = cp;
@@ -58,7 +55,15 @@ public abstract class Contact<TYPE>
         this.n = n;
     }
     
-    public abstract TYPE contact();
+    /**
+     * @return The type of object that this contact handles.
+     */
+    public abstract Type type();
+    
+    /**
+     * @return The object that is being contacted.
+     */
+    public abstract TYPE contacted();
     
     private static class ContactComparator implements Comparator<Contact>
     {

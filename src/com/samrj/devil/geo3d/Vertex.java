@@ -9,7 +9,7 @@ import com.samrj.devil.math.Vec3;
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Vertex extends Vec3 implements EllipsoidCast.Testable
+public class Vertex extends Vec3 implements EllipsoidCast.Testable, EllipsoidClip.Testable
 {
     /**
      * Creates a new zero point.
@@ -68,23 +68,54 @@ public class Vertex extends Vec3 implements EllipsoidCast.Testable
         Vec3 n = Vec3.sub(cp, this).normalize();
         return new VertexContact(t, dist, cp, n);
     }
+
+    @Override
+    public VertexIntersection test(EllipsoidClip clip)
+    {
+        return null;
+    }
     
     /**
      * Contact class for vertices.
-     * 
-     * @author Samuel Johnson (SmashMaster)
-     * @copyright 2014 Samuel Johnson
-     * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
      */
     public final class VertexContact extends Contact<Vertex>
     {
         VertexContact(float t, float d, Vec3 cp, Vec3 n)
         {
-            super(Type.POINT, t, d, cp, Vertex.this, n);
+            super(t, d, cp, Vertex.this, n);
+        }
+        
+        @Override
+        public Type type()
+        {
+            return Type.VERTEX;
         }
 
         @Override
-        public Vertex contact()
+        public Vertex contacted()
+        {
+            return Vertex.this;
+        }
+    }
+    
+    /**
+     * Intersection class for vertices.
+     */
+    public final class VertexIntersection extends Intersection<Vertex>
+    {
+        VertexIntersection(float d, Vec3 n)
+        {
+            super(d, Vertex.this,n);
+        }
+        
+        @Override
+        public Type type()
+        {
+            return Type.VERTEX;
+        }
+        
+        @Override
+        public Vertex intersected()
         {
             return Vertex.this;
         }
