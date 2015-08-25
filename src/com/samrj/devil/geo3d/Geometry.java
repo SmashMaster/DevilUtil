@@ -40,94 +40,6 @@ public class Geometry
         return null;
     }
     
-    public static final void optimize(Geometry geom, float vertWeldDist)
-    {
-        {//Weld vertices
-            vertWeldDist *= vertWeldDist;
-            
-            Deque<Point> unchecked = new LinkedList<>();
-            unchecked.addAll(geom.verts);
-            geom.verts.clear();
-
-            while (!unchecked.isEmpty())
-            {
-                Point vertex = unchecked.pop();
-                float sum = 0.0f;
-
-                Iterator<Point> it = unchecked.iterator();
-                while (it.hasNext())
-                {
-                    Point v = it.next();
-                    if (v.squareDist(vertex) < vertWeldDist)
-                    {
-                        vertex.mult(sum).add(v).div(++sum);
-                        it.remove();
-                        replace(geom.edges, geom.faces, v, vertex);
-                    }
-                }
-
-                geom.verts.add(vertex);
-            }
-        }
-        
-        {//Remove degenerate edges
-            Iterator<Edge> it = geom.edges.iterator();
-            
-            while (it.hasNext())
-            {
-                Edge e = it.next();
-                if (e.a == e.b) it.remove();
-            }
-        }
-        
-        {//Remove degenerate faces
-            Iterator<Face> it = geom.faces.iterator();
-            
-            while (it.hasNext())
-            {
-                Face f = it.next();
-                if (f.a == f.b || f.b == f.c || f.c == f.a) it.remove();
-            }
-        }
-        
-        {//Remove redundant edges
-            Deque<Edge> unchecked = new LinkedList<>();
-            unchecked.addAll(geom.edges);
-            geom.edges.clear();
-
-            while (!unchecked.isEmpty())
-            {
-                Edge edge = unchecked.pop();
-
-                Iterator<Edge> it = unchecked.iterator();
-                while (it.hasNext())
-                {
-                    Edge e = it.next();
-                    if (edge.equals(e)) it.remove();
-                }
-
-                geom.edges.add(edge);
-            }
-        }
-        
-        for (Face face : geom.faces) //Compute adjacency
-        {
-            face.ab = findEdge(geom.edges, face.a, face.b);
-            face.bc = findEdge(geom.edges, face.b, face.c);
-            face.ca = findEdge(geom.edges, face.c, face.a);
-        }
-        
-        /**
-         * Could also remove the following cases.
-         * -Vertices contained by edges.
-         * -Vertices contained by faces.
-         * -Edges contained by edges.
-         * -Edges contained by faces.
-         * -Faces with zero surface area. (All vertices collinear)
-         * -Faces contained by faces.
-         */
-    }
-    
     public final List<Point> verts;
     public final List<Edge> edges;
     public final List<Face> faces;
@@ -158,6 +70,8 @@ public class Geometry
             edges.add(f.bc);
             edges.add(f.ca);
         }
+        
+        optimize(0.0f);
     }
     
     public Geometry(Geometry geom)
@@ -172,6 +86,100 @@ public class Geometry
         verts = new ArrayList<>();
         faces = new ArrayList<>();
         edges = new ArrayList<>();
+    }
+    
+    /**
+     * Optimizes this geometry, removing degenerate vertices, edges, and
+     * triangles. Also calculates adjacency.
+     * 
+     * @param vertWeldDist The distance in which to weld nearby vertices.
+     */
+    public final void optimize(float vertWeldDist)
+    {
+        {//Weld vertices
+            vertWeldDist *= vertWeldDist;
+            
+            Deque<Point> unchecked = new LinkedList<>();
+            unchecked.addAll(verts);
+            verts.clear();
+
+            while (!unchecked.isEmpty())
+            {
+                Point vertex = unchecked.pop();
+                float sum = 0.0f;
+
+                Iterator<Point> it = unchecked.iterator();
+                while (it.hasNext())
+                {
+                    Point v = it.next();
+                    if (v.squareDist(vertex) <= vertWeldDist)
+                    {
+                        vertex.mult(sum).add(v).div(++sum);
+                        it.remove();
+                        replace(edges, faces, v, vertex);
+                    }
+                }
+
+                verts.add(vertex);
+            }
+        }
+        
+        {//Remove degenerate edges
+            Iterator<Edge> it = edges.iterator();
+            
+            while (it.hasNext())
+            {
+                Edge e = it.next();
+                if (e.a == e.b) it.remove();
+            }
+        }
+        
+        {//Remove degenerate faces
+            Iterator<Face> it = faces.iterator();
+            
+            while (it.hasNext())
+            {
+                Face f = it.next();
+                if (f.a == f.b || f.b == f.c || f.c == f.a) it.remove();
+            }
+        }
+        
+        {//Remove redundant edges
+            Deque<Edge> unchecked = new LinkedList<>();
+            unchecked.addAll(edges);
+            edges.clear();
+
+            while (!unchecked.isEmpty())
+            {
+                Edge edge = unchecked.pop();
+
+                Iterator<Edge> it = unchecked.iterator();
+                while (it.hasNext())
+                {
+                    Edge e = it.next();
+                    if (edge.equals(e)) it.remove();
+                }
+
+                edges.add(edge);
+            }
+        }
+        
+        for (Face face : faces) //Compute adjacency
+        {
+            face.ab = findEdge(edges, face.a, face.b);
+            face.bc = findEdge(edges, face.b, face.c);
+            face.ca = findEdge(edges, face.c, face.a);
+        }
+        
+        /**
+         * Could also remove the following cases.
+         * -Vertices contained by edges.
+         * -Vertices contained by faces.
+         * -Edges contained by edges.
+         * -Edges contained by faces.
+         * -Faces with zero surface area. (All vertices collinear)
+         * -Faces contained by faces.
+         */
     }
     
     /**
