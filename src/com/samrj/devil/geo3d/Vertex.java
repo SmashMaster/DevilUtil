@@ -47,13 +47,13 @@ public class Vertex extends Vec3 implements EllipsoidCast.Testable, EllipsoidCli
     @Override
     public VertexContact test(EllipsoidCast cast)
     {
-        Vec3 p0 = Geometry.div(new Vec3(cast.p0), cast.radius);
-        Vec3 p1 = Geometry.div(new Vec3(cast.p1), cast.radius);
+        Vec3 p0 = Vec3.div(cast.p0, cast.radius);
+        Vec3 p1 = Vec3.div(cast.p1, cast.radius);
         Vec3 cDir = Vec3.sub(p1, p0);
         float cSqLen = cDir.squareLength();
         
-        Vec3 a = Geometry.div(new Vec3(this), cast.radius);
-        Vec3 dir = Geometry.div(new Vec3(cast.p0), cast.radius).sub(a);
+        Vec3 a = Vec3.div(this, cast.radius);
+        Vec3 dir = Vec3.div(cast.p0, cast.radius).sub(a);
 
         float t = Geometry.solveQuadratic(cSqLen,
                                           2.0f*cDir.dot(dir),

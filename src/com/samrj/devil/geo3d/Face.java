@@ -115,13 +115,13 @@ public class Face implements EllipsoidCast.Testable, RayCast.Testable, Ellipsoid
     @Override
     public FaceContact test(EllipsoidCast cast)
     {
-        Vec3 p0 = Geometry.div(new Vec3(cast.p0), cast.radius);
-        Vec3 p1 = Geometry.div(new Vec3(cast.p1), cast.radius);
+        Vec3 p0 = Vec3.div(cast.p0, cast.radius);
+        Vec3 p1 = Vec3.div(cast.p1, cast.radius);
         Vec3 cDir = Vec3.sub(p1, p0);
         
-        Vec3 ae = Geometry.div(new Vec3(a), cast.radius);
-        Vec3 be = Geometry.div(new Vec3(b), cast.radius);
-        Vec3 ce = Geometry.div(new Vec3(c), cast.radius);
+        Vec3 ae = Vec3.div(a, cast.radius);
+        Vec3 be = Vec3.div(b, cast.radius);
+        Vec3 ce = Vec3.div(c, cast.radius);
         
         Vec3 normal = Vec3.sub(ce, ae).cross(Vec3.sub(be, ae)).normalize(); //Plane normal
         

@@ -40,22 +40,6 @@ public class Geometry
         }
     }
     
-    static final Vec3 div(Vec3 v, Vec3 d)
-    {
-        v.x /= d.x;
-        v.y /= d.y;
-        v.z /= d.z;
-        return v;
-    }
-    
-    static final Vec3 mult(Vec3 v, Vec3 d)
-    {
-        v.x *= d.x;
-        v.y *= d.y;
-        v.z *= d.z;
-        return v;
-    }
-    
     private static void replace(List<Edge> edges, List<Face> faces, Vertex ov, Vertex nv)
     {
         for (Edge edge : edges)

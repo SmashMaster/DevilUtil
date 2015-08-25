@@ -44,13 +44,13 @@ public class Edge implements EllipsoidCast.Testable, EllipsoidClip.Testable
     @Override
     public EdgeContact test(EllipsoidCast cast)
     {
-        Vec3 p0 = Geometry.div(new Vec3(cast.p0), cast.radius);
-        Vec3 p1 = Geometry.div(new Vec3(cast.p1), cast.radius);
+        Vec3 p0 = Vec3.div(cast.p0, cast.radius);
+        Vec3 p1 = Vec3.div(cast.p1, cast.radius);
         Vec3 cDir = Vec3.sub(p1, p0);
         float cSqLen = cDir.squareLength();
         
-        Vec3 a = Geometry.div(new Vec3(this.a), cast.radius);
-        Vec3 b = Geometry.div(new Vec3(this.b), cast.radius);
+        Vec3 a = Vec3.div(this.a, cast.radius);
+        Vec3 b = Vec3.div(this.b, cast.radius);
 
         Vec3 edgeDir = Vec3.sub(b, a);
         float edgeSqLen = edgeDir.squareLength();
