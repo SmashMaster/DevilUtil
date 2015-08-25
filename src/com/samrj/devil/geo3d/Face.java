@@ -124,15 +124,13 @@ public class Face implements EllipsoidCast.Testable, RayCast.Testable, Ellipsoid
         Vec3 ce = Vec3.div(c, cast.radius);
         
         Vec3 normal = Vec3.sub(ce, ae).cross(Vec3.sub(be, ae)).normalize(); //Plane normal
-        
         float t = sweepSpherePlane(p0, cDir, normal, ae, 1.0f); //Time of contact
-
         if (t <= 0.0f || (cast.terminated && t >= 1.0f))
             return null; //Moving away, or won't get there in time.
         
         Vec3 cp = Vec3.lerp(cast.p0, cast.p1, t);
         Vec3 bc = barycentric(a, b, c, cp);
-        if (!(bc.y >= 0.0f && bc.z >= 0.0f && (bc.y + bc.z) <= 1.0f)) return null; //We will miss the face
+        if (bc.y < 0.0f || bc.z < 0.0f || (bc.y + bc.z) > 1.0f) return null; //We will miss the face
         
         float dist = cast.p0.dist(cast.p1)*t;
         Vec3 p = Vec3.mult(a, bc.x).madd(b, bc.y).madd(c, bc.z);
@@ -143,7 +141,29 @@ public class Face implements EllipsoidCast.Testable, RayCast.Testable, Ellipsoid
     @Override
     public FaceIntersection test(EllipsoidClip clip)
     {
-        return null;
+        Vec3 p = Vec3.div(clip.p, clip.radius);
+        Vec3 ae = Vec3.div(a, clip.radius);
+        Vec3 be = Vec3.div(b, clip.radius);
+        Vec3 ce = Vec3.div(c, clip.radius);
+        
+        Vec3 normal = Vec3.sub(ce, ae).cross(Vec3.sub(be, ae)).normalize();
+        float dist = normal.dot(Vec3.sub(p, ae));
+        if (dist < 0.0f)
+        {
+            dist = -dist;
+            normal.negate();
+        }
+        if (dist > 1.0f) return null; //Too far apart.
+        
+        Vec3 bc = barycentric(ae, be, ce, p);
+        if (bc.y < 0.0f || bc.z < 0.0f || (bc.y + bc.z) > 1.0f) return null; //Not touching face.
+        
+        Vec3 cp = Vec3.mult(a, bc.x).madd(b, bc.y).madd(c, bc.z);
+        normal.mult(clip.radius);
+        float nLen = normal.length();
+        float depth = nLen - Vec3.dist(clip.p, cp);
+        normal.div(nLen);
+        return new FaceIntersection(depth, cp, normal, bc);
     }
     
     /**

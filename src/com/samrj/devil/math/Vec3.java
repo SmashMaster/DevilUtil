@@ -34,9 +34,6 @@ import java.nio.ByteBuffer;
  */
 public class Vec3 implements Bufferable, Streamable
 {
-    public static final Vec3 tempVecA = new Vec3();
-    public static final Vec3 tempVecB = new Vec3();
-    
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
      * Returns the dot product of two given vectors.
@@ -276,15 +273,15 @@ public class Vec3 implements Bufferable, Streamable
         //t = 2 * cross(q.xyz, v)
         //v' = v + q.w * t + cross(q.xyz, t)
         
-        tempVecA.set(q.x, q.y, q.z);
-        cross(tempVecA, v, tempVecB);
-        mult(tempVecB, 2.0f, tempVecB);
+        Vec3 temp1 = new Vec3(q.x, q.y, q.z);
+        Vec3 temp2 = cross(temp1, v);
+        mult(temp2, 2.0f, temp2);
         
         copy(v, result); //v
-        cross(tempVecA, tempVecB, tempVecA);
-        add(result, tempVecA, result);
-        mult(tempVecB, q.w, tempVecB);
-        add(result, tempVecB, result);
+        cross(temp1, temp2, temp1);
+        add(result, temp1, result);
+        mult(temp2, q.w, temp2);
+        add(result, temp2, result);
     }
     
     /**
@@ -397,8 +394,8 @@ public class Vec3 implements Bufferable, Streamable
      */
     public static final void reject(Vec3 v0, Vec3 v1, Vec3 result)
     {
-        project(v0, v1, result);
-        sub(v0, result, result);
+        Vec3 temp = project(v0, v1);
+        sub(v0, temp, result);
     }
     
     /**

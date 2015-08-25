@@ -26,6 +26,13 @@ public class EllipsoidClip
         intersections = new SortedArray<>(10, Intersection.comparator);
     }
     
+    void test(Testable t)
+    {
+        Intersection sect = t.test(this);
+        if (sect == null) return;
+        intersections.insert(sect);
+    }
+    
     public interface Testable
     {
         public Intersection test(EllipsoidClip clip);

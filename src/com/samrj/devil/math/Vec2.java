@@ -334,8 +334,8 @@ public class Vec2 implements Bufferable, Streamable
      */
     public static final void reject(Vec2 v0, Vec2 v1, Vec2 result)
     {
-        project(v0, v1, result);
-        sub(v0, result, result);
+        Vec2 temp = project(v0, v1);
+        sub(v0, temp, result);
     }
     
     /**

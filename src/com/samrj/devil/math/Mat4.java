@@ -17,7 +17,6 @@ import java.nio.ByteBuffer;
 public class Mat4 implements Bufferable, Streamable 
 {
     private static final float SQRT_2 = (float)Math.sqrt(2.0);
-    private static final Mat4 tempMat = new Mat4();
     
     /**
      * Returns the determinant of the given matrix.
@@ -311,8 +310,8 @@ public class Mat4 implements Bufferable, Streamable
      */
     public static final void rotate(Mat4 x, Vec3 axis, float angle, Mat4 r)
     {
-        rotation(axis, angle, tempMat); //Could probably be improved.
-        mult(x, tempMat, r);
+        Mat4 temp = rotation(axis, angle); //Could probably be improved.
+        mult(x, temp, r);
     }
     
     /**
@@ -324,8 +323,8 @@ public class Mat4 implements Bufferable, Streamable
      */
     public static final void rotate(Mat4 x, Quat q, Mat4 r)
     {
-        rotation(q, tempMat); //Could probably be improved, as above
-        mult(x, tempMat, r);
+        Mat4 temp = rotation(q); //Could probably be improved, as above
+        mult(x, temp, r);
     }
     
     /**

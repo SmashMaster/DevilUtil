@@ -16,8 +16,6 @@ import java.nio.ByteBuffer;
  */
 public class Quat implements Bufferable, Streamable
 {
-    private static final Quat tempQuat = new Quat();
-    
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
      * Returns the dot product of the two given quaternions.
@@ -150,8 +148,8 @@ public class Quat implements Bufferable, Streamable
      */
     public static final void rotate(Quat q, Vec3 axis, float angle, Quat result)
     {
-        rotation(axis, angle, tempQuat);
-        mult(q, tempQuat, result);
+        Quat temp = rotation(axis, angle);
+        mult(q, temp, result);
     }
     
     /**
@@ -313,21 +311,22 @@ public class Quat implements Bufferable, Streamable
      */
     public static final void slerp(Quat q0, Quat q1, float t, Quat result)
     {
+        Quat temp = new Quat();
         float cos = dot(q0, q1);
         if (cos < 0f)
         {
-            negate(q1, tempQuat);
+            negate(q1, temp);
             cos = -cos;
         }
-        else copy(q1, tempQuat);
+        else copy(q1, temp);
         
-        if (cos == 1.0f) lerp(q0, tempQuat, t, result);
+        if (cos == 1.0f) lerp(q0, temp, t, result);
         else
         {
             float angle = (float)Math.acos(cos);
             mult(q0, (float)Math.sin((1.0f - t)*angle), result);
-            mult(tempQuat, (float)Math.sin(t*angle), tempQuat);
-            add(result, tempQuat, result);
+            mult(temp, (float)Math.sin(t*angle), temp);
+            add(result, temp, result);
             div(result, (float)Math.sin(angle), result);
         }
     }

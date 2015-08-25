@@ -72,7 +72,16 @@ public class Vertex extends Vec3 implements EllipsoidCast.Testable, EllipsoidCli
     @Override
     public VertexIntersection test(EllipsoidClip clip)
     {
-        return null;
+        Vec3 dir = Vec3.sub(clip.p, this).div(clip.radius);
+        float sqDist = dir.squareLength();
+        if (sqDist > 1.0f) return null; //Too far apart
+        
+        Vec3 n = Vec3.div(dir, (float)Math.sqrt(sqDist)).mult(clip.radius);
+        float nLen = n.length();
+        float depth = nLen - Vec3.dist(clip.p, this);
+        n.div(nLen);
+        
+        return new VertexIntersection(depth, n);
     }
     
     /**

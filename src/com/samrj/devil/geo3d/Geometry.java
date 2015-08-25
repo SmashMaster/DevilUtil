@@ -204,6 +204,19 @@ public class Geometry
          */
     }
     
+    public EllipsoidClip clipEllipsoid(Vec3 p, Vec3 radius)
+    {
+        p = new Vec3(p);
+        radius = new Vec3(radius);
+        EllipsoidClip clip = new EllipsoidClip(p, radius);
+        
+        for (Vertex vertex : verts) clip.test(vertex);
+        for (Edge edge : edges) clip.test(edge);
+        for (Face face : faces) clip.test(face);
+        
+        return clip;
+    }
+    
     /**
      * Casts a ray through this geometry and returns a list of contacts.
      * 

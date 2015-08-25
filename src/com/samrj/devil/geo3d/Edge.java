@@ -68,20 +68,36 @@ public class Edge implements EllipsoidCast.Testable, EllipsoidClip.Testable
         if (t <= 0.0f || (cast.terminated && t >= 1.0f))
             return null; //Moving away, or won't get there in time.
 
-        float f = (edgeDotCDir*t - edgeDotPos)/edgeSqLen;
-        if (f <= 0.0f || f >= 1.0f) return null; //We hit the line but missed the segment.
+        float et = (edgeDotCDir*t - edgeDotPos)/edgeSqLen;
+        if (et <= 0.0f || et >= 1.0f) return null; //We hit the line but missed the segment.
         
         float dist = cast.p0.dist(p1)*t;
         Vec3 cp = Vec3.lerp(cast.p0, cast.p1, t);
-        Vec3 p = edgeDir.mult(f).add(a);
+        Vec3 p = edgeDir.mult(et).add(a);
         Vec3 n = Vec3.sub(cp, p).normalize();
-        return new EdgeContact(t, dist, cp, p, n, f);
+        return new EdgeContact(t, dist, cp, p, n, et);
     }
     
     @Override
     public EdgeIntersection test(EllipsoidClip clip)
     {
-        return null;
+        Vec3 pDir = Vec3.sub(clip.p, this.a).div(clip.radius);
+        Vec3 edgeDir = Vec3.sub(this.b, this.a).div(clip.radius);
+        
+        Vec3 cp = Vec3.project(pDir, edgeDir);
+        float et = pDir.dot(edgeDir)/edgeDir.squareLength();
+        if (et <= 0.0f || et >= 1.0f) return null; //Does not touch segment.
+        
+        Vec3 normal = Vec3.sub(pDir, cp);
+        float sqDist = normal.squareLength();
+        if (sqDist > 1.0f) return null; //Too far apart.
+        
+        cp = Vec3.lerp(this.a, this.b, et);
+        normal.div((float)Math.sqrt(sqDist)).mult(clip.radius);
+        float nLen = normal.length();
+        float depth = nLen - Vec3.dist(clip.p, cp);
+        normal.div(nLen);
+        return new EdgeIntersection(depth, cp, normal, et);
     }
     
     /**
