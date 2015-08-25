@@ -1,11 +1,13 @@
 package com.samrj.devil.graphics.model;
 
 import com.samrj.devil.io.BufferUtil;
+import com.samrj.devil.io.Memory;
+import com.samrj.devil.io.Memory.Block;
 import com.samrj.devil.math.topo.DAG;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -19,12 +21,17 @@ public class Armature
 {
     public final Bone[] bones;
     public final IKConstraint[] ikConstraints;
-    private final DAG<Solvable> solveGraph = new DAG();
+    private final Memory memory;
+    private final DAG<Solvable> solveGraph;
     private final List<Solvable> solveOrder;
-    private final ByteBuffer boneMatrixBuffer;
+    private Block boneBlock;
+    private ByteBuffer boneMatrixBuffer;
     
-    public Armature(DataInputStream in) throws IOException
+    Armature(DataInputStream in, Memory memory) throws IOException
     {
+        this.memory = memory;
+        solveGraph = new DAG<>();
+        
         int numBones = in.readInt();
         bones = new Bone[numBones];
         for (int i=0; i<numBones; i++)
@@ -64,7 +71,17 @@ public class Armature
         }
         
         solveOrder = solveGraph.sort();
-        boneMatrixBuffer = BufferUtil.createByteBuffer(numBones*16*4);
+        
+        if (memory != null)
+        {
+            boneBlock = memory.alloc(numBones*16*4);
+            boneMatrixBuffer = boneBlock.read();
+        }
+        else
+        {
+            boneBlock = null;
+            boneMatrixBuffer = BufferUtil.createByteBuffer(numBones*16*4);
+        }
     }
     
     public void solve()
@@ -74,9 +91,23 @@ public class Armature
     
     public ByteBuffer bufferBoneMatrices()
     {
-        boneMatrixBuffer.clear();
+        boneMatrixBuffer.reset();
         for (Bone bone : bones) bone.matrix.write(boneMatrixBuffer);
-        boneMatrixBuffer.rewind();
+        boneMatrixBuffer.reset();
         return boneMatrixBuffer;
+    }
+    
+    void destroy()
+    {
+        Arrays.fill(bones, null);
+        Arrays.fill(ikConstraints, null);
+        
+        if (memory != null)
+        {
+            boneBlock.free();
+            boneBlock = null;
+        }
+        
+        boneMatrixBuffer = null;
     }
 }

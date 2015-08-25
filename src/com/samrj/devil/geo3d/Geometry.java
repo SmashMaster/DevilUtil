@@ -2,6 +2,7 @@ package com.samrj.devil.geo3d;
 
 import com.samrj.devil.graphics.model.Mesh;
 import com.samrj.devil.math.Vec3;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
@@ -137,21 +138,23 @@ public class Geometry
     {
         mesh.rewindBuffers();
         
+        ByteBuffer vertexData = mesh.vertexData();
         verts = new Vec3[mesh.numVertices];
         for (int i=0; i<mesh.numVertices; i++)
         {
             Vec3 v = new Vec3();
-            v.read(mesh.vertexData);
+            v.read(vertexData);
             verts[i] = v;
         }
         
+        ByteBuffer indexData = mesh.indexData();
         faces = new Face[mesh.numTriangles];
         edges = new Edge[mesh.numTriangles*3];
         for (int i=0; i<mesh.numTriangles; i++)
         {
-            Face f = new Face(verts[mesh.triangleIndexData.get()],
-                              verts[mesh.triangleIndexData.get()],
-                              verts[mesh.triangleIndexData.get()]);
+            Face f = new Face(verts[indexData.getInt()],
+                              verts[indexData.getInt()],
+                              verts[indexData.getInt()]);
             faces[i] = f;
             int ie = i*3;
             edges[ie++] = f.ab;

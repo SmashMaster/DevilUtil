@@ -44,11 +44,11 @@ public class GLMesh
 
         vertexBuffer = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBuffer);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, mesh.vertexData, GL15.GL_STATIC_DRAW);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, mesh.vertexData(), GL15.GL_STATIC_DRAW);
 
         elementBuffer = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
-        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.triangleIndexData, GL15.GL_STATIC_DRAW);
+        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.indexData(), GL15.GL_STATIC_DRAW);
     }
     
     private int getEnableLocation(String name)
@@ -131,5 +131,7 @@ public class GLMesh
         GL15.glDeleteBuffers(elementBuffer);
         
         vertexArray = -1;
+        vertexBuffer = -1;
+        elementBuffer = -1;
     }
 }

@@ -1,11 +1,11 @@
 package com.samrj.devil.graphics.model;
 
-import com.samrj.devil.res.FileRes;
+import com.samrj.devil.io.Memory;
 import com.samrj.devil.res.Resource;
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,10 +34,9 @@ public class DevilModel
     public final Action[] actions;
     public final Mesh[] meshes;
     
-    private final Map<String, Integer> meshIndices;
-    private final Map<String, Integer> actionIndices;
+    private final Map<String, Integer> actionIndices, meshIndices;
     
-    public DevilModel(InputStream inputStream) throws IOException
+    public DevilModel(InputStream inputStream, Memory memory) throws IOException
     {
         try
         {
@@ -47,7 +46,7 @@ public class DevilModel
             boolean hasArmature = in.readInt() != 0;
             if (hasArmature)
             {
-                armature = new Armature(in);
+                armature = new Armature(in, memory);
                 
                 int numActions = in.readInt();
                 actions = new Action[numActions];
@@ -72,7 +71,7 @@ public class DevilModel
             meshIndices = new HashMap<>(numMeshes);
             for (int i=0; i<numMeshes; i++)
             {
-                meshes[i] = new Mesh(in, armature, hasTangents);
+                meshes[i] = new Mesh(in, memory, armature, hasTangents);
                 meshIndices.put(meshes[i].name, i);
             }
         }
@@ -82,19 +81,19 @@ public class DevilModel
         }
     }
     
-    public DevilModel(Resource path) throws IOException
+    public DevilModel(InputStream inputStream) throws IOException
     {
-        this(path.open());
+        this(inputStream, null);
     }
     
-    public DevilModel(File f) throws IOException
+    public DevilModel(String path, Memory memory) throws IOException
     {
-        this(FileRes.find(f));
+        this(Resource.open(path), memory);
     }
     
     public DevilModel(String path) throws IOException
     {
-        this(Resource.find(path));
+        this(path, null);
     }
     
     public Mesh getMesh(String name)
@@ -107,5 +106,19 @@ public class DevilModel
     {
         int i = actionIndices.get(name);
         return actions[i];
+    }
+    
+    /**
+     * Releases any system resources (native memory) associated with this model.
+     */
+    public void destroy()
+    {
+        if (armature != null) armature.destroy();
+        for (Mesh mesh : meshes) mesh.destroy();
+        
+        Arrays.fill(actions, null);
+        Arrays.fill(meshes, null);
+        actionIndices.clear();
+        meshIndices.clear();
     }
 }

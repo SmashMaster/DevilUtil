@@ -1,6 +1,8 @@
 package com.samrj.devil.graphics.model;
 
 import com.samrj.devil.io.BufferUtil;
+import com.samrj.devil.io.Memory;
+import com.samrj.devil.io.Memory.Block;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -20,12 +22,14 @@ public class Mesh
     public final int numVertexGroups;
     
     public final int numVertices;
-    public final ByteBuffer vertexData;
     public final int numTriangles;
-    public final ByteBuffer triangleIndexData;
+    private final Memory memory;
+    private Block vertexBlock, indexBlock;
+    private ByteBuffer vertexData, indexData;
     
-    public Mesh(DataInputStream in, Armature armature, boolean hasTangents) throws IOException
+    Mesh(DataInputStream in, Memory memory, Armature armature, boolean hasTangents) throws IOException
     {
+        this.memory = memory;
         name = DevilModel.readPaddedUTF(in);
         
         int bitFlags = in.readInt();
@@ -49,20 +53,64 @@ public class Mesh
         
         numVertices = in.readInt();
         int vertexDataLength = numVertices*floatsPerVertex;
-        vertexData = BufferUtil.createByteBuffer(vertexDataLength*4);
+        if (memory != null)
+        {
+            vertexBlock = memory.alloc(vertexDataLength*4);
+            vertexData = vertexBlock.read();
+        }
+        else
+        {
+            vertexBlock = null;
+            vertexData = BufferUtil.createByteBuffer(vertexDataLength*4);
+        }
+        
         for (int i=0; i<vertexDataLength; i++)
             vertexData.putFloat(in.readFloat());
         
         numTriangles = in.readInt();
         int triangleIndexDataLength = numTriangles*3;
-        triangleIndexData = BufferUtil.createByteBuffer(triangleIndexDataLength*4);
+        if (memory != null)
+        {
+            indexBlock = memory.alloc(triangleIndexDataLength*4);
+            indexData = indexBlock.read();
+        }
+        else
+        {
+            indexBlock = null;
+            indexData = BufferUtil.createByteBuffer(triangleIndexDataLength*4);
+        }
+        
         for (int i=0; i<triangleIndexDataLength; i++)
-            triangleIndexData.putInt(in.readInt());
+            indexData.putInt(in.readInt());
+    }
+    
+    public ByteBuffer vertexData()
+    {
+        return vertexData;
+    }
+    
+    public ByteBuffer indexData()
+    {
+        return indexData;
     }
     
     public final void rewindBuffers()
     {
         vertexData.rewind();
-        triangleIndexData.rewind();
+        indexData.rewind();
+    }
+    
+    final void destroy()
+    {
+        if (memory != null)
+        {
+            vertexBlock.free();
+            vertexBlock = null;
+            indexBlock.free();
+            indexBlock = null;
+        }
+        
+        vertexData = null;
+        indexData = null;
     }
 }
