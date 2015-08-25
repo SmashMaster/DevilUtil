@@ -9,7 +9,7 @@ import com.samrj.devil.math.Vec3;
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Edge
+public class Edge implements EllipsoidCast.Testable
 {
     public Vertex a, b;
     
@@ -41,7 +41,8 @@ public class Edge
      * @return A new edge contact if the given ellipsoid cast hits this edge,
      *         or null if it doesn't.
      */
-    public EdgeContact cast(EllipsoidCast cast)
+    @Override
+    public EdgeContact test(EllipsoidCast cast)
     {
         Vec3 p0 = Geometry.div(new Vec3(cast.p0), cast.radius);
         Vec3 p1 = Geometry.div(new Vec3(cast.p1), cast.radius);
@@ -74,6 +75,33 @@ public class Edge
         Vec3 cp = Vec3.lerp(cast.p0, cast.p1, t);
         Vec3 p = edgeDir.mult(f).add(a);
         Vec3 n = Vec3.sub(cp, p).normalize();
-        return new EdgeContact(t, dist, cp, p, n, this, f);
+        return new EdgeContact(t, dist, cp, p, n, f);
+    }
+    
+    /**
+     * Contact class for edges.
+     * 
+     * @author Samuel Johnson (SmashMaster)
+     * @copyright 2014 Samuel Johnson
+     * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+     */
+    public class EdgeContact extends Contact<Edge>
+    {
+        /**
+         * The edge contact interpolant.
+         */
+        public final float et;
+
+        EdgeContact(float t, float d, Vec3 cp, Vec3 p, Vec3 n, float et)
+        {
+            super(Type.EDGE, t, d, cp, p, n);
+            this.et = et;
+        }
+
+        @Override
+        public Edge contact()
+        {
+            return Edge.this;
+        }
     }
 }

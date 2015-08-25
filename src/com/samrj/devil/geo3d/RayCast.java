@@ -1,5 +1,6 @@
 package com.samrj.devil.geo3d;
 
+import com.samrj.devil.geo3d.Face.FaceContact;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.util.SortedArray;
 
@@ -21,5 +22,17 @@ public class RayCast
         this.p0 = p0; this.p1 = p1;
         this.terminated = terminated;
         contacts = new SortedArray<>(10, Contact.comparator);
+    }
+    
+    void test(Testable t)
+    {
+        FaceContact contact = t.test(this);
+        if (contact == null) return;
+        contacts.insert(contact);
+    }
+    
+    public interface Testable
+    {
+        public FaceContact test(RayCast cast);
     }
 }

@@ -9,7 +9,7 @@ import com.samrj.devil.math.Vec3;
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Vertex extends Vec3
+public class Vertex extends Vec3 implements EllipsoidCast.Testable
 {
     /**
      * Creates a new zero point.
@@ -44,7 +44,8 @@ public class Vertex extends Vec3
      * @return A new vertex contact if the given ellipsoid cast hits this vertex,
      *         or null if it doesn't.
      */
-    public VertexContact cast(EllipsoidCast cast)
+    @Override
+    public VertexContact test(EllipsoidCast cast)
     {
         Vec3 p0 = Geometry.div(new Vec3(cast.p0), cast.radius);
         Vec3 p1 = Geometry.div(new Vec3(cast.p1), cast.radius);
@@ -65,6 +66,27 @@ public class Vertex extends Vec3
         Vec3 cp = Vec3.lerp(cast.p0, cast.p1, t);
         float dist = cast.p0.dist(p1)*t;
         Vec3 n = Vec3.sub(cp, this).normalize();
-        return new VertexContact(t, dist, cp, this, n);
+        return new VertexContact(t, dist, cp, n);
+    }
+    
+    /**
+     * Contact class for vertices.
+     * 
+     * @author Samuel Johnson (SmashMaster)
+     * @copyright 2014 Samuel Johnson
+     * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+     */
+    public final class VertexContact extends Contact<Vertex>
+    {
+        VertexContact(float t, float d, Vec3 cp, Vec3 n)
+        {
+            super(Type.POINT, t, d, cp, Vertex.this, n);
+        }
+
+        @Override
+        public Vertex contact()
+        {
+            return Vertex.this;
+        }
     }
 }

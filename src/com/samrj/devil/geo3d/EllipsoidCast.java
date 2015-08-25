@@ -4,7 +4,8 @@ import com.samrj.devil.math.Vec3;
 import com.samrj.devil.util.SortedArray;
 
 /**
- * Geometry ellipsoid cast class.
+ * This test sweeps an ellipsoid through geometry, returning a list of each
+ * contact.
  * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2014 Samuel Johnson
@@ -23,5 +24,17 @@ public class EllipsoidCast
         this.radius = radius;
         this.terminated = terminated;
         contacts = new SortedArray<>(10, Contact.comparator);
+    }
+    
+    void test(Testable t)
+    {
+        Contact contact = t.test(this);
+        if (contact == null) return;
+        contacts.insert(contact);
+    }
+    
+    public interface Testable
+    {
+        public Contact test(EllipsoidCast cast);
     }
 }

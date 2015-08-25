@@ -233,13 +233,7 @@ public class Geometry
         p0 = new Vec3(p0);
         p1 = new Vec3(p1);
         RayCast cast = new RayCast(p0, p1, terminate);
-        
-        for (Face face : faces)
-        {
-            FaceContact contact = face.cast(cast);
-            if (contact != null) cast.contacts.insert(contact);
-        }
-        
+        for (Face face : faces) cast.test(face);
         return cast;
     }
     
@@ -259,23 +253,9 @@ public class Geometry
         radius = new Vec3(radius);
         EllipsoidCast cast = new EllipsoidCast(p0, p1, radius, terminated);
         
-        for (Vertex vertex : verts)
-        {
-            VertexContact contact = vertex.cast(cast);
-            if (contact != null) cast.contacts.insert(contact);
-        }
-        
-        for (Edge edge : edges)
-        {
-            EdgeContact contact = edge.cast(cast);
-            if (contact != null) cast.contacts.insert(contact);
-        }
-        
-        for (Face face : faces)
-        {
-            FaceContact contact = face.cast(cast);
-            if (contact != null) cast.contacts.insert(contact);
-        }
+        for (Vertex vertex : verts) cast.test(vertex);
+        for (Edge edge : edges) cast.test(edge);
+        for (Face face : faces) cast.test(face);
         
         return cast;
     }

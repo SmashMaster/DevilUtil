@@ -9,7 +9,7 @@ import com.samrj.devil.math.Vec3;
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Face
+public class Face implements EllipsoidCast.Testable, RayCast.Testable
 {
     private static float sweepSpherePlane(Vec3 p0, Vec3 v, Vec3 n, Vec3 a, float r)
     {
@@ -64,7 +64,8 @@ public class Face
      * @return A face contact if the given ray hits this face, or null if it
      *         does not.
      */
-    public FaceContact cast(RayCast ray)
+    @Override
+    public FaceContact test(RayCast ray)
     {
         Vec3 qp = Vec3.sub(ray.p0, ray.p1);
         Vec3 ab = Vec3.sub(b, a);
@@ -100,8 +101,7 @@ public class Face
         Vec3 p = Vec3.mult(a, u).madd(b, v).madd(c, w);
         n.normalize();
         Vec3 bc = new Vec3(u, v, w);
-        
-        return new FaceContact(t, dist, p, p, n, this, bc);
+        return new FaceContact(t, dist, p, p, n, bc);
     }
     
     /**
@@ -112,7 +112,8 @@ public class Face
      * @return A new face contact if the given ellipsoid cast hits this face,
      *         or null if it doesn't.
      */
-    public FaceContact cast(EllipsoidCast cast)
+    @Override
+    public FaceContact test(EllipsoidCast cast)
     {
         Vec3 p0 = Geometry.div(new Vec3(cast.p0), cast.radius);
         Vec3 p1 = Geometry.div(new Vec3(cast.p1), cast.radius);
@@ -136,6 +137,33 @@ public class Face
         float dist = cast.p0.dist(cast.p1)*t;
         Vec3 p = Vec3.mult(a, bc.x).madd(b, bc.y).madd(c, bc.z);
         Vec3 n = Vec3.sub(cp, p).normalize();
-        return new FaceContact(t, dist, cp, p, n, this, bc);
+        return new FaceContact(t, dist, cp, p, n, bc);
+    }
+    
+    /**
+     * Contact class for faces.
+     * 
+     * @author Samuel Johnson (SmashMaster)
+     * @copyright 2014 Samuel Johnson
+     * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+     */
+    public class FaceContact extends Contact<Face>
+    {
+        /**
+         * The contact barycentric coordinates.
+         */
+        public final Vec3 fbc;
+
+        FaceContact(float t, float d, Vec3 cp, Vec3 p, Vec3 n, Vec3 fbc)
+        {
+            super(Type.FACE, t, d, cp, p, n);
+            this.fbc = fbc;
+        }
+
+        @Override
+        public Face contact()
+        {
+            return Face.this;
+        }
     }
 }
