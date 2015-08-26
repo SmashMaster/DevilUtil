@@ -35,6 +35,22 @@ public class EllipsoidCast
         contacts.insert(contact);
     }
     
+    /**
+     * @return The first contact, or null if there are no contacts.
+     */
+    public Contact first()
+    {
+        return contacts.first();
+    }
+    
+    /**
+     * @return The last contact, or null if there are no contacts.
+     */
+    public Contact last()
+    {
+        return contacts.last();
+    }
+    
     public interface Testable
     {
         public Contact test(EllipsoidCast cast);

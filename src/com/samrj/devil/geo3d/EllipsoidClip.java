@@ -33,6 +33,22 @@ public class EllipsoidClip
         intersections.insert(sect);
     }
     
+    /**
+     * @return The intersection with the least depth, or null if there are none.
+     */
+    public Intersection first()
+    {
+        return intersections.first();
+    }
+    
+    /**
+     * @return The deepest intersection, or null if there are none.
+     */
+    public Intersection last()
+    {
+        return intersections.last();
+    }
+    
     public interface Testable
     {
         public Intersection test(EllipsoidClip clip);

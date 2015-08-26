@@ -109,6 +109,24 @@ public class SortedArray<T> implements Iterable<T>
     }
     
     /**
+     * @return The first entry in this array, or null if the array is empty.
+     */
+    public T first()
+    {
+        if (size == 0) return null;
+        return array[0];
+    }
+    
+    /**
+     * @return The last entry in this array, or null if the array is empty.
+     */
+    public T last()
+    {
+        if (size == 0) return null;
+        return array[size - 1];
+    }
+    
+    /**
      * Resorts this array, in case it has somehow gotten out of order.
      */
     public void resort()
@@ -122,6 +140,14 @@ public class SortedArray<T> implements Iterable<T>
     public int size()
     {
         return size;
+    }
+    
+    /**
+     * @return Whether this array is empty or not.
+     */
+    public boolean isEmpty()
+    {
+        return size == 0.0f;
     }
     
     /**
