@@ -13,22 +13,31 @@ import com.samrj.devil.math.Vec3;
  */
 public class RigidBody3D
 {
-    public final Vec3 pos = new Vec3();
-    public final Vec3 vel = new Vec3();
-    public float mass = 0f;
+    public final Vec3 pos;
+    public final Vec3 vel;
+    public float mass;
     
-    public final Quat orient = new Quat();
-    public final Vec3 angVel = new Vec3();
-    public final MOI moi = new MOI();
+    public final Quat orient;
+    public final Vec3 angVel;
+    public final MOI moi;
     
-    public final Mat4 worldToLocal = new Mat4();
-    public final Mat3 worldDirToLocal = new Mat3();
-    public final Mat3 localDirToWorld = new Mat3();
+    public final Mat4 worldToLocal;
+    public final Mat3 worldDirToLocal;
+    public final Mat3 localDirToWorld;
     
     public RigidBody3D(float mass, MOI moi)
     {
+        pos = new Vec3();
+        vel = new Vec3();
         this.mass = mass;
-        this.moi.set(moi);
+        
+        orient = Quat.identity();
+        angVel = new Vec3();
+        this.moi = new MOI(moi);
+        
+        worldToLocal = Mat4.identity();
+        worldDirToLocal = Mat3.identity();
+        localDirToWorld = Mat3.identity();
     }
     
     public void updateMatrices()
@@ -70,8 +79,11 @@ public class RigidBody3D
         
         pos.add(Vec3.mult(velh, dt)); //Final position
         Vec3 axis = Vec3.mult(angVelh, dt);
-        float angle = axis.length();
-        orient.mult(Quat.rotation(axis.div(angle), angle));
+        if (!axis.isZero(0.0f))
+        {
+            float angle = axis.length();
+            orient.mult(Quat.rotation(axis.div(angle), angle));
+        }
         
         vel.add(Vec3.mult(acc0, dt)); //Approximate final velocity
         angVel.add(Vec3.mult(angAcc0, dt));

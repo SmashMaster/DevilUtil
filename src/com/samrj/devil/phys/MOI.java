@@ -86,6 +86,11 @@ public class MOI
         this.inv = inv;
     }
     
+    public MOI(MOI moi)
+    {
+        this(moi.mat, moi.inv);
+    }
+    
     public MOI()
     {
         this(Mat3.identity(), Mat3.identity());
