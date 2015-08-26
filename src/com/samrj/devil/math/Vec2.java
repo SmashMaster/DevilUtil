@@ -727,6 +727,29 @@ public class Vec2 implements Bufferable, Streamable
     }
     
     /**
+     * Sets each component of this vector to the given scalar.
+     * 
+     * @param s The scalar to set this to.
+     * @return This vector.
+     */
+    public Vec2 set(float s)
+    {
+        x = s; y = s;
+        return this;
+    }
+    
+    /**
+     * Sets this to the zero vector.
+     * 
+     * @return This vector.
+     */
+    public Vec2 set()
+    {
+        x = 0.0f; y = 0.0f;
+        return this;
+    }
+    
+    /**
      * Adds the given vector to this.
      * 
      * @param v The vector to add to this.
