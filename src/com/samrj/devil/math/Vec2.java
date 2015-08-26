@@ -590,6 +590,14 @@ public class Vec2 implements Bufferable, Streamable
     }
     
     /**
+     * Creates a new vector with each coordinate set to the given scalar.
+     */
+    public Vec2(float s)
+    {
+        x = s; y = s;
+    }
+    
+    /**
      * Copies the given vector.
      * 
      * @param v The vector to copy.

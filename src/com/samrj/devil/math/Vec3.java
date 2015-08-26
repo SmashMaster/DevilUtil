@@ -681,6 +681,14 @@ public class Vec3 implements Bufferable, Streamable
     }
     
     /**
+     * Creates a new vector with each coordinate set to the given scalar.
+     */
+    public Vec3(float s)
+    {
+        x = s; y = s; z = s;
+    }
+    
+    /**
      * Copies the given vector.
      * 
      * @param v The vector to copy.
