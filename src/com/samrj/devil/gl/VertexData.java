@@ -54,16 +54,16 @@ public abstract class VertexData
         DELETED;
     }
     
+    final VAO vao;
     private final ArrayList<Attribute> attributes;
     private final Map<String, Attribute> attMap;
-    private final VAO vao;
     private int vertexSize;
     
     VertexData()
     {
+        vao = DGL.genVAO();
         attributes = new ArrayList<>(16);
         attMap = new HashMap<>();
-        vao = DGL.genVAO();
         vertexSize = 0;
     }
     

@@ -6,6 +6,7 @@ import com.samrj.devil.util.QuickIdentitySet;
 import java.io.IOException;
 import java.util.Set;
 import org.lwjgl.opengl.ContextCapabilities;
+import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GLContext;
 
@@ -250,29 +251,37 @@ public final class DGL
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="VAO methods">
-    static VAO genVAO()
+    public static VAO genVAO()
     {
         VAO vao = capabilities.OpenGL30 ? new VAOGL() : new VAODGL();
         vaos.add(vao);
         return vao;
     }
     
-    static void bindVAO(VAO vao)
+    public static void bindVAO(VAO vao)
     {
         if (boundVAO == vao) return;
         
-        if (boundVAO != null) boundVAO.unbind();
+        if (boundVAO != null)
+        {
+            boundVAO.unbind();
+            if (boundData != null && boundData.vao == boundVAO)
+            {
+                GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+                boundData = null;
+            }
+        }
         if (vao != null) vao.bind();
         
         boundVAO = vao;
     }
     
-    static VAO currentVAO()
+    public static VAO currentVAO()
     {
         return boundVAO;
     }
     
-    static void deleteVAO(VAO vao)
+    public static void deleteVAO(VAO vao)
     {
         if (boundVAO == vao) bindVAO(null);
         vao.delete();

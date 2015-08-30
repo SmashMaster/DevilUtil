@@ -62,6 +62,7 @@ public class Mesh
         {
             vertexBlock = null;
             vertexData = BufferUtil.createByteBuffer(vertexDataLength*4);
+            vertexData.mark();
         }
         
         for (int i=0; i<vertexDataLength; i++)
@@ -78,6 +79,7 @@ public class Mesh
         {
             indexBlock = null;
             indexData = BufferUtil.createByteBuffer(triangleIndexDataLength*4);
+            indexData.mark();
         }
         
         for (int i=0; i<triangleIndexDataLength; i++)
@@ -96,8 +98,8 @@ public class Mesh
     
     public final void rewindBuffers()
     {
-        vertexData.rewind();
-        indexData.rewind();
+        vertexData.reset();
+        indexData.reset();
     }
     
     final void destroy()

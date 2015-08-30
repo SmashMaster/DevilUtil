@@ -76,9 +76,13 @@ public final class VertexStream extends VertexData
     public void clear()
     {
         vertexBuffer.reset();
-        indexBuffer.reset();
         bufferedVerts = 0;
-        bufferedInds = 0;
+        
+        if (maxIndices > 0)
+        {
+            indexBuffer.reset();
+            bufferedInds = 0;
+        }
     }
 
     @Override

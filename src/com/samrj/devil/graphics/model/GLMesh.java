@@ -1,10 +1,10 @@
 package com.samrj.devil.graphics.model;
 
+import com.samrj.devil.gl.DGL;
 import com.samrj.devil.gl.ShaderProgram;
+import com.samrj.devil.gl.VAO;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
 
 /**
  * Utility OpenGL wrapper for DevilModel meshes.
@@ -19,7 +19,7 @@ public class GLMesh
     private final Mesh mesh;
     private final int posOffset, normalOffset, tangentOffset, uvOffset, colorOffset, groupsOffset, weightsOffset;
     
-    private int vertexArray;
+    private VAO vertexArray;
     private int vertexBuffer, elementBuffer;
     
     public GLMesh(ShaderProgram shader, Mesh mesh)
@@ -37,8 +37,8 @@ public class GLMesh
         weightsOffset = groupsOffset + mesh.numVertices*mesh.numVertexGroups*4;
         
         //Set up OpenGL stuff.
-        vertexArray = GL30.glGenVertexArrays();
-        GL30.glBindVertexArray(vertexArray);
+        vertexArray = DGL.genVAO();
+        DGL.bindVAO(vertexArray);
         
         mesh.rewindBuffers();
 
@@ -47,7 +47,7 @@ public class GLMesh
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, mesh.vertexData(), GL15.GL_STATIC_DRAW);
 
         elementBuffer = GL15.glGenBuffers();
-        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
+        vertexArray.bindElementArrayBuffer(elementBuffer);
         GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.indexData(), GL15.GL_STATIC_DRAW);
     }
     
@@ -55,7 +55,7 @@ public class GLMesh
     {
         int location = shader.getAttributeLocation(name);
         if (location < 0) throw new IllegalArgumentException("No attribute with name " + name + " found.");
-        GL20.glEnableVertexAttribArray(location);
+        vertexArray.enableVertexAttribArray(location);
         return location;
     }
     
@@ -74,33 +74,33 @@ public class GLMesh
     public void setPositionName(String name)
     {
         int location = getEnableLocation(name);
-        GL20.glVertexAttribPointer(location, 3, GL11.GL_FLOAT, false, 0, posOffset);
+        vertexArray.vertexAttribPointer(location, 3, GL11.GL_FLOAT, false, 0, posOffset);
     }
     
     public void setNormalName(String name)
     {
         int location = getEnableLocation(name);
-        GL20.glVertexAttribPointer(location, 3, GL11.GL_FLOAT, false, 0, normalOffset);
+        vertexArray.vertexAttribPointer(location, 3, GL11.GL_FLOAT, false, 0, normalOffset);
     }
     
     public void setTangentName(String name)
     {
         int location = getEnableLocation(name);
-        GL20.glVertexAttribPointer(location, 3, GL11.GL_FLOAT, false, 0, tangentOffset);
+        vertexArray.vertexAttribPointer(location, 3, GL11.GL_FLOAT, false, 0, tangentOffset);
     }
     
     public void setUVName(String name)
     {
         if (!mesh.hasUVs) throw new IllegalStateException();
         int location = getEnableLocation(name);
-        GL20.glVertexAttribPointer(location, 2, GL11.GL_FLOAT, false, 0, uvOffset);
+        vertexArray.vertexAttribPointer(location, 2, GL11.GL_FLOAT, false, 0, uvOffset);
     }
     
     public void setColorName(String name)
     {
         if (!mesh.hasVertexColors) throw new IllegalStateException();
         int location = getEnableLocation(name);
-        GL20.glVertexAttribPointer(location, 3, GL11.GL_FLOAT, false, 0, colorOffset);
+        vertexArray.vertexAttribPointer(location, 3, GL11.GL_FLOAT, false, 0, colorOffset);
     }
     
     public void setGroupsName(String name)
@@ -108,29 +108,29 @@ public class GLMesh
         if (mesh.numVertexGroups <= 0) throw new IllegalStateException();
         int location = getEnableLocation(name);
         //GL_FLOAT might look like a bug right here, but it's not. Don't touch it.
-        GL20.glVertexAttribPointer(location, mesh.numVertexGroups, GL11.GL_FLOAT, false, 0, groupsOffset);
+        vertexArray.vertexAttribPointer(location, mesh.numVertexGroups, GL11.GL_FLOAT, false, 0, groupsOffset);
     }
     
     public void setWeightsName(String name)
     {
         if (mesh.numVertexGroups <= 0) throw new IllegalStateException();
         int location = getEnableLocation(name);
-        GL20.glVertexAttribPointer(location, mesh.numVertexGroups, GL11.GL_FLOAT, false, 0, weightsOffset);
+        vertexArray.vertexAttribPointer(location, mesh.numVertexGroups, GL11.GL_FLOAT, false, 0, weightsOffset);
     }
     
     public void draw()
     {
-        GL30.glBindVertexArray(vertexArray);
+        DGL.bindVAO(vertexArray);
         GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.numTriangles*3, GL11.GL_UNSIGNED_INT, 0);
     }
     
     public void delete()
     {
-        GL30.glDeleteVertexArrays(vertexArray);
+        DGL.deleteVAO(vertexArray);
         GL15.glDeleteBuffers(vertexBuffer);
         GL15.glDeleteBuffers(elementBuffer);
         
-        vertexArray = -1;
+        vertexArray = null;
         vertexBuffer = -1;
         elementBuffer = -1;
     }
