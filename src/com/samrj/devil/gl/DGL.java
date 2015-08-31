@@ -2,9 +2,15 @@ package com.samrj.devil.gl;
 
 import com.samrj.devil.io.Memory;
 import static com.samrj.devil.io.Memory.memUtil;
+import com.samrj.devil.math.Util.PrimType;
+import com.samrj.devil.res.Resource;
 import com.samrj.devil.util.QuickIdentitySet;
+import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Set;
+import javax.imageio.ImageIO;
 import org.lwjgl.opengl.ContextCapabilities;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
@@ -31,6 +37,7 @@ public final class DGL
     private static Set<ShaderProgram> programs;
     private static Set<VAO> vaos;
     private static Set<VertexData> datas;
+    private static Set<Image> images;
     
     //State fields
     private static ShaderProgram boundProgram;
@@ -62,6 +69,7 @@ public final class DGL
         programs = new QuickIdentitySet<>();
         vaos = new QuickIdentitySet<>();
         datas = new QuickIdentitySet<>();
+        images = new QuickIdentitySet<>();
         
         init = true;
     }
@@ -356,6 +364,87 @@ public final class DGL
         datas.remove(vertexData);
     }
     // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Image methods">
+    /**
+     * Allocates a new image buffer in the given memory, with the given
+     * dimensions and format. The newly allocated buffer has indeterminate
+     * contents.
+     * 
+     * @param memory The memory to allocate from.
+     * @param width The width of the image, in pixels.
+     * @param height The height of the image, in pixels.
+     * @param bands The number of bands the image will have.
+     * @param type The primitive type of the image data.
+     * @return A newly allocated image.
+     */
+    public static Image genImage(Memory memory, int width, int height, int bands, PrimType type)
+    {
+        if (memory == null) throw new NullPointerException();
+        if (width <= 0 || height <= 0)
+            throw new IllegalArgumentException("Illegal dimensions specified.");
+        if (bands <= 0 || bands > 4)
+            throw new IllegalArgumentException("Illegal number of image bands specified.");
+        if (!Image.typeSupported(type))
+            throw new IllegalArgumentException("Illegal primitive type " + type + " specified.");
+        
+        Image image = new Image(memory, width, height, bands, type);
+        images.add(image);
+        return image;
+    }
+    
+    /**
+     * Allocates an image  buffer for the given raster, then buffers the raster
+     * in it. Returns the allocated buffer.
+     * 
+     * @param memory The memory to allocate from.
+     * @param raster The raster to buffer.
+     * @return A newly allocated buffer containing the given raster.
+     */
+    public static Image loadImage(Memory memory, Raster raster)
+    {
+        PrimType type = Image.getType(raster);
+        if (type == null) throw new IllegalArgumentException("Given raster is not bufferable.");
+        
+        Image image = genImage(memory, raster.getWidth(), raster.getHeight(), raster.getNumBands(), type);
+        image.buffer(raster);
+        image.buffer.reset();
+        return image;
+    }
+    
+    /**
+     * Loads an image type at the given path, which may be a classpath or file
+     * path, and then buffers the image in a newly allocated buffer. Returns
+     * the image buffer.
+     * 
+     * @param memory The memory to allocate from.
+     * @param path The path to load an image from.
+     * @return A newly allocated buffer containing the loaded image.
+     * @throws IOException If an io exception occurs.
+     */
+    public static Image loadImage(Memory memory, String path) throws IOException
+    {
+        if (memory == null) throw new NullPointerException();
+        
+        InputStream in = Resource.open(path);
+        BufferedImage bImage = ImageIO.read(in);
+        in.close();
+        if (bImage == null) throw new IOException("Cannot read image from " + path);
+        
+        return loadImage(memory, bImage.getRaster());
+    }
+    
+    /**
+     * Deletes the given image buffer, releasing any native memory associated
+     * with it. Can be done safely after the image is loaded into a texture.
+     * 
+     * @param image The image to delete.
+     */
+    public static void deleteImage(Image image)
+    {
+        image.delete();
+        images.remove(image);
+    }
+    // </editor-fold>
     
     /**
      * Draws the currently bound vertex data with the shader program currently
@@ -383,11 +472,13 @@ public final class DGL
         for (Shader shader : shaders) shader.delete();
         for (VertexData data : datas) data.delete();
         for (VAO vao : vaos) vao.delete();
+        for (Image image : images) image.delete();
         
-        shaders.clear();
-        programs.clear();
-        vaos.clear();
-        datas.clear();
+        shaders.clear(); shaders = null;
+        programs.clear(); programs = null;
+        vaos.clear(); vaos = null;
+        datas.clear(); datas = null;
+        images.clear(); images = null;
         
         thread = null;
         context = null;
