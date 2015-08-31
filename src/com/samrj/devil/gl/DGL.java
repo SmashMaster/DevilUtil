@@ -17,7 +17,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GLContext;
 
 /**
- * DevilGL. A state-based, object-oriented, forward compatible OpenGL wrapper,
+ * DevilGL. A state-based, object-oriented, forward compatible OpenGL wrapper;
  * inspired by deprecated OpenGL.
  * 
  * @author Samuel Johnson (SmashMaster)
@@ -38,6 +38,7 @@ public final class DGL
     private static Set<VAO> vaos;
     private static Set<VertexData> datas;
     private static Set<Image> images;
+    private static Set<Texture> textures;
     
     //State fields
     private static ShaderProgram boundProgram;
@@ -70,6 +71,7 @@ public final class DGL
         vaos = new QuickIdentitySet<>();
         datas = new QuickIdentitySet<>();
         images = new QuickIdentitySet<>();
+        textures = new QuickIdentitySet<>();
         
         init = true;
     }
@@ -445,6 +447,143 @@ public final class DGL
         images.remove(image);
     }
     // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Texture methods">
+    /**
+     * Generates a new OpenGL name for a 2D texture.
+     * 
+     * @return A new 2D texture object.
+     */
+    public static Texture2D genTex2D()
+    {
+        Texture2D texture = new Texture2D();
+        textures.add(texture);
+        return texture;
+    }
+    
+    /**
+     * Creates a new OpenGL 2D texture using the given image.
+     * 
+     * @param image The image to load as a texture.
+     * @return A new 2D texture object.
+     */
+    public static Texture2D loadTex2D(Image image)
+    {
+        if (image.deleted()) throw new IllegalArgumentException("Given image is deleted.");
+        Texture2D texture = genTex2D();
+        texture.image(image);
+        return texture;
+    }
+    
+    /**
+     * Creates a new OpenGL 2D texture using the given raster. Allocates memory
+     * to use as an image buffer, uploads the image, and then deallocates the
+     * memory.
+     * 
+     * @param memory The memory to temporarily allocate from.
+     * @param raster The raster to load as a texture.
+     * @return A new 2D texture object.
+     */
+    public static Texture2D loadTex2D(Memory memory, Raster raster)
+    {
+        Image image = loadImage(memory, raster);
+        Texture2D texture = loadTex2D(image);
+        deleteImage(image);
+        return texture;
+    }
+    
+    /**
+     * Creates a new openGL 2D texture using the image found at the given path.
+     * Allocates memory to use as an image buffer, uploads the image, and then
+     * deallocates the memory.
+     * 
+     * @param memory The memory to temporarily allocate from.
+     * @param path The classpath or file path to an image.
+     * @return A new 2D texture object.
+     * @throws IOException If an io exception occurred.
+     */
+    public static Texture2D loadTex2D(Memory memory, String path) throws IOException
+    {
+        Image image = loadImage(memory, path);
+        Texture2D texture = loadTex2D(image);
+        deleteImage(image);
+        return texture;
+    }
+    
+    /**
+     * Generates a new OpenGL name for a rectangle texture.
+     * 
+     * @return A new rectangle texture object.
+     */
+    public static TextureRectangle genTexRect()
+    {
+        if (!capabilities.OpenGL31) throw new UnsupportedOperationException(
+                "Rectangle textures require OpenGL >= 3.1");
+        
+        TextureRectangle texture = new TextureRectangle();
+        textures.add(texture);
+        return texture;
+    }
+    
+    /**
+     * Creates a new OpenGL rectangle texture using the given image.
+     * 
+     * @param image The image to load as a texture.
+     * @return A new rectangle texture object.
+     */
+    public static TextureRectangle loadTexRect(Image image)
+    {
+        if (image.deleted()) throw new IllegalArgumentException("Given image is deleted.");
+        TextureRectangle texture = genTexRect();
+        texture.image(image);
+        return texture;
+    }
+    
+    /**
+     * Creates a new OpenGL rectangle texture using the given raster. Allocates
+     * memory to use as an image buffer, uploads the image, and then deallocates
+     * the memory.
+     * 
+     * @param memory The memory to temporarily allocate from.
+     * @param raster The raster to load as a texture.
+     * @return A new rectangle texture object.
+     */
+    public static TextureRectangle loadTexRect(Memory memory, Raster raster)
+    {
+        Image image = loadImage(memory, raster);
+        TextureRectangle texture = loadTexRect(image);
+        deleteImage(image);
+        return texture;
+    }
+    
+    /**
+     * Creates a new openGL rectangle texture using the image found at the given
+     * path. Allocates memory to use as an image buffer, uploads the image, and
+     * then deallocates the memory.
+     * 
+     * @param memory The memory to temporarily allocate from.
+     * @param path The classpath or file path to an image.
+     * @return A new rectangle texture object.
+     * @throws IOException If an io exception occurred.
+     */
+    public static TextureRectangle loadTexRect(Memory memory, String path) throws IOException
+    {
+        Image image = loadImage(memory, path);
+        TextureRectangle texture = loadTexRect(image);
+        deleteImage(image);
+        return texture;
+    }
+    
+    /**
+     * Deletes the given texture, releasing any associated hardware memory.
+     * 
+     * @param texture The texture to delete.
+     */
+    public static void deleteTex(Texture texture)
+    {
+        texture.delete();
+        textures.remove(texture);
+    }
+    // </editor-fold>
     
     /**
      * Draws the currently bound vertex data with the shader program currently
@@ -461,7 +600,7 @@ public final class DGL
     }
     
     /**
-     * Destroys DevilGL and releases any associated resources.
+     * Destroys DevilGL and releases all associated resources.
      */
     public static void destroy()
     {
@@ -473,12 +612,14 @@ public final class DGL
         for (VertexData data : datas) data.delete();
         for (VAO vao : vaos) vao.delete();
         for (Image image : images) image.delete();
+        for (Texture texture : textures) texture.delete();
         
         shaders.clear(); shaders = null;
         programs.clear(); programs = null;
         vaos.clear(); vaos = null;
         datas.clear(); datas = null;
         images.clear(); images = null;
+        textures.clear(); textures = null;
         
         thread = null;
         context = null;

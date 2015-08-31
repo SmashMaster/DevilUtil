@@ -1,8 +1,10 @@
 package com.samrj.devil.ui;
 
-import com.samrj.devil.graphics.GLTexture2D;
-import com.samrj.devil.graphics.Texture2DData;
+import com.samrj.devil.gl.DGL;
+import com.samrj.devil.gl.Image;
+import com.samrj.devil.gl.Texture2D;
 import com.samrj.devil.io.LittleEndianInputStream;
+import com.samrj.devil.io.Memory;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.res.Resource;
@@ -38,11 +40,11 @@ public class AtlasFont
     
     private final String name;
     private final int lineHeight, baseHeight;
-    private final GLTexture2D texture;
+    private final Texture2D texture;
     private final Char[] chars;
     private final int firstCharID;
     
-    public AtlasFont(String directory, String fontFile) throws IOException
+    public AtlasFont(Memory memory, String directory, String fontFile) throws IOException
     {
         if (!directory.endsWith("/")) directory += "/";
         
@@ -77,14 +79,13 @@ public class AtlasFont
         skip(in, 4);
         String texFile = in.readNullTermStr();
         
-        Texture2DData texData = new Texture2DData(directory + texFile);
-        if (!Util.isPower2(texData.width) || !Util.isPower2(texData.height))
+        Image image = DGL.loadImage(memory, directory + texFile);
+        if (!Util.isPower2(image.width) || !Util.isPower2(image.height))
             throw new IOException("Texture dimensions must be powers of two.");
-        if (texData.bands != 1) throw new IOException("Texture format must have one band.");
-        texData.format = GL11.GL_ALPHA8;
-        texData.baseFormat = GL11.GL_ALPHA;
+        if (image.bands != 1) throw new IOException("Texture format must have one band.");
         
-        texture = new GLTexture2D(texData);
+        texture = DGL.loadTex2D(image);
+        DGL.deleteImage(image);
         
         //CHARS BLOCK
         ensureByte(in, 4, "Expected chars block fourth.");
@@ -94,7 +95,7 @@ public class AtlasFont
         int minChar = Integer.MAX_VALUE, maxChar = -1;
         for (int i=0; i<numChars; i++)
         {
-            Char c = new Char(in, texture.width, texture.height);
+            Char c = new Char(in, texture.getWidth(), texture.getHeight());
             charList.add(c);
             if (c.id < minChar) minChar = c.id;
             if (c.id > maxChar) maxChar = c.id;
@@ -152,7 +153,7 @@ public class AtlasFont
 
         float x = 0f;
         GL11.glEnable(GL11.GL_TEXTURE_2D);
-        texture.glBind();
+        texture.bind();
         GL11.glBegin(GL11.GL_QUADS);
         for (int i=0; i<text.length(); i++)
         {
@@ -189,7 +190,7 @@ public class AtlasFont
     
     public void delete()
     {
-        texture.glDelete();
+        DGL.deleteTex(texture);
     }
     
     private class Char

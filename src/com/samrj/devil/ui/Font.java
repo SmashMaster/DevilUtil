@@ -1,6 +1,7 @@
 package com.samrj.devil.ui;
 
-import com.samrj.devil.graphics.GLTexture2D;
+import com.samrj.devil.gl.DGL;
+import com.samrj.devil.gl.Texture2D;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.res.Resource;
 import java.io.*;
@@ -13,18 +14,18 @@ import org.lwjgl.opengl.GL11;
  */
 public class Font
 {
-    private GLTexture2D tex;
+    private Texture2D tex;
     private float[] widths;
     private float cellHeight;
     private float height;
     
-    public Font(GLTexture2D tex, Resource wPath, float height) throws IOException
+    public Font(Texture2D tex, Resource wPath, float height) throws IOException
     {
         if (height <= 0f) throw new IllegalArgumentException();
         if (tex == null) throw new NullPointerException();
         this.tex = tex;
         this.height = height;
-        cellHeight = tex.height/16.0f;
+        cellHeight = tex.getHeight()/16.0f;
         widths = new float[256];
         
         InputStream in = wPath.open();
@@ -51,12 +52,12 @@ public class Font
         reader.close();
     }
     
-    public Font(GLTexture2D tex, String wPath, float height) throws IOException
+    public Font(Texture2D tex, String wPath, float height) throws IOException
     {
         this(tex, Resource.find(wPath), height);
     }
     
-    public GLTexture2D getTexture()
+    public Texture2D getTexture()
     {
         return tex;
     }
@@ -94,7 +95,7 @@ public class Font
 
         float x0 = 0f;
         GL11.glEnable(GL11.GL_TEXTURE_2D);
-        tex.glBind();
+        tex.bind();
         GL11.glBegin(GL11.GL_QUADS);
         for (int i=0; i<text.length(); i++)
         {
@@ -129,11 +130,5 @@ public class Font
     public void draw(String text, Vec2 p)
     {
         draw(text, p, Alignment.NE);
-    }
-    
-    public void delete()
-    {
-        tex.glDelete();
-        tex = null;
     }
 }

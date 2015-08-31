@@ -1,7 +1,5 @@
 package com.samrj.devil.gl;
 
-import com.samrj.devil.graphics.GLTexture2D;
-
 /**
  * OpenGL framebuffer object wrapper/emulator interface.
  * 
@@ -11,7 +9,7 @@ import com.samrj.devil.graphics.GLTexture2D;
  */
 public interface FBO
 {
-    public void attachTexture(GLTexture2D texture);
+    public void attachTexture(Texture2D texture);
     void bind();
     void unbind();
     void delete();

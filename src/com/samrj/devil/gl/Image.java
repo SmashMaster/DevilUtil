@@ -8,9 +8,9 @@ import java.awt.image.Raster;
 import java.nio.ByteBuffer;
 
 /**
- * Raster image buffer in main memory. Used to load or generate images to main
- * memory. Does not rely in any way on OpenGL, but stores image data in an
- * OpenGL-readable format.
+ * Raster image buffer. Used to load or generate images to main memory. Does not
+ * rely on OpenGL in any way, but does store image data in an OpenGL-readable
+ * format.
  * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2015 Samuel Johnson
@@ -158,11 +158,17 @@ public final class Image
         buffer.reset();
     }
     
-    public interface Sampler
+    /**
+     * @return The native memory location for this image buffer. Unsafe!
+     */
+    public long address()
     {
-        void sample(int x, int y, int b);
+        return block.address();
     }
     
+    /**
+     * @return Whether or not this image buffer has been deleted.
+     */
     public boolean deleted()
     {
         return deleted;
@@ -172,5 +178,10 @@ public final class Image
     {
         block.free();
         deleted = true;
+    }
+    
+    public interface Sampler
+    {
+        void sample(int x, int y, int b);
     }
 }

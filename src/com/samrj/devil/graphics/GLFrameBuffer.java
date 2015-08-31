@@ -70,11 +70,11 @@ public class GLFrameBuffer
         block.free();
     }
     
-    public void glTexture2D(GLTexture2D t, int attachment)
-    {
-        if (isDeleted()) throw new IllegalStateException();
-        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, attachment, GL11.GL_TEXTURE_2D, t.id(), 0);
-    }
+//    public void glTexture2D(GLTexture2D t, int attachment)
+//    {
+//        if (isDeleted()) throw new IllegalStateException();
+//        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, attachment, GL11.GL_TEXTURE_2D, t.id(), 0);
+//    }
     
     public void glDelete()
     {
