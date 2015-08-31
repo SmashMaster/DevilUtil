@@ -1,7 +1,7 @@
 package com.samrj.devil.gl;
 
 /**
- * OpenGL VAO wrapper/emulator superclass.
+ * OpenGL VAO wrapper/emulator interface.
  * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2015 Samuel Johnson

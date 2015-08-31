@@ -1,7 +1,7 @@
 package com.samrj.devil.graphics;
 
 import com.samrj.devil.io.Memory.Block;
-import static com.samrj.devil.io.BufferUtil.memUtil;
+import static com.samrj.devil.io.Memory.memUtil;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;

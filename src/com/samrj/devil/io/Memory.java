@@ -16,6 +16,11 @@ import org.lwjgl.system.MemoryUtil;
 public final class Memory
 {
     /**
+     * Public utility memory.
+     */
+    public static final Memory memUtil = new Memory(4096);
+    
+    /**
      * The capacity of this memory block, in bytes.
      */
     public final int capacity;

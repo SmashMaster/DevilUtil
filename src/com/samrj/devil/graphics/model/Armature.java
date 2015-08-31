@@ -1,6 +1,5 @@
 package com.samrj.devil.graphics.model;
 
-import com.samrj.devil.io.BufferUtil;
 import com.samrj.devil.io.Memory;
 import com.samrj.devil.io.Memory.Block;
 import com.samrj.devil.math.topo.DAG;
@@ -72,16 +71,8 @@ public class Armature
         
         solveOrder = solveGraph.sort();
         
-        if (memory != null)
-        {
-            boneBlock = memory.alloc(numBones*16*4);
-            boneMatrixBuffer = boneBlock.read();
-        }
-        else
-        {
-            boneBlock = null;
-            boneMatrixBuffer = BufferUtil.createByteBuffer(numBones*16*4);
-        }
+        boneBlock = memory.alloc(numBones*16*4);
+        boneMatrixBuffer = boneBlock.read();
     }
     
     public void solve()

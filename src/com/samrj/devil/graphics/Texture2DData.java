@@ -1,6 +1,6 @@
 package com.samrj.devil.graphics;
 
-import com.samrj.devil.io.BufferUtil;
+import com.samrj.devil.io.Memory;
 import com.samrj.devil.res.FileRes;
 import com.samrj.devil.res.Resource;
 import java.awt.image.BufferedImage;
@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import javax.imageio.ImageIO;
 
 /**
@@ -18,6 +19,7 @@ import javax.imageio.ImageIO;
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
+@Deprecated
 public class Texture2DData
 {
     public final int width, height;
@@ -51,7 +53,7 @@ public class Texture2DData
         if (bands == -1) throw new IllegalArgumentException("Illegal format specified.");
         
         int length = width*height*bands;
-        buffer = BufferUtil.createByteBuffer(length);
+        buffer = ByteBuffer.allocateDirect(length).order(ByteOrder.nativeOrder());
         buffer.put(new byte[length]);
     }
     
@@ -63,7 +65,6 @@ public class Texture2DData
         baseFormat = TexUtil.getBaseFormat(format);
         bands = TexUtil.getBands(baseFormat);
         if (bands == -1) throw new IllegalArgumentException("Illegal format specified.");
-        
         
         int imageBands = raster.getNumBands();
         if (bands != imageBands) throw new TextureLoadException("Cannot load "
@@ -139,7 +140,7 @@ public class Texture2DData
     
     private void load(Raster raster)
     {
-        buffer = BufferUtil.createByteBuffer(width*height*bands);
+        buffer = ByteBuffer.allocateDirect(width*height*bands).order(ByteOrder.nativeOrder());
         
         for (int y=height-1; y>=0; y--)
             for (int x=0; x<width; x++)

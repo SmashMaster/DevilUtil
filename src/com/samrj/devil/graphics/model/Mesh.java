@@ -1,6 +1,5 @@
 package com.samrj.devil.graphics.model;
 
-import com.samrj.devil.io.BufferUtil;
 import com.samrj.devil.io.Memory;
 import com.samrj.devil.io.Memory.Block;
 import java.io.DataInputStream;
@@ -53,34 +52,16 @@ public class Mesh
         
         numVertices = in.readInt();
         int vertexDataLength = numVertices*floatsPerVertex;
-        if (memory != null)
-        {
-            vertexBlock = memory.alloc(vertexDataLength*4);
-            vertexData = vertexBlock.read();
-        }
-        else
-        {
-            vertexBlock = null;
-            vertexData = BufferUtil.createByteBuffer(vertexDataLength*4);
-            vertexData.mark();
-        }
+        vertexBlock = memory.alloc(vertexDataLength*4);
+        vertexData = vertexBlock.read();
         
         for (int i=0; i<vertexDataLength; i++)
             vertexData.putFloat(in.readFloat());
         
         numTriangles = in.readInt();
         int triangleIndexDataLength = numTriangles*3;
-        if (memory != null)
-        {
-            indexBlock = memory.alloc(triangleIndexDataLength*4);
-            indexData = indexBlock.read();
-        }
-        else
-        {
-            indexBlock = null;
-            indexData = BufferUtil.createByteBuffer(triangleIndexDataLength*4);
-            indexData.mark();
-        }
+        indexBlock = memory.alloc(triangleIndexDataLength*4);
+        indexData = indexBlock.read();
         
         for (int i=0; i<triangleIndexDataLength; i++)
             indexData.putInt(in.readInt());

@@ -1,7 +1,7 @@
 package com.samrj.devil.display;
 
 import com.samrj.devil.io.Memory.Block;
-import static com.samrj.devil.io.BufferUtil.memUtil;
+import static com.samrj.devil.io.Memory.memUtil;
 import java.nio.ByteBuffer;
 import org.lwjgl.system.MemoryUtil;
 

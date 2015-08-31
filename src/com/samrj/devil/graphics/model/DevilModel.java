@@ -38,6 +38,8 @@ public class DevilModel
     
     public DevilModel(InputStream inputStream, Memory memory) throws IOException
     {
+        if (memory == null) throw new NullPointerException();
+        
         try
         {
             DataInputStream in = new DataInputStream(inputStream);
@@ -81,21 +83,9 @@ public class DevilModel
         }
     }
     
-    @Deprecated
-    public DevilModel(InputStream inputStream) throws IOException
-    {
-        this(inputStream, null);
-    }
-    
     public DevilModel(String path, Memory memory) throws IOException
     {
         this(Resource.open(path), memory);
-    }
-    
-    @Deprecated
-    public DevilModel(String path) throws IOException
-    {
-        this(path, null);
     }
     
     public Mesh getMesh(String name)

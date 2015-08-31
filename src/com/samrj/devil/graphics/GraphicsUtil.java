@@ -1,7 +1,7 @@
 package com.samrj.devil.graphics;
 
-import static com.samrj.devil.io.BufferUtil.memUtil;
 import com.samrj.devil.io.Memory.Block;
+import static com.samrj.devil.io.Memory.memUtil;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Util;

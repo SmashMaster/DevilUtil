@@ -1,7 +1,7 @@
 package com.samrj.devil.gl;
 
-import static com.samrj.devil.io.BufferUtil.memUtil;
 import com.samrj.devil.io.Memory;
+import static com.samrj.devil.io.Memory.memUtil;
 import com.samrj.devil.util.QuickIdentitySet;
 import java.io.IOException;
 import java.util.Set;
