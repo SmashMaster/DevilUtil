@@ -84,7 +84,8 @@ public class AtlasFont
             throw new IOException("Texture dimensions must be powers of two.");
         if (image.bands != 1) throw new IOException("Texture format must have one band.");
         
-        texture = DGL.loadTex2D(image);
+        texture = DGL.genTex2D();
+        texture.image(image, GL11.GL_ALPHA8);
         DGL.deleteImage(image);
         
         //CHARS BLOCK

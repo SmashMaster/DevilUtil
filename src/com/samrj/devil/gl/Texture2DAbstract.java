@@ -44,21 +44,36 @@ abstract class Texture2DAbstract extends Texture
      * memory. Any previous image data associated with this texture is released.
      * 
      * @param image The image to upload to the GPU.
+     * @param format The texture format to store the image as.
+     */
+    public void image(Image image, int format)
+    {
+        int dataFormat = TexUtil.getBaseFormat(format);
+        if (image.bands != TexUtil.getBands(dataFormat))
+            throw new IllegalArgumentException("Incompatible format bands.");
+        
+        width = image.width;
+        height = image.height;
+        int primType = TexUtil.getPrimEnum(image.type);
+        
+        int oldID = tempBind();
+        GL11.nglTexImage2D(target, 0, format, width, height, 0,
+                dataFormat, primType, image.address());
+        tempUnbind(oldID);
+    }
+    
+    /**
+     * Allocates space on the GPU for the image, and then uploads it, linking it
+     * to this texture. After calling, the image may be safely deleted from
+     * memory. Any previous image data associated with this texture is released.
+     * 
+     * @param image The image to upload to the GPU.
      */
     public void image(Image image)
     {
         int format = TexUtil.getFormat(image);
         if (format == -1) throw new IllegalArgumentException("Illegal image format.");
-        
-        width = image.width;
-        height = image.height;
-        int baseFormat = TexUtil.getBaseFormat(format);
-        int primType = TexUtil.getPrimEnum(image.type);
-        
-        int oldID = tempBind();
-        GL11.nglTexImage2D(target, 0, format, width, height, 0,
-                baseFormat, primType, image.address());
-        tempUnbind(oldID);
+        image(image, format);
     }
     
     /**

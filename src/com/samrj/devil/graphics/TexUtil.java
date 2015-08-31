@@ -18,16 +18,18 @@ public class TexUtil
     /**
      * @param baseFormat a base internal format, as in the internalFormat
      *                   argument of the {@code glTexImage2D()} method.
-     * @return the number of components in a particular texture format. Supports
-     *         only the core profile formats (OpenGL 3.2+).
+     * @return the number of components in a particular texture format.
      */
     public static int getBands(int baseFormat)
     {
         switch (baseFormat)
         {
+            case GL11.GL_LUMINANCE:
+            case GL11.GL_ALPHA:
             case GL11.GL_DEPTH_COMPONENT:
             case GL11.GL_RED: return 1;
                 
+            case GL11.GL_LUMINANCE_ALPHA:
             case GL30.GL_DEPTH_STENCIL:
             case GL30.GL_RG: return 2;
                 
@@ -146,6 +148,19 @@ public class TexUtil
             case GL30.GL_RGBA32F:
             case GL30.GL_RGBA32I: return GL11.GL_RGBA;
                 
+            //Deprecated formats.
+            case GL11.GL_LUMINANCE:
+            case GL11.GL_LUMINANCE8:
+            case GL11.GL_LUMINANCE16: return GL11.GL_LUMINANCE;
+                
+            case GL11.GL_ALPHA:
+            case GL11.GL_ALPHA8:
+            case GL11.GL_ALPHA16: return GL11.GL_ALPHA;
+                
+            case GL11.GL_LUMINANCE_ALPHA:
+            case GL11.GL_LUMINANCE8_ALPHA8:
+            case GL11.GL_LUMINANCE16_ALPHA16: return GL11.GL_LUMINANCE_ALPHA;
+                
             default: return -1;
         }
     }
@@ -202,6 +217,18 @@ public class TexUtil
             case GL30.GL_RGBA32F: return "GL_RGBA32F";
             case GL30.GL_RGBA32I: return "GL_RGBA32I";
                 
+            case GL11.GL_LUMINANCE: return "GL_LUMINANCE";
+            case GL11.GL_LUMINANCE8: return "GL_LUMINANCE8";
+            case GL11.GL_LUMINANCE16: return "GL_LUMINANCE16";
+                
+            case GL11.GL_ALPHA: return "GL_ALPHA";
+            case GL11.GL_ALPHA8: return "GL_ALPHA8";
+            case GL11.GL_ALPHA16: return "GL_ALPHA16";
+                
+            case GL11.GL_LUMINANCE_ALPHA: return "GL_LUMINANCE_ALPHA";
+            case GL11.GL_LUMINANCE8_ALPHA8: return "GL_LUMINANCE8_ALPHA8";
+            case GL11.GL_LUMINANCE16_ALPHA16: return "GL_LUMINANCE16_ALPHA16";
+                
             default: return "UNSUPPORTED_FORMAT";
         }
     }
@@ -232,11 +259,17 @@ public class TexUtil
     {
         switch (format)
         {
+            case GL11.GL_LUMINANCE8:
+            case GL11.GL_ALPHA8:
+            case GL11.GL_LUMINANCE8_ALPHA8:
             case GL30.GL_R8:
             case GL30.GL_RG8:
             case GL11.GL_RGB8:
             case GL11.GL_RGBA8: return PrimType.BYTE;
             
+            case GL11.GL_LUMINANCE16:
+            case GL11.GL_ALPHA16:
+            case GL11.GL_LUMINANCE16_ALPHA16:
             case GL14.GL_DEPTH_COMPONENT16:
             case GL30.GL_R16:
             case GL30.GL_RG16:
