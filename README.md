@@ -1,7 +1,14 @@
 DevilUtil
 =========
 
-A Java game library based around LWJGL and jBox2D. Has helpful classes for game math, graphics, sound, and user interfaces.
+#### A Java game library
 
-Up until now, this has been my personal game library, so the documentation is mostly atrocious. Some of it's not bad.
-Either way, feel free to make use of whatever you find in here. I know some of this stuff has been immensely helpful to me.
+**Features:**
+
+* **devil.game** - A utility library for making games. Handles window creation, frame synchronization, input handling, and configuration loading.
+* **devil.math** - A complete linear algebra library, with vectors, matrices, and quaternions.
+* **devil.gl** - An easier way to use modern OpenGL. Helps with loading shaders, building vertex data, and rendering. Lightning fast, forward-compatible, clean code. What more could you want?
+
+**...and more!**
+
+The documentation is improving steadily, and features are being added almost every day.
