@@ -12,7 +12,7 @@ import org.lwjgl.opengl.GL20;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-final class VAODGL implements VAO
+final class VAODGL extends VAO
 {
     private final IntSet enabledArrays;
     private final SparseArray<Pointer> attribPointers;
@@ -65,7 +65,7 @@ final class VAODGL implements VAO
     }
     
     @Override
-    public void bind()
+    void bind()
     {
         if (deleted) throw new IllegalStateException("VAO deleted.");
         
@@ -78,7 +78,7 @@ final class VAODGL implements VAO
     }
     
     @Override
-    public void unbind()
+    void unbind()
     {
         if (deleted) throw new IllegalStateException("VAO deleted.");
         
@@ -89,7 +89,7 @@ final class VAODGL implements VAO
     }
     
     @Override
-    public void delete()
+    void delete()
     {
         if (deleted) return;
         enabledArrays.clear();

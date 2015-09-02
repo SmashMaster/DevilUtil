@@ -304,7 +304,7 @@ public class TexUtil
      * @param type A primitive type.
      * @return The OpenGL enum for the given type.
      */
-    public static int getPrimEnum(PrimType type)
+    public static int getGLPrim(PrimType type)
     {
         switch (type)
         {
@@ -331,6 +331,24 @@ public class TexUtil
             case GL11.GL_LINEAR_MIPMAP_LINEAR: return true;
                 
             default: return false;
+        }
+    }
+    
+    /**
+     * Returns the OpenGL depth texture format for the given number of bits, or
+     * -1 if none could be found.
+     * 
+     * @param bits The desired number of depth bits.
+     * @return An OpenGL depth format.
+     */
+    public static int getDepthFormat(int bits)
+    {
+        switch (bits)
+        {
+            case 16: return GL14.GL_DEPTH_COMPONENT16;
+            case 24: return GL14.GL_DEPTH_COMPONENT24;
+            case 32: return GL14.GL_DEPTH_COMPONENT32;
+            default: return -1;
         }
     }
     

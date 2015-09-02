@@ -1,6 +1,5 @@
 package com.samrj.devil.gl;
 
-import com.samrj.devil.io.Memory;
 import com.samrj.devil.io.Memory.Block;
 import static com.samrj.devil.io.Memory.memUtil;
 import com.samrj.devil.math.Mat2;

@@ -11,7 +11,7 @@ import org.lwjgl.opengl.GL11;
  */
 public abstract class Texture
 {
-    final int id, target, binding;
+    public final int id, target, binding;
     private boolean deleted;
     
     Texture(int target, int binding)
@@ -42,12 +42,19 @@ public abstract class Texture
         GL11.glBindTexture(target, oldID);
     }
     
+    /**
+     * Binds this OpenGL texture to whichever texture unit is currently active.
+     */
     public final void bind()
     {
         if (deleted) throw new IllegalStateException("Cannot bind deleted texture.");
         GL11.glBindTexture(target, id);
     }
     
+    /**
+     * Unbinds any texture currently bound to the current texture unit. Might
+     * not be this texture! Manage your texture state carefully.
+     */
     public final void unbind()
     {
         if (isBound()) GL11.glBindTexture(target, 0);

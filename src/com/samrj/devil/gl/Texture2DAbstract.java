@@ -1,6 +1,7 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.graphics.TexUtil;
+import com.samrj.devil.math.Util.PrimType;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryUtil;
 
@@ -54,7 +55,7 @@ abstract class Texture2DAbstract extends Texture
         
         width = image.width;
         height = image.height;
-        int primType = TexUtil.getPrimEnum(image.type);
+        int primType = TexUtil.getGLPrim(image.type);
         
         int oldID = tempBind();
         GL11.nglTexImage2D(target, 0, format, width, height, 0,
@@ -91,11 +92,12 @@ abstract class Texture2DAbstract extends Texture
         int baseFormat = TexUtil.getBaseFormat(format);
         if (baseFormat == -1) throw new IllegalArgumentException("Illegal image format.");
         
-        int primType = TexUtil.getPrimEnum(TexUtil.getPrimType(format));
+        PrimType primType = TexUtil.getPrimType(format);
+        int glPrimType = primType != null ? TexUtil.getGLPrim(primType) : GL11.GL_UNSIGNED_BYTE;
         
         int oldID = tempBind();
         GL11.nglTexImage2D(target, 0, format, width, height, 0,
-                baseFormat, primType, MemoryUtil.NULL);
+                baseFormat, glPrimType, MemoryUtil.NULL);
         tempUnbind(oldID);
     }
 }

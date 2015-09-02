@@ -7,13 +7,17 @@ package com.samrj.devil.gl;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public interface VAO
+public abstract class VAO
 {
-    public void enableVertexAttribArray(int index);
-    public void disableVertexAttribArray(int index);
-    public void vertexAttribPointer(int index, int size, int type, boolean normalized, int stride, long pointerOffset);
-    public void bindElementArrayBuffer(int buffer);
-    void bind();
-    void unbind();
-    void delete();
+    VAO()
+    {
+    }
+    
+    public abstract void enableVertexAttribArray(int index);
+    public abstract void disableVertexAttribArray(int index);
+    public abstract void vertexAttribPointer(int index, int size, int type, boolean normalized, int stride, long pointerOffset);
+    public abstract void bindElementArrayBuffer(int buffer);
+    abstract void bind();
+    abstract void unbind();
+    abstract void delete();
 }

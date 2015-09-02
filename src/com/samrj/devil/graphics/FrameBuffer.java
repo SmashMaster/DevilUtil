@@ -1,17 +1,19 @@
 package com.samrj.devil.graphics;
 
+import com.samrj.devil.gl.Texture;
 import com.samrj.devil.io.Memory.Block;
 import static com.samrj.devil.io.Memory.memUtil;
-import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
 /**
+ * OpenGL FBO wrapper.
+ * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class GLFrameBuffer
+public class FrameBuffer
 {
     public static String glStatusName(int statusEnum)
     {
@@ -35,31 +37,47 @@ public class GLFrameBuffer
     
     private int id, target = -1;
     
-    public GLFrameBuffer()
+    public FrameBuffer()
     {
         id = GL30.glGenFramebuffers();
     }
     
-    public void glBind(int target)
+    /**
+     * Binds this frame buffer to the given target.
+     * 
+     * @param target An OpenGL FBO target.
+     */
+    public void bind(int target)
     {
         if (isDeleted()) throw new IllegalStateException();
         GL30.glBindFramebuffer(target, id);
         this.target = target;
     }
     
-    public void glBind()
+    /**
+     * Binds this frame buffer to the default FBO target.
+     */
+    public void bind()
     {
-        glBind(GL30.GL_FRAMEBUFFER);
+        bind(GL30.GL_FRAMEBUFFER);
     }
     
-    public void glUnbind()
+    /**
+     * Unbinds this FBO.
+     */
+    public void unbind()
     {
         if (!isBound()) return;
         GL30.glBindFramebuffer(target, 0);
         target = -1;
     }
     
-    public void glDrawBuffers(int... a)
+    /**
+     * Enables the given OpenGL draw buffers for all subsequent draw calls.
+     * 
+     * @param a An array of draw buffers to use.
+     */
+    public void drawBuffers(int... a)
     {
         if (isDeleted()) throw new IllegalStateException();
         for (int i=0; i<a.length; i++) if (a[i] < GL30.GL_COLOR_ATTACHMENT0)
@@ -70,36 +88,55 @@ public class GLFrameBuffer
         block.free();
     }
     
-//    public void glTexture2D(GLTexture2D t, int attachment)
-//    {
-//        if (isDeleted()) throw new IllegalStateException();
-//        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, attachment, GL11.GL_TEXTURE_2D, t.id(), 0);
-//    }
+    /**
+     * Attaches the given texture to this frame buffer.
+     * 
+     * @param texture A texture to attach.
+     * @param attachment The frame buffer attachment to use.
+     */
+    public void texture(Texture texture, int attachment)
+    {
+        if (isDeleted()) throw new IllegalStateException();
+        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, attachment, texture.target, texture.id, 0);
+    }
     
-    public void glDelete()
+    /**
+     * Deletes this frame buffer, releasing any associated resources.
+     */
+    public void delete()
     {
         GL30.glDeleteFramebuffers(id);
         id = -1;
     }
     
-    public int glGetStatus()
+    /**
+     * @return The OpenGL status for this frame buffer.
+     */
+    public int getGLStatus()
     {
         if (!isBound()) throw new IllegalStateException();
         return GL30.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER);
     }
     
-    public String glGetStatusString()
-    {
-        return glStatusName(glGetStatus());
-    }
-    
+    /**
+     * @return Whether this frame buffer has been deleted.
+     */
     public boolean isDeleted()
     {
         return id == -1;
     }
     
+    /**
+     * @return Whether this frame buffer is currently bound.
+     */
     public boolean isBound()
     {
         return target != -1;
+    }
+    
+    @Override
+    public String toString()
+    {
+        return glStatusName(getGLStatus());
     }
 }

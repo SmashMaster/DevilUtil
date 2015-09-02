@@ -11,7 +11,7 @@ import org.lwjgl.opengl.GL30;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-final class VAOGL implements VAO
+final class VAOGL extends VAO
 {
     private final int id;
     private boolean deleted;
@@ -56,21 +56,21 @@ final class VAOGL implements VAO
     }
 
     @Override
-    public void bind()
+    void bind()
     {
         if (deleted) throw new IllegalStateException("VAO deleted.");
         GL30.glBindVertexArray(id);
     }
 
     @Override
-    public void unbind()
+    void unbind()
     {
         if (deleted) throw new IllegalStateException("VAO deleted.");
         GL30.glBindVertexArray(0);
     }
 
     @Override
-    public void delete()
+    void delete()
     {
         if (deleted) return;
         GL30.glDeleteVertexArrays(id);
