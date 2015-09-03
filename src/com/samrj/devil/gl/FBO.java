@@ -1,7 +1,6 @@
 package com.samrj.devil.gl;
 
-import com.samrj.devil.io.Memory.Block;
-import static com.samrj.devil.io.Memory.memUtil;
+import com.samrj.devil.io.Memory;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
@@ -74,9 +73,9 @@ public final class FBO
     public void drawBuffers(int... a)
     {
         ensureBound();
-        Block block = memUtil.wrapi(a);
-        GL20.glDrawBuffers(block.readUnsafe().asIntBuffer());
-        block.free();
+        Memory mem = Memory.wrapi(a);
+        GL20.nglDrawBuffers(a.length, mem.address);
+        mem.free();
     }
     
     /**

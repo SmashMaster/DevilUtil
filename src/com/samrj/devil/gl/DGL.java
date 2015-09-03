@@ -1,7 +1,5 @@
 package com.samrj.devil.gl;
 
-import com.samrj.devil.io.Memory;
-import static com.samrj.devil.io.Memory.memUtil;
 import com.samrj.devil.math.Util.PrimType;
 import com.samrj.devil.res.Resource;
 import com.samrj.devil.util.QuickIdentitySet;
@@ -109,24 +107,6 @@ public final class DGL
      * Generates a new OpenGL shader, loads sources from the given resource
      * path, then compiles the shader.
      * 
-     * @param memory The memory to use for buffering sources.
-     * @param path The class/file path from which to load sources.
-     * @param type The type of shader to load.
-     * @return A new, compiled shader.
-     * @throws IOException If an I/O error occurs.
-     */
-    public static Shader loadShader(Memory memory, String path, int type) throws IOException
-    {
-        Shader shader = genShader(type);
-        shader.source(memory, path);
-        return shader;
-    }
-    
-    /**
-     * Generates a new OpenGL shader, loads sources from the given resource
-     * path, then compiles the shader. Uses DevilUtil default memory for
-     * buffering the sources--may not be sufficient for large sources!
-     * 
      * @param path The class/file path from which to load sources.
      * @param type The type of shader to load.
      * @return A new, compiled shader.
@@ -134,7 +114,9 @@ public final class DGL
      */
     public static Shader loadShader(String path, int type) throws IOException
     {
-        return loadShader(memUtil, path, type);
+        Shader shader = genShader(type);
+        shader.source(path);
+        return shader;
     }
     
     /**
@@ -185,32 +167,15 @@ public final class DGL
      * assumed to be in the given path, with the same name, ending in .vert and
      * .frag, respectively.
      * 
-     * @param memory The memory to use for buffering sources.
-     * @param path The directory and name to load sources from.
-     * @return A new, complete shader program.
-     * @throws IOException 
-     */
-    public static ShaderProgram loadProgram(Memory memory, String path) throws IOException
-    {
-        Shader vertShader = loadShader(memory, path + ".vert", GL20.GL_VERTEX_SHADER);
-        Shader fragShader = loadShader(memory, path + ".frag", GL20.GL_FRAGMENT_SHADER);
-        return loadProgram(vertShader, fragShader);
-    }
-    
-    /**
-     * Generates, loads, compiles, links, and validates a new shader program as
-     * well as an underlying vertex and fragment shader. The shader sources are
-     * assumed to be in the given path, with the same name, ending in .vert and
-     * .frag, respectively. Uses the default DevilUtil memory for buffering
-     * sources, which may not be sufficient for large sources.
-     * 
      * @param path The directory and name to load sources from.
      * @return A new, complete shader program.
      * @throws IOException 
      */
     public static ShaderProgram loadProgram(String path) throws IOException
     {
-        return loadProgram(memUtil, path);
+        Shader vertShader = loadShader(path + ".vert", GL20.GL_VERTEX_SHADER);
+        Shader fragShader = loadShader(path + ".frag", GL20.GL_FRAGMENT_SHADER);
+        return loadProgram(vertShader, fragShader);
     }
     
     /**
@@ -319,33 +284,29 @@ public final class DGL
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Vertex data methods">
     /**
-     * Generates a new vertex buffer of the given capacity, using the given
-     * memory.
+     * Generates a new vertex buffer of the given capacity.
      * 
-     * @param memory The memory to buffer within.
      * @param maxVertices The maximum number of vertices to buffer.
      * @param maxIndices The maximum number of indices to buffer.
      * @return A new vertex buffer.
      */
-    public static VertexBuffer genVertexBuffer(Memory memory, int maxVertices, int maxIndices)
+    public static VertexBuffer genVertexBuffer(int maxVertices, int maxIndices)
     {
-        VertexBuffer buffer = new VertexBuffer(memory, maxVertices, maxIndices);
+        VertexBuffer buffer = new VertexBuffer(maxVertices, maxIndices);
         datas.add(buffer);
         return buffer;
     }
     
     /**
-     * Generates a new vertex buffer of the given capacity, using the given
-     * memory.
+     * Generates a new vertex buffer of the given capacity.
      * 
-     * @param memory The memory to buffer within.
      * @param maxVertices The maximum number of vertices to buffer.
      * @param maxIndices The maximum number of indices to buffer.
      * @return A new vertex buffer.
      */
-    public static VertexStream genVertexStream(Memory memory, int maxVertices, int maxIndices)
+    public static VertexStream genVertexStream(int maxVertices, int maxIndices)
     {
-        VertexStream stream = new VertexStream(memory, maxVertices, maxIndices);
+        VertexStream stream = new VertexStream(maxVertices, maxIndices);
         datas.add(stream);
         return stream;
     }
@@ -387,20 +348,17 @@ public final class DGL
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Image methods">
     /**
-     * Allocates a new image buffer in the given memory, with the given
-     * dimensions and format. The newly allocated buffer has indeterminate
-     * contents.
+     * Allocates a new image buffer with the given dimensions and format. The
+     * newly allocated buffer has indeterminate contents.
      * 
-     * @param memory The memory to allocate from.
      * @param width The width of the image, in pixels.
      * @param height The height of the image, in pixels.
      * @param bands The number of bands the image will have.
      * @param type The primitive type of the image data.
      * @return A newly allocated image.
      */
-    public static Image genImage(Memory memory, int width, int height, int bands, PrimType type)
+    public static Image genImage(int width, int height, int bands, PrimType type)
     {
-        if (memory == null) throw new NullPointerException();
         if (width <= 0 || height <= 0)
             throw new IllegalArgumentException("Illegal dimensions specified.");
         if (bands <= 0 || bands > 4)
@@ -408,7 +366,7 @@ public final class DGL
         if (!Image.typeSupported(type))
             throw new IllegalArgumentException("Illegal primitive type " + type + " specified.");
         
-        Image image = new Image(memory, width, height, bands, type);
+        Image image = new Image(width, height, bands, type);
         images.add(image);
         return image;
     }
@@ -417,18 +375,17 @@ public final class DGL
      * Allocates an image  buffer for the given raster, then buffers the raster
      * in it. Returns the allocated buffer.
      * 
-     * @param memory The memory to allocate from.
      * @param raster The raster to buffer.
      * @return A newly allocated buffer containing the given raster.
      */
-    public static Image loadImage(Memory memory, Raster raster)
+    public static Image loadImage(Raster raster)
     {
         PrimType type = Image.getType(raster);
         if (type == null) throw new IllegalArgumentException("Given raster is not bufferable.");
         
-        Image image = genImage(memory, raster.getWidth(), raster.getHeight(), raster.getNumBands(), type);
+        Image image = genImage(raster.getWidth(), raster.getHeight(), raster.getNumBands(), type);
         image.buffer(raster);
-        image.buffer.reset();
+        image.buffer.rewind();
         return image;
     }
     
@@ -437,21 +394,18 @@ public final class DGL
      * path, and then buffers the image in a newly allocated buffer. Returns
      * the image buffer.
      * 
-     * @param memory The memory to allocate from.
      * @param path The path to load an image from.
      * @return A newly allocated buffer containing the loaded image.
      * @throws IOException If an io exception occurs.
      */
-    public static Image loadImage(Memory memory, String path) throws IOException
+    public static Image loadImage(String path) throws IOException
     {
-        if (memory == null) throw new NullPointerException();
-        
         InputStream in = Resource.open(path);
         BufferedImage bImage = ImageIO.read(in);
         in.close();
         if (bImage == null) throw new IOException("Cannot read image from " + path);
         
-        return loadImage(memory, bImage.getRaster());
+        return loadImage(bImage.getRaster());
     }
     
     /**
@@ -498,13 +452,12 @@ public final class DGL
      * to use as an image buffer, uploads the image, and then deallocates the
      * memory.
      * 
-     * @param memory The memory to temporarily allocate from.
      * @param raster The raster to load as a texture.
      * @return A new 2D texture object.
      */
-    public static Texture2D loadTex2D(Memory memory, Raster raster)
+    public static Texture2D loadTex2D(Raster raster)
     {
-        Image image = loadImage(memory, raster);
+        Image image = loadImage(raster);
         Texture2D texture = loadTex2D(image);
         deleteImage(image);
         return texture;
@@ -515,14 +468,13 @@ public final class DGL
      * Allocates memory to use as an image buffer, uploads the image, and then
      * deallocates the memory.
      * 
-     * @param memory The memory to temporarily allocate from.
      * @param path The classpath or file path to an image.
      * @return A new 2D texture object.
      * @throws IOException If an io exception occurred.
      */
-    public static Texture2D loadTex2D(Memory memory, String path) throws IOException
+    public static Texture2D loadTex2D(String path) throws IOException
     {
-        Image image = loadImage(memory, path);
+        Image image = loadImage(path);
         Texture2D texture = loadTex2D(image);
         deleteImage(image);
         return texture;
@@ -562,13 +514,12 @@ public final class DGL
      * memory to use as an image buffer, uploads the image, and then deallocates
      * the memory.
      * 
-     * @param memory The memory to temporarily allocate from.
      * @param raster The raster to load as a texture.
      * @return A new rectangle texture object.
      */
-    public static TextureRectangle loadTexRect(Memory memory, Raster raster)
+    public static TextureRectangle loadTexRect(Raster raster)
     {
-        Image image = loadImage(memory, raster);
+        Image image = loadImage(raster);
         TextureRectangle texture = loadTexRect(image);
         deleteImage(image);
         return texture;
@@ -579,14 +530,13 @@ public final class DGL
      * path. Allocates memory to use as an image buffer, uploads the image, and
      * then deallocates the memory.
      * 
-     * @param memory The memory to temporarily allocate from.
      * @param path The classpath or file path to an image.
      * @return A new rectangle texture object.
      * @throws IOException If an io exception occurred.
      */
-    public static TextureRectangle loadTexRect(Memory memory, String path) throws IOException
+    public static TextureRectangle loadTexRect(String path) throws IOException
     {
-        Image image = loadImage(memory, path);
+        Image image = loadImage(path);
         TextureRectangle texture = loadTexRect(image);
         deleteImage(image);
         return texture;

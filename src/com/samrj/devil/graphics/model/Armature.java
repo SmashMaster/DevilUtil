@@ -1,7 +1,6 @@
 package com.samrj.devil.graphics.model;
 
 import com.samrj.devil.io.Memory;
-import com.samrj.devil.io.Memory.Block;
 import com.samrj.devil.math.topo.DAG;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -20,15 +19,13 @@ public class Armature
 {
     public final Bone[] bones;
     public final IKConstraint[] ikConstraints;
-    private final Memory memory;
     private final DAG<Solvable> solveGraph;
     private final List<Solvable> solveOrder;
-    private Block boneBlock;
+    private Memory boneBlock;
     private ByteBuffer boneMatrixBuffer;
     
-    Armature(DataInputStream in, Memory memory) throws IOException
+    Armature(DataInputStream in) throws IOException
     {
-        this.memory = memory;
         solveGraph = new DAG<>();
         
         int numBones = in.readInt();
@@ -71,8 +68,8 @@ public class Armature
         
         solveOrder = solveGraph.sort();
         
-        boneBlock = memory.alloc(numBones*16*4);
-        boneMatrixBuffer = boneBlock.read();
+        boneBlock = new Memory(numBones*16*4);
+        boneMatrixBuffer = boneBlock.buffer;
     }
     
     public void solve()
@@ -82,9 +79,9 @@ public class Armature
     
     public ByteBuffer bufferBoneMatrices()
     {
-        boneMatrixBuffer.reset();
+        boneMatrixBuffer.rewind();
         for (Bone bone : bones) bone.matrix.write(boneMatrixBuffer);
-        boneMatrixBuffer.reset();
+        boneMatrixBuffer.rewind();
         return boneMatrixBuffer;
     }
     
@@ -92,13 +89,8 @@ public class Armature
     {
         Arrays.fill(bones, null);
         Arrays.fill(ikConstraints, null);
-        
-        if (memory != null)
-        {
-            boneBlock.free();
-            boneBlock = null;
-        }
-        
+        boneBlock.free();
+        boneBlock = null;
         boneMatrixBuffer = null;
     }
 }

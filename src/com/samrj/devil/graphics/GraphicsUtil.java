@@ -1,7 +1,6 @@
 package com.samrj.devil.graphics;
 
-import com.samrj.devil.io.Memory.Block;
-import static com.samrj.devil.io.Memory.memUtil;
+import com.samrj.devil.io.Memory;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Util;
@@ -39,10 +38,10 @@ public final class GraphicsUtil
         drawCircle(pos, radius, segments, GL11.GL_TRIANGLE_FAN);
     }
     
-    private static Block allocMat3(Mat3 m)
+    private static Memory allocMat3as4(Mat3 m)
     {
-        Block block = memUtil.alloc(16*4);
-        ByteBuffer b = block.read();
+        Memory block = new Memory(16*4);
+        ByteBuffer b = block.buffer;
         b.putFloat(m.a);  b.putFloat(m.d);  b.putFloat(m.g);  b.putFloat(0.0f);
         b.putFloat(m.b);  b.putFloat(m.e);  b.putFloat(m.h);  b.putFloat(0.0f);
         b.putFloat(m.c);  b.putFloat(m.f);  b.putFloat(m.i);  b.putFloat(0.0f);
@@ -52,33 +51,33 @@ public final class GraphicsUtil
     
     public static void glLoadMatrix(Mat3 m, int mode)
     {
-        Block b = allocMat3(m);
+        Memory b = allocMat3as4(m);
         GL11.glMatrixMode(mode);
-        GL11.glLoadMatrixf(b.readUnsafe());
+        GL11.nglLoadMatrixf(b.address);
         b.free();
     }
     
     public static void glMultMatrix(Mat3 m, int mode)
     {
-        Block b = allocMat3(m);
+        Memory b = allocMat3as4(m);
         GL11.glMatrixMode(mode);
-        GL11.glMultMatrixf(b.readUnsafe());
+        GL11.nglMultMatrixf(b.address);
         b.free();
     }
     
     public static void glLoadMatrix(Mat4 m, int mode)
     {
-        Block b = memUtil.alloc(m);
+        Memory b = Memory.wrap(m);
         GL11.glMatrixMode(mode);
-        GL11.glLoadMatrixf(b.readUnsafe());
+        GL11.nglLoadMatrixf(b.address);
         b.free();
     }
     
     public static void glMultMatrix(Mat4 m, int mode)
     {
-        Block b = memUtil.alloc(m);
+        Memory b = Memory.wrap(m);
         GL11.glMatrixMode(mode);
-        GL11.glMultMatrixf(b.readUnsafe());
+        GL11.nglMultMatrixf(b.address);
         b.free();
     }
     

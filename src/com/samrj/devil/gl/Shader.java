@@ -1,8 +1,6 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.io.Memory;
-import com.samrj.devil.io.Memory.Block;
-import static com.samrj.devil.io.Memory.memUtil;
 import com.samrj.devil.res.Resource;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,36 +34,29 @@ public final class Shader
     
     /**
      * Loads shader sources from the given input stream and then compiles this
-     * shader. Uses the given memory for buffering the sources.
+     * shader. Buffers the source in native memory.
      * 
-     * @param memory The memory to use for loading.
      * @param in The input stream to load sources from.
      * @throws IOException If an I/O error occurs.
      */
-    public void source(Memory memory, InputStream in) throws IOException
+    public void source(InputStream in) throws IOException
     {
         if (state != State.NEW) throw new IllegalStateException("Shader must be new.");
         
         //Source to memory
         int sourceLength = in.available();
-        Block sourceBlock = memory.alloc(sourceLength);
-        ByteBuffer sourceBuffer = sourceBlock.readUnsafe();
+        Memory sourceBlock = new Memory(sourceLength);
+        ByteBuffer sourceBuffer = sourceBlock.buffer;
         for (int i=0; i<sourceLength; i++) sourceBuffer.put((byte)in.read());
 
         //Pointer to memory
-        Block pointerBlock = memory.alloc(8);
-        ByteBuffer pointerBuffer = pointerBlock.read();
-        pointerBuffer.putLong(sourceBlock.address());
-        pointerBuffer.reset();
+        Memory pointerBlock = Memory.wrapl(sourceBlock.address);
 
         //Length to memory
-        Block lengthBlock = memory.alloc(4);
-        ByteBuffer lengthBuffer = lengthBlock.read();
-        lengthBuffer.putInt(sourceLength);
-        lengthBuffer.reset();
+        Memory lengthBlock = Memory.wrapi(sourceLength);
 
         //Load shader source
-        GL20.glShaderSource(id, 1, pointerBuffer, lengthBuffer);
+        GL20.nglShaderSource(id, 1, pointerBlock.address, lengthBlock.address);
 
         //Free allocated memory
         lengthBlock.free();
@@ -86,35 +77,8 @@ public final class Shader
     }
     
     /**
-     * Loads shader sources from the given input stream and then compiles this
-     * shader. Uses DevilUtil default memory for buffering the sources--may not
-     * be sufficient for large sources!
-     * 
-     * @param in The input stream to load sources from.
-     * @throws IOException If an I/O error occurs.
-     */
-    public void source(InputStream in) throws IOException
-    {
-        source(memUtil, in);
-    }
-    
-    /**
      * Loads shader sources from the given resource path and then compiles this
-     * shader. Uses the given memory for buffering the sources.
-     * 
-     * @param memory The memory to use for loading.
-     * @param path The class/file path from which to load sources.
-     * @throws IOException If an I/O error occurs.
-     */
-    public void source(Memory memory, String path) throws IOException
-    {
-        source(memory, Resource.open(path));
-    }
-    
-     /**
-     * Loads shader sources from the given resource path and then compiles this
-     * shader. Uses DevilUtil default memory for buffering the sources--may not
-     * be sufficient for large sources!
+     * shader. Buffers the source in native memory.
      * 
      * @param path The class/file path from which to load sources.
      * @throws IOException If an I/O error occurs.

@@ -1,7 +1,6 @@
 package com.samrj.devil.graphics.model;
 
 import com.samrj.devil.io.Memory;
-import com.samrj.devil.io.Memory.Block;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -22,13 +21,11 @@ public class Mesh
     
     public final int numVertices;
     public final int numTriangles;
-    private final Memory memory;
-    private Block vertexBlock, indexBlock;
+    private Memory vertexBlock, indexBlock;
     private ByteBuffer vertexData, indexData;
     
-    Mesh(DataInputStream in, Memory memory, Armature armature, boolean hasTangents) throws IOException
+    Mesh(DataInputStream in, Armature armature, boolean hasTangents) throws IOException
     {
-        this.memory = memory;
         name = DevilModel.readPaddedUTF(in);
         
         int bitFlags = in.readInt();
@@ -52,16 +49,16 @@ public class Mesh
         
         numVertices = in.readInt();
         int vertexDataLength = numVertices*floatsPerVertex;
-        vertexBlock = memory.alloc(vertexDataLength*4);
-        vertexData = vertexBlock.read();
+        vertexBlock = new Memory(vertexDataLength*4);
+        vertexData = vertexBlock.buffer;
         
         for (int i=0; i<vertexDataLength; i++)
             vertexData.putFloat(in.readFloat());
         
         numTriangles = in.readInt();
         int triangleIndexDataLength = numTriangles*3;
-        indexBlock = memory.alloc(triangleIndexDataLength*4);
-        indexData = indexBlock.read();
+        indexBlock = new Memory(triangleIndexDataLength*4);
+        indexData = indexBlock.buffer;
         
         for (int i=0; i<triangleIndexDataLength; i++)
             indexData.putInt(in.readInt());
@@ -79,21 +76,17 @@ public class Mesh
     
     public final void rewindBuffers()
     {
-        vertexData.reset();
-        indexData.reset();
+        vertexData.rewind();
+        indexData.rewind();
     }
     
     final void destroy()
     {
-        if (memory != null)
-        {
-            vertexBlock.free();
-            vertexBlock = null;
-            indexBlock.free();
-            indexBlock = null;
-        }
-        
+        vertexBlock.free();
+        vertexBlock = null;
         vertexData = null;
+        indexBlock.free();
+        indexBlock = null;
         indexData = null;
     }
 }

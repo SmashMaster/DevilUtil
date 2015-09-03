@@ -4,7 +4,6 @@ import com.samrj.devil.gl.DGL;
 import com.samrj.devil.gl.Image;
 import com.samrj.devil.gl.Texture2D;
 import com.samrj.devil.io.LittleEndianInputStream;
-import com.samrj.devil.io.Memory;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.res.Resource;
@@ -44,7 +43,7 @@ public class AtlasFont
     private final Char[] chars;
     private final int firstCharID;
     
-    public AtlasFont(Memory memory, String directory, String fontFile) throws IOException
+    public AtlasFont(String directory, String fontFile) throws IOException
     {
         if (!directory.endsWith("/")) directory += "/";
         
@@ -79,7 +78,7 @@ public class AtlasFont
         skip(in, 4);
         String texFile = in.readNullTermStr();
         
-        Image image = DGL.loadImage(memory, directory + texFile);
+        Image image = DGL.loadImage(directory + texFile);
         if (!Util.isPower2(image.width) || !Util.isPower2(image.height))
             throw new IOException("Texture dimensions must be powers of two.");
         if (image.bands != 1) throw new IOException("Texture format must have one band.");

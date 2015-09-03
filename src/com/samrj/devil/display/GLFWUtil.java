@@ -1,7 +1,6 @@
 package com.samrj.devil.display;
 
-import com.samrj.devil.io.Memory.Block;
-import static com.samrj.devil.io.Memory.memUtil;
+import com.samrj.devil.io.Memory;
 import com.samrj.devil.math.Vec2i;
 import java.nio.ByteBuffer;
 import org.lwjgl.glfw.GLFW;
@@ -18,12 +17,12 @@ public final class GLFWUtil
 {
     public static Vec2i getWindowPos(long window)
     {
-        IntBlock xBlock = new IntBlock();
-        IntBlock yBlock = new IntBlock();
+        Memory xBlock = new Memory(4);;
+        Memory yBlock = new Memory(4);;
         
-        GLFW.glfwGetWindowPos(window, xBlock.buf(), yBlock.buf());
+        GLFW.nglfwGetWindowPos(window, xBlock.address, yBlock.address);
         
-        Vec2i out = new Vec2i(xBlock.read(), yBlock.read());
+        Vec2i out = new Vec2i(xBlock.readInt(), yBlock.readInt());
         xBlock.free();
         yBlock.free();
         return out;
@@ -31,12 +30,12 @@ public final class GLFWUtil
     
     public static Vec2i getWindowSize(long window)
     {
-        IntBlock widthBlock = new IntBlock();
-        IntBlock heightBlock = new IntBlock();
+        Memory widthBlock = new Memory(4);
+        Memory heightBlock = new Memory(4);
         
-        GLFW.glfwGetWindowSize(window, widthBlock.buf(), heightBlock.buf());
+        GLFW.nglfwGetWindowSize(window, widthBlock.address, heightBlock.address);
         
-        Vec2i out = new Vec2i(widthBlock.read(), heightBlock.read());
+        Vec2i out = new Vec2i(widthBlock.readInt(), heightBlock.readInt());
         widthBlock.free();
         heightBlock.free();
         return out;
@@ -44,12 +43,12 @@ public final class GLFWUtil
     
     public static final Vec2i getFramebufferSize(long window)
     {
-        IntBlock widthBlock = new IntBlock();
-        IntBlock heightBlock = new IntBlock();
+        Memory widthBlock = new Memory(4);
+        Memory heightBlock = new Memory(4);
         
-        GLFW.glfwGetFramebufferSize(window, widthBlock.buf(), heightBlock.buf());
+        GLFW.nglfwGetFramebufferSize(window, widthBlock.address, heightBlock.address);
         
-        Vec2i out = new Vec2i(widthBlock.read(), heightBlock.read());
+        Vec2i out = new Vec2i(widthBlock.readInt(), heightBlock.readInt());
         widthBlock.free();
         heightBlock.free();
         return out;
@@ -57,18 +56,18 @@ public final class GLFWUtil
     
     public static final FrameSize getWindowFrameSize(long window)
     {
-        IntBlock leftBlock = new IntBlock();
-        IntBlock topBlock = new IntBlock();
-        IntBlock rightBlock = new IntBlock();
-        IntBlock bottomBlock = new IntBlock();
+        Memory leftBlock = new Memory(4);
+        Memory topBlock = new Memory(4);
+        Memory rightBlock = new Memory(4);
+        Memory bottomBlock = new Memory(4);
         
-        GLFW.glfwGetWindowFrameSize(window, leftBlock.buf(), topBlock.buf(),
-                                    rightBlock.buf(), bottomBlock.buf());
+        GLFW.nglfwGetWindowFrameSize(window, leftBlock.address, topBlock.address,
+                                    rightBlock.address, bottomBlock.address);
         
-        FrameSize out =  new FrameSize(leftBlock.read(),
-                                       topBlock.read(),
-                                       rightBlock.read(),
-                                       bottomBlock.read());
+        FrameSize out =  new FrameSize(leftBlock.readInt(),
+                                       topBlock.readInt(),
+                                       rightBlock.readInt(),
+                                       bottomBlock.readInt());
         leftBlock.free();
         topBlock.free();
         rightBlock.free();
@@ -78,12 +77,12 @@ public final class GLFWUtil
     
     public static Vec2i getMonitorPos(long monitor)
     {
-        IntBlock xBlock = new IntBlock();
-        IntBlock yBlock = new IntBlock();
+        Memory xBlock = new Memory(4);
+        Memory yBlock = new Memory(4);
         
-        GLFW.glfwGetMonitorPos(monitor, xBlock.buf(), yBlock.buf());
+        GLFW.nglfwGetMonitorPos(monitor, xBlock.address, yBlock.address);
         
-        Vec2i out = new Vec2i(xBlock.read(), yBlock.read());
+        Vec2i out = new Vec2i(xBlock.readInt(), yBlock.readInt());
         xBlock.free();
         yBlock.free();
         return out;
@@ -91,12 +90,12 @@ public final class GLFWUtil
     
     public static Vec2i getMonitorPhysicalSize(long monitor)
     {
-        IntBlock widthBlock = new IntBlock();
-        IntBlock heightBlock = new IntBlock();
+        Memory widthBlock = new Memory(4);
+        Memory heightBlock = new Memory(4);
         
-        GLFW.glfwGetMonitorPhysicalSize(monitor, widthBlock.buf(), heightBlock.buf());
+        GLFW.nglfwGetMonitorPhysicalSize(monitor, widthBlock.address, heightBlock.address);
         
-        Vec2i out = new Vec2i(widthBlock.read(), heightBlock.read());
+        Vec2i out = new Vec2i(widthBlock.readInt(), heightBlock.readInt());
         widthBlock.free();
         heightBlock.free();
         return out;
@@ -104,9 +103,9 @@ public final class GLFWUtil
     
     public static VideoMode[] getMonitorVideoModes(long monitor)
     {
-        IntBlock countBlock = new IntBlock();
-        ByteBuffer buffer = GLFW.glfwGetVideoModes(monitor, countBlock.buf());
-        int count = countBlock.read();
+        Memory countBlock = new Memory(4);
+        ByteBuffer buffer = GLFW.glfwGetVideoModes(monitor, countBlock.buffer);
+        int count = countBlock.readInt();
         countBlock.free();
         
         VideoMode[] out = new VideoMode[count];
@@ -131,37 +130,12 @@ public final class GLFWUtil
     
     public static void setMonitorGammaRamp(long monitor, GammaRamp gammaRamp)
     {
-        Block[] blocks = gammaRamp.allocate();
-        GLFW.glfwSetGammaRamp(monitor, blocks[3].read());
-        for (Block block : blocks) block.free();
+        Memory[] blocks = gammaRamp.allocate();
+        GLFW.nglfwSetGammaRamp(monitor, blocks[3].address);
+        for (Memory mem : blocks) mem.free();
     }
     
     private GLFWUtil()
     {
-    }
-    
-    private static class IntBlock
-    {
-        private final Block block;
-        
-        private IntBlock()
-        {
-            block = memUtil.alloc(4);
-        }
-        
-        private ByteBuffer buf()
-        {
-            return block.read();
-        }
-        
-        private int read()
-        {
-            return block.readInt();
-        }
-        
-        private void free()
-        {
-            block.free();
-        }
     }
 }

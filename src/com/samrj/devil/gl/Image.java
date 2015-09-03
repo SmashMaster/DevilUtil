@@ -1,7 +1,6 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.io.Memory;
-import com.samrj.devil.io.Memory.Block;
 import com.samrj.devil.math.Util.PrimType;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
@@ -59,10 +58,10 @@ public final class Image
     public final int size;
     public final ByteBuffer buffer;
     
-    private final Block block;
+    private final Memory mem;
     private boolean deleted;
     
-    Image(Memory memory, int width, int height, int bands, PrimType type)
+    Image(int width, int height, int bands, PrimType type)
     {
         this.width = width;
         this.height = height;
@@ -70,8 +69,8 @@ public final class Image
         this.type = type;
         size = width*height*bands*type.size;
         
-        block = memory.alloc(size);
-        buffer = block.read();
+        mem = new Memory(size);
+        buffer = mem.buffer;
     }
     
     /**
@@ -155,7 +154,7 @@ public final class Image
             for (int x=0; x<width; x++)
                 for (int b=0; b<bands; b++) s.sample(x, y, b);
         
-        buffer.reset();
+        buffer.rewind();
     }
     
     /**
@@ -163,7 +162,7 @@ public final class Image
      */
     public long address()
     {
-        return block.address();
+        return mem.address;
     }
     
     /**
@@ -176,7 +175,7 @@ public final class Image
     
     void delete()
     {
-        block.free();
+        mem.free();
         deleted = true;
     }
     

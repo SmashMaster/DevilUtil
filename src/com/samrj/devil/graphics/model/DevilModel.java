@@ -1,6 +1,5 @@
 package com.samrj.devil.graphics.model;
 
-import com.samrj.devil.io.Memory;
 import com.samrj.devil.res.Resource;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -36,10 +35,8 @@ public class DevilModel
     
     private final Map<String, Integer> actionIndices, meshIndices;
     
-    public DevilModel(InputStream inputStream, Memory memory) throws IOException
+    public DevilModel(InputStream inputStream) throws IOException
     {
-        if (memory == null) throw new NullPointerException();
-        
         try
         {
             DataInputStream in = new DataInputStream(inputStream);
@@ -48,7 +45,7 @@ public class DevilModel
             boolean hasArmature = in.readInt() != 0;
             if (hasArmature)
             {
-                armature = new Armature(in, memory);
+                armature = new Armature(in);
                 
                 int numActions = in.readInt();
                 actions = new Action[numActions];
@@ -73,7 +70,7 @@ public class DevilModel
             meshIndices = new HashMap<>(numMeshes);
             for (int i=0; i<numMeshes; i++)
             {
-                meshes[i] = new Mesh(in, memory, armature, hasTangents);
+                meshes[i] = new Mesh(in, armature, hasTangents);
                 meshIndices.put(meshes[i].name, i);
             }
         }
@@ -83,9 +80,9 @@ public class DevilModel
         }
     }
     
-    public DevilModel(String path, Memory memory) throws IOException
+    public DevilModel(String path) throws IOException
     {
-        this(Resource.open(path), memory);
+        this(Resource.open(path));
     }
     
     public Mesh getMesh(String name)

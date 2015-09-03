@@ -1,7 +1,6 @@
 package com.samrj.devil.gl;
 
-import com.samrj.devil.io.Memory.Block;
-import static com.samrj.devil.io.Memory.memUtil;
+import com.samrj.devil.io.Memory;
 import com.samrj.devil.math.Mat2;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
@@ -88,24 +87,24 @@ public final class ShaderProgram
         
         int numAttributes = GL20.glGetProgrami(id, GL20.GL_ACTIVE_ATTRIBUTES);
         ArrayList<Attribute> attList = new ArrayList<>(numAttributes);
+        Memory mem = new Memory(4 + 4 + 4 + 32);
+        ByteBuffer buffer = mem.buffer;
         for (int index=0; index<numAttributes; index++)
         {
-            Block block = memUtil.alloc(4 + 4 + 4 + 32);
-            long ptr = block.address();
+            long ptr = mem.address;
             long namePtr = ptr + 12;
             GL20.nglGetActiveAttrib(id, index, 31, ptr, ptr + 4, ptr + 8, namePtr);
 
-            ByteBuffer buffer = block.readUnsafe();
-            buffer.position(buffer.position() + 4);
+            buffer.rewind();
+            buffer.getInt();
             int size = buffer.getInt();
             int type = buffer.getInt();
             String name = MemoryUtil.memDecodeASCII(namePtr);
             int location = GL20.nglGetAttribLocation(id, namePtr);
 
-            block.free();
-
             attList.add(new Attribute(name, type, size, location));
         }
+        mem.free();
         attributes = Collections.unmodifiableList(attList);
         
         state = State.LINKED;
@@ -291,9 +290,9 @@ public final class ShaderProgram
         int loc = GL20.glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        Block b = memUtil.alloc(matrix);
-        GL20.glUniformMatrix2fv(loc, false, b.readUnsafe().asFloatBuffer());
-        b.free();
+        Memory mem = Memory.wrap(matrix);
+        GL20.nglUniformMatrix2fv(loc, 1, false, mem.address);
+        mem.free();
         return true;
     }
     
@@ -310,9 +309,9 @@ public final class ShaderProgram
         int loc = GL20.glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        Block b = memUtil.alloc(matrix);
-        GL20.glUniformMatrix3fv(loc, false, b.readUnsafe().asFloatBuffer());
-        b.free();
+        Memory mem = Memory.wrap(matrix);
+        GL20.nglUniformMatrix3fv(loc, 1, false, mem.address);
+        mem.free();
         return true;
     }
     
@@ -329,9 +328,9 @@ public final class ShaderProgram
         int loc = GL20.glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        Block b = memUtil.alloc(matrix);
-        GL20.glUniformMatrix4fv(loc, false, b.readUnsafe().asFloatBuffer());
-        b.free();
+        Memory mem = Memory.wrap(matrix);
+        GL20.nglUniformMatrix4fv(loc, 1, false, mem.address);
+        mem.free();
         return true;
     }
     
