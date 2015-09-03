@@ -1,6 +1,9 @@
 package com.samrj.devil.gl;
 
+import com.samrj.devil.io.Memory.Block;
+import static com.samrj.devil.io.Memory.memUtil;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
 /**
@@ -61,6 +64,30 @@ public final class FBO
     {
         ensureBound();
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, attachment, texture.target, texture.id, 0);
+    }
+    
+    /**
+     * Enables each of the given color buffer attachments for this frame buffer.
+     * 
+     * @param a An array of draw buffers.
+     */
+    public void drawBuffers(int... a)
+    {
+        ensureBound();
+        Block block = memUtil.wrapi(a);
+        GL20.glDrawBuffers(block.readUnsafe().asIntBuffer());
+        block.free();
+    }
+    
+    /**
+     * Specified which color buffer to read from for this frame buffer.
+     * 
+     * @param buffer The buffer to read from.
+     */
+    public void readBuffer(int buffer)
+    {
+        ensureBound();
+        GL11.glReadBuffer(buffer);
     }
     
     /**
