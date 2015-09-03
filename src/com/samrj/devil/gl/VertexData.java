@@ -54,14 +54,12 @@ public abstract class VertexData
         DELETED;
     }
     
-    final VAO vao;
     private final ArrayList<Attribute> attributes;
     private final Map<String, Attribute> attMap;
     private int vertexSize;
     
     VertexData()
     {
-        vao = DGL.genVAO();
         attributes = new ArrayList<>(16);
         attMap = new HashMap<>();
         vertexSize = 0;
@@ -210,6 +208,11 @@ public abstract class VertexData
     }
     // </editor-fold>
     
+    Attribute getAtt(String name)
+    {
+        return attMap.get(name);
+    }
+    
     int getVertexSize()
     {
         return vertexSize;
@@ -265,9 +268,7 @@ public abstract class VertexData
     final void bind()
     {
         if (!canBind()) throw new IllegalStateException("Vertex data not ready to bind.");
-        DGL.bindVAO(vao);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, getVBO());
-        vao.bindElementArrayBuffer(getEBO());
     }
     
     final void unbind()
@@ -276,39 +277,7 @@ public abstract class VertexData
         //Throwing this exception might seem really dumb, but it's there to
         //prevent even dumber programming mistakes.
         
-        DGL.bindVAO(null);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-    }
-    
-    /**
-     * Links this VertexData to the given shader program, enabling attributes it
-     * shares in common with this.
-     * 
-     * @param shader The shader to bind with.
-     */
-    public void link(ShaderProgram shader)
-    {
-        if (DGL.currentData() != this) throw new IllegalStateException(
-                "Vertex data must be bound to link shader.");
-        
-        for (ShaderProgram.Attribute satt : shader.getAttributes())
-        {
-            AttributeType type  = satt.type;
-            Attribute att = attMap.get(satt.name);
-            
-            if (att != null && att.type == type) for (int layer=0; layer<type.layers; layer++)
-            {
-                int location = satt.location + layer;
-                vao.enableVertexAttribArray(location);
-                vao.vertexAttribPointer(location,
-                                        type.components,
-                                        type.glComponent,
-                                        false,
-                                        vertexSize,
-                                        att.offset + layer*type.size);
-            }
-            else vao.disableVertexAttribArray(satt.location);
-        }
     }
     
     /**
@@ -324,23 +293,23 @@ public abstract class VertexData
     abstract void onDelete();
     
     /**
-     * Releases any resources associated with this vertex data.
+     * Releases any resources associated with this vertex data. Does not delete
+     * any VAOs created by linking this data to shaders.
      */
     final void delete()
     {
         if (getState() == State.DELETED) return;
         
-        DGL.deleteVAO(vao);
         attributes.clear();
         attMap.clear();
         vertexSize = 0;
         onDelete();
     }
     
-    private abstract class Attribute
+    abstract class Attribute
     {
-        protected final AttributeType type;
-        private final int offset;
+        final AttributeType type;
+        final int offset;
         
         private Attribute(AttributeType type, int offset)
         {

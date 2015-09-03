@@ -9,8 +9,13 @@ package com.samrj.devil.gl;
  */
 public abstract class VAO
 {
-    VAO()
+    final VertexData data;
+    final ShaderProgram program;
+    
+    VAO(VertexData data, ShaderProgram program)
     {
+        this.data = data;
+        this.program = program;
     }
     
     public abstract void enableVertexAttribArray(int index);

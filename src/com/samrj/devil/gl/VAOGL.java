@@ -16,8 +16,9 @@ final class VAOGL extends VAO
     private final int id;
     private boolean deleted;
     
-    VAOGL()
+    VAOGL(VertexData data, ShaderProgram shader)
     {
+        super(data, shader);
         id = GL30.glGenVertexArrays();
     }
     

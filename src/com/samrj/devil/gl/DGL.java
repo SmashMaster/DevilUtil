@@ -11,7 +11,6 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 import org.lwjgl.opengl.ContextCapabilities;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GLContext;
@@ -236,7 +235,14 @@ public final class DGL
      */
     public static VAO genVAO()
     {
-        VAO vao = capabilities.OpenGL30 ? new VAOGL() : new VAODGL();
+        VAO vao = capabilities.OpenGL30 ? new VAOGL(null, null) : new VAODGL(null, null);
+        vaos.add(vao);
+        return vao;
+    }
+    
+    static VAO genVAO(VertexData data, ShaderProgram program)
+    {
+        VAO vao = capabilities.OpenGL30 ? new VAOGL(data, program) : new VAODGL(data, program);
         vaos.add(vao);
         return vao;
     }
@@ -250,15 +256,7 @@ public final class DGL
     {
         if (boundVAO == vao) return;
         
-        if (boundVAO != null)
-        {
-            boundVAO.unbind();
-            if (boundData != null && boundData.vao == boundVAO)
-            {
-                GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-                boundData = null;
-            }
-        }
+        if (boundVAO != null) boundVAO.unbind();
         if (vao != null) vao.bind();
         
         boundVAO = vao;
@@ -686,6 +684,47 @@ public final class DGL
     // </editor-fold>
     
     /**
+     * Links this the given vertex data to the given shader program, creating
+     * a new vertex array object with common attributes between the two enabled.
+     * The returned VAO may be used to draw this vertex data with the given
+     * shader.
+     * 
+     * @param data The vertex data to link.
+     * @param shader The shader to link.
+     * @return A new VAO that can be used to render the data with the shader.
+     */
+    public static VAO link(VertexData data, ShaderProgram shader)
+    {
+        VAO oldVAO = currentVAO();
+        
+        VAO vao = DGL.genVAO(data, shader);
+        bindVAO(vao);
+        vao.bindElementArrayBuffer(data.getEBO());
+        
+        for (ShaderProgram.Attribute satt : shader.getAttributes())
+        {
+            AttributeType type  = satt.type;
+            VertexData.Attribute att = data.getAtt(satt.name);
+            
+            if (att != null && att.type == type) for (int layer=0; layer<type.layers; layer++)
+            {
+                int location = satt.location + layer;
+                vao.enableVertexAttribArray(location);
+                vao.vertexAttribPointer(location,
+                                        type.components,
+                                        type.glComponent,
+                                        false,
+                                        data.getVertexSize(),
+                                        att.offset + layer*type.size);
+            }
+            else vao.disableVertexAttribArray(satt.location);
+        }
+        
+        bindVAO(oldVAO);
+        return vao;
+    }
+    
+    /**
      * Draws the currently bound vertex data with the shader program currently
      * in use. Fails if either no shader or vertex data is bound/in use.
      * 
@@ -693,8 +732,13 @@ public final class DGL
      */
     public static void draw(int mode)
     {
+        if (boundVAO == null) throw new IllegalStateException("No vertex array is bound.");
         if (boundData == null) throw new IllegalStateException("No vertex data bound.");
         if (boundProgram == null) throw new IllegalStateException("No shader program is in use.");
+        
+        if (boundVAO.data != boundData || boundVAO.program != boundProgram)
+            throw new IllegalStateException(
+                "Vertex data and shader program are not linked with currently bound vertex array.");
         
         boundData.draw(mode);
     }

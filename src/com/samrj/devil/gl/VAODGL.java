@@ -19,8 +19,9 @@ final class VAODGL extends VAO
     private int elementArrayBuffer;
     private boolean deleted;
     
-    VAODGL()
+    VAODGL(VertexData data, ShaderProgram shader)
     {
+        super(data, shader);
         enabledArrays = new IntSet();
         attribPointers = new SparseArray<>();
     }
