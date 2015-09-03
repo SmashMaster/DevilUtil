@@ -122,7 +122,7 @@ public final class Memory
     public final ByteBuffer buffer;
     public final long address;
     private boolean free;
-    private final Error leak;
+    private final Throwable debugLeakTrace;
     
     public Memory(int size)
     {
@@ -134,7 +134,7 @@ public final class Memory
         buffer = memByteBuffer(address, size);
         allocations++;
         
-        leak = debug ? new Error("Memory leak.") : null;
+        debugLeakTrace = debug ? new Throwable() : null;
     }
     
     public boolean isFree()
@@ -206,6 +206,10 @@ public final class Memory
     @Override
     public void finalize()
     {
-        throw leak != null ? leak : new Error("Memory leak.");
+        if (debug && !free)
+        {
+            System.err.println("Memory leaked: ");
+            debugLeakTrace.printStackTrace();
+        }
     }
 }
