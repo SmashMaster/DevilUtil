@@ -12,8 +12,10 @@ import java.io.InputStream;
 import java.util.Set;
 import javax.imageio.ImageIO;
 import org.lwjgl.opengl.ContextCapabilities;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GLContext;
 
 /**
@@ -39,11 +41,13 @@ public final class DGL
     private static Set<VertexData> datas;
     private static Set<Image> images;
     private static Set<Texture> textures;
+    private static Set<FBO> fbos;
     
     //State fields
     private static ShaderProgram boundProgram;
     private static VAO boundVAO;
     private static VertexData boundData;
+    private static FBO readFBO, drawFBO;
     
     private static void checkState()
     {
@@ -72,6 +76,7 @@ public final class DGL
         datas = new QuickIdentitySet<>();
         images = new QuickIdentitySet<>();
         textures = new QuickIdentitySet<>();
+        fbos = new QuickIdentitySet<>();
         
         init = true;
     }
@@ -261,6 +266,9 @@ public final class DGL
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="VAO methods">
+    /**
+     * @return A newly created vertex array object.
+     */
     public static VAO genVAO()
     {
         VAO vao = capabilities.OpenGL30 ? new VAOGL() : new VAODGL();
@@ -268,6 +276,11 @@ public final class DGL
         return vao;
     }
     
+    /**
+     * Binds the given vertex array object, unbinding any previously bound VAO.
+     * 
+     * @param vao The vertex array to bind.
+     */
     public static void bindVAO(VAO vao)
     {
         if (boundVAO == vao) return;
@@ -286,11 +299,17 @@ public final class DGL
         boundVAO = vao;
     }
     
+    /**
+     * @return The currently bound vertex array, or null if none is bound.
+     */
     public static VAO currentVAO()
     {
         return boundVAO;
     }
     
+    /**
+     * @param vao Deletes the given vertex array object.
+     */
     public static void deleteVAO(VAO vao)
     {
         if (boundVAO == vao) bindVAO(null);
@@ -584,6 +603,137 @@ public final class DGL
         textures.remove(texture);
     }
     // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="FBO methods">
+    /**
+     * @return A newly created frame buffer.
+     */
+    public static FBO genFBO()
+    {
+        if (!capabilities.OpenGL30) throw new UnsupportedOperationException(
+                "Frame buffers unsupported in OpenGL < 3.0");
+        
+        FBO fbo = new FBO();
+        fbos.add(fbo);
+        return fbo;
+    }
+    
+    /**
+     * Binds the given frame buffer to the given target. Pass null to bind the
+     * default frame buffer.
+     * 
+     * @param fbo The frame buffer to bind.
+     * @param target The targe to bind to, or null to bind the default frame
+     *        buffer;
+     */
+    public static void bindFBO(FBO fbo, int target)
+    {
+        switch (target)
+        {
+            case GL30.GL_FRAMEBUFFER: readFBO = fbo; drawFBO = fbo; break;
+            case GL30.GL_READ_FRAMEBUFFER: readFBO = fbo; break;
+            case GL30.GL_DRAW_FRAMEBUFFER: drawFBO = fbo; break;
+            default: throw new IllegalArgumentException("Illegal target specified.");
+        }
+        
+        if (fbo != null) fbo.bind(target);
+        else GL30.glBindFramebuffer(target, 0);
+    }
+    
+    /**
+     * Binds the given frame buffer to read from and draw to. Pass null to bind
+     * the default frame buffer.
+     * 
+     * @param fbo The frame buffer to bind, or null to bind the default frame
+     *        buffer.
+     */
+    public static void bindFBO(FBO fbo)
+    {
+        bindFBO(fbo, GL30.GL_FRAMEBUFFER);
+    }
+    
+    /**
+     * Blits the currently bound read buffer into the bound draw frame buffer.
+     * Assumes the buffers are of equal dimensions and have compatible formats.
+     * 
+     * @param width The width of both buffers.
+     * @param height The height of both buffers.
+     * @param mask The bitwise OR of the flags indicating which buffers are to
+     *        be copied. The allowed flags are GL_COLOR_BUFFER_BIT,
+     *        GL_DEPTH_BUFFER_BIT and GL_STENCIL_BUFFER_BIT.
+     */
+    public static void blitFBO(int width, int height, int mask)
+    {
+        GL30.glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, mask, GL11.GL_NEAREST);
+    }
+    
+    /**
+     * Blits the given source frame buffer into the given target frame buffer.
+     * Assumes the buffers are of equal dimensions and have compatible formats.
+     * 
+     * Temporarily alters the state of bound frame buffers.
+     * 
+     * @param source The buffer to read from, or null to read from the default
+     *        frame buffer.
+     * @param target The buffer to draw to, or null to draw to the default frame
+     *        buffer.
+     * @param width The width of both buffers.
+     * @param height The height of both buffers.
+     * @param mask The bitwise OR of the flags indicating which buffers are to
+     *        be copied. The allowed flags are GL_COLOR_BUFFER_BIT,
+     *        GL_DEPTH_BUFFER_BIT and GL_STENCIL_BUFFER_BIT.
+     */
+    public static void blitFBO(FBO source, FBO target, int width, int height, int mask)
+    {
+        FBO oldRead = readFBO, oldDraw = drawFBO;
+        
+        bindFBO(source, GL30.GL_READ_FRAMEBUFFER);
+        bindFBO(target, GL30.GL_DRAW_FRAMEBUFFER);
+        blitFBO(width, height, mask);
+        bindFBO(oldRead, GL30.GL_READ_FRAMEBUFFER);
+        bindFBO(oldDraw, GL30.GL_DRAW_FRAMEBUFFER);
+    }
+    
+    /**
+     * Deletes the given frame buffer.
+     * 
+     * @param fbo The frame buffer to delete.
+     */
+    public static void deleteFBO(FBO fbo)
+    {
+        if (readFBO == fbo) readFBO = null;
+        if (drawFBO == fbo) drawFBO = null;
+        fbo.delete();
+        fbos.remove(fbo);
+    }
+    
+    /**
+     * @return The currently bound read FBO, or null if bound to the default
+     *         frame buffer.
+     */
+    public static FBO currentReadFBO()
+    {
+        return readFBO;
+    }
+    
+    /**
+     * @return The currently bound draw FBO, or null if bound to the default
+     *         frame buffer.
+     */
+    public static FBO currentDrawFBO()
+    {
+        return drawFBO;
+    }
+    
+    /**
+     * @return The currently bound FBO, or null if either different FBOs are
+     *         bound to the read and draw targets, or the default frame buffer
+     *         is bound.
+     */
+    public static FBO currentFBO()
+    {
+        return readFBO == drawFBO ? readFBO : null;
+    }
+    // </editor-fold>
     
     /**
      * Draws the currently bound vertex data with the shader program currently
@@ -607,12 +757,18 @@ public final class DGL
         checkState();
         init = false;
         
+        boundProgram = null;
+        boundVAO = null;
+        boundData = null;
+        readFBO = null; drawFBO = null;
+        
         for (ShaderProgram program : programs) program.delete();
         for (Shader shader : shaders) shader.delete();
         for (VertexData data : datas) data.delete();
         for (VAO vao : vaos) vao.delete();
         for (Image image : images) image.delete();
         for (Texture texture : textures) texture.delete();
+        for (FBO fbo : fbos) fbo.delete();
         
         shaders.clear(); shaders = null;
         programs.clear(); programs = null;
@@ -620,6 +776,7 @@ public final class DGL
         datas.clear(); datas = null;
         images.clear(); images = null;
         textures.clear(); textures = null;
+        fbos.clear(); fbos = null;
         
         thread = null;
         context = null;
