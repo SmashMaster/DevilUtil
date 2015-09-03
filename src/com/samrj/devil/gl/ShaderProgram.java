@@ -11,7 +11,9 @@ import com.samrj.devil.util.QuickIdentitySet;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
@@ -38,6 +40,7 @@ public final class ShaderProgram
     
     private final Set<Shader> shaders;
     private List<Attribute> attributes;
+    private Map<String, Attribute> attMap;
     private State state;
     
     ShaderProgram()
@@ -87,6 +90,7 @@ public final class ShaderProgram
         
         int numAttributes = GL20.glGetProgrami(id, GL20.GL_ACTIVE_ATTRIBUTES);
         ArrayList<Attribute> attList = new ArrayList<>(numAttributes);
+        attMap = new HashMap<>(numAttributes);
         Memory mem = new Memory(4 + 4 + 4 + 32);
         ByteBuffer buffer = mem.buffer;
         for (int index=0; index<numAttributes; index++)
@@ -102,7 +106,9 @@ public final class ShaderProgram
             String name = MemoryUtil.memDecodeASCII(namePtr);
             int location = GL20.nglGetAttribLocation(id, namePtr);
 
-            attList.add(new Attribute(name, type, size, location));
+            Attribute att = new Attribute(name, type, size, location);
+            attList.add(att);
+            attMap.put(name, att);
         }
         mem.free();
         attributes = Collections.unmodifiableList(attList);
@@ -354,6 +360,18 @@ public final class ShaderProgram
     }
     
     /**
+     * Returns the attribute with the given name, or null if no such attribute
+     * is active.
+     * 
+     * @param name The name of the attribute to find.
+     * @return The attribute with the given name.
+     */
+    public Attribute getAttribute(String name)
+    {
+        return attMap.get(name);
+    }
+    
+    /**
      * @return The state of this shader program.
      */
     public State state()
@@ -365,7 +383,8 @@ public final class ShaderProgram
     {
         if (state == State.DELETED) return;
         
-        if (attributes != null) attributes = null;
+        attributes = null;
+        attMap = null;
         GL20.glDeleteProgram(id);
         
         state = State.DELETED;

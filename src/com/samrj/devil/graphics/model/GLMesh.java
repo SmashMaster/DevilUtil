@@ -1,8 +1,11 @@
 package com.samrj.devil.graphics.model;
 
+import com.samrj.devil.gl.AttributeType;
+import static com.samrj.devil.gl.AttributeType.*;
 import com.samrj.devil.gl.DGL;
 import com.samrj.devil.gl.ShaderProgram;
 import com.samrj.devil.gl.VAO;
+import com.samrj.devil.gl.VertexData;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
@@ -15,123 +18,190 @@ import org.lwjgl.opengl.GL15;
  */
 public class GLMesh
 {
-    private final ShaderProgram shader;
-    private final Mesh mesh;
-    private final int posOffset, normalOffset, tangentOffset, uvOffset, colorOffset, groupsOffset, weightsOffset;
+    private static final int POSITION = 0, NORMAL = 1, TANGENT = 2, UV = 3,
+                             COLOR = 4, GROUPS = 5, WEIGHTS = 6;
     
-    private VAO vertexArray;
+    private final Mesh mesh;
+    private final Attribute[] attributes;
     private int vertexBuffer, elementBuffer;
     
-    public GLMesh(ShaderProgram shader, Mesh mesh)
+    public GLMesh(Mesh mesh)
     {
-        this.shader = shader;
         this.mesh = mesh;
+        attributes = new Attribute[7];
         
-        //Set up offsets based on previous offset.
-        posOffset = 0;
-        normalOffset = posOffset + mesh.numVertices*3*4; //3 components for position X 4 bytes per component
-        tangentOffset = normalOffset + mesh.numVertices*3*4;
-        uvOffset = tangentOffset + mesh.numVertices*(mesh.hasTangents ? 3 : 0)*4;
-        colorOffset = uvOffset + mesh.numVertices*(mesh.hasUVs ? 2 : 0)*4;
-        groupsOffset = colorOffset + mesh.numVertices*(mesh.hasVertexColors ? 3 : 0)*4;
-        weightsOffset = groupsOffset + mesh.numVertices*mesh.numVertexGroups*4;
+        //Set up attributes.
+        int verts = mesh.numVertices;
+        int offset = 0;
+        
+        attributes[POSITION] = new Attribute(
+                VEC3,
+                (offset += 0),
+                true);
+        
+        attributes[NORMAL] = new Attribute(
+                VEC3,
+                (offset += verts*3*4),
+                true);
+        
+        attributes[TANGENT] = new Attribute(
+                VEC3,
+                (offset += verts*3*4),
+                mesh.hasTangents);
+        
+        attributes[UV] = new Attribute(
+                VEC2,
+                (offset += verts*(mesh.hasTangents ? 3 : 0)*4),
+                mesh.hasUVs);
+        
+        attributes[COLOR] = new Attribute(
+                VEC3,
+                (offset += verts*(mesh.hasUVs ? 2 : 0)*4),
+                mesh.hasVertexColors);
+        
+        attributes[GROUPS] = new Attribute(
+                VEC4I,
+                (offset += verts*(mesh.hasVertexColors ? 3 : 0)*4),
+                mesh.numVertexGroups <= 0,
+                mesh.numVertexGroups,
+                GL11.GL_FLOAT);
+        
+        attributes[WEIGHTS] = new Attribute(
+                VEC4,
+                (offset += verts*mesh.numVertexGroups*4),
+                mesh.numVertexGroups <= 0,
+                mesh.numVertexGroups,
+                GL11.GL_FLOAT);
         
         //Set up OpenGL stuff.
-        vertexArray = DGL.genVAO();
-        DGL.bindVAO(vertexArray);
-        
         mesh.rewindBuffers();
+        
+        VertexData oldData = DGL.currentData();
+        VAO oldVAO = DGL.currentVAO();
+        DGL.bindData(null);
+        DGL.bindVAO(null);
 
         vertexBuffer = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBuffer);
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, mesh.vertexData(), GL15.GL_STATIC_DRAW);
-
         elementBuffer = GL15.glGenBuffers();
-        vertexArray.bindElementArrayBuffer(elementBuffer);
+        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
         GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.indexData(), GL15.GL_STATIC_DRAW);
+        
+        DGL.bindData(oldData);
+        DGL.bindVAO(oldVAO);
     }
-    
-    private int getEnableLocation(String name)
-    {
-        int location = shader.getAttributeLocation(name);
-        if (location < 0) throw new IllegalArgumentException("No attribute with name " + name + " found.");
-        vertexArray.enableVertexAttribArray(location);
-        return location;
-    }
-    
-    /**
-     * These tell the shader how to find the mesh data. The name argument
-     * specifies a shader variable name.
-     * 
-     * These may throw a LocationNotFoundException if the shader doesn't
-     * actually ever use the referenced attribute--the attribute can be entirely
-     * optimized out of the shader by the system's GLSL compiler.
-     * 
-     * Vertex array must still be bound for these to work. So call these right
-     * after making the object.
-     */
     
     public void setPositionName(String name)
     {
-        int location = getEnableLocation(name);
-        vertexArray.vertexAttribPointer(location, 3, GL11.GL_FLOAT, false, 0, posOffset);
+        attributes[POSITION].name = name;
     }
     
     public void setNormalName(String name)
     {
-        int location = getEnableLocation(name);
-        vertexArray.vertexAttribPointer(location, 3, GL11.GL_FLOAT, false, 0, normalOffset);
+        attributes[NORMAL].name = name;
     }
     
     public void setTangentName(String name)
     {
-        int location = getEnableLocation(name);
-        vertexArray.vertexAttribPointer(location, 3, GL11.GL_FLOAT, false, 0, tangentOffset);
+        attributes[TANGENT].name = name;
     }
     
     public void setUVName(String name)
     {
-        if (!mesh.hasUVs) throw new IllegalStateException();
-        int location = getEnableLocation(name);
-        vertexArray.vertexAttribPointer(location, 2, GL11.GL_FLOAT, false, 0, uvOffset);
+        attributes[UV].name = name;
     }
     
     public void setColorName(String name)
     {
-        if (!mesh.hasVertexColors) throw new IllegalStateException();
-        int location = getEnableLocation(name);
-        vertexArray.vertexAttribPointer(location, 3, GL11.GL_FLOAT, false, 0, colorOffset);
+        attributes[COLOR].name = name;
     }
     
     public void setGroupsName(String name)
     {
-        if (mesh.numVertexGroups <= 0) throw new IllegalStateException();
-        int location = getEnableLocation(name);
-        //GL_FLOAT might look like a bug right here, but it's not. Don't touch it.
-        vertexArray.vertexAttribPointer(location, mesh.numVertexGroups, GL11.GL_FLOAT, false, 0, groupsOffset);
+        attributes[GROUPS].name = name;
     }
     
     public void setWeightsName(String name)
     {
-        if (mesh.numVertexGroups <= 0) throw new IllegalStateException();
-        int location = getEnableLocation(name);
-        vertexArray.vertexAttribPointer(location, mesh.numVertexGroups, GL11.GL_FLOAT, false, 0, weightsOffset);
+        attributes[WEIGHTS].name = name;
+    }
+    
+    public VAO link(ShaderProgram program)
+    {
+        VAO oldVAO = DGL.currentVAO();
+        
+        VAO vao = DGL.genVAO();
+        DGL.bindVAO(vao);
+        vao.bindElementArrayBuffer(elementBuffer);
+        
+        for (int i=0; i<7; i++)
+        {
+            Attribute att = attributes[i];
+            if (!att.enabled || att.name == null) continue;
+            
+            ShaderProgram.Attribute satt = program.getAttribute(att.name);
+            if (satt == null || satt.type != att.type) continue;
+            
+            att.enable(vao, satt.location);
+        }
+        
+        DGL.bindVAO(oldVAO);
+        return vao;
     }
     
     public void draw()
     {
-        DGL.bindVAO(vertexArray);
+        VertexData oldData = DGL.currentData();
+        DGL.bindData(null);
+        
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBuffer);
         GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.numTriangles*3, GL11.GL_UNSIGNED_INT, 0);
+        
+        DGL.bindData(oldData);
     }
     
     public void delete()
     {
-        DGL.deleteVAO(vertexArray);
         GL15.glDeleteBuffers(vertexBuffer);
         GL15.glDeleteBuffers(elementBuffer);
         
-        vertexArray = null;
         vertexBuffer = -1;
         elementBuffer = -1;
+    }
+    
+    private class Attribute
+    {
+        private String name;
+        private final AttributeType type;
+        private final int offset;
+        private final boolean enabled;
+        private final int components;
+        private final int componentType;
+        
+        private Attribute(AttributeType type, int offset, boolean enabled, int components, int componentType)
+        {
+            this.type = type;
+            this.offset = offset;
+            this.enabled = enabled;
+            this.components = components;
+            this.componentType = componentType;
+        }
+        
+        private Attribute(AttributeType type, int offset, boolean enabled)
+        {
+            this(type, offset, enabled, type.components, type.glComponent);
+        }
+        
+        private void enable(VAO vao, int location)
+        {
+            vao.enableVertexAttribArray(location);
+            vao.vertexAttribPointer(location,
+                                    components,
+                                    componentType,
+                                    false,
+                                    0,
+                                    offset);
+        }
     }
 }
