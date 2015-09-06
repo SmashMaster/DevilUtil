@@ -26,7 +26,7 @@ import org.lwjgl.system.MemoryUtil;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class ShaderProgram
+public final class ShaderProgram extends DGLObj
 {
     public static enum State
     {
@@ -379,6 +379,7 @@ public final class ShaderProgram
         return state;
     }
     
+    @Override
     void delete()
     {
         if (state == State.DELETED) return;

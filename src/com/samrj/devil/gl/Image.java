@@ -15,7 +15,7 @@ import java.nio.ByteBuffer;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class Image
+public final class Image extends DGLObj
 {
     /**
      * Returns the primitive type of the given raster, or null if the raster is
@@ -173,6 +173,7 @@ public final class Image
         return deleted;
     }
     
+    @Override
     void delete()
     {
         mem.free();

@@ -13,7 +13,7 @@ import org.lwjgl.opengl.GL15;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class VertexBuffer extends VertexData
+public final class VertexBuffer extends VertexBuilder
 {
     private final int maxVertices, maxIndices;
     private State state;
@@ -24,7 +24,7 @@ public final class VertexBuffer extends VertexData
     private int numVertices, numIndices;
     
     //Fields for 'complete' state
-    private int glVBO, glEBO;
+    private int vbo, ibo;
     
     VertexBuffer(int maxVertices, int maxIndices)
     {
@@ -42,7 +42,7 @@ public final class VertexBuffer extends VertexData
     @Override
     void onBegin()
     {
-        vertexBlock = new Memory(maxVertices*getVertexSize());
+        vertexBlock = new Memory(maxVertices*vertexSize());
         vertexBuffer = vertexBlock.buffer;
         
         if (maxIndices > 0)
@@ -86,10 +86,10 @@ public final class VertexBuffer extends VertexData
         ensureState(State.READY);
         if (numVertices <= 0) throw new IllegalStateException("No vertices emitted.");
         
-        glVBO = GL15.glGenBuffers();
+        vbo = GL15.glGenBuffers();
         int prevBinding = GL11.glGetInteger(GL15.GL_ARRAY_BUFFER_BINDING);
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, glVBO);
-        GL15.nglBufferData(GL15.GL_ARRAY_BUFFER, numVertices*getVertexSize(), vertexBlock.address, GL15.GL_STATIC_DRAW);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
+        GL15.nglBufferData(GL15.GL_ARRAY_BUFFER, numVertices*vertexSize(), vertexBlock.address, GL15.GL_STATIC_DRAW);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, prevBinding);
         
         vertexBlock.free();
@@ -100,9 +100,9 @@ public final class VertexBuffer extends VertexData
         {
             if (numIndices > 0)
             {
-                glEBO = GL15.glGenBuffers();
+                ibo = GL15.glGenBuffers();
                 prevBinding = GL11.glGetInteger(GL15.GL_ELEMENT_ARRAY_BUFFER_BINDING);
-                GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, glEBO);
+                GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ibo);
                 GL15.nglBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, numIndices*4, indexBlock.address, GL15.GL_STATIC_DRAW);
                 GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, prevBinding);
             }
@@ -120,17 +120,29 @@ public final class VertexBuffer extends VertexData
     {
         return state == State.COMPLETE;
     }
-
+    
     @Override
-    int getVBO()
+    public int vbo()
     {
-        return glVBO;
+        return vbo;
     }
 
     @Override
-    int getEBO()
+    public int ibo()
     {
-        return glEBO;
+        return ibo;
+    }
+
+    @Override
+    public int numVertices()
+    {
+        return numVertices;
+    }
+
+    @Override
+    public int numIndices()
+    {
+        return numIndices;
     }
 
     @Override
@@ -158,8 +170,8 @@ public final class VertexBuffer extends VertexData
         }
         else if (state == State.COMPLETE)
         {
-            GL15.glDeleteBuffers(glVBO);
-            if (numIndices > 0) GL15.glDeleteBuffers(glEBO);
+            GL15.glDeleteBuffers(vbo);
+            if (numIndices > 0) GL15.glDeleteBuffers(ibo);
         }
         
         state = State.DELETED;

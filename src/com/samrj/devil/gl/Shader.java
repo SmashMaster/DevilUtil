@@ -15,7 +15,7 @@ import org.lwjgl.opengl.GL20;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class Shader
+public final class Shader extends DGLObj
 {
     public static enum State
     {
@@ -96,6 +96,7 @@ public final class Shader
         return state;
     }
     
+    @Override
     void delete()
     {
         if (state == State.DELETED) return;

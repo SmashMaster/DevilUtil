@@ -5,7 +5,7 @@ import static com.samrj.devil.gl.AttributeType.*;
 import com.samrj.devil.gl.DGL;
 import com.samrj.devil.gl.ShaderProgram;
 import com.samrj.devil.gl.VAO;
-import com.samrj.devil.gl.VertexData;
+import com.samrj.devil.gl.VertexBuilder;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
@@ -76,7 +76,7 @@ public class GLMesh
         //Set up OpenGL stuff.
         mesh.rewindBuffers();
         
-        VertexData oldData = DGL.currentData();
+        VertexBuilder oldData = DGL.currentData();
         VAO oldVAO = DGL.currentVAO();
         DGL.bindData(null);
         DGL.bindVAO(null);
@@ -134,6 +134,7 @@ public class GLMesh
         VAO vao = DGL.genVAO();
         DGL.bindVAO(vao);
         vao.bindElementArrayBuffer(elementBuffer);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBuffer);
         
         for (int i=0; i<7; i++)
         {
@@ -152,7 +153,7 @@ public class GLMesh
     
     public void draw()
     {
-        VertexData oldData = DGL.currentData();
+        VertexBuilder oldData = DGL.currentData();
         DGL.bindData(null);
         
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBuffer);

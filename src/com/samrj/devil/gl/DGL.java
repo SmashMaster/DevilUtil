@@ -30,20 +30,12 @@ public final class DGL
     private static Thread thread;
     private static GLContext context;
     private static ContextCapabilities capabilities;
-    
-    //Allocation fields
-    private static Set<Shader> shaders;
-    private static Set<ShaderProgram> programs;
-    private static Set<VAO> vaos;
-    private static Set<VertexData> datas;
-    private static Set<Image> images;
-    private static Set<Texture> textures;
-    private static Set<FBO> fbos;
+    private static Set<DGLObj> objects;
     
     //State fields
     private static ShaderProgram boundProgram;
     private static VAO boundVAO;
-    private static VertexData boundData;
+    private static VertexBuilder boundData;
     private static FBO readFBO, drawFBO;
     
     private static void checkState()
@@ -63,18 +55,7 @@ public final class DGL
         thread = Thread.currentThread();
         context = GLContext.createFromCurrent();
         capabilities = context.getCapabilities();
-        
-        if (!capabilities.OpenGL20) throw new RuntimeException(
-                "OpenGL version must be at least 2.0 to support DevilGL.");
-        
-        shaders = new QuickIdentitySet<>();
-        programs = new QuickIdentitySet<>();
-        vaos = new QuickIdentitySet<>();
-        datas = new QuickIdentitySet<>();
-        images = new QuickIdentitySet<>();
-        textures = new QuickIdentitySet<>();
-        fbos = new QuickIdentitySet<>();
-        
+        objects = new QuickIdentitySet<>();
         init = true;
     }
     
@@ -97,8 +78,12 @@ public final class DGL
      */
     public static Shader genShader(int type)
     {
+        checkState();
+        if (!capabilities.OpenGL20) throw new UnsupportedOperationException(
+                "Shaders unsupported in OpenGL < 2.0");
+        
         Shader shader = new Shader(type);
-        shaders.add(shader);
+        objects.add(shader);
         return shader;
     }
     
@@ -127,7 +112,7 @@ public final class DGL
     public static void deleteShader(Shader shader)
     {
         shader.delete();
-        shaders.remove(shader);
+        objects.remove(shader);
     }
     
     /**
@@ -137,8 +122,12 @@ public final class DGL
      */
     public static ShaderProgram genProgram()
     {
+        checkState();
+        if (!capabilities.OpenGL20) throw new UnsupportedOperationException(
+                "Shader programs unsupported in OpenGL < 2.0");
+        
         ShaderProgram program = new ShaderProgram();
-        programs.add(program);
+        objects.add(program);
         return program;
     }
     
@@ -212,7 +201,7 @@ public final class DGL
     {
         if (boundProgram == shaderProgram) useProgram(null);
         shaderProgram.delete();
-        programs.remove(shaderProgram);
+        objects.remove(shaderProgram);
     }
     
     /**
@@ -235,15 +224,12 @@ public final class DGL
      */
     public static VAO genVAO()
     {
-        VAO vao = capabilities.OpenGL30 ? new VAOGL(null, null) : new VAODGL(null, null);
-        vaos.add(vao);
-        return vao;
-    }
-    
-    static VAO genVAO(VertexData data, ShaderProgram program)
-    {
-        VAO vao = capabilities.OpenGL30 ? new VAOGL(data, program) : new VAODGL(data, program);
-        vaos.add(vao);
+        checkState();
+        if (!capabilities.OpenGL30) throw new UnsupportedOperationException(
+                "Vertex arrays unsupported in OpenGL < 3.0");
+        
+        VAO vao = new VAO();
+        objects.add(vao);
         return vao;
     }
     
@@ -277,7 +263,7 @@ public final class DGL
     {
         if (boundVAO == vao) bindVAO(null);
         vao.delete();
-        vaos.remove(vao);
+        objects.remove(vao);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Vertex data methods">
@@ -290,8 +276,12 @@ public final class DGL
      */
     public static VertexBuffer genVertexBuffer(int maxVertices, int maxIndices)
     {
+        checkState();
+        if (!capabilities.OpenGL20) throw new UnsupportedOperationException(
+                "Vertex builders unsupported in OpenGL < 2.0");
+        
         VertexBuffer buffer = new VertexBuffer(maxVertices, maxIndices);
-        datas.add(buffer);
+        objects.add(buffer);
         return buffer;
     }
     
@@ -304,8 +294,12 @@ public final class DGL
      */
     public static VertexStream genVertexStream(int maxVertices, int maxIndices)
     {
+        checkState();
+        if (!capabilities.OpenGL20) throw new UnsupportedOperationException(
+                "Vertex builders unsupported in OpenGL < 2.0");
+        
         VertexStream stream = new VertexStream(maxVertices, maxIndices);
-        datas.add(stream);
+        objects.add(stream);
         return stream;
     }
     
@@ -314,7 +308,7 @@ public final class DGL
      * 
      * @param vertexData The vertex data to bind.
      */
-    public static void bindData(VertexData vertexData)
+    public static void bindData(VertexBuilder vertexData)
     {
         if (boundData == vertexData) return;
         
@@ -327,7 +321,7 @@ public final class DGL
     /**
      * @return The currently bound vertex data, or null if none is bound.
      */
-    public static VertexData currentData()
+    public static VertexBuilder currentData()
     {
         return boundData;
     }
@@ -337,11 +331,11 @@ public final class DGL
      * 
      * @param vertexData The vertex data to delete.
      */
-    public static void deleteData(VertexData vertexData)
+    public static void deleteData(VertexBuilder vertexData)
     {
         if (boundData == vertexData) bindData(null);
         vertexData.delete();
-        datas.remove(vertexData);
+        objects.remove(vertexData);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Image methods">
@@ -357,6 +351,7 @@ public final class DGL
      */
     public static Image genImage(int width, int height, int bands, PrimType type)
     {
+        checkState();
         if (width <= 0 || height <= 0)
             throw new IllegalArgumentException("Illegal dimensions specified.");
         if (bands <= 0 || bands > 4)
@@ -365,7 +360,7 @@ public final class DGL
             throw new IllegalArgumentException("Illegal primitive type " + type + " specified.");
         
         Image image = new Image(width, height, bands, type);
-        images.add(image);
+        objects.add(image);
         return image;
     }
     
@@ -415,7 +410,7 @@ public final class DGL
     public static void deleteImage(Image image)
     {
         image.delete();
-        images.remove(image);
+        objects.remove(image);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Texture methods">
@@ -426,8 +421,9 @@ public final class DGL
      */
     public static Texture2D genTex2D()
     {
+        checkState();
         Texture2D texture = new Texture2D();
-        textures.add(texture);
+        objects.add(texture);
         return texture;
     }
     
@@ -485,11 +481,12 @@ public final class DGL
      */
     public static TextureRectangle genTexRect()
     {
+        checkState();
         if (!capabilities.OpenGL31) throw new UnsupportedOperationException(
-                "Rectangle textures require OpenGL >= 3.1");
+                "Rectangle textures unsupported in OpenGL < 3.1");
         
         TextureRectangle texture = new TextureRectangle();
-        textures.add(texture);
+        objects.add(texture);
         return texture;
     }
     
@@ -548,7 +545,7 @@ public final class DGL
     public static void deleteTex(Texture texture)
     {
         texture.delete();
-        textures.remove(texture);
+        objects.remove(texture);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="FBO methods">
@@ -557,11 +554,12 @@ public final class DGL
      */
     public static FBO genFBO()
     {
+        checkState();
         if (!capabilities.OpenGL30) throw new UnsupportedOperationException(
                 "Frame buffers unsupported in OpenGL < 3.0");
         
         FBO fbo = new FBO();
-        fbos.add(fbo);
+        objects.add(fbo);
         return fbo;
     }
     
@@ -651,7 +649,7 @@ public final class DGL
         if (readFBO == fbo) readFBO = null;
         if (drawFBO == fbo) drawFBO = null;
         fbo.delete();
-        fbos.remove(fbo);
+        objects.remove(fbo);
     }
     
     /**
@@ -695,16 +693,19 @@ public final class DGL
      */
     public static VAO link(VertexData data, ShaderProgram shader)
     {
+        if (!capabilities.OpenGL30) throw new UnsupportedOperationException(
+                "Linking unsupported in OpenGL < 3.0; simply bind then draw instead.");
+        
         VAO oldVAO = currentVAO();
         
-        VAO vao = DGL.genVAO(data, shader);
+        VAO vao = DGL.genVAO();
         bindVAO(vao);
-        vao.bindElementArrayBuffer(data.getEBO());
+        vao.bindElementArrayBuffer(data.ibo());
         
         for (ShaderProgram.Attribute satt : shader.getAttributes())
         {
             AttributeType type  = satt.type;
-            VertexData.Attribute att = data.getAtt(satt.name);
+            VertexData.Attribute att = data.getAttribute(satt.name);
             
             if (att != null && att.type == type) for (int layer=0; layer<type.layers; layer++)
             {
@@ -714,7 +715,7 @@ public final class DGL
                                         type.components,
                                         type.glComponent,
                                         false,
-                                        data.getVertexSize(),
+                                        data.vertexSize(),
                                         att.offset + layer*type.size);
             }
             else vao.disableVertexAttribArray(satt.location);
@@ -732,13 +733,8 @@ public final class DGL
      */
     public static void draw(int mode)
     {
-        if (boundVAO == null) throw new IllegalStateException("No vertex array is bound.");
         if (boundData == null) throw new IllegalStateException("No vertex data bound.");
         if (boundProgram == null) throw new IllegalStateException("No shader program is in use.");
-        
-        if (boundVAO.data != boundData || boundVAO.program != boundProgram)
-            throw new IllegalStateException(
-                "Vertex data and shader program are not linked with currently bound vertex array.");
         
         boundData.draw(mode);
     }
@@ -754,23 +750,12 @@ public final class DGL
         boundProgram = null;
         boundVAO = null;
         boundData = null;
-        readFBO = null; drawFBO = null;
+        readFBO = null;
+        drawFBO = null;
         
-        for (ShaderProgram program : programs) program.delete();
-        for (Shader shader : shaders) shader.delete();
-        for (VertexData data : datas) data.delete();
-        for (VAO vao : vaos) vao.delete();
-        for (Image image : images) image.delete();
-        for (Texture texture : textures) texture.delete();
-        for (FBO fbo : fbos) fbo.delete();
-        
-        shaders.clear(); shaders = null;
-        programs.clear(); programs = null;
-        vaos.clear(); vaos = null;
-        datas.clear(); datas = null;
-        images.clear(); images = null;
-        textures.clear(); textures = null;
-        fbos.clear(); fbos = null;
+        for (DGLObj obj : objects) obj.delete();
+        objects.clear();
+        objects = null;
         
         thread = null;
         context = null;

@@ -9,7 +9,7 @@ import org.lwjgl.opengl.GL11;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public abstract class Texture
+public abstract class Texture extends DGLObj
 {
     public final int id, target, binding;
     private boolean deleted;
@@ -60,6 +60,7 @@ public abstract class Texture
         if (isBound()) GL11.glBindTexture(target, 0);
     }
     
+    @Override
     final void delete()
     {
         GL11.glDeleteTextures(id);

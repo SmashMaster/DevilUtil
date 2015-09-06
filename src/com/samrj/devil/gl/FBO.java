@@ -12,7 +12,7 @@ import org.lwjgl.opengl.GL30;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class FBO
+public final class FBO extends DGLObj
 {
     private static String statusName(int status)
     {
@@ -99,6 +99,7 @@ public final class FBO
         return statusName(status);
     }
     
+    @Override
     void delete()
     {
         if (deleted) return;

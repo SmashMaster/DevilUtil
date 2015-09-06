@@ -13,7 +13,7 @@ import org.lwjgl.opengl.GL15;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class VertexStream extends VertexData
+public final class VertexStream extends VertexBuilder
 {
     private final int maxVertices, maxIndices;
     private State state;
@@ -22,7 +22,7 @@ public final class VertexStream extends VertexData
     private int vboSize, eboSize;
     private Memory vertexBlock, indexBlock;
     private ByteBuffer vertexBuffer, indexBuffer;
-    private int glVBO, glEBO;
+    private int vbo, ibo;
     private int bufferedVerts, bufferedInds;
     private int uploadedVerts, uploadedInds;
     
@@ -42,12 +42,12 @@ public final class VertexStream extends VertexData
     @Override
     void onBegin()
     {
-        vboSize = maxVertices*getVertexSize();
+        vboSize = maxVertices*vertexSize();
         vertexBlock = new Memory(vboSize);
         vertexBuffer = vertexBlock.buffer;
-        glVBO = GL15.glGenBuffers();
+        vbo = GL15.glGenBuffers();
         int prevBinding = GL11.glGetInteger(GL15.GL_ARRAY_BUFFER_BINDING);
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, glVBO);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vboSize, GL15.GL_STREAM_DRAW);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, prevBinding);
         
@@ -56,9 +56,9 @@ public final class VertexStream extends VertexData
             eboSize = maxIndices*4;
             indexBlock = new Memory(eboSize);
             indexBuffer = indexBlock.buffer;
-            glEBO = GL15.glGenBuffers();
+            ibo = GL15.glGenBuffers();
             prevBinding = GL11.glGetInteger(GL15.GL_ELEMENT_ARRAY_BUFFER_BINDING);
-            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, glEBO);
+            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ibo);
             GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, eboSize, GL15.GL_STREAM_DRAW);
             GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, prevBinding);
         }
@@ -117,7 +117,7 @@ public final class VertexStream extends VertexData
         
         //Allocate new stores, orphaning the old ones to allow for asynchronous drawing.
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vboSize, GL15.GL_STREAM_DRAW);
-        GL15.nglBufferSubData(GL15.GL_ARRAY_BUFFER, 0, bufferedVerts*getVertexSize(), vertexBlock.address);
+        GL15.nglBufferSubData(GL15.GL_ARRAY_BUFFER, 0, bufferedVerts*vertexSize(), vertexBlock.address);
         
         if (maxIndices > 0)
         {
@@ -136,17 +136,29 @@ public final class VertexStream extends VertexData
     {
         return state == State.READY;
     }
-
+    
     @Override
-    int getVBO()
+    public int vbo()
     {
-        return glVBO;
+        return vbo;
     }
 
     @Override
-    int getEBO()
+    public int ibo()
     {
-        return glEBO;
+        return ibo;
+    }
+
+    @Override
+    public int numVertices()
+    {
+        return uploadedVerts;
+    }
+
+    @Override
+    public int numIndices()
+    {
+        return uploadedInds;
     }
 
     @Override
@@ -164,14 +176,14 @@ public final class VertexStream extends VertexData
             vertexBlock.free();
             vertexBlock = null;
             vertexBuffer = null;
-            GL15.glDeleteBuffers(glVBO);
+            GL15.glDeleteBuffers(vbo);
             
             if (maxIndices > 0)
             {
                 indexBlock.free();
                 indexBlock = null;
                 indexBuffer = null;
-                GL15.glDeleteBuffers(glEBO);
+                GL15.glDeleteBuffers(ibo);
             }
         }
         
