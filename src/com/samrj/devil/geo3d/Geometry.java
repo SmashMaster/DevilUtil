@@ -68,30 +68,32 @@ public class Geometry
     
     public Geometry(Mesh mesh)
     {
-        mesh.rewindBuffers();
-        
-        ByteBuffer vertexData = mesh.vertexData();
+        ByteBuffer vBuffer = mesh.vertexData;
+        vBuffer.rewind();
         verts = new ArrayList<>(mesh.numVertices);
         for (int i=0; i<mesh.numVertices; i++)
         {
             Vertex p = new Vertex();
-            p.read(vertexData);
+            p.read(vBuffer);
             verts.add(p);
         }
+        vBuffer.rewind();
         
-        ByteBuffer indexData = mesh.indexData();
+        ByteBuffer iBuffer = mesh.indexData;
+        iBuffer.rewind();
         faces = new ArrayList<>(mesh.numTriangles);
         edges = new ArrayList<>(mesh.numTriangles*3);
         for (int i=0; i<mesh.numTriangles; i++)
         {
-            Face f = new Face(verts.get(indexData.getInt()),
-                              verts.get(indexData.getInt()),
-                              verts.get(indexData.getInt()));
+            Face f = new Face(verts.get(iBuffer.getInt()),
+                              verts.get(iBuffer.getInt()),
+                              verts.get(iBuffer.getInt()));
             faces.add(f);
             edges.add(f.ab);
             edges.add(f.bc);
             edges.add(f.ca);
         }
+        iBuffer.rewind();
         
         optimize(0.0f);
     }

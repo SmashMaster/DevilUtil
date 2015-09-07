@@ -116,20 +116,16 @@ public final class VertexBuffer extends VertexBuilder
     }
     
     @Override
-    boolean canBind()
-    {
-        return state == State.COMPLETE;
-    }
-    
-    @Override
     public int vbo()
     {
+        ensureState(State.COMPLETE);
         return vbo;
     }
 
     @Override
     public int ibo()
     {
+        ensureState(State.COMPLETE);
         return ibo;
     }
 
@@ -142,14 +138,7 @@ public final class VertexBuffer extends VertexBuilder
     @Override
     public int numIndices()
     {
-        return numIndices;
-    }
-
-    @Override
-    void draw(int mode)
-    {
-        if (maxIndices <= 0) GL11.glDrawArrays(mode, 0, numVertices);
-        else GL11.glDrawElements(mode, numIndices, GL11.GL_UNSIGNED_INT, 0);
+        return maxIndices > 0 ? numIndices : -1;
     }
 
     @Override

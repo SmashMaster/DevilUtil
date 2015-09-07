@@ -5,7 +5,6 @@ import static com.samrj.devil.gl.AttributeType.*;
 import com.samrj.devil.gl.DGL;
 import com.samrj.devil.gl.ShaderProgram;
 import com.samrj.devil.gl.VAO;
-import com.samrj.devil.gl.VertexBuilder;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
@@ -23,7 +22,7 @@ public class GLMesh
     
     private final Mesh mesh;
     private final Attribute[] attributes;
-    private int vertexBuffer, elementBuffer;
+    private int vbo, ibo;
     
     public GLMesh(Mesh mesh)
     {
@@ -73,23 +72,17 @@ public class GLMesh
                 mesh.numVertexGroups,
                 GL11.GL_FLOAT);
         
-        //Set up OpenGL stuff.
-        mesh.rewindBuffers();
+        vbo = GL15.glGenBuffers();
+        int prevBinding = GL11.glGetInteger(GL15.GL_ARRAY_BUFFER_BINDING);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
+        GL15.nglBufferData(GL15.GL_ARRAY_BUFFER, mesh.vertexBlock.size, mesh.vertexBlock.address, GL15.GL_STATIC_DRAW);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, prevBinding);
         
-        VertexBuilder oldData = DGL.currentData();
-        VAO oldVAO = DGL.currentVAO();
-        DGL.bindData(null);
-        DGL.bindVAO(null);
-
-        vertexBuffer = GL15.glGenBuffers();
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBuffer);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, mesh.vertexData(), GL15.GL_STATIC_DRAW);
-        elementBuffer = GL15.glGenBuffers();
-        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
-        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.indexData(), GL15.GL_STATIC_DRAW);
-        
-        DGL.bindData(oldData);
-        DGL.bindVAO(oldVAO);
+        ibo = GL15.glGenBuffers();
+        prevBinding = GL11.glGetInteger(GL15.GL_ELEMENT_ARRAY_BUFFER_BINDING);
+        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ibo);
+        GL15.nglBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.indexBlock.size, mesh.indexBlock.address, GL15.GL_STATIC_DRAW);
+        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, prevBinding);
     }
     
     public void setPositionName(String name)
@@ -133,8 +126,10 @@ public class GLMesh
         
         VAO vao = DGL.genVAO();
         DGL.bindVAO(vao);
-        vao.bindElementArrayBuffer(elementBuffer);
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBuffer);
+        
+        int prevBinding = GL11.glGetInteger(GL15.GL_ARRAY_BUFFER_BINDING);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
+        vao.bindElementArrayBuffer(ibo);
         
         for (int i=0; i<7; i++)
         {
@@ -147,28 +142,24 @@ public class GLMesh
             att.enable(vao, satt.location);
         }
         
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, prevBinding);
+        
         DGL.bindVAO(oldVAO);
         return vao;
     }
     
     public void draw()
     {
-        VertexBuilder oldData = DGL.currentData();
-        DGL.bindData(null);
-        
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBuffer);
         GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.numTriangles*3, GL11.GL_UNSIGNED_INT, 0);
-        
-        DGL.bindData(oldData);
     }
     
     public void delete()
     {
-        GL15.glDeleteBuffers(vertexBuffer);
-        GL15.glDeleteBuffers(elementBuffer);
+        GL15.glDeleteBuffers(vbo);
+        GL15.glDeleteBuffers(ibo);
         
-        vertexBuffer = -1;
-        elementBuffer = -1;
+        vbo = -1;
+        ibo = -1;
     }
     
     private class Attribute

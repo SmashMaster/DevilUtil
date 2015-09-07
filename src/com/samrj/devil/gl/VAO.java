@@ -1,5 +1,6 @@
 package com.samrj.devil.gl;
 
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
@@ -49,6 +50,46 @@ public final class VAO extends DGLObj
     {
         ensureBound();
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, buffer);
+    }
+    
+    /**
+     * Links this the given vertex data to the given shader program, enabling
+     * common attributes between the two. This vertex array may then be used to
+     * draw the given data with the given program. Will have undefined behavior
+     * if called for multiple programs, but may be safely used to link different
+     * data to the same programs.
+     * 
+     * @param data The vertex data to link.
+     * @param shader The shader to link.
+     */
+    public void link(VertexData data, ShaderProgram shader)
+    {
+        ensureBound();
+        
+        int prevBinding = GL11.glGetInteger(GL15.GL_ARRAY_BUFFER_BINDING);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, data.vbo());
+        bindElementArrayBuffer(data.ibo());
+        
+        for (ShaderProgram.Attribute satt : shader.getAttributes())
+        {
+            AttributeType type  = satt.type;
+            VertexData.Attribute att = data.getAttribute(satt.name);
+            
+            if (att != null && att.type == type) for (int layer=0; layer<type.layers; layer++)
+            {
+                int location = satt.location + layer;
+                enableVertexAttribArray(location);
+                vertexAttribPointer(location,
+                                    type.components,
+                                    type.glComponent,
+                                    false,
+                                    data.vertexSize(),
+                                    att.offset + layer*type.size);
+            }
+            else disableVertexAttribArray(satt.location);
+        }
+        
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, prevBinding);
     }
 
     void bind()

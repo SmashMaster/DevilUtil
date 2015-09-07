@@ -21,8 +21,8 @@ public class Mesh
     
     public final int numVertices;
     public final int numTriangles;
-    private Memory vertexBlock, indexBlock;
-    private ByteBuffer vertexData, indexData;
+    public final Memory vertexBlock, indexBlock;
+    public final ByteBuffer vertexData, indexData;
     
     Mesh(DataInputStream in, Armature armature, boolean hasTangents) throws IOException
     {
@@ -54,6 +54,7 @@ public class Mesh
         
         for (int i=0; i<vertexDataLength; i++)
             vertexData.putFloat(in.readFloat());
+        vertexData.rewind();
         
         numTriangles = in.readInt();
         int triangleIndexDataLength = numTriangles*3;
@@ -62,31 +63,12 @@ public class Mesh
         
         for (int i=0; i<triangleIndexDataLength; i++)
             indexData.putInt(in.readInt());
-    }
-    
-    public ByteBuffer vertexData()
-    {
-        return vertexData;
-    }
-    
-    public ByteBuffer indexData()
-    {
-        return indexData;
-    }
-    
-    public final void rewindBuffers()
-    {
-        vertexData.rewind();
         indexData.rewind();
     }
     
     final void destroy()
     {
         vertexBlock.free();
-        vertexBlock = null;
-        vertexData = null;
         indexBlock.free();
-        indexBlock = null;
-        indexData = null;
     }
 }

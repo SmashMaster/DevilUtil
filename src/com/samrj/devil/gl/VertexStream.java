@@ -112,17 +112,21 @@ public final class VertexStream extends VertexBuilder
     public void upload()
     {
         ensureState(State.READY);
-        if (DGL.currentData() != this) throw new IllegalStateException(
-                "Vertex stream must be bound to upload data.");
         
         //Allocate new stores, orphaning the old ones to allow for asynchronous drawing.
+        int prevBinding = GL11.glGetInteger(GL15.GL_ARRAY_BUFFER_BINDING);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vboSize, GL15.GL_STREAM_DRAW);
         GL15.nglBufferSubData(GL15.GL_ARRAY_BUFFER, 0, bufferedVerts*vertexSize(), vertexBlock.address);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, prevBinding);
         
         if (maxIndices > 0)
         {
+            prevBinding = GL11.glGetInteger(GL15.GL_ELEMENT_ARRAY_BUFFER_BINDING);
+            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ibo);
             GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, eboSize, GL15.GL_STREAM_DRAW);
             GL15.nglBufferSubData(GL15.GL_ELEMENT_ARRAY_BUFFER, 0, bufferedInds*4, indexBlock.address);
+            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, prevBinding);
         }
         
         uploadedVerts = bufferedVerts;
@@ -130,22 +134,18 @@ public final class VertexStream extends VertexBuilder
         
         clear();
     }
-
-    @Override
-    boolean canBind()
-    {
-        return state == State.READY;
-    }
     
     @Override
     public int vbo()
     {
+        ensureState(State.READY);
         return vbo;
     }
 
     @Override
     public int ibo()
     {
+        ensureState(State.READY);
         return ibo;
     }
 
@@ -158,14 +158,7 @@ public final class VertexStream extends VertexBuilder
     @Override
     public int numIndices()
     {
-        return uploadedInds;
-    }
-
-    @Override
-    void draw(int mode)
-    {
-        if (maxIndices <= 0) GL11.glDrawArrays(mode, 0, uploadedVerts);
-        else GL11.glDrawElements(mode, uploadedInds, GL11.GL_UNSIGNED_INT, 0);
+        return maxIndices > 0 ? uploadedInds : -1;
     }
 
     @Override

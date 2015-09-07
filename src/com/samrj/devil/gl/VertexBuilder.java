@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.lwjgl.opengl.GL15;
 
 /**
  * Vertex data abstract class. Used to keep track of vertex attributes, indices,
@@ -278,39 +277,11 @@ public abstract class VertexBuilder extends DGLObj implements VertexData
      */
     public abstract void index(int index);
     
-    /**
-     * @return Whether this vertex data can be bound--whether it has memory
-     *         allocated on the GPU and is ready to upload data.
-     */
-    abstract boolean canBind();
-    
-    final void bind()
-    {
-        if (!canBind()) throw new IllegalStateException("Vertex data not ready to bind.");
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo());
-    }
-    
-    final void unbind()
-    {
-        if (!canBind()) throw new IllegalStateException("Vertex data not ready to unbind.");
-        //Throwing this exception might seem really dumb, but it's there to
-        //prevent even dumber programming mistakes.
-        
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-    }
-    
     @Override
     public abstract int vbo();
     
     @Override
     public abstract int ibo();
-    
-    /**
-     * Draws this vertex data.
-     * 
-     * @param mode An OpenGL primitive drawing mode.
-     */
-    abstract void draw(int mode);
     
     /**
      * Called when deleting this vertex data.
