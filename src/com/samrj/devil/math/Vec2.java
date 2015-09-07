@@ -306,7 +306,7 @@ public class Vec2 implements Bufferable, Streamable
      */
     public static final void reflect(Vec2 v, Vec2 n, Vec2 result)
     {
-        float m = 2f*dot(v, n);
+        float m = 2.0f*dot(v, n);
         result.x = n.x*m - v.x;
         result.y = n.y*m - v.y;
     }
