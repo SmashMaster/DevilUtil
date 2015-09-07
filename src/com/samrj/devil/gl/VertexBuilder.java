@@ -8,6 +8,7 @@ import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec2i;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.Vec3i;
+import com.samrj.devil.math.Vec4;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -134,6 +135,18 @@ public abstract class VertexBuilder extends DGLObj implements VertexData
     {
         ensureAttNotReg(name);
         return regAtt(name, AttributeType.VEC3, new Vec3());
+    }
+    
+    /**
+     * Registers a 3d vector attribute for this vertex data.
+     * 
+     * @param name The name of the attribute to register.
+     * @return A new attribute data object.
+     */
+    public final Vec4 vec4(String name)
+    {
+        ensureAttNotReg(name);
+        return regAtt(name, AttributeType.VEC4, new Vec4());
     }
     
     /**
