@@ -24,6 +24,7 @@ public final class Shader extends DGLObj
     
     final int id, type;
     private State state;
+    private String path;
     
     Shader(int type)
     {
@@ -66,11 +67,12 @@ public final class Shader extends DGLObj
         //Compile
         GL20.glCompileShader(id);
         
+        //Check for errors
         if (GL20.glGetShaderi(id, GL20.GL_COMPILE_STATUS) != GL11.GL_TRUE)
         {
             int logLength = GL20.glGetShaderi(id, GL20.GL_INFO_LOG_LENGTH);
             String log = GL20.glGetShaderInfoLog(id, logLength);
-            throw new ShaderException(log);
+            throw new ShaderException(path != null ? path + " " + log : log);
         }
         
         state = State.COMPILED;
@@ -85,6 +87,7 @@ public final class Shader extends DGLObj
      */
     public void source(String path) throws IOException
     {
+        this.path = path;
         source(Resource.open(path));
     }
     

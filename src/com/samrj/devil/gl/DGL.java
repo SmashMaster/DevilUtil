@@ -133,17 +133,15 @@ public final class DGL
     
     /**
      * Generates, loads, compiles, links, and validates a new shader program
-     * using the two given shaders.
+     * using any number of given shaders.
      * 
-     * @param vertexShader The vertex shader to use.
-     * @param fragmentShader The fragment shader to use.
+     * @param shaders An array of shaders to attach.
      * @return A new, complete shader program.
      */
-    public static ShaderProgram loadProgram(Shader vertexShader, Shader fragmentShader)
+    public static ShaderProgram loadProgram(Shader... shaders)
     {
         ShaderProgram program = genProgram();
-        program.attach(vertexShader);
-        program.attach(fragmentShader);
+        for (Shader shader : shaders) program.attach(shader);
         program.link();
         program.validate();
         return program;
