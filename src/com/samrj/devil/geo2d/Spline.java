@@ -54,9 +54,9 @@ public class Spline
      * contain whole curve, not guaranteed to be the minimum bounding box. Nodes
      * must be in cardinal order.
      */
-    public static AAB getBounds(Node a, Node b)
+    public static AAB2 getBounds(Node a, Node b)
     {
-        AAB out = AAB.bounds(a.getPos(), b.getPos());
+        AAB2 out = AAB2.bounds(a.getPos(), b.getPos());
         
         final float MAX_TANGENT_T = 4f/27f;
         

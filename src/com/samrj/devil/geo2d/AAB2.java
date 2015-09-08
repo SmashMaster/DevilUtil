@@ -10,7 +10,7 @@ import org.lwjgl.opengl.GL11;
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class AAB
+public class AAB2
 {
     // <editor-fold defaultstate="collapsed" desc="Static Factories">
     /**
@@ -19,9 +19,9 @@ public class AAB
      * nothing. Use with the expand function to create a bounding box from a set
      * of points.
      */
-    public static AAB empty()
+    public static AAB2 empty()
     {
-        return new AAB(Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY,
+        return new AAB2(Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY,
                        Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY);
     }
     
@@ -30,76 +30,76 @@ public class AAB
      * 
      * @param points a set of points to bound.
      */
-    public static AAB bounds(Vec2... points)
+    public static AAB2 bounds(Vec2... points)
     {
-        AAB out = empty();
+        AAB2 out = empty();
         for (Vec2 v : points) out.expand(v);
         return out;
     }
     
-    public static AAB fromHalfWidth(Vec2 pos, float rx, float ry)
+    public static AAB2 fromHalfWidth(Vec2 pos, float rx, float ry)
     {
-        return new AAB(pos.x - rx, pos.x + rx,
+        return new AAB2(pos.x - rx, pos.x + rx,
                        pos.y - ry, pos.y + ry);
     }
     // </editor-fold>
     
     public float x0, x1, y0, y1;
     
-    public AAB(float x0, float x1, float y0, float y1)
+    public AAB2(float x0, float x1, float y0, float y1)
     {
         set(x0, x1, y0, y1);
     }
     
-    public AAB set(float x0, float x1, float y0, float y1)
+    public AAB2 set(float x0, float x1, float y0, float y1)
     {
         this.x0 = x0; this.x1 = x1;
         this.y0 = y0; this.y1 = y1;
         return this;
     }
     
-    public AAB set(AAB b)
+    public AAB2 set(AAB2 b)
     {
         return set(b.x0, b.x1, b.y0, b.y1);
     }
     
-    public AAB mult(float s)
+    public AAB2 mult(float s)
     {
         return set(x0*s, x1*s, y0*s, y1*s);
     }
     
-    public AAB mult(float x, float y)
+    public AAB2 mult(float x, float y)
     {
         return set(x0*x, x1*x, y0*y, y1*y);
     }
     
-    public AAB mult(Vec2 v)
+    public AAB2 mult(Vec2 v)
     {
         return mult(v.x, v.y);
     }
     
-    public AAB expandX(float x)
+    public AAB2 expandX(float x)
     {
         if (x < x0) x0 = x;
         if (x > x1) x1 = x;
         return this;
     }
     
-    public AAB expandY(float y)
+    public AAB2 expandY(float y)
     {
         if (y < y0) y0 = y;
         if (y > y1) y1 = y;
         return this;
     }
     
-    public AAB expand(Vec2 v)
+    public AAB2 expand(Vec2 v)
     {
         expandX(v.x);
         expandY(v.y);
         return this;
     }
     
-    public AAB expand(AAB b)
+    public AAB2 expand(AAB2 b)
     {
         if (b.x0 < x0) x0 = b.x0;
         if (b.x1 > x1) x1 = b.x1;
@@ -108,7 +108,7 @@ public class AAB
         return this;
     }
     
-    public AAB intersect(AAB b)
+    public AAB2 intersect(AAB2 b)
     {
         if (b.x0 > x0) x0 = b.x0;
         if (b.x1 < x1) x1 = b.x1;
@@ -117,14 +117,14 @@ public class AAB
         return this;
     }
     
-    public AAB translate(Vec2 v)
+    public AAB2 translate(Vec2 v)
     {
         x0 += v.x; x1 += v.x;
         y0 += v.y; y1 += v.y;
         return this;
     }
     
-    public AAB setCenter(Vec2 v)
+    public AAB2 setCenter(Vec2 v)
     {
         float rx = (x1 - x0)/2f;
         float ry = (y1 - y0)/2f;
@@ -157,7 +157,7 @@ public class AAB
      */
     public boolean touches(Seg s)
     {
-        AAB sbox = AAB.bounds(s.a, s.b);
+        AAB2 sbox = AAB2.bounds(s.a, s.b);
         if (!touches(sbox)) return false;
         return touches((Line)s);
     }
@@ -166,7 +166,7 @@ public class AAB
      * Returns true if there exists any point that is contained by both this and
      * b.
      */
-    public boolean touches(AAB b)
+    public boolean touches(AAB2 b)
     {
         return x1 >= b.x0 && b.x1 >= x0 &&
                y1 >= b.y0 && b.y1 >= y0;
@@ -176,7 +176,7 @@ public class AAB
      * Returns true if the intersection between this and b creates a non-zero
      * area.
      */
-    public boolean intersects(AAB b)
+    public boolean intersects(AAB2 b)
     {
         return x1 > b.x0 && b.x1 > x0 &&
                y1 > b.y0 && b.y1 > y0;
@@ -194,7 +194,7 @@ public class AAB
     /**
      * Returns true if b contains no point that this does not contain.
      */
-    public boolean contains(AAB b)
+    public boolean contains(AAB2 b)
     {
         return b.x0 >= x0 && x1 >= b.x1 &&
                b.y0 >= y0 && y1 >= b.y1;
@@ -228,7 +228,7 @@ public class AAB
         return out;
     }
     
-    public float chebyDist(AAB box)
+    public float chebyDist(AAB2 box)
     {
         float[] distances = {x0 - box.x1,
                              box.x0 - x1,
@@ -268,12 +268,12 @@ public class AAB
         return size.x*size.y;
     }
     
-    public float intersectionArea(AAB b)
+    public float intersectionArea(AAB2 b)
     {
         return clone().intersect(b).area();
     }
     
-    public float sharedArea(AAB b)
+    public float sharedArea(AAB2 b)
     {
         return area() + b.area() - intersectionArea(b);
     }
@@ -335,16 +335,16 @@ public class AAB
         return "x[" + x0 + ", " + x1 + "]y[" + y0 + ", " + y1 + "]";
     }
     
-    @Override public AAB clone()
+    @Override public AAB2 clone()
     {
-        return new AAB(x0, x1, y0, y1);
+        return new AAB2(x0, x1, y0, y1);
     }
     
     @Override public boolean equals(Object obj)
     {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
-        final AAB other = (AAB) obj;
+        final AAB2 other = (AAB2) obj;
         if (Float.floatToIntBits(this.x0) != Float.floatToIntBits(other.x0)) return false;
         if (Float.floatToIntBits(this.x1) != Float.floatToIntBits(other.x1)) return false;
         if (Float.floatToIntBits(this.y0) != Float.floatToIntBits(other.y0)) return false;

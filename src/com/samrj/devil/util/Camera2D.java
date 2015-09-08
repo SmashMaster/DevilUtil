@@ -1,6 +1,6 @@
 package com.samrj.devil.util;
 
-import com.samrj.devil.geo2d.AAB;
+import com.samrj.devil.geo2d.AAB2;
 import com.samrj.devil.graphics.GraphicsUtil;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
@@ -114,10 +114,10 @@ public class Camera2D
         return out;
     }
     
-    public AAB getViewBounds()
+    public AAB2 getViewBounds()
     {
         Mat3 toWorld = toWorld();
-        return AAB.bounds(new Vec2().mult(toWorld),
+        return AAB2.bounds(new Vec2().mult(toWorld),
                           new Vec2(res.x, res.y).mult(toWorld));
     }
     

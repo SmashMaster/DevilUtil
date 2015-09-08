@@ -44,7 +44,7 @@ public final class Box
         return out;
     }
     
-    public static Box fromAAB(AAB aab)
+    public static Box fromAAB(AAB2 aab)
     {
         Box out = new Box();
         out.pos.set(aab.center());
