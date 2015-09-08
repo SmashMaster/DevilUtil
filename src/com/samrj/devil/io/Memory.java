@@ -118,6 +118,22 @@ public final class Memory
         return mem;
     }
     
+    /**
+     * Writes each of the given bufferables into a newly allocated block of
+     * memory.
+     * 
+     * @param array An array of bufferables to write.
+     * @return A newly allocated block of memory containing each bufferable.
+     */
+    public static Memory wrapv(Bufferable... array)
+    {
+        int size = 0;
+        for (Bufferable obj : array) size += obj.bufferSize();
+        Memory mem = new Memory(size);
+        for (Bufferable obj : array) obj.write(mem.buffer);
+        return mem;
+    }
+    
     public final int size;
     public final ByteBuffer buffer;
     public final long address;

@@ -153,6 +153,7 @@ public final class ShaderProgram extends DGLObj
         return GL20.glGetAttribLocation(id, name);
     }
     
+    // <editor-fold defaultstate="collapsed" desc="Uniform methods">
     /**
      * Returns the location of the uniform with the given name, or -1 if none
      * with the given name exists.
@@ -183,6 +184,26 @@ public final class ShaderProgram extends DGLObj
     }
     
     /**
+     * Specifies the values of a uniform variable array for this program. Must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform array to specify.
+     * @param array An array of values to set the uniform to.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean uniform1iv(String name, int... array)
+    {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
+        int loc = GL20.glGetUniformLocation(id, name);
+        if (loc < 0) return false;
+        
+        Memory mem = Memory.wrapi(array);
+        GL20.nglUniform1iv(loc, array.length, mem.address);
+        mem.free();
+        return true;
+    }
+    
+    /**
      * Specifies the value of a uniform variable for this program. Program must
      * be in use. Returns true if and only if the uniform exists and is active.
      * 
@@ -196,6 +217,26 @@ public final class ShaderProgram extends DGLObj
         int loc = GL20.glGetUniformLocation(id, name);
         if (loc < 0) return false;
         GL20.glUniform1f(loc, x);
+        return true;
+    }
+    
+    /**
+     * Specifies the values of a uniform variable array for this program. Must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform array to specify.
+     * @param array An array of values to set the uniform to.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean uniform1fv(String name, float... array)
+    {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
+        int loc = GL20.glGetUniformLocation(id, name);
+        if (loc < 0) return false;
+        
+        Memory mem = Memory.wrapf(array);
+        GL20.nglUniform1fv(loc, array.length, mem.address);
+        mem.free();
         return true;
     }
     
@@ -216,6 +257,26 @@ public final class ShaderProgram extends DGLObj
     }
     
     /**
+     * Specifies the values of a uniform variable array for this program. Must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform array to specify.
+     * @param array An array of values to set the uniform to.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean uniform2fv(String name, float... array)
+    {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
+        int loc = GL20.glGetUniformLocation(id, name);
+        if (loc < 0) return false;
+        
+        Memory mem = Memory.wrapf(array);
+        GL20.nglUniform2fv(loc, array.length/2, mem.address);
+        mem.free();
+        return true;
+    }
+    
+    /**
      * Specifies the value of a uniform variable for this program. Program must
      * be in use. Returns true if and only if the uniform exists and is active.
      * 
@@ -225,6 +286,26 @@ public final class ShaderProgram extends DGLObj
     public boolean uniformVec2(String name, Vec2 v)
     {
         return uniform2f(name, v.x, v.y);
+    }
+    
+    /**
+     * Specifies the values of a uniform variable array for this program. Must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform array to specify.
+     * @param array An array of values to set the uniform to.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean uniformVec2v(String name, Vec2... array)
+    {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
+        int loc = GL20.glGetUniformLocation(id, name);
+        if (loc < 0) return false;
+        
+        Memory mem = Memory.wrapv(array);
+        GL20.nglUniform2fv(loc, array.length, mem.address);
+        mem.free();
+        return true;
     }
     
     /**
@@ -244,6 +325,26 @@ public final class ShaderProgram extends DGLObj
     }
     
     /**
+     * Specifies the values of a uniform variable array for this program. Must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform array to specify.
+     * @param array An array of values to set the uniform to.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean uniform3fv(String name, float... array)
+    {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
+        int loc = GL20.glGetUniformLocation(id, name);
+        if (loc < 0) return false;
+        
+        Memory mem = Memory.wrapf(array);
+        GL20.nglUniform3fv(loc, array.length/3, mem.address);
+        mem.free();
+        return true;
+    }
+    
+    /**
      * Specifies the value of a uniform variable for this program. Program must
      * be in use. Returns true if and only if the uniform exists and is active.
      * 
@@ -253,6 +354,26 @@ public final class ShaderProgram extends DGLObj
     public boolean uniformVec3(String name, Vec3 v)
     {
         return uniform3f(name, v.x, v.y, v.z);
+    }
+    
+    /**
+     * Specifies the values of a uniform variable array for this program. Must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform array to specify.
+     * @param array An array of values to set the uniform to.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean uniformVec3v(String name, Vec3... array)
+    {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
+        int loc = GL20.glGetUniformLocation(id, name);
+        if (loc < 0) return false;
+        
+        Memory mem = Memory.wrapv(array);
+        GL20.nglUniform3fv(loc, array.length, mem.address);
+        mem.free();
+        return true;
     }
     
     /**
@@ -272,6 +393,26 @@ public final class ShaderProgram extends DGLObj
     }
     
     /**
+     * Specifies the values of a uniform variable array for this program. Must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform array to specify.
+     * @param array An array of values to set the uniform to.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean uniform4fv(String name, float... array)
+    {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
+        int loc = GL20.glGetUniformLocation(id, name);
+        if (loc < 0) return false;
+        
+        Memory mem = Memory.wrapf(array);
+        GL20.nglUniform4fv(loc, array.length/4, mem.address);
+        mem.free();
+        return true;
+    }
+    
+    /**
      * Specifies the value of a uniform variable for this program. Program must
      * be in use. Returns true if and only if the uniform exists and is active.
      * 
@@ -281,6 +422,26 @@ public final class ShaderProgram extends DGLObj
     public boolean uniformVec4(String name, Vec4 v)
     {
         return uniform4f(name, v.x, v.y, v.z, v.w);
+    }
+    
+    /**
+     * Specifies the values of a uniform variable array for this program. Must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform array to specify.
+     * @param array An array of values to set the uniform to.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean uniformVec4v(String name, Vec4... array)
+    {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
+        int loc = GL20.glGetUniformLocation(id, name);
+        if (loc < 0) return false;
+        
+        Memory mem = Memory.wrapv(array);
+        GL20.nglUniform4fv(loc, array.length, mem.address);
+        mem.free();
+        return true;
     }
     
     /**
@@ -298,6 +459,26 @@ public final class ShaderProgram extends DGLObj
         
         Memory mem = Memory.wrap(matrix);
         GL20.nglUniformMatrix2fv(loc, 1, false, mem.address);
+        mem.free();
+        return true;
+    }
+    
+    /**
+     * Specifies the values of a uniform variable array for this program. Must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform array to specify.
+     * @param array An array of values to set the uniform to.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean uniformMat2v(String name, Mat2... array)
+    {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
+        int loc = GL20.glGetUniformLocation(id, name);
+        if (loc < 0) return false;
+        
+        Memory mem = Memory.wrapv(array);
+        GL20.nglUniformMatrix2fv(loc, array.length, false, mem.address);
         mem.free();
         return true;
     }
@@ -322,6 +503,26 @@ public final class ShaderProgram extends DGLObj
     }
     
     /**
+     * Specifies the values of a uniform variable array for this program. Must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform array to specify.
+     * @param array An array of values to set the uniform to.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean uniformMat3v(String name, Mat3... array)
+    {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
+        int loc = GL20.glGetUniformLocation(id, name);
+        if (loc < 0) return false;
+        
+        Memory mem = Memory.wrapv(array);
+        GL20.nglUniformMatrix3fv(loc, array.length, false, mem.address);
+        mem.free();
+        return true;
+    }
+    
+    /**
      * Specifies the value of a uniform variable for this program. Program must
      * be in use. Returns true if and only if the uniform exists and is active.
      * 
@@ -339,6 +540,27 @@ public final class ShaderProgram extends DGLObj
         mem.free();
         return true;
     }
+    
+    /**
+     * Specifies the values of a uniform variable array for this program. Must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     * 
+     * @param name The name of the uniform array to specify.
+     * @param array An array of values to set the uniform to.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean uniformMat4v(String name, Mat4... array)
+    {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
+        int loc = GL20.glGetUniformLocation(id, name);
+        if (loc < 0) return false;
+        
+        Memory mem = Memory.wrapv(array);
+        GL20.nglUniformMatrix4fv(loc, array.length, false, mem.address);
+        mem.free();
+        return true;
+    }
+    // </editor-fold>
     
     /**
      * 
