@@ -942,5 +942,29 @@ public class Vec4 implements Bufferable, Streamable
         out.writeFloat(z);
         out.writeFloat(w);
     }
+    
+    @Override
+    public String toString()
+    {
+        return "(" + x + ", " + y + ", " + z + ", " + w + ")";
+    }
+    
+    @Override
+    public boolean equals(Object o)
+    {
+        if (o == null) return false;
+        if (o.getClass() != this.getClass()) return false;
+        final Vec4 v = (Vec4)o;
+        return v.x == x && v.y == y && v.z == z && v.w == w;
+    }
+    
+    @Override
+    public int hashCode()
+    {
+        int hash = 389 + Float.floatToIntBits(this.x);
+        hash = 59*hash + Float.floatToIntBits(this.y);
+        hash = 59*hash + Float.floatToIntBits(this.z);
+        return 59*hash + Float.floatToIntBits(this.w);
+    }
     // </editor-fold>
 }

@@ -136,8 +136,8 @@ public final class ShaderProgram extends DGLObj
      */
     void use()
     {
-        if (state != State.COMPLETE) throw new IllegalStateException(
-                "Shader must be complete to use.");
+        if (state == State.DELETED) throw new IllegalStateException(
+                "Shader must not be deleted to use.");
         GL20.glUseProgram(id);
     }
     
