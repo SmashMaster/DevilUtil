@@ -475,8 +475,9 @@ public final class DGL
     public static TextureRectangle genTexRect()
     {
         checkState();
-        if (!capabilities.OpenGL31) throw new UnsupportedOperationException(
-                "Rectangle textures unsupported in OpenGL < 3.1");
+        if (!(capabilities.OpenGL31 || capabilities.GL_ARB_texture_rectangle))
+            throw new UnsupportedOperationException(
+                "Rectangle textures unsupported on this machine.");
         
         TextureRectangle texture = new TextureRectangle();
         objects.add(texture);
