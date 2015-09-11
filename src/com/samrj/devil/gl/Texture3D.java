@@ -112,7 +112,7 @@ public class Texture3D extends Texture
         
         int primType = TexUtil.getGLPrim(image.type);
         int oldID = tempBind();
-        GL12.nglTexSubImage3D(target, 0, 0, depth, 0, width, height, 1,
+        GL12.nglTexSubImage3D(target, 0, 0, 0, depth, width, height, 1,
                 dataFormat, primType, image.address());
         tempUnbind(oldID);
     }
