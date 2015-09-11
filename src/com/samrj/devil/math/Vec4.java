@@ -563,6 +563,7 @@ public class Vec4 implements Bufferable, Streamable
     
     public float x, y, z, w;
     
+    // <editor-fold defaultstate="collapsed" desc="Constructors">
     /**
      * Creates a new zero vector.
      */
@@ -579,6 +580,68 @@ public class Vec4 implements Bufferable, Streamable
     }
     
     /**
+     * Creates a new vector with the given data. Each coordinate is set to one
+     * of the given values, in order.
+     */
+    public Vec4(float x, float y, Vec2 v)
+    {
+        this.x = x; this.y = y; z = v.x; w = v.y;
+    }
+    
+    /**
+     * Creates a new vector with the given data. Each coordinate is set to one
+     * of the given values, in order.
+     */
+    public Vec4(float x, Vec2 v, float w)
+    {
+        this.x = x; y = v.x; z = v.y; this.w = w;
+    }
+    
+    /**
+     * Creates a new vector with the given data. Each coordinate is set to one
+     * of the given values, in order.
+     */
+    public Vec4(Vec2 v, float z, float w)
+    {
+        x = v.x; y = v.y; this.z = z; this.w = w;
+    }
+    
+    /**
+     * Creates a new vector with the given data. Each coordinate is set to one
+     * of the given values, in order.
+     */
+    public Vec4(Vec2 v0, Vec2 v1)
+    {
+        x = v0.x; y = v0.y; z = v1.x; w = v1.y;
+    }
+    
+    /**
+     * Creates a new vector with the given data. Each coordinate is set to one
+     * of the given values, in order.
+     */
+    public Vec4(float x, Vec3 v)
+    {
+        this.x = x; y = v.x; z = v.y; w = v.z;
+    }
+    
+    /**
+     * Creates a new vector with the given data. Each coordinate is set to one
+     * of the given values, in order.
+     */
+    public Vec4(Vec3 v, float w)
+    {
+        x = v.x; y = v.y; z = v.z; this.w = w;
+    }
+    
+    /**
+     * Creates a new vector with each coordinate set to the given scalar.
+     */
+    public Vec4(float s)
+    {
+        x = s; y = s; z = s; w = s;
+    }
+    
+    /**
      * Copies the given vector.
      * 
      * @param v The vector to copy.
@@ -587,7 +650,7 @@ public class Vec4 implements Bufferable, Streamable
     {
         x = v.x; y = v.y; z = v.z; w = v.w;
     }
-    
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Instance accessor methods">
     /**
      * Returns the dot product of this and the given vector.

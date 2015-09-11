@@ -574,6 +574,7 @@ public class Vec2 implements Bufferable, Streamable
     
     public float x, y;
     
+    // <editor-fold defaultstate="collapsed" desc="Constructors">
     /**
      * Creates a new zero vector.
      */
@@ -606,7 +607,7 @@ public class Vec2 implements Bufferable, Streamable
     {
         x = v.x; y = v.y;
     }
-    
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Instance accessor methods">
     /**
      * Returns the dot product of this and the given vector.

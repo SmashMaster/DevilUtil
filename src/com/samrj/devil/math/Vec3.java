@@ -665,6 +665,7 @@ public class Vec3 implements Bufferable, Streamable
     
     public float x, y, z;
     
+    // <editor-fold defaultstate="collapsed" desc="Constructors">
     /**
      * Creates a new zero vector.
      */
@@ -678,6 +679,24 @@ public class Vec3 implements Bufferable, Streamable
     public Vec3(float x, float y, float z)
     {
         this.x = x; this.y = y; this.z = z;
+    }
+    
+    /**
+     * Creates a new vector with the given data. Each coordinate is set to one
+     * of the given values, in order.
+     */
+    public Vec3(float x, Vec2 v)
+    {
+        this.x = x; y = v.x; z = v.y;
+    }
+    
+    /**
+     * Creates a new vector with the given data. Each coordinate is set to one
+     * of the given values, in order.
+     */
+    public Vec3(Vec2 v, float z)
+    {
+        x = v.x; y = v.y; this.z = z;
     }
     
     /**
@@ -697,7 +716,7 @@ public class Vec3 implements Bufferable, Streamable
     {
         x = v.x; y = v.y; z = v.z;
     }
-    
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Instance accessor methods">
     /**
      * Returns the dot product of this and the given vector.
