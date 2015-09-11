@@ -606,6 +606,8 @@ public final class ShaderProgram extends DGLObj
     {
         if (state == State.DELETED) return;
         
+        
+        if (DGL.currentProgram() == this) DGL.useProgram(null);
         attributes = null;
         attMap = null;
         GL20.glDeleteProgram(id);

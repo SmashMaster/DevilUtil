@@ -108,6 +108,7 @@ public final class VAO extends DGLObj
     void delete()
     {
         if (deleted) return;
+        if (DGL.currentVAO() == this) DGL.bindVAO(null);
         GL30.glDeleteVertexArrays(id);
         deleted = true;
     }

@@ -14,7 +14,7 @@ package com.samrj.devil.gl;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-abstract class DGLObj
+public abstract class DGLObj
 {
     abstract void delete();
 }

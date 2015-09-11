@@ -103,6 +103,8 @@ public final class FBO extends DGLObj
     void delete()
     {
         if (deleted) return;
+        if (DGL.currentReadFBO() == this) DGL.bindFBO(null, GL30.GL_READ_FRAMEBUFFER);
+        if (DGL.currentDrawFBO() == this) DGL.bindFBO(null, GL30.GL_DRAW_FRAMEBUFFER);
         GL30.glDeleteFramebuffers(id);
     }
 }

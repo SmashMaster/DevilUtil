@@ -1,5 +1,6 @@
 package com.samrj.devil.gl;
 
+import com.samrj.devil.graphics.TexUtil;
 import com.samrj.devil.math.Util.PrimType;
 import com.samrj.devil.res.Resource;
 import com.samrj.devil.util.QuickIdentitySet;
@@ -11,7 +12,6 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 import org.lwjgl.opengl.ContextCapabilities;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GLContext;
@@ -190,20 +190,6 @@ public final class DGL
     
     /**
      * Deletes the given shader program, releasing all associated system
-     * resources except for the underlying shaders.
-     * 
-     * @param shaderProgram The shader program to delete.
-     * @see com.samrj.devilgl.DGL#deleteDeep(com.samrj.devilgl.ShaderProgram) 
-     */
-    public static void deleteProgram(ShaderProgram shaderProgram)
-    {
-        if (boundProgram == shaderProgram) useProgram(null);
-        shaderProgram.delete();
-        objects.remove(shaderProgram);
-    }
-    
-    /**
-     * Deletes the given shader program, releasing all associated system
      * resources, including the underlying shaders. Ensure that no other shader
      * programs rely on the underlying shaders before calling this.
      * 
@@ -212,8 +198,8 @@ public final class DGL
      */
     public static void deleteProgramDeep(ShaderProgram shaderProgram)
     {
-        deleteProgram(shaderProgram);
-        for (Shader shader : shaderProgram.getShaders()) deleteShader(shader);
+        delete(shaderProgram);
+        for (Shader shader : shaderProgram.getShaders()) delete(shader);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="VAO methods">
@@ -272,16 +258,6 @@ public final class DGL
     {
         return boundVAO;
     }
-    
-    /**
-     * @param vao Deletes the given vertex array object.
-     */
-    public static void deleteVAO(VAO vao)
-    {
-        if (boundVAO == vao) bindVAO(null);
-        vao.delete();
-        objects.remove(vao);
-    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Vertex data methods">
     /**
@@ -318,17 +294,6 @@ public final class DGL
         VertexStream stream = new VertexStream(maxVertices, maxIndices);
         objects.add(stream);
         return stream;
-    }
-    
-    /**
-     * Deletes the given vertex data, freeing any associated resources.
-     * 
-     * @param vertexData The vertex data to delete.
-     */
-    public static void deleteData(VertexBuilder vertexData)
-    {
-        vertexData.delete();
-        objects.remove(vertexData);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Image methods">
@@ -393,18 +358,6 @@ public final class DGL
         
         return loadImage(bImage.getRaster());
     }
-    
-    /**
-     * Deletes the given image buffer, releasing any native memory associated
-     * with it. Can be done safely after the image is loaded into a texture.
-     * 
-     * @param image The image to delete.
-     */
-    public static void deleteImage(Image image)
-    {
-        image.delete();
-        objects.remove(image);
-    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Texture methods">
     /**
@@ -428,7 +381,6 @@ public final class DGL
      */
     public static Texture2D loadTex2D(Image image)
     {
-        if (image.deleted()) throw new IllegalArgumentException("Given image is deleted.");
         Texture2D texture = genTex2D();
         texture.image(image);
         return texture;
@@ -446,7 +398,7 @@ public final class DGL
     {
         Image image = loadImage(raster);
         Texture2D texture = loadTex2D(image);
-        deleteImage(image);
+        delete(image);
         return texture;
     }
     
@@ -463,7 +415,75 @@ public final class DGL
     {
         Image image = loadImage(path);
         Texture2D texture = loadTex2D(image);
-        deleteImage(image);
+        delete(image);
+        return texture;
+    }
+    
+    /**
+     * Generates a new OpenGL name for a 3D texture.
+     * 
+     * @return A new 3D texture object.
+     */
+    public static Texture3D genTex3D()
+    {
+        checkState();
+        Texture3D texture = new Texture3D();
+        objects.add(texture);
+        return texture;
+    }
+    
+    /**
+     * Creates a new OpenGL 3D texture using the given image array.
+     * 
+     * @param images The array of images to load as a texture.
+     * @return A new 3D texture object.
+     */
+    public static Texture3D loadTex3D(Image... images)
+    {
+        Texture3D texture = genTex3D();
+        Image first = images[0];
+        
+        int format = TexUtil.getFormat(first);
+        if (format == -1) throw new IllegalArgumentException("Illegal image format.");
+        
+        texture.image(first.width, first.height, images.length, format);
+        
+        for (int i=0; i<images.length; i++)
+            texture.subimage(images[i], i, format);
+        
+        return texture;
+    }
+    
+    /**
+     * Creates a new OpenGL 3D texture using the given raster array.
+     * 
+     * @param rasters The raster array to load as a texture.
+     * @return A new 3D texture object.
+     */
+    public static Texture3D loadTex3D(Raster... rasters)
+    {
+        Image[] images = new Image[rasters.length];
+        for (int i=0; i<images.length; i++) images[i] = loadImage(rasters[i]);
+        
+        Texture3D texture = loadTex3D(images);
+        delete(images);
+        return texture;
+    }
+    
+    /**
+     * Creates a new OpenGL 3D texture using the given array of paths.
+     * 
+     * @param paths An array of file or class paths to load from.
+     * @return A new 3D texture object.
+     * @throws IOException If an io exception occurred.
+     */
+    public static Texture3D loadTex3D(String... paths) throws IOException
+    {
+        Image[] images = new Image[paths.length];
+        for (int i=0; i<images.length; i++) images[i] = loadImage(paths[i]);
+        
+        Texture3D texture = loadTex3D(images);
+        delete(images);
         return texture;
     }
     
@@ -492,7 +512,6 @@ public final class DGL
      */
     public static TextureRectangle loadTexRect(Image image)
     {
-        if (image.deleted()) throw new IllegalArgumentException("Given image is deleted.");
         TextureRectangle texture = genTexRect();
         texture.image(image);
         return texture;
@@ -510,7 +529,7 @@ public final class DGL
     {
         Image image = loadImage(raster);
         TextureRectangle texture = loadTexRect(image);
-        deleteImage(image);
+        delete(image);
         return texture;
     }
     
@@ -527,19 +546,8 @@ public final class DGL
     {
         Image image = loadImage(path);
         TextureRectangle texture = loadTexRect(image);
-        deleteImage(image);
+        delete(image);
         return texture;
-    }
-    
-    /**
-     * Deletes the given texture, releasing any associated hardware memory.
-     * 
-     * @param texture The texture to delete.
-     */
-    public static void deleteTex(Texture texture)
-    {
-        texture.delete();
-        objects.remove(texture);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="FBO methods">
@@ -634,19 +642,6 @@ public final class DGL
     }
     
     /**
-     * Deletes the given frame buffer.
-     * 
-     * @param fbo The frame buffer to delete.
-     */
-    public static void deleteFBO(FBO fbo)
-    {
-        if (readFBO == fbo) readFBO = null;
-        if (drawFBO == fbo) drawFBO = null;
-        fbo.delete();
-        objects.remove(fbo);
-    }
-    
-    /**
      * @return The currently bound read FBO, or null if bound to the default
      *         frame buffer.
      */
@@ -698,6 +693,20 @@ public final class DGL
     }
     
     /**
+     * Deletes each DevilGL object in the given array.
+     * 
+     * @param objects An array of DevilGL objects to delete.
+     */
+    public static void delete(DGLObj... objects)
+    {
+        for (DGLObj object : objects)
+        {
+            object.delete();
+            DGL.objects.remove(object);
+        }
+    }
+    
+    /**
      * Destroys DevilGL and releases all associated resources.
      */
     public static void destroy()
@@ -705,14 +714,14 @@ public final class DGL
         checkState();
         init = false;
         
+        for (DGLObj obj : objects) obj.delete();
+        objects.clear();
+        objects = null;
+        
         boundProgram = null;
         boundVAO = null;
         readFBO = null;
         drawFBO = null;
-        
-        for (DGLObj obj : objects) obj.delete();
-        objects.clear();
-        objects = null;
         
         thread = null;
         context = null;

@@ -85,7 +85,7 @@ public class AtlasFont
         
         texture = DGL.genTex2D();
         texture.image(image, GL11.GL_ALPHA8);
-        DGL.deleteImage(image);
+        DGL.delete(image);
         
         //CHARS BLOCK
         ensureByte(in, 4, "Expected chars block fourth.");
@@ -190,7 +190,7 @@ public class AtlasFont
     
     public void delete()
     {
-        DGL.deleteTex(texture);
+        DGL.delete(texture);
     }
     
     private class Char
