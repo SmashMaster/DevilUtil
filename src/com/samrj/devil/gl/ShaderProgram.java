@@ -7,7 +7,7 @@ import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.Vec4;
-import com.samrj.devil.util.QuickIdentitySet;
+import com.samrj.devil.util.IdentitySet;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,7 +46,7 @@ public final class ShaderProgram extends DGLObj
     ShaderProgram()
     {
         id = GL20.glCreateProgram();
-        shaders = new QuickIdentitySet<>();
+        shaders = new IdentitySet<>();
         state = State.NEW;
     }
     

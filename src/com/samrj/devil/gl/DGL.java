@@ -3,7 +3,7 @@ package com.samrj.devil.gl;
 import com.samrj.devil.graphics.TexUtil;
 import com.samrj.devil.math.Util.PrimType;
 import com.samrj.devil.res.Resource;
-import com.samrj.devil.util.QuickIdentitySet;
+import com.samrj.devil.util.IdentitySet;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.io.IOException;
@@ -55,7 +55,7 @@ public final class DGL
         thread = Thread.currentThread();
         context = GLContext.createFromCurrent();
         capabilities = context.getCapabilities();
-        objects = new QuickIdentitySet<>();
+        objects = new IdentitySet<>();
         init = true;
     }
     
