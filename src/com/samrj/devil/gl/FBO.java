@@ -66,6 +66,36 @@ public final class FBO extends DGLObj
     }
     
     /**
+     * Attaches a layer of the given 3D texture to this frame buffer. This frame
+     * buffer must be bound.
+     * 
+     * @param texture The 3D texture to attach.
+     * @param layer The layer of the given texture to attach.
+     * @param attachment The attachment type.
+     */
+    public void texture3D(Texture3D texture, int layer, int attachment)
+    {
+        ensureBound();
+        if (layer < 0 || layer >= texture.getDepth()) throw new ArrayIndexOutOfBoundsException();
+        GL30.glFramebufferTexture3D(GL30.GL_FRAMEBUFFER, attachment, texture.target, texture.id, 0, layer);
+    }
+    
+    /**
+     * Attaches a layer of the given 2D texture array to this frame buffer. This
+     * frame buffer must be bound.
+     * 
+     * @param texture The 2D texture array to attach.
+     * @param layer The layer of the given texture array to attach.
+     * @param attachment The attachment type.
+     */
+    public void textureLayer(Texture2DArray texture, int layer, int attachment)
+    {
+        ensureBound();
+        if (layer < 0 || layer >= texture.getDepth()) throw new ArrayIndexOutOfBoundsException();
+        GL30.glFramebufferTextureLayer(GL30.GL_FRAMEBUFFER, attachment, texture.id, 0, layer);
+    }
+    
+    /**
      * Enables each of the given color buffer attachments for this frame buffer.
      * 
      * @param a An array of draw buffers.

@@ -11,7 +11,7 @@ import org.lwjgl.opengl.GL30;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Texture2D extends Texture2DAbstract
+public final class Texture2D extends Texture2DAbstract
 {
     Texture2D()
     {

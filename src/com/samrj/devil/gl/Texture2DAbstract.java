@@ -12,7 +12,7 @@ import org.lwjgl.system.MemoryUtil;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-abstract class Texture2DAbstract extends Texture
+public abstract class Texture2DAbstract extends Texture
 {
     private int width, height;
     

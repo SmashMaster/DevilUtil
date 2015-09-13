@@ -549,6 +549,74 @@ public final class DGL
         delete(image);
         return texture;
     }
+    
+    /**
+     * Generates a new OpenGL name for a 3D texture.
+     * 
+     * @return A new 3D texture object.
+     */
+    public static Texture2DArray genTex2DArray()
+    {
+        checkState();
+        Texture2DArray texture = new Texture2DArray();
+        objects.add(texture);
+        return texture;
+    }
+    
+    /**
+     * Creates a new OpenGL 3D texture using the given image array.
+     * 
+     * @param images The array of images to load as a texture.
+     * @return A new 3D texture object.
+     */
+    public static Texture2DArray loadTex2DArray(Image... images)
+    {
+        Texture2DArray texture = genTex2DArray();
+        Image first = images[0];
+        
+        int format = TexUtil.getFormat(first);
+        if (format == -1) throw new IllegalArgumentException("Illegal image format.");
+        
+        texture.image(first.width, first.height, images.length, format);
+        
+        for (int i=0; i<images.length; i++)
+            texture.subimage(images[i], i, format);
+        
+        return texture;
+    }
+    
+    /**
+     * Creates a new OpenGL 3D texture using the given raster array.
+     * 
+     * @param rasters The raster array to load as a texture.
+     * @return A new 3D texture object.
+     */
+    public static Texture2DArray loadTex2DArray(Raster... rasters)
+    {
+        Image[] images = new Image[rasters.length];
+        for (int i=0; i<images.length; i++) images[i] = loadImage(rasters[i]);
+        
+        Texture2DArray texture = loadTex2DArray(images);
+        delete(images);
+        return texture;
+    }
+    
+    /**
+     * Creates a new OpenGL 3D texture using the given array of paths.
+     * 
+     * @param paths An array of file or class paths to load from.
+     * @return A new 3D texture object.
+     * @throws IOException If an io exception occurred.
+     */
+    public static Texture2DArray loadTex2DArray(String... paths) throws IOException
+    {
+        Image[] images = new Image[paths.length];
+        for (int i=0; i<images.length; i++) images[i] = loadImage(paths[i]);
+        
+        Texture2DArray texture = loadTex2DArray(images);
+        delete(images);
+        return texture;
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="FBO methods">
     /**

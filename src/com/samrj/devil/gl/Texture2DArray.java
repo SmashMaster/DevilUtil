@@ -1,25 +1,24 @@
 package com.samrj.devil.gl;
 
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
-import org.lwjgl.opengl.GL31;
+import org.lwjgl.opengl.GL30;
 
 /**
- * OpenGL rectangle texture class.
+ * 2D texture array class.
  * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class TextureRectangle extends Texture2DAbstract
+public final class Texture2DArray extends Texture3DAbstract
 {
-    TextureRectangle()
+    Texture2DArray()
     {
-        super(GL31.GL_TEXTURE_RECTANGLE, GL31.GL_TEXTURE_BINDING_RECTANGLE);
+        super(GL30.GL_TEXTURE_2D_ARRAY, GL30.GL_TEXTURE_BINDING_2D_ARRAY);
         
         int oldID = tempBind();
-        parami(GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-        parami(GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+        parami(GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
+        parami(GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
         parami(GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         parami(GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
         tempUnbind(oldID);
