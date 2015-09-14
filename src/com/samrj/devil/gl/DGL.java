@@ -143,7 +143,6 @@ public final class DGL
         ShaderProgram program = genProgram();
         for (Shader shader : shaders) program.attach(shader);
         program.link();
-        program.validate();
         return program;
     }
     
