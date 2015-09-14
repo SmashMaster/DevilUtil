@@ -53,6 +53,21 @@ public abstract class Texture extends DGLObj
     }
     
     /**
+     * Temporarily activates the given texture unit, binds this texture to it,
+     * then activates whichever unit was active before this method was called.
+     * 
+     * @param texture The OpenGL texture unit enum to bind to.
+     */
+    public final void bind(int texture)
+    {
+        if (deleted) throw new IllegalStateException("Cannot bind deleted texture.");
+        int old = GL11.glGetInteger(GL13.GL_ACTIVE_TEXTURE);
+        GL13.glActiveTexture(texture);
+        bind();
+        GL13.glActiveTexture(old);
+    }
+    
+    /**
      * Unbinds any texture currently bound to the current texture unit. Might
      * not be this texture! Manage your texture state carefully.
      */
