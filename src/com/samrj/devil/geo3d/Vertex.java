@@ -60,8 +60,8 @@ public class Vertex extends Vec3 implements EllipsoidCast.Testable, EllipsoidCli
                                           dir.squareLength() - 1.0f);
 
         if (Float.isNaN(t)) return null; //We miss the vertex.
-        if (t <= 0.0f || (cast.terminated && t >= 1.0f))
-            return null; //Moving away, or won't get there in time.
+        if (t != t || t<= 0.0f || (cast.terminated && t >= 1.0f))
+            return null; //Moving away, won't get there in time, or NaN.
         
         Vec3 cp = Vec3.lerp(cast.p0, cast.p1, t);
         float dist = cast.p0.dist(p1)*t;
@@ -74,7 +74,7 @@ public class Vertex extends Vec3 implements EllipsoidCast.Testable, EllipsoidCli
     {
         Vec3 dir = Vec3.sub(clip.p, this).div(clip.radius);
         float sqDist = dir.squareLength();
-        if (sqDist > 1.0f) return null; //Too far apart
+        if (sqDist != sqDist || sqDist > 1.0f) return null; //Too far apart or NaN.
         
         Vec3 n = Vec3.div(dir, (float)Math.sqrt(sqDist)).mult(clip.radius);
         float nLen = n.length();

@@ -65,8 +65,8 @@ public class Edge implements EllipsoidCast.Testable, EllipsoidClip.Testable
                 edgeSqLen*(1.0f - posDir.squareLength()) + edgeDotPos*edgeDotPos);
 
         if (Float.isNaN(t)) return null; //We miss the line entirely.
-        if (t <= 0.0f || (cast.terminated && t >= 1.0f))
-            return null; //Moving away, or won't get there in time.
+        if (t != t || t <= 0.0f || (cast.terminated && t >= 1.0f))
+            return null; //Moving away, won't get there in time, or NaN.
 
         float et = (edgeDotCDir*t - edgeDotPos)/edgeSqLen;
         if (et <= 0.0f || et >= 1.0f) return null; //We hit the line but missed the segment.
@@ -90,7 +90,7 @@ public class Edge implements EllipsoidCast.Testable, EllipsoidClip.Testable
         
         Vec3 normal = Vec3.sub(pDir, cp);
         float sqDist = normal.squareLength();
-        if (sqDist > 1.0f) return null; //Too far apart.
+        if (sqDist != sqDist || sqDist > 1.0f) return null; //Too far apart or NaN.
         
         cp = Vec3.lerp(this.a, this.b, et);
         normal.div((float)Math.sqrt(sqDist)).mult(clip.radius);

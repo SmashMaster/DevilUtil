@@ -84,7 +84,7 @@ public class Face implements EllipsoidCast.Testable, RayCast.Testable, Ellipsoid
         float ood = 1.0f/d;
         Vec3 ap = Vec3.sub(ray.p0, a);
         float t = ap.dot(n)*ood;
-        if (t < 0.0f) return null; //Pointing away or too far
+        if (t != t || t < 0.0f) return null; //Pointing away, too far, or NaN.
         if (ray.terminated && t > 1.0f) return null;
 
         Vec3 e = backface ? Vec3.cross(ap, qp) : Vec3.cross(qp, ap);
@@ -125,12 +125,12 @@ public class Face implements EllipsoidCast.Testable, RayCast.Testable, Ellipsoid
         
         Vec3 normal = Vec3.sub(ce, ae).cross(Vec3.sub(be, ae)).normalize(); //Plane normal
         float t = sweepSpherePlane(p0, cDir, normal, ae, 1.0f); //Time of contact
-        if (t <= 0.0f || (cast.terminated && t >= 1.0f))
-            return null; //Moving away, or won't get there in time.
+        if (t != t || t <= 0.0f || (cast.terminated && t >= 1.0f))
+            return null; //Moving away, won't get there in time, or NaN.
         
         Vec3 cp = Vec3.lerp(cast.p0, cast.p1, t);
         Vec3 bc = barycentric(a, b, c, cp);
-        if (bc.y < 0.0f || bc.z < 0.0f || (bc.y + bc.z) > 1.0f) return null; //We will miss the face
+        if (bc.y < 0.0f || bc.z < 0.0f || (bc.y + bc.z) > 1.0f) return null; //We will miss the face.
         
         float dist = cast.p0.dist(cast.p1)*t;
         Vec3 p = Vec3.mult(a, bc.x).madd(b, bc.y).madd(c, bc.z);
@@ -153,7 +153,7 @@ public class Face implements EllipsoidCast.Testable, RayCast.Testable, Ellipsoid
             dist = -dist;
             normal.negate();
         }
-        if (dist > 1.0f) return null; //Too far apart.
+        if (dist != dist || dist > 1.0f) return null; //Too far apart or NaN
         
         Vec3 bc = barycentric(ae, be, ce, p);
         if (bc.y < 0.0f || bc.z < 0.0f || (bc.y + bc.z) > 1.0f) return null; //Not touching face.
