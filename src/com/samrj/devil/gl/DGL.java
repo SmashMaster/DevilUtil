@@ -617,6 +617,21 @@ public final class DGL
         return texture;
     }
     // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="RBO methods">
+    /**
+     * @return A newly created render buffer.
+     */
+    public static RBO genRBO()
+    {
+        checkState();
+        if (!capabilities.OpenGL30) throw new UnsupportedOperationException(
+                "Render buffers unsupported in OpenGL < 3.0");
+        
+        RBO rbo = new RBO();
+        objects.add(rbo);
+        return rbo;
+    }
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="FBO methods">
     /**
      * @return A newly created frame buffer.

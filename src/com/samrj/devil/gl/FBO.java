@@ -96,6 +96,19 @@ public final class FBO extends DGLObj
     }
     
     /**
+     * Attaches the given render buffer to this frame buffer. This frame buffer
+     * must be bound.
+     * 
+     * @param rbo The render buffer to attach.
+     * @param attachment The attachment type.
+     */
+    public void renderBuffer(RBO rbo, int attachment)
+    {
+        ensureBound();
+        GL30.glFramebufferRenderbuffer(GL30.GL_FRAMEBUFFER, attachment, GL30.GL_RENDERBUFFER, rbo.id);
+    }
+    
+    /**
      * Enables each of the given color buffer attachments for this frame buffer.
      * 
      * @param a An array of draw buffers.
