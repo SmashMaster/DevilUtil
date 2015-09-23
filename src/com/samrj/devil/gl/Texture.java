@@ -7,20 +7,24 @@ import org.lwjgl.opengl.GL13;
  * Abstract OpenGL texture class.
  * 
  * @author Samuel Johnson (SmashMaster)
+ * @param <T> This texture's own type.
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public abstract class Texture extends DGLObj
+public abstract class Texture<T extends Texture<T>> extends DGLObj
 {
     public final int id, target, binding;
     private boolean deleted;
     
     Texture(int target, int binding)
     {
+        DGL.checkState();
         id = GL11.glGenTextures();
         this.target = target;
         this.binding = binding;
     }
+    
+    abstract T getThis();
     
     /**
      * @return Whether this texture is bound to the currently active texture channel.
@@ -45,11 +49,14 @@ public abstract class Texture extends DGLObj
     
     /**
      * Binds this OpenGL texture to whichever texture unit is currently active.
+     * 
+     * @return This texture.
      */
-    public final void bind()
+    public final T bind()
     {
         if (deleted) throw new IllegalStateException("Cannot bind deleted texture.");
         GL11.glBindTexture(target, id);
+        return getThis();
     }
     
     /**
@@ -57,23 +64,28 @@ public abstract class Texture extends DGLObj
      * then activates whichever unit was active before this method was called.
      * 
      * @param texture The OpenGL texture unit enum to bind to.
+     * @return This texture.
      */
-    public final void bind(int texture)
+    public final T bind(int texture)
     {
         if (deleted) throw new IllegalStateException("Cannot bind deleted texture.");
         int old = GL11.glGetInteger(GL13.GL_ACTIVE_TEXTURE);
         GL13.glActiveTexture(texture);
         bind();
         GL13.glActiveTexture(old);
+        return getThis();
     }
     
     /**
      * Unbinds any texture currently bound to the current texture unit. Might
      * not be this texture! Manage your texture state carefully.
+     * 
+     * @return This texture.
      */
-    public final void unbind()
+    public final T unbind()
     {
         if (isBound()) GL11.glBindTexture(target, 0);
+        return getThis();
     }
     
     @Override
@@ -90,10 +102,11 @@ public abstract class Texture extends DGLObj
      * @param param The OpenGL texture parameter to set.
      * @param value The value to set the parameter to.
      */
-    public final void parami(int param, int value)
+    public final T parami(int param, int value)
     {
         if (!isBound()) throw new IllegalStateException("Texture must be bound.");
         GL11.glTexParameteri(target, param, value);
+        return getThis();
     }
     
     /**
@@ -103,9 +116,10 @@ public abstract class Texture extends DGLObj
      * @param param The OpenGL texture parameter to set.
      * @param value The value to set the parameter to.
      */
-    public final void paramf(int param, float value)
+    public final T paramf(int param, float value)
     {
         if (!isBound()) throw new IllegalStateException("Texture must be bound.");
         GL11.glTexParameterf(target, param, value);
+        return getThis();
     }
 }

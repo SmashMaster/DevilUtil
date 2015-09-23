@@ -10,10 +10,11 @@ import org.lwjgl.system.MemoryUtil;
  * Abstract class for 3D textures.
  * 
  * @author Samuel Johnson (SmashMaster)
+ * @param <T> This texture's own type.
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Texture3DAbstract extends Texture
+public abstract class Texture3DAbstract<T extends Texture3DAbstract<T>> extends Texture<T>
 {
     private int width, height, depth;
     
@@ -54,8 +55,9 @@ public class Texture3DAbstract extends Texture
      * @param height The height of the image.
      * @param depth The depth of the image.
      * @param format The format of the image.
+     * @return This texture.
      */
-    public void image(int width, int height, int depth, int format)
+    public T image(int width, int height, int depth, int format)
     {
         if (width <= 0 || height <= 0 || depth <= 0)
             throw new IllegalArgumentException("Illegal image dimensions.");
@@ -73,6 +75,7 @@ public class Texture3DAbstract extends Texture
         GL12.nglTexImage3D(target, 0, format, width, height, depth, 0,
                 baseFormat, glPrimType, MemoryUtil.NULL);
         tempUnbind(oldID);
+        return getThis();
     }
     
     /**
@@ -82,8 +85,9 @@ public class Texture3DAbstract extends Texture
      * @param image The image to overwrite the 
      * @param depth The image layer to overwrite.
      * @param format The texture format to store the image as.
+     * @return This texture.
      */
-    public void subimage(Image image, int depth, int format)
+    public T subimage(Image image, int depth, int format)
     {
         if (image.deleted()) throw new IllegalStateException("Image is deleted.");
         
@@ -102,6 +106,7 @@ public class Texture3DAbstract extends Texture
         GL12.nglTexSubImage3D(target, 0, 0, 0, depth, width, height, 1,
                 dataFormat, primType, image.address());
         tempUnbind(oldID);
+        return getThis();
     }
     
     /**
@@ -111,10 +116,10 @@ public class Texture3DAbstract extends Texture
      * @param image The image to overwrite the 
      * @param depth The image layer to overwrite.
      */
-    public void subimage(Image image, int depth)
+    public T subimage(Image image, int depth)
     {
         int format = TexUtil.getFormat(image);
         if (format == -1) throw new IllegalArgumentException("Illegal image format.");
-        subimage(image, depth, format);
+        return subimage(image, depth, format);
     }
 }

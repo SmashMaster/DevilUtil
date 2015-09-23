@@ -28,6 +28,9 @@ public final class VertexBuffer extends VertexBuilder
     
     VertexBuffer(int maxVertices, int maxIndices)
     {
+        DGL.checkState();
+        if (!DGL.getCapabilities().OpenGL20) throw new UnsupportedOperationException(
+                "Vertex builders unsupported in OpenGL < 2.0");
         this.maxVertices = maxVertices;
         this.maxIndices = maxIndices;
         state = State.NEW;

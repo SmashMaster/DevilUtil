@@ -44,7 +44,7 @@ public final class Image extends DGLObj
      * @param type Any primitive type.
      * @return Whether the given type is bufferable as an image.
      */
-    public static boolean typeSupported(PrimType type)
+    private static boolean typeSupported(PrimType type)
     {
         switch (type)
         {
@@ -63,6 +63,14 @@ public final class Image extends DGLObj
     
     Image(int width, int height, int bands, PrimType type)
     {
+        DGL.checkState();
+        if (width <= 0 || height <= 0)
+            throw new IllegalArgumentException("Illegal dimensions specified.");
+        if (bands <= 0 || bands > 4)
+            throw new IllegalArgumentException("Illegal number of image bands specified.");
+        if (!typeSupported(type))
+            throw new IllegalArgumentException("Illegal primitive type " + type + " specified.");
+        
         this.width = width;
         this.height = height;
         this.bands = bands;
@@ -91,12 +99,14 @@ public final class Image extends DGLObj
      * order they should be buffered by OpenGL.
      * 
      * @param s The sample function to use per pixel/band.
+     * @return This image.
      */
-    public void sample(Sampler s)
+    public Image sample(Sampler s)
     {
         for (int y=0; y<height; y++)
             for (int x=0; x<width; x++)
                 for (int b=0; b<bands; b++) s.sample(x, y, b);
+        return this;
     }
     
     /**
@@ -105,8 +115,9 @@ public final class Image extends DGLObj
      * raster's size is not equal to this buffer's size.
      * 
      * @param raster The image raster to buffer.
+     * @return This image.
      */
-    public void buffer(Raster raster)
+    public Image buffer(Raster raster)
     {
         if (deleted) throw new IllegalStateException("Image buffer deleted.");
         if (raster.getWidth() != width || raster.getHeight() != height)
@@ -154,7 +165,18 @@ public final class Image extends DGLObj
             for (int x=0; x<width; x++)
                 for (int b=0; b<bands; b++) s.sample(x, y, b);
         
+        return rewind();
+    }
+    
+    /**
+     * Rewinds this image's underlying buffer.
+     * 
+     * @return This image.
+     */
+    public Image rewind()
+    {
         buffer.rewind();
+        return this;
     }
     
     /**
@@ -180,7 +202,11 @@ public final class Image extends DGLObj
         deleted = true;
     }
     
-    public interface Sampler
+    /**
+     * Functional interface for any per-pixel-per-channel operation.
+     */
+    @FunctionalInterface
+    public static interface Sampler
     {
         void sample(int x, int y, int b);
     }

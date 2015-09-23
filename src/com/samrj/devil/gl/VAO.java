@@ -19,6 +19,9 @@ public final class VAO extends DGLObj
     
     VAO()
     {
+        DGL.checkState();
+        if (!DGL.getCapabilities().OpenGL30)
+            throw new UnsupportedOperationException("Vertex arrays unsupported in OpenGL < 3.0");
         id = GL30.glGenVertexArrays();
     }
     
@@ -28,28 +31,68 @@ public final class VAO extends DGLObj
         if (DGL.currentVAO() != this) throw new IllegalStateException("VAO not bound.");
     }
     
-    public void enableVertexAttribArray(int index)
+    /**
+     * Enables a generic vertex attribute array.
+     * 
+     * @param index The vertex attribute array to enable.
+     * @return This vertex array.
+     */
+    public VAO enableVertexAttribArray(int index)
     {
         ensureBound();
         GL20.glEnableVertexAttribArray(index);
+        return this;
     }
 
-    public void disableVertexAttribArray(int index)
+    /**
+     * Disables a generic vertex attribute array.
+     * 
+     * @param index The vertex attribute array to disable.
+     * @return This vertex array.
+     */
+    public VAO disableVertexAttribArray(int index)
     {
         ensureBound();
         GL20.glDisableVertexAttribArray(index);
+        return this;
     }
     
-    public void vertexAttribPointer(int index, int size, int type, boolean normalized, int stride, long pointerOffset)
+    /**
+     * Specifies the location and organization of a vertex attribute array.
+     * 
+     * @param index The index of the generic vertex attribute to be modified.
+     * @param size The number of values per vertex that are stored in the array.
+     * @param type The data type of each component in the array.
+     * @param normalized Whether fixed-point data values should be normalized or
+     *        converted directly as fixed-point values when they are accessed.
+     * @param stride the byte offset between consecutive generic vertex
+     *        attributes. If stride is 0, the generic vertex attributes are
+     *        understood to be tightly packed in the array.
+     * @param pointerOffset the vertex attribute data or the offset of the first
+     *        component of the first generic vertex attribute in the array in
+     *        the data store of the buffer currently bound to the
+     *        {@link GL15#GL_ARRAY_BUFFER ARRAY_BUFFER} target.
+     * @return This vertex array.
+     */
+    public VAO vertexAttribPointer(int index, int size, int type, boolean normalized, int stride, long pointerOffset)
     {
         ensureBound();
         GL20.nglVertexAttribPointer(index, size, type, normalized, stride, pointerOffset);
+        return this;
     }
 
-    public void bindElementArrayBuffer(int buffer)
+    /**
+     * Binds the given buffer to the {@link GL15#GL_ELEMENT_ARRAY_BUFFER
+     * GL_ELEMENT_ARRAY_BUFFER} target.
+     * 
+     * @param buffer The name of the buffer object to bind.
+     * @return This vertex array.
+     */
+    public VAO bindElementArrayBuffer(int buffer)
     {
         ensureBound();
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, buffer);
+        return this;
     }
     
     /**
@@ -61,8 +104,9 @@ public final class VAO extends DGLObj
      * 
      * @param data The vertex data to link.
      * @param shader The shader to link.
+     * @return This vertex array.
      */
-    public void link(VertexData data, ShaderProgram shader)
+    public VAO link(VertexData data, ShaderProgram shader)
     {
         ensureBound();
         
@@ -90,6 +134,7 @@ public final class VAO extends DGLObj
         }
         
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, prevBinding);
+        return this;
     }
 
     void bind()

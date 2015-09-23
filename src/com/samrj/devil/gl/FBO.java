@@ -39,6 +39,9 @@ public final class FBO extends DGLObj
     
     FBO()
     {
+        DGL.checkState();
+        if (!DGL.getCapabilities().OpenGL30) throw new UnsupportedOperationException(
+                "Frame buffers unsupported in OpenGL < 3.0");
         id = GL30.glGenFramebuffers();
     }
     

@@ -28,6 +28,9 @@ public final class Shader extends DGLObj
     
     Shader(int type)
     {
+        DGL.checkState();
+        if (!DGL.getCapabilities().OpenGL20)
+            throw new UnsupportedOperationException("Shaders unsupported in OpenGL < 2.0");
         id = GL20.glCreateShader(type);
         this.type = type;
         state = State.NEW;
@@ -38,9 +41,10 @@ public final class Shader extends DGLObj
      * shader. Buffers the source in native memory.
      * 
      * @param in The input stream to load sources from.
+     * @return This shader.
      * @throws IOException If an I/O error occurs.
      */
-    public void source(InputStream in) throws IOException
+    public Shader source(InputStream in) throws IOException
     {
         if (state != State.NEW) throw new IllegalStateException("Shader must be new.");
         
@@ -76,6 +80,7 @@ public final class Shader extends DGLObj
         }
         
         state = State.COMPILED;
+        return this;
     }
     
     /**
@@ -83,12 +88,13 @@ public final class Shader extends DGLObj
      * shader. Buffers the source in native memory.
      * 
      * @param path The class/file path from which to load sources.
+     * @return This shader.
      * @throws IOException If an I/O error occurs.
      */
-    public void source(String path) throws IOException
+    public Shader source(String path) throws IOException
     {
         this.path = path;
-        source(Resource.open(path));
+        return source(Resource.open(path));
     }
     
     /**

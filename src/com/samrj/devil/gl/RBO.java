@@ -17,6 +17,9 @@ public final class RBO extends DGLObj
     
     RBO()
     {
+        DGL.checkState();
+        if (!DGL.getCapabilities().OpenGL30) throw new UnsupportedOperationException(
+                "Render buffers unsupported in OpenGL < 3.0");
         id = GL30.glGenRenderbuffers();
     }
     

@@ -45,6 +45,9 @@ public final class ShaderProgram extends DGLObj
     
     ShaderProgram()
     {
+        DGL.checkState();
+        if (!DGL.getCapabilities().OpenGL20)
+            throw new UnsupportedOperationException("Shader programs unsupported in OpenGL < 2.0");
         id = GL20.glCreateProgram();
         shaders = new IdentitySet<>();
         state = State.NEW;
@@ -54,8 +57,9 @@ public final class ShaderProgram extends DGLObj
      * Attaches the given shader to this program.
      * 
      * @param shader The shader to attach to this program.
+     * @return This shader program.
      */
-    public void attach(Shader shader)
+    public ShaderProgram attach(Shader shader)
     {
         if (state != State.NEW) throw new IllegalStateException(
                 "Shader program must be new to attach shaders.");
@@ -64,6 +68,45 @@ public final class ShaderProgram extends DGLObj
         
         GL20.glAttachShader(id, shader.id);
         shaders.add(shader);
+        return this;
+    }
+    
+    /**
+     * Detaches the given shader from this program. Can be safely done at any
+     * point after linking.
+     * 
+     * @param shader The shader to detach.
+     * @return This shader program.
+     */
+    public ShaderProgram detach(Shader shader)
+    {
+        GL20.glDetachShader(id, shader.id);
+        shaders.remove(shader);
+        return this;
+    }
+    
+    /**
+     * Attaches each of the given shaders to this program.
+     * 
+     * @param shaders An array of shaders to attach to this program.
+     * @return This shader program.
+     */
+    public ShaderProgram attach(Shader... shaders)
+    {
+        for (Shader shader : shaders) attach(shader);
+        return this;
+    }
+    
+    /**
+     * Detaches all shaders from this program. Should be called after linking.
+     * 
+     * @return This shader program.
+     */
+    public ShaderProgram detachAll()
+    {
+        for (Shader shader : shaders) GL20.glDetachShader(id, shader.id);
+        shaders.clear();
+        return this;
     }
     
     private void checkStatus(int type)
@@ -79,8 +122,10 @@ public final class ShaderProgram extends DGLObj
     /**
      * Links this shader program, creating executables that may run on the GPU
      * and compiling a list of input attributes.
+     * 
+     * @return This shader program.
      */
-    public void link()
+    public ShaderProgram link()
     {
         if (state != State.NEW) throw new IllegalStateException(
                 "Shader program must be new to link.");
@@ -114,13 +159,16 @@ public final class ShaderProgram extends DGLObj
         attributes = Collections.unmodifiableList(attList);
         
         state = State.LINKED;
+        return this;
     }
     
     /**
      * Validates this program, checking to see whether the executables contained
      * in this program can be executed in the current OpenGL state.
+     * 
+     * @return This shader program.
      */
-    public void validate()
+    public ShaderProgram validate()
     {
         if (state != State.LINKED) throw new IllegalStateException(
                 "Shader program must be linked to validate.");
@@ -129,6 +177,7 @@ public final class ShaderProgram extends DGLObj
         checkStatus(GL20.GL_VALIDATE_STATUS);
         
         state = State.COMPLETE;
+        return this;
     }
     
     /**

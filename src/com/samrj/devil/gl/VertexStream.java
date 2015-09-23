@@ -28,6 +28,9 @@ public final class VertexStream extends VertexBuilder
     
     VertexStream(int maxVertices, int maxIndices)
     {
+        DGL.checkState();
+        if (!DGL.getCapabilities().OpenGL20) throw new UnsupportedOperationException(
+                "Vertex builders unsupported in OpenGL < 2.0");
         this.maxVertices = maxVertices;
         this.maxIndices = maxIndices;
         state = State.NEW;

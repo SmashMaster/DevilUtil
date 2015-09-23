@@ -10,7 +10,7 @@ import org.lwjgl.opengl.GL30;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class Texture2DArray extends Texture3DAbstract
+public final class Texture2DArray extends Texture3DAbstract<Texture2DArray>
 {
     Texture2DArray()
     {
@@ -22,5 +22,11 @@ public final class Texture2DArray extends Texture3DAbstract
         parami(GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         parami(GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
         tempUnbind(oldID);
+    }
+
+    @Override
+    Texture2DArray getThis()
+    {
+        return this;
     }
 }

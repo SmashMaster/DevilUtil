@@ -27,10 +27,18 @@ public final class Texture3D extends Texture3DAbstract
         tempUnbind(oldID);
     }
     
+    @Override
+    Texture getThis()
+    {
+        return this;
+    }
+    
     /**
      * Generates mipmaps for this texture.
+     * 
+     * @return This texture.
      */
-    public void generateMipmap()
+    public Texture3D generateMipmap()
     {
         if (!DGL.getCapabilities().OpenGL30) throw new UnsupportedOperationException();
         if (!Util.isPower2(getWidth()) ||
@@ -41,5 +49,6 @@ public final class Texture3D extends Texture3DAbstract
         int oldID = tempBind();
         GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
         tempUnbind(oldID);
+        return this;
     }
 }

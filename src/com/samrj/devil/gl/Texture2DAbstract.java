@@ -9,10 +9,11 @@ import org.lwjgl.system.MemoryUtil;
  * Abstract class for 2D textures.
  * 
  * @author Samuel Johnson (SmashMaster)
+ * @param <T> This texture's own type.
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public abstract class Texture2DAbstract extends Texture
+public abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture<T>
 {
     private int width, height;
     
@@ -46,8 +47,9 @@ public abstract class Texture2DAbstract extends Texture
      * @param width The width of the image.
      * @param height The height of the image.
      * @param format The format of the image.
+     * @return This texture.
      */
-    public void image(int width, int height, int format)
+    public T image(int width, int height, int format)
     {
         if (width <= 0 || height <= 0) throw new IllegalArgumentException("Illegal image dimensions.");
         
@@ -63,6 +65,7 @@ public abstract class Texture2DAbstract extends Texture
         GL11.nglTexImage2D(target, 0, format, width, height, 0,
                 baseFormat, glPrimType, MemoryUtil.NULL);
         tempUnbind(oldID);
+        return getThis();
     }
     
     /**
@@ -72,8 +75,9 @@ public abstract class Texture2DAbstract extends Texture
      * 
      * @param image The image to upload to the GPU.
      * @param format The texture format to store the image as.
+     * @return This texture.
      */
-    public void image(Image image, int format)
+    public T image(Image image, int format)
     {
         if (image.deleted()) throw new IllegalStateException("Image is deleted.");
         
@@ -89,6 +93,7 @@ public abstract class Texture2DAbstract extends Texture
         GL11.nglTexImage2D(target, 0, format, width, height, 0,
                 dataFormat, primType, image.address());
         tempUnbind(oldID);
+        return getThis();
     }
     
     /**
@@ -97,12 +102,13 @@ public abstract class Texture2DAbstract extends Texture
      * memory. Any previous image data associated with this texture is released.
      * 
      * @param image The image to upload to the GPU.
+     * @return This texture.
      */
-    public void image(Image image)
+    public T image(Image image)
     {
         int format = TexUtil.getFormat(image);
         if (format == -1) throw new IllegalArgumentException("Illegal image format.");
-        image(image, format);
+        return image(image, format);
     }
     
     /**
@@ -111,8 +117,9 @@ public abstract class Texture2DAbstract extends Texture
      * 
      * @param image The image to upload to the GPU.
      * @param format The texture format to store the image as.
+     * @return This texture.
      */
-    public void subimage(Image image, int format)
+    public T subimage(Image image, int format)
     {
         if (image.deleted()) throw new IllegalStateException("Image is deleted.");
         
@@ -128,6 +135,7 @@ public abstract class Texture2DAbstract extends Texture
         GL11.nglTexSubImage2D(target, 0, 0, 0, width, height,
                 dataFormat, primType, image.address());
         tempUnbind(oldID);
+        return getThis();
     }
     
     /**
@@ -135,11 +143,12 @@ public abstract class Texture2DAbstract extends Texture
      * texture must already have allocated storage.
      * 
      * @param image The image to upload to the GPU.
+     * @return This texture.
      */
-    public void subimage(Image image)
+    public T subimage(Image image)
     {
         int format = TexUtil.getFormat(image);
         if (format == -1) throw new IllegalArgumentException("Illegal image format.");
-        subimage(image, format);
+        return subimage(image, format);
     }
 }

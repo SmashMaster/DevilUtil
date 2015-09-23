@@ -11,7 +11,7 @@ import org.lwjgl.opengl.GL30;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class Texture2D extends Texture2DAbstract
+public final class Texture2D extends Texture2DAbstract<Texture2D>
 {
     Texture2D()
     {
@@ -25,10 +25,18 @@ public final class Texture2D extends Texture2DAbstract
         tempUnbind(oldID);
     }
     
+    @Override
+    Texture2D getThis()
+    {
+        return this;
+    }
+    
     /**
      * Generates mipmaps for this texture.
+     * 
+     * @return This texture.
      */
-    public void generateMipmap()
+    public Texture2D generateMipmap()
     {
         if (!DGL.getCapabilities().OpenGL30) throw new UnsupportedOperationException();
         if (!Util.isPower2(getWidth()) || !Util.isPower2(getHeight()))
@@ -37,5 +45,6 @@ public final class Texture2D extends Texture2DAbstract
         int oldID = tempBind();
         GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
         tempUnbind(oldID);
+        return this;
     }
 }

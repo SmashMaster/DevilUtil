@@ -38,7 +38,7 @@ public final class DGL
     private static VAO boundVAO;
     private static FBO readFBO, drawFBO;
     
-    private static void checkState()
+    static void checkState()
     {
         if (!init) throw new IllegalStateException("DGL not initialized.");
         if (Thread.currentThread() != thread)
@@ -68,6 +68,12 @@ public final class DGL
         return capabilities;
     }
     
+    private static <T extends DGLObj> T gen(T obj)
+    {
+        objects.add(obj);
+        return obj;
+    }
+    
     // <editor-fold defaultstate="collapsed" desc="Shader methods">
     /**
      * Generates a new OpenGL shader. Shader will not have any associated
@@ -78,13 +84,7 @@ public final class DGL
      */
     public static Shader genShader(int type)
     {
-        checkState();
-        if (!capabilities.OpenGL20) throw new UnsupportedOperationException(
-                "Shaders unsupported in OpenGL < 2.0");
-        
-        Shader shader = new Shader(type);
-        objects.add(shader);
-        return shader;
+        return gen(new Shader(type));
     }
     
     /**
@@ -98,21 +98,7 @@ public final class DGL
      */
     public static Shader loadShader(String path, int type) throws IOException
     {
-        Shader shader = genShader(type);
-        shader.source(path);
-        return shader;
-    }
-    
-    /**
-     * Deletes the given shader and releases all associated system resources.
-     * Ensure that no shader programs rely on the given shader.
-     * 
-     * @param shader The shader to delete.
-     */
-    public static void deleteShader(Shader shader)
-    {
-        shader.delete();
-        objects.remove(shader);
+        return genShader(type).source(path);
     }
     
     /**
@@ -122,28 +108,19 @@ public final class DGL
      */
     public static ShaderProgram genProgram()
     {
-        checkState();
-        if (!capabilities.OpenGL20) throw new UnsupportedOperationException(
-                "Shader programs unsupported in OpenGL < 2.0");
-        
-        ShaderProgram program = new ShaderProgram();
-        objects.add(program);
-        return program;
+        return gen(new ShaderProgram());
     }
     
     /**
-     * Generates, loads, compiles, links, and validates a new shader program
-     * using any number of given shaders.
+     * Generates, loads, compiles, and links a new shader program using any
+     * number of given shaders.
      * 
      * @param shaders An array of shaders to attach.
      * @return A new, complete shader program.
      */
     public static ShaderProgram loadProgram(Shader... shaders)
     {
-        ShaderProgram program = genProgram();
-        for (Shader shader : shaders) program.attach(shader);
-        program.link();
-        return program;
+        return genProgram().attach(shaders).link().detachAll();
     }
     
     /**
@@ -160,7 +137,9 @@ public final class DGL
     {
         Shader vertShader = loadShader(path + ".vert", GL20.GL_VERTEX_SHADER);
         Shader fragShader = loadShader(path + ".frag", GL20.GL_FRAGMENT_SHADER);
-        return loadProgram(vertShader, fragShader);
+        ShaderProgram program = loadProgram(vertShader, fragShader);
+        delete(vertShader, fragShader);
+        return program;
     }
     
     /**
@@ -168,15 +147,18 @@ public final class DGL
      * unbind the current shader.
      * 
      * @param shaderProgram The shader program to use.
+     * @return The given shader program, which is now in use.
      */
-    public static void useProgram(ShaderProgram shaderProgram)
+    public static ShaderProgram useProgram(ShaderProgram shaderProgram)
     {
-        if (boundProgram == shaderProgram) return;
+        if (boundProgram != shaderProgram)
+        {
+            if (shaderProgram == null) GL20.glUseProgram(0);
+            else shaderProgram.use();
+            boundProgram = shaderProgram;
+        }
         
-        if (shaderProgram == null) GL20.glUseProgram(0);
-        else shaderProgram.use();
-        
-        boundProgram = shaderProgram;
+        return shaderProgram;
     }
     
     /**
@@ -186,20 +168,6 @@ public final class DGL
     {
         return boundProgram;
     }
-    
-    /**
-     * Deletes the given shader program, releasing all associated system
-     * resources, including the underlying shaders. Ensure that no other shader
-     * programs rely on the underlying shaders before calling this.
-     * 
-     * @param shaderProgram The shader program to delete.
-     * @see com.samrj.devilgl.DGL#delete(com.samrj.devilgl.ShaderProgram) 
-     */
-    public static void deleteProgramDeep(ShaderProgram shaderProgram)
-    {
-        delete(shaderProgram);
-        for (Shader shader : shaderProgram.getShaders()) delete(shader);
-    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="VAO methods">
     /**
@@ -207,13 +175,7 @@ public final class DGL
      */
     public static VAO genVAO()
     {
-        checkState();
-        if (!capabilities.OpenGL30) throw new UnsupportedOperationException(
-                "Vertex arrays unsupported in OpenGL < 3.0");
-        
-        VAO vao = new VAO();
-        objects.add(vao);
-        return vao;
+        return gen(new VAO());
     }
     
     /**
@@ -239,15 +201,19 @@ public final class DGL
      * Binds the given vertex array object, unbinding any previously bound VAO.
      * 
      * @param vao The vertex array to bind.
+     * @return The given vertex array, which is now bound.
      */
-    public static void bindVAO(VAO vao)
+    public static VAO bindVAO(VAO vao)
     {
-        if (boundVAO == vao) return;
+        if (boundVAO != vao)
+        {
+            if (boundVAO != null) boundVAO.unbind();
+            if (vao != null) vao.bind();
+
+            boundVAO = vao;
+        }
         
-        if (boundVAO != null) boundVAO.unbind();
-        if (vao != null) vao.bind();
-        
-        boundVAO = vao;
+        return vao;
     }
     
     /**
@@ -268,13 +234,7 @@ public final class DGL
      */
     public static VertexBuffer genVertexBuffer(int maxVertices, int maxIndices)
     {
-        checkState();
-        if (!capabilities.OpenGL20) throw new UnsupportedOperationException(
-                "Vertex builders unsupported in OpenGL < 2.0");
-        
-        VertexBuffer buffer = new VertexBuffer(maxVertices, maxIndices);
-        objects.add(buffer);
-        return buffer;
+        return gen(new VertexBuffer(maxVertices, maxIndices));
     }
     
     /**
@@ -286,13 +246,7 @@ public final class DGL
      */
     public static VertexStream genVertexStream(int maxVertices, int maxIndices)
     {
-        checkState();
-        if (!capabilities.OpenGL20) throw new UnsupportedOperationException(
-                "Vertex builders unsupported in OpenGL < 2.0");
-        
-        VertexStream stream = new VertexStream(maxVertices, maxIndices);
-        objects.add(stream);
-        return stream;
+        return gen(new VertexStream(maxVertices, maxIndices));
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Image methods">
@@ -308,17 +262,7 @@ public final class DGL
      */
     public static Image genImage(int width, int height, int bands, PrimType type)
     {
-        checkState();
-        if (width <= 0 || height <= 0)
-            throw new IllegalArgumentException("Illegal dimensions specified.");
-        if (bands <= 0 || bands > 4)
-            throw new IllegalArgumentException("Illegal number of image bands specified.");
-        if (!Image.typeSupported(type))
-            throw new IllegalArgumentException("Illegal primitive type " + type + " specified.");
-        
-        Image image = new Image(width, height, bands, type);
-        objects.add(image);
-        return image;
+        return gen(new Image(width, height, bands, type));
     }
     
     /**
@@ -333,10 +277,9 @@ public final class DGL
         PrimType type = Image.getType(raster);
         if (type == null) throw new IllegalArgumentException("Given raster is not bufferable.");
         
-        Image image = genImage(raster.getWidth(), raster.getHeight(), raster.getNumBands(), type);
-        image.buffer(raster);
-        image.buffer.rewind();
-        return image;
+        return genImage(raster.getWidth(),
+                        raster.getHeight(),
+                        raster.getNumBands(), type).buffer(raster);
     }
     
     /**
@@ -350,9 +293,11 @@ public final class DGL
      */
     public static Image loadImage(String path) throws IOException
     {
-        InputStream in = Resource.open(path);
-        BufferedImage bImage = ImageIO.read(in);
-        in.close();
+        BufferedImage bImage;
+        try (InputStream in = Resource.open(path))
+        {
+            bImage = ImageIO.read(in);
+        }
         if (bImage == null) throw new IOException("Cannot read image from " + path);
         
         return loadImage(bImage.getRaster());
@@ -366,10 +311,7 @@ public final class DGL
      */
     public static Texture2D genTex2D()
     {
-        checkState();
-        Texture2D texture = new Texture2D();
-        objects.add(texture);
-        return texture;
+        return gen(new Texture2D());
     }
     
     /**
@@ -380,9 +322,7 @@ public final class DGL
      */
     public static Texture2D loadTex2D(Image image)
     {
-        Texture2D texture = genTex2D();
-        texture.image(image);
-        return texture;
+        return genTex2D().image(image);
     }
     
     /**
@@ -425,10 +365,7 @@ public final class DGL
      */
     public static Texture3D genTex3D()
     {
-        checkState();
-        Texture3D texture = new Texture3D();
-        objects.add(texture);
-        return texture;
+        return gen(new Texture3D());
     }
     
     /**
@@ -493,14 +430,7 @@ public final class DGL
      */
     public static TextureRectangle genTexRect()
     {
-        checkState();
-        if (!(capabilities.OpenGL31 || capabilities.GL_ARB_texture_rectangle))
-            throw new UnsupportedOperationException(
-                "Rectangle textures unsupported on this machine.");
-        
-        TextureRectangle texture = new TextureRectangle();
-        objects.add(texture);
-        return texture;
+        return gen(new TextureRectangle());
     }
     
     /**
@@ -511,9 +441,7 @@ public final class DGL
      */
     public static TextureRectangle loadTexRect(Image image)
     {
-        TextureRectangle texture = genTexRect();
-        texture.image(image);
-        return texture;
+        return genTexRect().image(image);
     }
     
     /**
@@ -556,10 +484,7 @@ public final class DGL
      */
     public static Texture2DArray genTex2DArray()
     {
-        checkState();
-        Texture2DArray texture = new Texture2DArray();
-        objects.add(texture);
-        return texture;
+        return gen(new Texture2DArray());
     }
     
     /**
@@ -623,13 +548,7 @@ public final class DGL
      */
     public static RBO genRBO()
     {
-        checkState();
-        if (!capabilities.OpenGL30) throw new UnsupportedOperationException(
-                "Render buffers unsupported in OpenGL < 3.0");
-        
-        RBO rbo = new RBO();
-        objects.add(rbo);
-        return rbo;
+        return gen(new RBO());
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="FBO methods">
@@ -638,13 +557,7 @@ public final class DGL
      */
     public static FBO genFBO()
     {
-        checkState();
-        if (!capabilities.OpenGL30) throw new UnsupportedOperationException(
-                "Frame buffers unsupported in OpenGL < 3.0");
-        
-        FBO fbo = new FBO();
-        objects.add(fbo);
-        return fbo;
+        return gen(new FBO());
     }
     
     /**
@@ -654,8 +567,9 @@ public final class DGL
      * @param fbo The frame buffer to bind.
      * @param target The targe to bind to, or null to bind the default frame
      *        buffer;
+     * @return The given frame buffer.
      */
-    public static void bindFBO(FBO fbo, int target)
+    public static FBO bindFBO(FBO fbo, int target)
     {
         switch (target)
         {
@@ -667,6 +581,7 @@ public final class DGL
         
         if (fbo != null) fbo.bind(target);
         else GL30.glBindFramebuffer(target, 0);
+        return fbo;
     }
     
     /**
@@ -675,10 +590,11 @@ public final class DGL
      * 
      * @param fbo The frame buffer to bind, or null to bind the default frame
      *        buffer.
+     * @return The given frame buffer.
      */
-    public static void bindFBO(FBO fbo)
+    public static FBO bindFBO(FBO fbo)
     {
-        bindFBO(fbo, GL30.GL_FRAMEBUFFER);
+        return bindFBO(fbo, GL30.GL_FRAMEBUFFER);
     }
     
     /**
@@ -758,10 +674,12 @@ public final class DGL
      * undefined behavior. If not using a VAO, attributes will be automatically
      * enabled, but this is not recommended.
      * 
+     * @param <T> A type of vertex data.
      * @param data The vertex data to render.
      * @param mode An OpenGL primitive draw mode.
+     * @return The given vertex data.
      */
-    public static void draw(VertexData data, int mode)
+    public static <T extends VertexData> T draw(T data, int mode)
     {
         if (boundProgram == null) throw new IllegalStateException("No shader program is in use.");
         
@@ -772,6 +690,7 @@ public final class DGL
         
         if (inds < 0) GL11.glDrawArrays(mode, 0, verts);
         else GL11.glDrawElements(mode, inds, GL11.GL_UNSIGNED_INT, 0);
+        return data;
     }
     
     /**
