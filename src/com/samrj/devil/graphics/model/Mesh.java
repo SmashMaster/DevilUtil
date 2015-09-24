@@ -15,37 +15,41 @@ import java.nio.ByteBuffer;
 public class Mesh
 {
     public final String name;
-    public final boolean hasTangents, hasUVs, hasVertexColors;
-    public final String[] textures;
-    public final int numVertexGroups;
+    public final String[] uvLayers, colorLayers;
+    public final boolean hasTangents;
+    public final int numGroups;
     
     public final int numVertices;
-    public final int numTriangles;
-    public final Memory vertexBlock, indexBlock;
-    public final ByteBuffer vertexData, indexData;
+    public final Memory vertexBlock;
+    public final ByteBuffer vertexData;
     
-    Mesh(DataInputStream in, Armature armature, boolean hasTangents) throws IOException
+    public final int numTriangles;
+    public final Memory indexBlock;
+    public final ByteBuffer indexData;
+    
+    Mesh(DataInputStream in) throws IOException
     {
         name = DevilModel.readPaddedUTF(in);
         
-        int bitFlags = in.readInt();
-        this.hasTangents = hasTangents;
-        hasUVs = (bitFlags & 1) == 1;
-        hasVertexColors = (bitFlags & 2) == 2;
+        int numUVLayers = in.readInt();
+        uvLayers = new String[numUVLayers];
+        for (int i=0; i<numUVLayers; i++) uvLayers[i] = DevilModel.readPaddedUTF(in);
+        hasTangents = numUVLayers > 0;
         
-        textures = new String[in.readInt()];
-        for (int i=0; i<textures.length; i++)
-            textures[i] = DevilModel.readPaddedUTF(in);
+        int numColorLayers = in.readInt();
+        colorLayers = new String[numColorLayers];
+        for (int i=0; i<numColorLayers; i++) colorLayers[i] = DevilModel.readPaddedUTF(in);
         
-        if (armature != null) numVertexGroups = in.readInt();
-        else numVertexGroups = 0;
+        numGroups = in.readInt();
         
-        //The order and length of vertex data is defined in export_dvm.py
-        int floatsPerVertex = 3 + 3;
-        if (hasTangents) floatsPerVertex += 3;
-        if (hasUVs) floatsPerVertex += 2;
-        if (hasVertexColors) floatsPerVertex += 3;
-        floatsPerVertex += numVertexGroups*2;
+        //The order and length of vertex data is defined by io_mesh_dvm.
+        int floatsPerVertex = 3; //Positions
+        floatsPerVertex += 3; //Normals
+        if (hasTangents) floatsPerVertex += 3; //Tangents
+        floatsPerVertex += 2*numUVLayers; //UVs
+        floatsPerVertex += 3*numColorLayers; //Colors
+        floatsPerVertex += numGroups; //Group indices
+        floatsPerVertex += numGroups; //Group weights
         
         numVertices = in.readInt();
         int vertexDataLength = numVertices*floatsPerVertex;

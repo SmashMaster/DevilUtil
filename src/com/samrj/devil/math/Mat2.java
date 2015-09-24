@@ -363,6 +363,17 @@ public class Mat2 implements Bufferable, Streamable
     }
     
     /**
+     * Loads a new matrix from the given input stream.
+     * 
+     * @param in The input stream to read from.
+     * @throws IOException If an io error occurred.
+     */
+    public Mat2(DataInputStream in) throws IOException
+    {
+        Mat2.this.read(in);
+    }
+    
+    /**
      * Returns the determinant of this matrix.
      * 
      * @return The determinant of this matrix.

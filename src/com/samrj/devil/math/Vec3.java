@@ -716,6 +716,17 @@ public class Vec3 implements Bufferable, Streamable
     {
         x = v.x; y = v.y; z = v.z;
     }
+    
+    /**
+     * Loads a new vector from the given input stream.
+     * 
+     * @param in The input stream to read from.
+     * @throws IOException If an io error occurred.
+     */
+    public Vec3(DataInputStream in) throws IOException
+    {
+        Vec3.this.read(in);
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Instance accessor methods">
     /**

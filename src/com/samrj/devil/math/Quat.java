@@ -570,6 +570,17 @@ public class Quat implements Bufferable, Streamable
         w = q.w; x = q.x; y = q.y; z = q.z;
     }
     
+    /**
+     * Loads a new quaternion from the given input stream.
+     * 
+     * @param in The input stream to read from.
+     * @throws IOException If an io error occurred.
+     */
+    public Quat(DataInputStream in) throws IOException
+    {
+        Quat.this.read(in);
+    }
+    
     // <editor-fold defaultstate="collapsed" desc="Instance accessor methods">
     /**
      * Returns the dot product of this and the given quaternion.

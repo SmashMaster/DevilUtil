@@ -497,6 +497,17 @@ public class Mat3 implements Bufferable, Streamable
         g = mat.i; h = mat.j; i = mat.k;
     }
     
+    /**
+     * Loads a new matrix from the given input stream.
+     * 
+     * @param in The input stream to read from.
+     * @throws IOException If an io error occurred.
+     */
+    public Mat3(DataInputStream in) throws IOException
+    {
+        Mat3.this.read(in);
+    }
+    
     // <editor-fold defaultstate="collapsed" desc="Instance mutator methods">
     /**
      * Sets this to the given matrix, expanded.

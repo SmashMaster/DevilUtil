@@ -650,6 +650,17 @@ public class Vec4 implements Bufferable, Streamable
     {
         x = v.x; y = v.y; z = v.z; w = v.w;
     }
+    
+    /**
+     * Loads a new vector from the given input stream.
+     * 
+     * @param in The input stream to read from.
+     * @throws IOException If an io error occurred.
+     */
+    public Vec4(DataInputStream in) throws IOException
+    {
+        Vec4.this.read(in);
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Instance accessor methods">
     /**

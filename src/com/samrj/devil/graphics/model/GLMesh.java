@@ -51,25 +51,25 @@ public class GLMesh
         attributes[UV] = new Attribute(
                 VEC2,
                 (offset += verts*(mesh.hasTangents ? 3 : 0)*4),
-                mesh.hasUVs);
+                mesh.uvLayers.length > 0);
         
         attributes[COLOR] = new Attribute(
                 VEC3,
-                (offset += verts*(mesh.hasUVs ? 2 : 0)*4),
-                mesh.hasVertexColors);
+                (offset += verts*mesh.uvLayers.length*2*4),
+                mesh.colorLayers.length > 0);
         
         attributes[GROUPS] = new Attribute(
                 VEC4I,
-                (offset += verts*(mesh.hasVertexColors ? 3 : 0)*4),
-                mesh.numVertexGroups <= 0,
-                mesh.numVertexGroups,
+                (offset += verts*mesh.colorLayers.length*3*4),
+                mesh.numGroups > 0,
+                mesh.numGroups,
                 GL11.GL_FLOAT);
         
         attributes[WEIGHTS] = new Attribute(
                 VEC4,
-                (offset += verts*mesh.numVertexGroups*4),
-                mesh.numVertexGroups <= 0,
-                mesh.numVertexGroups,
+                (offset += verts*mesh.numGroups*4),
+                mesh.numGroups > 0,
+                mesh.numGroups,
                 GL11.GL_FLOAT);
         
         vbo = GL15.glGenBuffers();

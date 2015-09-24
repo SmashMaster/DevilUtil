@@ -765,6 +765,17 @@ public class Mat4 implements Bufferable, Streamable
         m = x.m; n = x.n; o = x.o; p = x.p;
     }
     
+    /**
+     * Loads a new matrix from the given input stream.
+     * 
+     * @param in The input stream to read from.
+     * @throws IOException If an io error occurred.
+     */
+    public Mat4(DataInputStream in) throws IOException
+    {
+        Mat4.this.read(in);
+    }
+    
     // <editor-fold defaultstate="collapsed" desc="Instance mutator methods">
     /**
      * Sets this to the given matrix, expanded.

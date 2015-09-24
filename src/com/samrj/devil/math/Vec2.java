@@ -607,6 +607,17 @@ public class Vec2 implements Bufferable, Streamable
     {
         x = v.x; y = v.y;
     }
+    
+    /**
+     * Loads a new vector from the given input stream.
+     * 
+     * @param in The input stream to read from.
+     * @throws IOException If an io error occurred.
+     */
+    public Vec2(DataInputStream in) throws IOException
+    {
+        Vec2.this.read(in);
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Instance accessor methods">
     /**
