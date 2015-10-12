@@ -35,7 +35,7 @@ public class DevilModel
         try
         {
             DataInputStream in = new DataInputStream(inputStream);
-            if (!in.readUTF().equals("DevilModel 0.2"))
+            if (!in.readUTF().equals("DVM NO TAN 0.2"))
                 throw new IOException("Illegal file format specified.");
 
             int numMeshes = in.readInt();
