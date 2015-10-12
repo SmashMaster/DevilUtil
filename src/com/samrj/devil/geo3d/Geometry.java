@@ -245,7 +245,7 @@ public class Geometry
      * @param terminated Whether to stop at the end position, or continue past.
      * @return A new EllipsoidCast object.
      */
-    public EllipsoidCast castEllpsoid(Vec3 p0, Vec3 p1, Vec3 radius, boolean terminated)
+    public EllipsoidCast castEllipsoid(Vec3 p0, Vec3 p1, Vec3 radius, boolean terminated)
     {
         p0 = new Vec3(p0);
         p1 = new Vec3(p1);
