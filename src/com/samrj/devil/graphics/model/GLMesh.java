@@ -124,7 +124,7 @@ public class GLMesh
         for (int i=0; i<7; i++)
         {
             Attribute att = attributes[i];
-            if (!att.enabled || att.name == null) continue;
+            if (att == null || !att.enabled || att.name == null) continue;
             
             ShaderProgram.Attribute satt = program.getAttribute(att.name);
             if (satt == null || satt.type != att.type) continue;
