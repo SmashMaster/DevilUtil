@@ -1,9 +1,9 @@
 package com.samrj.devil.graphics.model;
 
 import com.samrj.devil.res.Resource;
+import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 
 /**
@@ -30,7 +30,7 @@ public class DevilModel
     public final Mesh[] meshes;
     public final MeshObject[] meshObjects;
     
-    public DevilModel(InputStream inputStream) throws IOException
+    DevilModel(BufferedInputStream inputStream) throws IOException
     {
         try
         {
@@ -56,7 +56,7 @@ public class DevilModel
     
     public DevilModel(String path) throws IOException
     {
-        this(Resource.open(path));
+        this(new BufferedInputStream(Resource.open(path)));
     }
     
     /**
