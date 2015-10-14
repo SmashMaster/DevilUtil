@@ -50,7 +50,7 @@ public class GLMesh
         
         attributes[UV] = new Attribute(
                 VEC2,
-                (offset += verts*3*4),
+                (offset += mesh.hasTangents ? verts*3*4 : 0),
                 mesh.uvLayers.length > 0);
         
         attributes[COLOR] = new Attribute(
