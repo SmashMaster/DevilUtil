@@ -16,6 +16,7 @@ public class Mesh
 {
     public final String name;
     public final String[] uvLayers, colorLayers;
+    public final boolean hasTangents;
     public final int numGroups;
     
     public final int numVertices;
@@ -38,11 +39,13 @@ public class Mesh
         colorLayers = new String[numColorLayers];
         for (int i=0; i<numColorLayers; i++) colorLayers[i] = DevilModel.readPaddedUTF(in);
         
+        hasTangents = in.readInt() != 0;
         numGroups = in.readInt();
         
         //The order and length of vertex data is defined by io_mesh_dvm.
         int floatsPerVertex = 3; //Positions
         floatsPerVertex += 3; //Normals
+        if (hasTangents) floatsPerVertex += 3; //Tangents
         floatsPerVertex += 2*numUVLayers; //UVs
         floatsPerVertex += 3*numColorLayers; //Colors
         floatsPerVertex += numGroups; //Group indices

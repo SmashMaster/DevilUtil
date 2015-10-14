@@ -1,5 +1,6 @@
 package com.samrj.devil.graphics.model;
 
+import com.samrj.devil.math.Vec3;
 import com.samrj.devil.res.Resource;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -27,17 +28,22 @@ public class DevilModel
         return out;
     }
     
+    public final Vec3 backgroundColor;
     public final Mesh[] meshes;
     public final MeshObject[] meshObjects;
+    public final SunLamp[] sunLamps;
     
     DevilModel(BufferedInputStream inputStream) throws IOException
     {
         try
         {
             DataInputStream in = new DataInputStream(inputStream);
-            if (!in.readUTF().equals("DVM NO TAN 0.2"))
+            if (!in.readUTF().equals("DevilModel 0.3"))
                 throw new IOException("Illegal file format specified.");
 
+            backgroundColor = new Vec3();
+            backgroundColor.read(in);
+            
             int numMeshes = in.readInt();
             meshes = new Mesh[numMeshes];
             for (int i=0; i<numMeshes; i++)
@@ -47,6 +53,11 @@ public class DevilModel
             meshObjects = new MeshObject[numMeshObjects];
             for (int i=0; i<numMeshes; i++)
                 meshObjects[i] = new MeshObject(in, meshes);
+            
+            int numSunLamps = in.readInt();
+            sunLamps = new SunLamp[numSunLamps];
+            for (int i=0; i<numSunLamps; i++)
+                sunLamps[i] = new SunLamp(in);
         }
         finally
         {

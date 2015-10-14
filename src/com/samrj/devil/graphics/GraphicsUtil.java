@@ -101,6 +101,16 @@ public final class GraphicsUtil
         for (Vec3 v : vecs) glVertex(v);
     }
     
+    public static void glClearColor(Vec3 v)
+    {
+        GL11.glClearColor(v.x, v.y, v.z, 1.0f);
+    }
+    
+    public static void glClearColor(Vec4 v)
+    {
+        GL11.glClearColor(v.x, v.y, v.z, v.w);
+    }
+    
     public static void glColor(Vec3 v)
     {
         GL11.glColor3f(v.x, v.y, v.z);

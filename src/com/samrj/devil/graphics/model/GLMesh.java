@@ -17,7 +17,7 @@ import org.lwjgl.opengl.GL15;
  */
 public class GLMesh
 {
-    private static final int POSITION = 0, NORMAL = 1, UV = 3,
+    private static final int POSITION = 0, NORMAL = 1, TANGENT = 2, UV = 3,
                              COLOR = 4, GROUPS = 5, WEIGHTS = 6;
     
     private final Mesh mesh;
@@ -42,6 +42,11 @@ public class GLMesh
                 VEC3,
                 (offset += verts*3*4),
                 true);
+        
+        attributes[TANGENT] = new Attribute(
+                VEC3,
+                (offset += verts*3*4),
+                mesh.hasTangents);
         
         attributes[UV] = new Attribute(
                 VEC2,
@@ -90,6 +95,11 @@ public class GLMesh
         attributes[NORMAL].name = name;
     }
     
+    public void setTangentName(String name)
+    {
+        attributes[TANGENT].name = name;
+    }
+    
     public void setUVName(String name)
     {
         attributes[UV].name = name;
@@ -124,7 +134,7 @@ public class GLMesh
         for (int i=0; i<7; i++)
         {
             Attribute att = attributes[i];
-            if (att == null || !att.enabled || att.name == null) continue;
+            if (!att.enabled || att.name == null) continue;
             
             ShaderProgram.Attribute satt = program.getAttribute(att.name);
             if (satt == null || satt.type != att.type) continue;
