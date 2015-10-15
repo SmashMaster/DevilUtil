@@ -1,8 +1,10 @@
 package com.samrj.devil.util;
 
-import com.samrj.devil.graphics.GraphicsUtil;
-import com.samrj.devil.math.*;
-import org.lwjgl.opengl.GL11;
+import com.samrj.devil.math.Mat3;
+import com.samrj.devil.math.Mat4;
+import com.samrj.devil.math.Quat;
+import com.samrj.devil.math.Vec2;
+import com.samrj.devil.math.Vec3;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -11,104 +13,98 @@ import org.lwjgl.opengl.GL11;
  */
 public class Camera3D
 {
-    public static void glLoadIdentity()
-    {
-        GL11.glMatrixMode(GL11.GL_PROJECTION);
-        GL11.glLoadIdentity();
-        GL11.glMatrixMode(GL11.GL_MODELVIEW);
-        GL11.glLoadIdentity();
-    }
-    
     public final Vec3 pos;
-    public final Quat rot;
-    private int resX, resY;
-    private Mat4 proj;
-    private Vec2i res;
+    public final Quat dir;
+    public final float zNear, zFar;
+    public final float hSlope, vSlope;
+    public final float slopeSq;
+    public final Mat4 projMat, viewMat;
+    public final Mat4 invViewMat;
+    public final Mat3 invDirMat;
+    public final Vec3 forward, right, up;
+    public final Mat4 matrix;
     
-    public Camera3D(int resX, int resY, float fov, float near, float far)
+    public Camera3D(float zNear, float zFar, float fov, float aspectRatio)
     {
-        if (fov <= 0f || fov >= Util.PI) throw new IllegalArgumentException();
-        if (far <= near || near <= 0f) throw new IllegalArgumentException();
-        this.resX = resX;
-        this.resY = resY;
         pos = new Vec3();
-        rot = new Quat();
-        res = new Vec2i(resX, resY);
+        dir = Quat.identity();
+        this.zNear = zNear;
+        this.zFar = zFar;
+        float tanFov = (float)Math.tan(fov*0.5f);
         
-        proj = Mat4.perspective(fov, res.y/(float)res.x, near, far);
+        if (aspectRatio <= 1.0f) //Width is greater or equal to height.
+        {
+            hSlope = tanFov;
+            vSlope = tanFov*aspectRatio;
+        }
+        else //Widgth is smaller than height.
+        {
+            hSlope = tanFov/aspectRatio;
+            vSlope = tanFov;
+        }
+        
+        slopeSq = hSlope*hSlope + vSlope*vSlope;
+        projMat = Mat4.frustum(hSlope*zNear, vSlope*zNear, zNear, zFar);
+        viewMat = Mat4.identity();
+        invViewMat = Mat4.identity();
+        invDirMat = Mat3.identity();
+        forward = new Vec3(0.0f, 0.0f, -1.0f);
+        right = new Vec3(1.0f, 0.0f, 0.0f);
+        up = new Vec3(0.0f, 1.0f, 0.0f);
+        matrix = Mat4.identity();
+        
+        Camera3D.this.update();
     }
     
-    public float getAspectRatio()
+    public Vec3 angles()
     {
-        return res.y/(float)res.x;
+        float pitch = (float)Math.atan2(2.0f*(dir.w*dir.x - dir.y*dir.z), 1.0f - 2.0f*(dir.z*dir.z + dir.x*dir.x));
+        float yaw = (float)Math.atan2(2.0f*(dir.w*dir.y - dir.z*dir.x), 1.0f - 2.0f*(dir.y*dir.y + dir.z*dir.z));
+        float roll = (float)Math.asin(2.0f*(dir.x*dir.y - dir.w*dir.z));
+        
+        return new Vec3(pitch, yaw, roll);
     }
     
-    public Mat4 getProj()
+    public void update()
     {
-        return new Mat4(proj);
+        viewMat.setRotation(Quat.invert(dir));
+        viewMat.translate(Vec3.negate(pos));
+        
+        invViewMat.setTranslation(pos);
+        invViewMat.rotate(dir);
+        
+        invDirMat.set(invViewMat);
+        forward.set(0.0f, 0.0f, -1.0f).mult(invDirMat);
+        right.set(1.0f, 0.0f, 0.0f).mult(invDirMat);
+        up.set(0.0f, 1.0f, 0.0f).mult(invDirMat);
+        
+        matrix.set(projMat).mult(viewMat);
     }
     
-    public void glLoadProj()
+    public Vec3[] getFrustum(float near, float far)
     {
-        GraphicsUtil.glLoadMatrix(proj, GL11.GL_PROJECTION);
+        float wn = near*hSlope, wf = far*hSlope;
+        float hn = near*vSlope, hf = far*vSlope;
+        
+        Vec3[] array = {
+            new Vec3(-wn, -hn, -near),
+            new Vec3(-wf, -hf, -far),
+            new Vec3(-wn,  hn, -near),
+            new Vec3(-wf,  hf, -far),
+            new Vec3( wn, -hn, -near),
+            new Vec3( wf, -hf, -far),
+            new Vec3( wn,  hn, -near),
+            new Vec3( wf,  hf, -far),
+        };
+        
+        return array;
     }
     
-    public void glLoadView()
+    public Vec2 getFrustumCircumsphere(float near, float far)
     {
-        GraphicsUtil.glLoadMatrix(getView(), GL11.GL_MODELVIEW);
-    }
-    
-    public void glLoad()
-    {
-        glLoadProj();
-        glLoadView();
-    }
-    
-    public Mat4 getView()
-    {
-        Mat4 out = Mat4.rotation(Quat.invert(rot));
-        out.translate(Vec3.negate(pos));
-        return out;
-    }
-    
-    public Mat4 getViewProj()
-    {
-        return Mat4.mult(proj, getView());
-    }
-    
-    /**
-     * Converts the given world position to screen coordinates.
-     * 
-     * @param pos A world position.
-     * @return pos in screen coordinates.
-     */
-    public Vec3 toScreen(Vec3 pos)
-    {
-        float midx = resX*.5f;
-        float midy = resY*.5f;
-        pos = new Vec3(pos);
-        pos.mult(getView());
-        pos.mult(proj);
-        pos.x = pos.x*midx/pos.z + midx;
-        pos.y = pos.y*midy/pos.z + midy;
-        return pos;
-    }
-    
-    /**
-     * Converts the given direction from camera to screen coordinates.
-     * 
-     * @param dir A world position.
-     * @return dir in screen coordinates.
-     */
-    public Vec3 dirToScreen(Vec3 dir)
-    {
-        float midx = resX*.5f;
-        float midy = resY*.5f;
-        dir = new Vec3(dir);
-        dir.mult(new Mat3(getView()));
-        dir.mult(new Mat3(proj));
-        dir.x = dir.x*midx/dir.z + midx;
-        dir.y = dir.y*midy/dir.z + midy;
-        return dir;
+        float z = (near*(slopeSq - 1.0f) + far*(slopeSq + 1.0f))*0.5f;
+        float r = (float)Math.sqrt(near*near*slopeSq + z*z);
+        
+        return new Vec2(-(near + z), r);
     }
 }
