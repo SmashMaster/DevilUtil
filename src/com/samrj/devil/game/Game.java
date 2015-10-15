@@ -8,6 +8,8 @@ import com.samrj.devil.display.DisplayException;
 import com.samrj.devil.display.GLFWUtil;
 import com.samrj.devil.display.HintSet;
 import com.samrj.devil.display.VideoMode;
+import com.samrj.devil.game.step.StepDynamicSplit;
+import com.samrj.devil.game.step.TimeStepper;
 import com.samrj.devil.game.sync.SleepHybrid;
 import com.samrj.devil.game.sync.Sync;
 import com.samrj.devil.math.Vec2i;
@@ -91,6 +93,7 @@ public abstract class Game
     public final Sync sync;
     public final Mouse mouse;
     public final Keyboard keyboard;
+    public final TimeStepper stepper;
     
     private final long frameTime;
     private final EventBuffer eventBuffer;
@@ -215,6 +218,7 @@ public abstract class Game
             eventBuffer = new EventBuffer(window, mouse, keyboard);
         }
         // </editor-fold>
+        stepper = new StepDynamicSplit(1.0f/480.0f, 1.0f/120.0f);
         
         context.checkGLError();
         frameStart = System.nanoTime();
@@ -301,9 +305,8 @@ public abstract class Game
     
     /**
      * Steps the simulation by a given amount of time. Called after input and
-     * before rendering. The time step is not constant, but based on the system
-     * clock. May be called multiple times per frame to limit the maximum time
-     * step.
+     * before rendering. The duration and number of time steps depends on the
+     * time step method chosen.
      * 
      * @param dt The time step, in seconds.
      */
@@ -344,43 +347,19 @@ public abstract class Game
             {
                 frameStart = System.nanoTime();
 
-                {//Input
-                    GLFW.glfwPollEvents();
-                    eventBuffer.flushEvents();
-                    if (GLFW.glfwWindowShouldClose(window) == GL11.GL_TRUE) stop();
-                }
+                //Input
+                GLFW.glfwPollEvents();
+                eventBuffer.flushEvents();
+                if (GLFW.glfwWindowShouldClose(window) == GL11.GL_TRUE) stop();
+                
+                //Step
+                lastFrameTime = frameStart - lastFrameStart;
+                float dt = (float)(lastFrameTime/1_000_000_000.0);
+                stepper.step(this::step, dt);
+                lastFrameStart = frameStart;
 
-                // <editor-fold defaultstate="collapsed" desc="Time Step">
-                {
-                    final float segmentLength = 1.0f/120.0f;
-
-                    lastFrameTime = frameStart - lastFrameStart;
-                    float dt = (float)(lastFrameTime/1_000_000_000.0);
-
-                    if (dt <= segmentLength) step(dt);
-                    else
-                    {
-                        float remainder = dt % segmentLength;
-                        int numSegments = Math.round((dt - remainder)/segmentLength);
-
-                        if (remainder > segmentLength/4.0f)
-                        {
-                            for (int s=0; s<numSegments; s++) step(segmentLength);
-                            step(remainder);
-                        }
-                        else
-                        {
-                            float segdt = dt/numSegments;
-                            for (int s=0; s<numSegments; s++) step(segdt);
-                        }
-                    }
-
-                    lastFrameStart = frameStart;
-                }
-                // </editor-fold>
                 render();
                 
-                GL11.glFinish();
                 if (sync != null) sync.sync();
                 GLFW.glfwSwapBuffers(window);
             }
