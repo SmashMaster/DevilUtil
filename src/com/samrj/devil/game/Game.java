@@ -16,6 +16,7 @@ import com.samrj.devil.math.Vec2i;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GLContext;
 import org.lwjgl.opengl.OpenGLException;
 
@@ -132,6 +133,7 @@ public abstract class Game
         CfgResolution res = config.getField("res");
         boolean vsync = config.getBoolean("vsync");
         int fps = config.getInt("fps");
+        int msaa = config.hasField("msaa", CfgInteger.class) ? config.getInt("msaa") : 0;
         
         // <editor-fold defaultstate="collapsed" desc="Initialize Window">
         {
@@ -141,6 +143,7 @@ public abstract class Game
             GLFW.glfwWindowHint(GLFW.GLFW_DECORATED, borderless ? GL11.GL_FALSE : GL11.GL_TRUE);
             GLFW.glfwWindowHint(GLFW.GLFW_FLOATING, GL11.GL_FALSE);
             GLFW.glfwWindowHint(GLFW.GLFW_STENCIL_BITS, 0);
+            if (msaa > 0) GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, msaa);
             if (hints != null) hints.glfw();
             
             GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_DEBUG_CONTEXT, GL11.GL_TRUE);
@@ -167,6 +170,7 @@ public abstract class Game
             context = GLContext.createFromCurrent();
             
             GL11.glViewport(0, 0, res.width, res.height);
+            GL11.glDisable(GL13.GL_MULTISAMPLE);
         }
         // </editor-fold>
         // <editor-fold defaultstate="collapsed" desc="Initialize Sync">

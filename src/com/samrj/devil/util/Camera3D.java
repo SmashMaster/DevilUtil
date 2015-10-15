@@ -1,12 +1,16 @@
 package com.samrj.devil.util;
 
+import com.samrj.devil.graphics.GraphicsUtil;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
+import org.lwjgl.opengl.GL11;
 
 /**
+ * Utility 3D camera class.
+ * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
@@ -56,6 +60,12 @@ public class Camera3D
         Camera3D.this.update();
     }
     
+    /**
+     * Returns a 3D vector containing the pitch, yaw, and roll of this camera,
+     * in that order, in radians.
+     * 
+     * @return The pitch, yaw, and roll of this camera.
+     */
     public Vec3 angles()
     {
         float pitch = (float)Math.atan2(2.0f*(dir.w*dir.x - dir.y*dir.z), 1.0f - 2.0f*(dir.z*dir.z + dir.x*dir.x));
@@ -65,6 +75,9 @@ public class Camera3D
         return new Vec3(pitch, yaw, roll);
     }
     
+    /**
+     * Updates the matrices and axis directions for this camera.
+     */
     public void update()
     {
         viewMat.setRotation(Quat.invert(dir));
@@ -81,6 +94,23 @@ public class Camera3D
         matrix.set(projMat).mult(viewMat);
     }
     
+    /**
+     * Loads this camera's matrices into OpenGL.
+     */
+    public void glLoadMatrices()
+    {
+        GraphicsUtil.glLoadMatrix(projMat, GL11.GL_PROJECTION);
+        GraphicsUtil.glLoadMatrix(viewMat, GL11.GL_MODELVIEW);
+    }
+    
+    /**
+     * Returns an array of eight vectors, each one a vertex of this camera's
+     * frustum.
+     * 
+     * @param near The near plane of the frustum.
+     * @param far The far plane of the frustum.
+     * @return The frustum of this camera.
+     */
     public Vec3[] getFrustum(float near, float far)
     {
         float wn = near*hSlope, wf = far*hSlope;
@@ -100,11 +130,44 @@ public class Camera3D
         return array;
     }
     
+    
+    /**
+     * Returns an array of eight vectors, each one a vertex of this camera's
+     * frustum.
+     * 
+     * @return The frustum of this camera.
+     */
+    public Vec3[] getFrustum()
+    {
+        return getFrustum(zNear, zFar);
+    }
+    
+    /**
+     * There is a unique sphere whose surface touches each vertex of this
+     * camera's frustum. This method returns the distance to and radius of that
+     * sphere, in the first and second components of a 2D vector.
+     * 
+     * @param near The near plane to use.
+     * @param far The far plane to use.
+     * @return The circumsphere of this camera.
+     */
     public Vec2 getFrustumCircumsphere(float near, float far)
     {
         float z = (near*(slopeSq - 1.0f) + far*(slopeSq + 1.0f))*0.5f;
         float r = (float)Math.sqrt(near*near*slopeSq + z*z);
         
         return new Vec2(-(near + z), r);
+    }
+    
+    /**
+     * There is a unique sphere whose surface touches each vertex of this
+     * camera's frustum. This method returns the distance to and radius of that
+     * sphere, in the first and second components of a 2D vector.
+     * 
+     * @return The circumsphere of this camera.
+     */
+    public Vec2 getFrustumCircumsphere()
+    {
+        return getFrustumCircumsphere(zNear, zFar);
     }
 }

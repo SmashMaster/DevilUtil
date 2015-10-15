@@ -75,6 +75,13 @@ public final class Configuration
         return (T)field;
     }
     
+    public boolean hasField(String name, Class<? extends CfgField> type)
+    {
+        CfgField field = fields.get(name);
+        if (field == null) return false;
+        return type.isInstance(field);
+    }
+    
     public void load(InputStream in) throws IOException
     {
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
