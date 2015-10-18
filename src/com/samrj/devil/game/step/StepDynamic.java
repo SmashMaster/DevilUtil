@@ -10,6 +10,7 @@ package com.samrj.devil.game.step;
  * 
  * Cons:
  *  * Non-deterministic simulation.
+ *  * Long steps can cause physics instability.
  * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2015 Samuel Johnson

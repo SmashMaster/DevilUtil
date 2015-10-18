@@ -70,6 +70,27 @@ public class DevilModel
         this(new BufferedInputStream(Resource.open(path)));
     }
     
+    //Slow but simple. Could add pre-computed hash comparison for extra speed,
+    //or give each array a hash map.
+    
+    public Mesh getMesh(String name)
+    {
+        for (Mesh mesh : meshes) if (mesh.name.equals(name)) return mesh;
+        return null;
+    }
+    
+    public MeshObject getMeshObject(String name)
+    {
+        for (MeshObject obj : meshObjects) if (obj.name.equals(name)) return obj;
+        return null;
+    }
+    
+    public SunLamp getSunLamp(String name)
+    {
+        for (SunLamp lamp : sunLamps) if (lamp.name.equals(name)) return lamp;
+        return null;
+    }
+    
     /**
      * Releases any system resources (native memory) associated with this model.
      */
