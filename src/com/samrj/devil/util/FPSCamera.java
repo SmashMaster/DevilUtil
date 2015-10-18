@@ -14,6 +14,13 @@ public class FPSCamera extends Camera3D
         this.sensitivity = sensitivity;
     }
     
+    public void setAnglesFromRotation()
+    {
+        Vec3 angles = angles();
+        pitch = angles.x;
+        yaw = angles.y;
+    }
+    
     public void onMouseMoved(float x, float y, float dx, float dy)
     {
         yaw -= sensitivity*dx;
