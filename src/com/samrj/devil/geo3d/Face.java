@@ -3,13 +3,11 @@ package com.samrj.devil.geo3d;
 import com.samrj.devil.math.Vec3;
 
 /**
- * 3D triangle class.
- * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2014 Samuel Johnson
+ * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Face implements EllipsoidCast.Testable, RayCast.Testable, EllipsoidClip.Testable
+public class Face implements Shape
 {
     private static float sweepSpherePlane(Vec3 p0, Vec3 v, Vec3 n, Vec3 a, float r)
     {
@@ -56,16 +54,8 @@ public class Face implements EllipsoidCast.Testable, RayCast.Testable, Ellipsoid
         ca = new Edge(c, a);
     }
     
-    /**
-     * Returns a face contact if the given ray hits this face, or null if it
-     * does not.
-     * 
-     * @param ray The ray to cast against this face.
-     * @return A face contact if the given ray hits this face, or null if it
-     *         does not.
-     */
     @Override
-    public FaceContact test(RayCast ray)
+    public FaceContact collide(SweptPoint ray)
     {
         Vec3 qp = Vec3.sub(ray.p0, ray.p1);
         Vec3 ab = Vec3.sub(b, a);
@@ -100,51 +90,44 @@ public class Face implements EllipsoidCast.Testable, RayCast.Testable, Ellipsoid
         float dist = t*qp.length();
         Vec3 p = Vec3.mult(a, u).madd(b, v).madd(c, w);
         n.normalize();
-        Vec3 bc = new Vec3(u, v, w);
-        return new FaceContact(t, dist, p, p, n, bc);
+        Vec3 bary = new Vec3(u, v, w);
+        return new FaceContact(t, dist, p, p, n, bary);
     }
     
-    /**
-     * Returns a new face contact if the given ellipsoid cast hits this face,
-     * or null if it doesn't.
-     * 
-     * @param cast The ellipsoid cast to test against this face.
-     * @return A new face contact if the given ellipsoid cast hits this face,
-     *         or null if it doesn't.
-     */
     @Override
-    public FaceContact test(EllipsoidCast cast)
+    public FaceContact collide(SweptEllipsoid swEll)
     {
-        Vec3 p0 = Vec3.div(cast.p0, cast.radius);
-        Vec3 p1 = Vec3.div(cast.p1, cast.radius);
+        Vec3 p0 = Vec3.div(swEll.p0, swEll.radius);
+        Vec3 p1 = Vec3.div(swEll.p1, swEll.radius);
         Vec3 cDir = Vec3.sub(p1, p0);
         
-        Vec3 ae = Vec3.div(a, cast.radius);
-        Vec3 be = Vec3.div(b, cast.radius);
-        Vec3 ce = Vec3.div(c, cast.radius);
+        Vec3 ae = Vec3.div(a, swEll.radius);
+        Vec3 be = Vec3.div(b, swEll.radius);
+        Vec3 ce = Vec3.div(c, swEll.radius);
         
         Vec3 normal = Vec3.sub(ce, ae).cross(Vec3.sub(be, ae)).normalize(); //Plane normal
         float t = sweepSpherePlane(p0, cDir, normal, ae, 1.0f); //Time of contact
-        if (t != t || t <= 0.0f || (cast.terminated && t >= 1.0f))
+        if (t != t || t <= 0.0f || (swEll.terminated && t >= 1.0f))
             return null; //Moving away, won't get there in time, or NaN.
         
-        Vec3 cp = Vec3.lerp(cast.p0, cast.p1, t);
-        Vec3 bc = barycentric(a, b, c, cp);
-        if (bc.y < 0.0f || bc.z < 0.0f || (bc.y + bc.z) > 1.0f) return null; //We will miss the face.
+        Vec3 cp = Vec3.lerp(swEll.p0, swEll.p1, t);
+        Vec3 bary = barycentric(a, b, c, cp);
+        if (bary.y < 0.0f || bary.z < 0.0f || (bary.y + bary.z) > 1.0f) return null; //We will miss the face.
         
-        float dist = cast.p0.dist(cast.p1)*t;
-        Vec3 p = Vec3.mult(a, bc.x).madd(b, bc.y).madd(c, bc.z);
+        float dist = swEll.p0.dist(swEll.p1)*t;
+        Vec3 p = Vec3.mult(a, bary.x).madd(b, bary.y).madd(c, bary.z);
         Vec3 n = Vec3.sub(cp, p).normalize();
-        return new FaceContact(t, dist, cp, p, n, bc);
+        
+        return new FaceContact(t, dist, cp, p, n, bary);
     }
     
     @Override
-    public FaceIntersection test(EllipsoidClip clip)
+    public FaceIntersection collide(Ellipsoid ell)
     {
-        Vec3 p = Vec3.div(clip.p, clip.radius);
-        Vec3 ae = Vec3.div(a, clip.radius);
-        Vec3 be = Vec3.div(b, clip.radius);
-        Vec3 ce = Vec3.div(c, clip.radius);
+        Vec3 p = Vec3.div(ell.pos, ell.radius);
+        Vec3 ae = Vec3.div(a, ell.radius);
+        Vec3 be = Vec3.div(b, ell.radius);
+        Vec3 ce = Vec3.div(c, ell.radius);
         
         Vec3 normal = Vec3.sub(ce, ae).cross(Vec3.sub(be, ae)).normalize();
         float dist = normal.dot(Vec3.sub(p, ae));
@@ -155,69 +138,70 @@ public class Face implements EllipsoidCast.Testable, RayCast.Testable, Ellipsoid
         }
         if (dist != dist || dist > 1.0f) return null; //Too far apart or NaN
         
-        Vec3 bc = barycentric(ae, be, ce, p);
-        if (bc.y < 0.0f || bc.z < 0.0f || (bc.y + bc.z) > 1.0f) return null; //Not touching face.
+        Vec3 bary = barycentric(ae, be, ce, p);
+        if (bary.y < 0.0f || bary.z < 0.0f || (bary.y + bary.z) > 1.0f) return null; //Not touching face.
         
-        Vec3 cp = Vec3.mult(a, bc.x).madd(b, bc.y).madd(c, bc.z);
-        normal.mult(clip.radius);
+        Vec3 cp = Vec3.mult(a, bary.x).madd(b, bary.y).madd(c, bary.z);
+        normal.mult(ell.radius);
         float nLen = normal.length();
-        float depth = nLen - Vec3.dist(clip.p, cp);
+        float depth = nLen - Vec3.dist(ell.pos, cp);
         normal.div(nLen);
-        return new FaceIntersection(depth, cp, normal, bc);
+        
+        return new FaceIntersection(depth, cp, normal, bary);
     }
     
     /**
      * Contact class for faces.
      */
-    public class FaceContact extends Contact<Face>
+    public final class FaceContact extends Contact
     {
         /**
          * The contact barycentric coordinates.
          */
-        public final Vec3 fbc;
+        public final Vec3 bary;
 
-        FaceContact(float t, float d, Vec3 cp, Vec3 p, Vec3 n, Vec3 fbc)
+        FaceContact(float t, float d, Vec3 cp, Vec3 p, Vec3 n, Vec3 bary)
         {
             super(t, d, cp, p, n);
-            this.fbc = fbc;
+            this.bary = bary;
         }
-        
+
+        @Override
+        public Face shape()
+        {
+            return Face.this;
+        }
+
         @Override
         public Type type()
         {
             return Type.FACE;
         }
-
-        @Override
-        public Face contacted()
-        {
-            return Face.this;
-        }
     }
     
-    public final class FaceIntersection extends Intersection<Face>
+    public final class FaceIntersection extends Intersection
     {
         /**
          * The face barycentric coordinates.
          */
-        public final Vec3 fbc;
+        public final Vec3 bary;
         
-        FaceIntersection(float d, Vec3 p, Vec3 n, Vec3 fbc)
+        FaceIntersection(float d, Vec3 p, Vec3 n, Vec3 bary)
         {
             super(d, p, n);
-            this.fbc = fbc;
+            this.bary = bary;
         }
         
+        @Override
+        public Face shape()
+        {
+            return Face.this;
+        }
+
         @Override
         public Type type()
         {
             return Type.FACE;
-        }
-        
-        @Override
-        public Face intersected()
-        {
-            return Face.this;
         }
     }
 }

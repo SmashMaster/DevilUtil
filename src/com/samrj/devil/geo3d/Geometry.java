@@ -2,13 +2,15 @@ package com.samrj.devil.geo3d;
 
 import com.samrj.devil.graphics.model.Mesh;
 import com.samrj.devil.math.Util;
-import com.samrj.devil.math.Vec3;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * 3D geometry class.
@@ -17,7 +19,7 @@ import java.util.List;
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Geometry
+public class Geometry implements Shape
 {
     static final float solveQuadratic(float a, float b, float c)
     {
@@ -206,56 +208,54 @@ public class Geometry
          */
     }
     
-    public EllipsoidClip clipEllipsoid(Vec3 p, Vec3 radius)
+    //This is some ugly-ass code. There has to be a nicer, fancier way to do this.
+    
+    private Contact closest(Contact curClosest, Shape shape, SweptEllipsoid swEll)
     {
-        p = new Vec3(p);
-        radius = new Vec3(radius);
-        EllipsoidClip clip = new EllipsoidClip(p, radius);
-        
-        for (Vertex vertex : verts) clip.test(vertex);
-        for (Edge edge : edges) clip.test(edge);
-        for (Face face : faces) clip.test(face);
-        
-        return clip;
+        Contact cont = shape.collide(swEll);
+        return (curClosest == null || curClosest.t >= cont.t) ? cont : curClosest;
     }
     
-    /**
-     * Casts a ray through this geometry and returns a list of contacts.
-     * 
-     * @param p0 The start of the ray.
-     * @param p1 The end of the ray.
-     * @param terminate Whether to stop at the end of ray, or continue past.
-     * @return A new RayCast object;
-     */
-    public RayCast castRay(Vec3 p0, Vec3 p1, boolean terminate)
+    @Override
+    public Contact collide(SweptEllipsoid swEll)
     {
-        p0 = new Vec3(p0);
-        p1 = new Vec3(p1);
-        RayCast cast = new RayCast(p0, p1, terminate);
-        for (Face face : faces) cast.test(face);
-        return cast;
+        Contact cont = null;
+        for (Shape shape : verts) cont = closest(cont, shape, swEll);
+        for (Shape shape : edges) cont = closest(cont, shape, swEll);
+        for (Shape shape : faces) cont = closest(cont, shape, swEll);
+        return cont;
     }
     
-    /**
-     * Casts an ellipsoid through this geometry and returns a list of contacts.
-     * 
-     * @param p0 The starting position of the ellipsoid.
-     * @param p1 The end position of the ellipsoid.
-     * @param radius The radii of the ellipsoid, along each axis.
-     * @param terminated Whether to stop at the end position, or continue past.
-     * @return A new EllipsoidCast object.
-     */
-    public EllipsoidCast castEllipsoid(Vec3 p0, Vec3 p1, Vec3 radius, boolean terminated)
+    private Intersection deepest(Intersection curDeep, Shape shape, Ellipsoid ell)
     {
-        p0 = new Vec3(p0);
-        p1 = new Vec3(p1);
-        radius = new Vec3(radius);
-        EllipsoidCast cast = new EllipsoidCast(p0, p1, radius, terminated);
-        
-        for (Vertex vertex : verts) cast.test(vertex);
-        for (Edge edge : edges) cast.test(edge);
-        for (Face face : faces) cast.test(face);
-        
-        return cast;
+        Intersection sect = shape.collide(ell);
+        return (curDeep == null || curDeep.d < sect.d) ? sect : curDeep;
     }
+
+    @Override
+    public Intersection collide(Ellipsoid ell)
+    {
+        Intersection sect = null;
+        for (Shape shape : verts) sect = deepest(sect, shape, ell);
+        for (Shape shape : edges) sect = deepest(sect, shape, ell);
+        for (Shape shape : faces) sect = deepest(sect, shape, ell);
+        return sect;
+    }
+    
+    private Contact closest(Contact curClosest, Shape shape, SweptPoint ray)
+    {
+        Contact cont = shape.collide(ray);
+        return (curClosest == null || curClosest.t >= cont.t) ? cont : curClosest;
+    }
+
+    @Override
+    public Contact collide(SweptPoint ray)
+    {
+        Contact cont = null;
+        for (Shape shape : verts) cont = closest(cont, shape, ray);
+        for (Shape shape : edges) cont = closest(cont, shape, ray);
+        for (Shape shape : faces) cont = closest(cont, shape, ray);
+        return cont;
+    }
+    
 }

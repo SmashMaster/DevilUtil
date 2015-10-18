@@ -3,13 +3,11 @@ package com.samrj.devil.geo3d;
 import com.samrj.devil.math.Vec3;
 
 /**
- * 3D point class. Simply extends Vec3.
- * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2014 Samuel Johnson
+ * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Vertex extends Vec3 implements EllipsoidCast.Testable, EllipsoidClip.Testable
+public class Vertex extends Vec3 implements Shape
 {
     /**
      * Creates a new zero point.
@@ -36,81 +34,80 @@ public class Vertex extends Vec3 implements EllipsoidCast.Testable, EllipsoidCli
         x = v.x; y = v.y; z = v.z;
     }
     
-    /**
-     * Returns a new vertex contact if the given ellipsoid cast hits this
-     * vertex, or null if it doesn't.
-     * 
-     * @param cast The ellipsoid cast to test against this vertex.
-     * @return A new vertex contact if the given ellipsoid cast hits this vertex,
-     *         or null if it doesn't.
-     */
     @Override
-    public VertexContact test(EllipsoidCast cast)
+    public VertexContact collide(SweptEllipsoid swEll)
     {
-        Vec3 p0 = Vec3.div(cast.p0, cast.radius);
-        Vec3 p1 = Vec3.div(cast.p1, cast.radius);
+        Vec3 p0 = Vec3.div(swEll.p0, swEll.radius);
+        Vec3 p1 = Vec3.div(swEll.p1, swEll.radius);
         Vec3 cDir = Vec3.sub(p1, p0);
         float cSqLen = cDir.squareLength();
         
-        Vec3 a = Vec3.div(this, cast.radius);
-        Vec3 dir = Vec3.div(cast.p0, cast.radius).sub(a);
+        Vec3 a = Vec3.div(this, swEll.radius);
+        Vec3 dir = Vec3.div(swEll.p0, swEll.radius).sub(a);
 
         float t = Geometry.solveQuadratic(cSqLen,
                                           2.0f*cDir.dot(dir),
                                           dir.squareLength() - 1.0f);
 
         if (Float.isNaN(t)) return null; //We miss the vertex.
-        if (t != t || t<= 0.0f || (cast.terminated && t >= 1.0f))
+        if (t != t || t<= 0.0f || (swEll.terminated && t >= 1.0f))
             return null; //Moving away, won't get there in time, or NaN.
         
-        Vec3 cp = Vec3.lerp(cast.p0, cast.p1, t);
-        float dist = cast.p0.dist(p1)*t;
+        Vec3 cp = Vec3.lerp(swEll.p0, swEll.p1, t);
+        float dist = swEll.p0.dist(p1)*t;
         Vec3 n = Vec3.sub(cp, this).normalize();
+        
         return new VertexContact(t, dist, cp, n);
     }
 
     @Override
-    public VertexIntersection test(EllipsoidClip clip)
+    public VertexIntersection collide(Ellipsoid ell)
     {
-        Vec3 dir = Vec3.sub(clip.p, this).div(clip.radius);
+        Vec3 dir = Vec3.sub(ell.pos, this).div(ell.radius);
         float sqDist = dir.squareLength();
         if (sqDist != sqDist || sqDist > 1.0f) return null; //Too far apart or NaN.
         
-        Vec3 n = Vec3.div(dir, (float)Math.sqrt(sqDist)).mult(clip.radius);
+        Vec3 n = Vec3.div(dir, (float)Math.sqrt(sqDist)).mult(ell.radius);
         float nLen = n.length();
-        float depth = nLen - Vec3.dist(clip.p, this);
+        float depth = nLen - Vec3.dist(ell.pos, this);
         n.div(nLen);
         
         return new VertexIntersection(depth, n);
     }
-    
+
+    @Override
+    public VertexContact collide(SweptPoint ray)
+    {
+        return null;
+    }
+
     /**
      * Contact class for vertices.
      */
-    public final class VertexContact extends Contact<Vertex>
+    public final class VertexContact extends Contact
     {
-        VertexContact(float t, float d, Vec3 cp, Vec3 n)
+        private VertexContact(float t, float d, Vec3 cp, Vec3 n)
         {
             super(t, d, cp, Vertex.this, n);
         }
         
         @Override
-        public Type type()
+        public Vertex shape()
         {
-            return Type.VERTEX;
+            return Vertex.this;
         }
 
         @Override
-        public Vertex contacted()
+        public Type type()
         {
-            return Vertex.this;
+            return Type.VERTEX;
         }
     }
     
     /**
      * Intersection class for vertices.
      */
-    public final class VertexIntersection extends Intersection<Vertex>
+    public final class VertexIntersection extends Intersection
     {
         VertexIntersection(float d, Vec3 n)
         {
@@ -118,15 +115,15 @@ public class Vertex extends Vec3 implements EllipsoidCast.Testable, EllipsoidCli
         }
         
         @Override
-        public Type type()
+        public Vertex shape()
         {
-            return Type.VERTEX;
+            return Vertex.this;
         }
         
         @Override
-        public Vertex intersected()
+        public Type type()
         {
-            return Vertex.this;
+            return Type.VERTEX;
         }
     }
 }

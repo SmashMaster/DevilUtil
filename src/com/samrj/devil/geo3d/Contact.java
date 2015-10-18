@@ -1,26 +1,16 @@
 package com.samrj.devil.geo3d;
 
-import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
-import java.util.Comparator;
 
 /**
- * Contact class for results from ray and ellipsoid traces.
+ * Class for surface collisions between meshes and swept geometry.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @param <TYPE> The type of object this contact handles.
- * @copyright 2014 Samuel Johnson
+ * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public abstract class Contact<TYPE>
+public abstract class Contact
 {
-    public static final Comparator<Contact> comparator = new ContactComparator();
-    
-    public enum Type
-    {
-        FACE, EDGE, VERTEX;
-    }
-    
     /**
      * The contact interpolant.
      */
@@ -56,24 +46,12 @@ public abstract class Contact<TYPE>
     }
     
     /**
-     * @return The type of object that this contact handles.
+     * @return The shape that is being contacted.
      */
-    public abstract Type type();
+    public abstract Shape shape();
     
     /**
-     * @return The object that is being contacted.
+     * @return The type of object that this contact handles.
      */
-    public abstract TYPE contacted();
-    
-    private static class ContactComparator implements Comparator<Contact>
-    {
-        @Override
-        public int compare(Contact c1, Contact c2)
-        {
-            if (c1 == c2) return 0;
-            if (c1 == null) return 1;
-            if (c2 == null) return -1;
-            return Util.compare(c1.t, c2.t, 0.0f);
-        }
-    }
+    public abstract Shape.Type type();
 }
