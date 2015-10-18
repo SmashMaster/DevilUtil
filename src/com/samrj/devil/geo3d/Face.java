@@ -55,7 +55,7 @@ public class Face implements Shape
     }
     
     @Override
-    public FaceContact collide(SweptPoint ray)
+    public FaceContact collide(Ray ray)
     {
         Vec3 qp = Vec3.sub(ray.p0, ray.p1);
         Vec3 ab = Vec3.sub(b, a);

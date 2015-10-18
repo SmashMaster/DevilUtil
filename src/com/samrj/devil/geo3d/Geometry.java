@@ -8,7 +8,7 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -208,54 +208,41 @@ public class Geometry implements Shape
          */
     }
     
-    //This is some ugly-ass code. There has to be a nicer, fancier way to do this.
-    
-    private Contact closest(Contact curClosest, Shape shape, SweptEllipsoid swEll)
+    private static Contact closer(Contact a, Contact b)
     {
-        Contact cont = shape.collide(swEll);
-        return (curClosest == null || curClosest.t >= cont.t) ? cont : curClosest;
+        return (a == null || b == null) ? b : (a.t < b.t ? a : b);
+    }
+    
+    private static Intersection deeper(Intersection a, Intersection b)
+    {
+        return (a == null || b == null) ? b : (a.d > b.d ? a : b);
+    }
+    
+    private <T> T mapReduce(Function<Shape, T> mapper, BinaryOperator<T> reducer)
+    {
+        return Stream.of(verts, edges, faces)
+                .flatMap(list -> list.stream())
+                .map(mapper)
+                .filter(e -> e != null)
+                .reduce(reducer)
+                .get();
     }
     
     @Override
     public Contact collide(SweptEllipsoid swEll)
     {
-        Contact cont = null;
-        for (Shape shape : verts) cont = closest(cont, shape, swEll);
-        for (Shape shape : edges) cont = closest(cont, shape, swEll);
-        for (Shape shape : faces) cont = closest(cont, shape, swEll);
-        return cont;
+        return mapReduce(shape -> shape.collide(swEll), Geometry::closer);
     }
     
-    private Intersection deepest(Intersection curDeep, Shape shape, Ellipsoid ell)
-    {
-        Intersection sect = shape.collide(ell);
-        return (curDeep == null || curDeep.d < sect.d) ? sect : curDeep;
-    }
-
     @Override
     public Intersection collide(Ellipsoid ell)
     {
-        Intersection sect = null;
-        for (Shape shape : verts) sect = deepest(sect, shape, ell);
-        for (Shape shape : edges) sect = deepest(sect, shape, ell);
-        for (Shape shape : faces) sect = deepest(sect, shape, ell);
-        return sect;
+        return mapReduce(shape -> shape.collide(ell), Geometry::deeper);
     }
     
-    private Contact closest(Contact curClosest, Shape shape, SweptPoint ray)
-    {
-        Contact cont = shape.collide(ray);
-        return (curClosest == null || curClosest.t >= cont.t) ? cont : curClosest;
-    }
-
     @Override
-    public Contact collide(SweptPoint ray)
+    public Contact collide(Ray ray)
     {
-        Contact cont = null;
-        for (Shape shape : verts) cont = closest(cont, shape, ray);
-        for (Shape shape : edges) cont = closest(cont, shape, ray);
-        for (Shape shape : faces) cont = closest(cont, shape, ray);
-        return cont;
+        return mapReduce(shape -> shape.collide(ray), Geometry::closer);
     }
-    
 }

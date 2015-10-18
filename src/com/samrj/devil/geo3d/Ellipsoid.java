@@ -13,12 +13,10 @@ public class Ellipsoid
 {
     public final Vec3 pos;
     public final Vec3 radius;
-    public final float radLen;
     
-    Ellipsoid(Vec3 p, Vec3 radius)
+    public Ellipsoid(Vec3 p, Vec3 radius)
     {
         this.pos = p;
         this.radius = radius;
-        radLen = radius.length();
     }
 }

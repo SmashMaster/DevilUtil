@@ -14,5 +14,5 @@ public interface Shape
     
     public Contact collide(SweptEllipsoid swEll);
     public Intersection collide(Ellipsoid ell);
-    public Contact collide(SweptPoint ray);
+    public Contact collide(Ray ray);
 }

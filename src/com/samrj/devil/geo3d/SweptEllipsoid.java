@@ -15,7 +15,7 @@ public class SweptEllipsoid
     public final Vec3 radius;
     public final boolean terminated;
     
-    SweptEllipsoid(Vec3 p0, Vec3 p1, Vec3 radius, boolean terminated)
+    public SweptEllipsoid(Vec3 p0, Vec3 p1, Vec3 radius, boolean terminated)
     {
         this.p0 = p0; this.p1 = p1;
         this.radius = radius;

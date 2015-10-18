@@ -233,6 +233,23 @@ public class Util
     }
     
     /**
+     * Compares two floats for order. Returns a negative integer,
+     * zero, or a positive integer as the first float is less than, equal
+     * to, or greater than the second.
+     * 
+     * Has undefined behavior for NaN.
+     * 
+     * @param f0 The first float to compare.
+     * @param f1 The second float to compare.
+     * @return A negative integer, zero, or a positive integer as the first
+     *         float is less than, equal to, or greater than the second.
+     */
+    public static final int compare(float f0, float f1)
+    {
+        return f0 == f1 ? 0 : (f0 < f1 ? -1 : 1);
+    }
+    
+    /**
      * Prevents {@code x} from reaching zero. If {@code x < m}, ease it towards
      * {@code n}. Otherwise, simply return {@code x}.
      * 

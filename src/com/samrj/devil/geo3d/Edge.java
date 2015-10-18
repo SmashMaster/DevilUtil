@@ -93,7 +93,7 @@ public class Edge implements Shape
     }
 
     @Override
-    public EdgeContact collide(SweptPoint ray)
+    public EdgeContact collide(Ray ray)
     {
         return null;
     }

@@ -76,7 +76,7 @@ public class Vertex extends Vec3 implements Shape
     }
 
     @Override
-    public VertexContact collide(SweptPoint ray)
+    public VertexContact collide(Ray ray)
     {
         return null;
     }
