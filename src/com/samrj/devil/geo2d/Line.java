@@ -1,11 +1,10 @@
 package com.samrj.devil.geo2d;
 
-import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2014 Samuel Johnson
+ * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class Line

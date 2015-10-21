@@ -2,6 +2,13 @@ package com.samrj.devil.game;
 
 import org.lwjgl.glfw.GLFW;
 
+/**
+ * Mouse input class.
+ * 
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2015 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public class Mouse
 {
     private final long window;
