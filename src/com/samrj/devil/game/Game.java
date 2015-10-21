@@ -245,7 +245,6 @@ public abstract class Game
         stepper = new StepDynamicSplit(1.0f/480.0f, 1.0f/120.0f);
         
         context.checkGLError();
-        frameStart = System.nanoTime();
     }
     
     /**
@@ -365,7 +364,7 @@ public abstract class Game
             if (!context.isCurrent()) context.makeCurrent(window);
             GLFW.glfwShowWindow(window);
 
-            long lastFrameStart = frameStart - frameTime;
+            long lastFrameStart = System.nanoTime() - frameTime;
 
             while (running)
             {
