@@ -6,6 +6,7 @@ import com.samrj.devil.res.Resource;
 import com.samrj.devil.util.IdentitySet;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.Set;
 import org.kc7bfi.jflac.FLACDecoder;
 import org.lwjgl.openal.AL;
@@ -82,7 +83,7 @@ public class DAL
         m.free();
     }
     
-    public static SoundBuffer bufferFlac(InputStream in) throws IOException
+    public static SoundBuffer decodeFlac(InputStream in) throws IOException
     {
         FLACDecoder decoder = new FLACDecoder(in);
         PCMBuffer buffer = new PCMBuffer();
@@ -91,17 +92,28 @@ public class DAL
             decoder.addPCMProcessor(buffer);
             decoder.decode();
         }
-        catch (IOException e)
+        catch (Throwable t) //Catch all possible exceptions/errors.
         {
             buffer.close().free();
-            throw e;
+            throw t;
         }
         return gen(new SoundBuffer(buffer));
     }
     
-    public static SoundBuffer bufferFlac(String path) throws IOException
+    public static SoundBuffer decodeFlac(String path) throws IOException
     {
-        return bufferFlac(Resource.open(path));
+        return decodeFlac(Resource.open(path));
+    }
+    
+    public static SoundBuffer decodeOgg(InputStream in) throws IOException
+    {
+        PCMBuffer buffer = OGGDecoder.decode(in);
+        return gen(new SoundBuffer(buffer));
+    }
+    
+    public static SoundBuffer decodeOgg(String path) throws IOException
+    {
+        return decodeOgg(Resource.open(path));
     }
     
     public static Sound genSound()
@@ -109,22 +121,47 @@ public class DAL
         return gen(new Sound());
     }
     
-    public static Sound loadFlac(InputStream in) throws IOException
+    private static Sound load(SoundBuffer buffer)
     {
-        SoundBuffer buffer = bufferFlac(in);
         Sound sound = genSound();
         sound.buffer(buffer);
         delete(buffer);
         return sound;
     }
     
+    public static Sound loadFlac(InputStream in) throws IOException
+    {
+        return load(decodeFlac(in));
+    }
+    
     public static Sound loadFlac(String path) throws IOException
     {
-        SoundBuffer buffer = bufferFlac(path);
-        Sound sound = genSound();
-        sound.buffer(buffer);
-        delete(buffer);
-        return sound;
+        return load(decodeFlac(path));
+    }
+    
+    public static Sound loadOgg(InputStream in) throws IOException
+    {
+        return load(decodeOgg(in));
+    }
+    
+    public static Sound loadOgg(String path) throws IOException
+    {
+        return load(decodeOgg(path));
+    }
+    
+    public static Sound loadSound(String path) throws IOException
+    {
+        int i = path.lastIndexOf('.');
+        if (i == -1) throw new IllegalArgumentException("No extension found.");
+        
+        String ext = path.substring(i+1).toLowerCase(Locale.ENGLISH);
+        switch (ext)
+        {
+            case "ogg": return loadOgg(path);
+            case "flac": return loadFlac(path);
+        }
+        
+        throw new IllegalArgumentException("Unsupported audio format: " + ext);
     }
     
     public static Source genSource()
