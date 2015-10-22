@@ -14,7 +14,7 @@ public class Ray
     
     public Ray(Vec3 p0, Vec3 p1, boolean terminated)
     {
-        this.p0 = p0; this.p1 = p1;
+        this.p0 = new Vec3(p0); this.p1 = new Vec3(p1);
         this.terminated = terminated;
     }
 }

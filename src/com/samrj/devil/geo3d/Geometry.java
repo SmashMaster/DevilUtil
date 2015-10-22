@@ -26,12 +26,15 @@ import com.samrj.devil.graphics.model.Mesh;
 import com.samrj.devil.math.Util;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -39,7 +42,7 @@ import java.util.stream.Stream;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Geometry implements Shape
+public class Geometry
 {
     static final float solveQuadratic(float a, float b, float c)
     {
@@ -228,41 +231,89 @@ public class Geometry implements Shape
          */
     }
     
-    private static Contact closer(Contact a, Contact b)
+    private Stream<Shape> all()
+    {
+        return Stream.of(faces).flatMap(list -> list.stream());
+    }
+    
+    /*
+     * Single collision methods.
+     */
+    
+    private static Contact reduceToCloser(Contact a, Contact b)
     {
         return (a == null || b == null) ? b : (a.t < b.t ? a : b);
     }
     
-    private static Intersection deeper(Intersection a, Intersection b)
+    private static Intersection reduceToDeeper(Intersection a, Intersection b)
     {
         return (a == null || b == null) ? b : (a.d > b.d ? a : b);
     }
     
     private <T> T mapReduce(Function<Shape, T> mapper, BinaryOperator<T> reducer)
     {
-        return Stream.of(verts, edges, faces)
-                .flatMap(list -> list.stream())
-                .map(mapper)
+        Optional<T> opt = all().map(mapper)
                 .filter(e -> e != null)
-                .reduce(reducer)
-                .get();
+                .reduce(reducer);
+        
+        return opt.isPresent() ? opt.get() : null;
     }
     
-    @Override
-    public Contact collide(SweptEllipsoid swEll)
+    public Contact collideOnce(SweptEllipsoid swEll)
     {
-        return mapReduce(shape -> shape.collide(swEll), Geometry::closer);
+        return mapReduce(shape -> shape.collide(swEll), Geometry::reduceToCloser);
     }
     
-    @Override
-    public Intersection collide(Ellipsoid ell)
+    public Intersection collideOnce(Ellipsoid ell)
     {
-        return mapReduce(shape -> shape.collide(ell), Geometry::deeper);
+        return mapReduce(shape -> shape.collide(ell), Geometry::reduceToDeeper);
     }
     
-    @Override
-    public Contact collide(Ray ray)
+    public Contact collideOnce(Ray ray)
     {
-        return mapReduce(shape -> shape.collide(ray), Geometry::closer);
+        return mapReduce(shape -> shape.collide(ray), Geometry::reduceToCloser);
+    }
+    
+    /*
+     * Multiple collision methods.
+     */
+    
+    public static int compareByCloser(Contact a, Contact b)
+    {
+        if (a == b) return 0;
+        if (a == null) return 1;
+        if (b == null) return -1;
+        return Util.compare(a.t, b.t, 0.0f);
+    }
+    
+    public static int compareByDeeper(Intersection a, Intersection b)
+    {
+        if (a == b) return 0;
+        if (a == null) return 1;
+        if (b == null) return -1;
+        return Util.compare(b.d, a.d, 0.0f);
+    }
+    
+    private <T> List<T> mapAll(Function<Shape, T> mapper, Comparator<T> reducer)
+    {
+        return all().map(mapper)
+                .filter(e -> e != null)
+                .sorted(reducer)
+                .collect(Collectors.toList());
+    }
+    
+    public List<Contact> collideAll(SweptEllipsoid swEll)
+    {
+        return mapAll(shape -> shape.collide(swEll), Geometry::compareByCloser);
+    }
+    
+    public List<Intersection> collideAll(Ellipsoid ell)
+    {
+        return mapAll(shape -> shape.collide(ell), Geometry::compareByDeeper);
+    }
+    
+    public List<Contact> collideAll(Ray ray)
+    {
+        return mapAll(shape -> shape.collide(ray), Geometry::compareByCloser);
     }
 }

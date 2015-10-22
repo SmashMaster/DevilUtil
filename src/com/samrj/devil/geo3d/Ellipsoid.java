@@ -14,9 +14,9 @@ public class Ellipsoid
     public final Vec3 pos;
     public final Vec3 radius;
     
-    public Ellipsoid(Vec3 p, Vec3 radius)
+    public Ellipsoid(Vec3 pos, Vec3 radius)
     {
-        this.pos = p;
-        this.radius = radius;
+        this.pos = new Vec3(pos);
+        this.radius = new Vec3(radius);
     }
 }
