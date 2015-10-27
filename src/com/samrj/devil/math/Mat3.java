@@ -92,6 +92,18 @@ public class Mat3 implements Bufferable, Streamable
     }
     
     /**
+     * Sets each entry of the given matrix to zero.
+     * 
+     * @param r The matrix to set to zero.
+     */
+    public static final void zero(Mat3 r)
+    {
+        r.a = 0.0f; r.b = 0.0f; r.c = 0.0f;
+        r.d = 0.0f; r.e = 0.0f; r.f = 0.0f;
+        r.g = 0.0f; r.h = 0.0f; r.i = 0.0f;
+    }
+    
+    /**
      * Sets the given matrix to the identity matrix.
      * 
      * @param r The matrix to set to the identity matrix.
@@ -577,6 +589,17 @@ public class Mat3 implements Bufferable, Streamable
         this.a = a; this.b = b; this.c = c;
         this.d = d; this.e = e; this.f = f;
         this.g = g; this.h = h; this.i = i;
+        return this;
+    }
+    
+    /**
+     * Sets this to the identity matrix.
+     * 
+     * @return This matrix.
+     */
+    public Mat3 setZero()
+    {
+        zero(this);
         return this;
     }
     

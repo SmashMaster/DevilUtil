@@ -96,6 +96,19 @@ public class Mat4 implements Bufferable, Streamable
     }
     
     /**
+     * Sets each entry of the given matrix to zero.
+     * 
+     * @param r The matrix to set to zero.
+     */
+    public static final void zero(Mat4 r)
+    {
+        r.a = 0.0f; r.b = 0.0f; r.c = 0.0f; r.d = 0.0f;
+        r.e = 0.0f; r.f = 0.0f; r.g = 0.0f; r.h = 0.0f;
+        r.i = 0.0f; r.j = 0.0f; r.k = 0.0f; r.l = 0.0f;
+        r.m = 0.0f; r.n = 0.0f; r.o = 0.0f; r.p = 0.0f;
+    }
+    
+    /**
      * Sets the given matrix to the identity matrix.
      * 
      * @param r The matrix to set to the identity matrix.
@@ -847,6 +860,17 @@ public class Mat4 implements Bufferable, Streamable
         this.e = e; this.f = f; this.g = g; this.h = h;
         this.i = i; this.j = j; this.k = k; this.l = l;
         this.m = m; this.n = n; this.o = o; this.p = p;
+        return this;
+    }
+    
+    /**
+     * Sets this to the identity matrix.
+     * 
+     * @return This matrix.
+     */
+    public Mat4 setZero()
+    {
+        zero(this);
         return this;
     }
     

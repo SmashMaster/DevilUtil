@@ -85,6 +85,17 @@ public class Mat2 implements Bufferable, Streamable
     }
     
     /**
+     * Sets each entry of the given matrix to zero.
+     * 
+     * @param r The matrix to set to zero.
+     */
+    public static final void zero(Mat2 r)
+    {
+        r.a = 0.0f; r.b = 0.0f;
+        r.c = 0.0f; r.d = 0.0f;
+    }
+    
+    /**
      * Sets the given matrix to the identity matrix.
      * 
      * @param r The matrix to set to the identity matrix.
@@ -450,6 +461,17 @@ public class Mat2 implements Bufferable, Streamable
     {
         this.a = a; this.b = b;
         this.c = c; this.d = d;
+        return this;
+    }
+    
+    /**
+     * Sets this to the identity matrix.
+     * 
+     * @return This matrix.
+     */
+    public Mat2 setZero()
+    {
+        zero(this);
         return this;
     }
     
