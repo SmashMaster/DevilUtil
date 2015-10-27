@@ -22,6 +22,7 @@
 
 package com.samrj.devil.geo3d;
 
+import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 
 /**
@@ -101,6 +102,25 @@ public class Vertex extends Vec3 implements Shape
         return null;
     }
 
+    @Override
+    public Intersection collide(Cylinder cyl)
+    {
+        Vec3 dir = Vec3.sub(cyl.pos, this);
+        float yd = Math.abs(dir.y);
+        if (yd > cyl.halfHeight) return null; //Too far above/below.
+        
+        float hdsq = dir.x*dir.x + dir.y*dir.y;
+        if (hdsq > cyl.rsq) return null; //Too far horizontally.
+        
+        float hd = (float)Math.sqrt(hdsq);
+        float hPen = cyl.radius - hd;
+        float yPen = cyl.halfHeight - yd;
+        
+        return hPen < yPen ? //Choose between side and top/bottom
+            new VertexIntersection(hPen, new Vec3(dir.x/hd, 0.0f, dir.z/hd)) :
+            new VertexIntersection(yPen, new Vec3(0.0f, Util.signum(dir.y), 0.0f));
+    }
+
     /**
      * Contact class for vertices.
      */
@@ -131,7 +151,7 @@ public class Vertex extends Vec3 implements Shape
     {
         VertexIntersection(float d, Vec3 n)
         {
-            super(d, Vertex.this,n);
+            super(d, Vertex.this, n);
         }
         
         @Override

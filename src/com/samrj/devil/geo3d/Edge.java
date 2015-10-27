@@ -117,6 +117,12 @@ public class Edge implements Shape
     {
         return null;
     }
+
+    @Override
+    public Intersection collide(Cylinder cyl)
+    {
+        throw new UnsupportedOperationException();
+    }
     
     /**
      * Contact class for edges.

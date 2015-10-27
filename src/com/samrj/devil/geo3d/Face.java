@@ -169,6 +169,12 @@ public class Face implements Shape
         
         return new FaceIntersection(depth, cp, normal, bary);
     }
+
+    @Override
+    public Intersection collide(Cylinder cyl)
+    {
+        throw new UnsupportedOperationException();
+    }
     
     /**
      * Contact class for faces.

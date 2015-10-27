@@ -188,6 +188,20 @@ public class Util
     }
     
     /**
+     * Returns -1.0, 0.0, or 1.0 as the given float is negative, zero, or
+     * positive, respectively. Returns undefined result for NaN.
+     * 
+     * @param f Any float.
+     * @return -1.0, 0.0, or 1.0 as the given float is negative, zero, or
+     *         positive, respectively.
+     */
+    public static final float signum(float f)
+    {
+        if (f == 0.0f) return 0.0f;
+        return f < 0.0f ? -1.0f : 1.0f;
+    }
+    
+    /**
      * Returns the greater of the two given values. Does not check for negative
      * zero or NaN.
      * 
