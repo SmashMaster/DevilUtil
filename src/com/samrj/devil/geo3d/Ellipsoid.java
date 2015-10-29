@@ -38,9 +38,6 @@ public class Ellipsoid implements ConvexShape
     @Override
     public IsectResult isect(Vec3 p)
     {
-//        return null;
-        
-        //Not working
         Vec3 dir = Vec3.sub(p, pos).div(radii);
         float sqLen = dir.squareLength();
         if (sqLen > 1.0f) return null; //Too far away.
@@ -49,73 +46,62 @@ public class Ellipsoid implements ConvexShape
         
         IsectResult out = new IsectResult();
         Vec3.copy(p, out.point);
-        Vec3.div(dir, len, out.normal);
-        Vec3.mult(out.normal, radii, out.surface);
-        out.normal.normalize();
+        Vec3 tmp = Vec3.div(dir, len);
+        Vec3.negate(tmp, out.normal);
+        Vec3.mult(tmp, radii, out.surface);
         out.surface.add(pos);
-        out.depth = Vec3.dist(p, out.surface);
+        out.depth = Vec3.dist(out.point, out.surface);
         return out;
     }
 
     @Override
     public IsectResult isect(Vec3 a, Vec3 b)
     {
-        return null;
+        Vec3 aDir = Vec3.sub(a, pos).div(radii);
+        Vec3 eDir = Vec3.sub(b, a).div(radii);
         
-        //Not working
-//        Vec3 aDir = Vec3.sub(pos, a).div(radii);
-//        Vec3 eDir = Vec3.sub(b, a).div(radii);
-//        
-//        float eLenSq = eDir.squareLength();
-//        float et = aDir.dot(eDir)/eLenSq;
-//        if (et < 0.0f || et > 1.0f) return null; //Not touching segment.
-//        
-//        Vec3 dir = Vec3.madd(aDir, eDir, et);
-//        float sqLen = dir.squareLength();
-//        if (sqLen > 1.0f) return null; //Too far away.
-//        
-//        float len = (float)Math.sqrt(sqLen);
-//        
-//        IsectResult out = new IsectResult();
-//        Vec3.lerp(a, b, et, out.point);
-//        Vec3.div(dir, len, out.normal);
-//        Vec3.mult(out.normal, radii, out.surface);
-//        out.surface.add(pos);
-//        out.depth = Vec3.dist(out.point, out.surface);
-//        return out;
+        float eLenSq = eDir.squareLength();
+        float et = -aDir.dot(eDir)/eLenSq;
+        if (et < 0.0f || et > 1.0f) return null; //Not touching segment.
+        
+        Vec3 dir = Vec3.madd(aDir, eDir, et);
+        float sqLen = dir.squareLength();
+        if (sqLen > 1.0f) return null; //Too far away.
+        
+        float len = (float)Math.sqrt(sqLen);
+        
+        IsectResult out = new IsectResult();
+        Vec3.lerp(a, b, et, out.point);
+        Vec3 tmp = Vec3.div(dir, len);
+        Vec3.negate(tmp, out.normal);
+        Vec3.mult(tmp, radii, out.surface);
+        out.surface.add(pos);
+        out.depth = Vec3.dist(out.point, out.surface);
+        return out;
     }
 
     @Override
     public IsectResult isect(Vec3 a, Vec3 b, Vec3 c)
     {
-        return null;
+        Vec3 aDir = Vec3.sub(a, pos).div(radii);
+        Vec3 bDir = Vec3.sub(b, pos).div(radii);
+        Vec3 cDir = Vec3.sub(c, pos).div(radii);
         
-        //Not working
-//        Vec3 ae = Vec3.div(a, radii);
-//        Vec3 be = Vec3.div(b, radii);
-//        Vec3 ce = Vec3.div(c, radii);
-//        
-//        Vec4 plane = Geo3DUtil.plane(ae, be, ce);
-//        Vec3 normal = Geo3DUtil.normal(plane);
-//        float dist = normal.dot(pos) - plane.w;
-//        if (dist < 0.0f)
-//        {
-//            dist = -dist;
-//            normal.negate();
-//        }
-//        if (dist > 1.0f) return null; //Too far apart.
-//        
-//        Vec3 bary = Geo3DUtil.baryCoords(a, b, c, pos);
-//        if (!Geo3DUtil.baryContained(bary)) return null; //Not inside triangle.
-//        
-//        IsectResult out = new IsectResult();
-//        Geo3DUtil.baryPoint(a, b, c, bary, out.point);
-//        Vec3.mult(normal, radii, out.normal);
-//        out.normal.normalize();
-//        Vec3.mult(out.normal, radii, out.surface);
-//        out.surface.add(pos);
-//        out.depth = Vec3.dist(out.point, out.surface);
-//        return out;
+        Vec4 plane = Geo3DUtil.plane(aDir, bDir, cDir);
+        if (plane.w > 0.0f) plane.negate();
+        if (plane.w < -1.0f) return null; //Too far apart.
+        
+        Vec3 bary = Geo3DUtil.baryCoords(a, b, c, pos);
+        if (!Geo3DUtil.baryContained(bary)) return null; //Not inside triangle.
+        
+        IsectResult out = new IsectResult();
+        Geo3DUtil.baryPoint(a, b, c, bary, out.point);
+        Geo3DUtil.baryPoint(aDir, bDir, cDir, bary, out.surface);
+        out.surface.div(-plane.w).mult(radii).add(pos); //Why does this work?
+        Geo3DUtil.normal(plane, out.normal);
+        out.normal.div(radii).normalize();
+        out.depth = Vec3.dist(out.point, out.surface);
+        return out;
     }
 
     @Override

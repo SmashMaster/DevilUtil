@@ -54,7 +54,7 @@ public class Geo3DUtil
     {
         Vec3.mult(a, bary.x, r);
         r.madd(b, bary.y);
-        r.madd(b, bary.z);
+        r.madd(c, bary.z);
     }
     
     /**
@@ -73,7 +73,7 @@ public class Geo3DUtil
      */
     public static final boolean baryContained(Vec3 bary)
     {
-        return bary.y >= 0.0f && bary.z >= 0.0f && (bary.y + bary.z) >= 1.0f;
+        return bary.y >= 0.0f && bary.z >= 0.0f && (bary.y + bary.z) <= 1.0f;
     }
     
     /**
