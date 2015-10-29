@@ -38,6 +38,9 @@ public class Ellipsoid implements ConvexShape
     @Override
     public IsectResult isect(Vec3 p)
     {
+//        return null;
+        
+        //Not working
         Vec3 dir = Vec3.sub(p, pos).div(radii);
         float sqLen = dir.squareLength();
         if (sqLen > 1.0f) return null; //Too far away.
@@ -48,6 +51,7 @@ public class Ellipsoid implements ConvexShape
         Vec3.copy(p, out.point);
         Vec3.div(dir, len, out.normal);
         Vec3.mult(out.normal, radii, out.surface);
+        out.normal.normalize();
         out.surface.add(pos);
         out.depth = Vec3.dist(p, out.surface);
         return out;
@@ -56,143 +60,158 @@ public class Ellipsoid implements ConvexShape
     @Override
     public IsectResult isect(Vec3 a, Vec3 b)
     {
-        Vec3 aDir = Vec3.sub(pos, a).div(radii);
-        Vec3 eDir = Vec3.sub(b, a).div(radii);
-        
-        float eLenSq = eDir.squareLength();
-        float et = aDir.dot(eDir)/eLenSq;
-        if (et < 0.0f || et > 1.0f) return null; //Not touching segment.
-        
-        Vec3 dir = Vec3.madd(aDir, eDir, et);
-        float sqLen = dir.squareLength();
-        if (sqLen > 1.0f) return null; //Too far away.
-        
-        float len = (float)Math.sqrt(sqLen);
-        
-        IsectResult out = new IsectResult();
-        Vec3.lerp(a, b, et, out.point);
-        Vec3.div(dir, len, out.normal);
-        Vec3.mult(out.normal, radii, out.surface);
-        out.surface.add(pos);
-        out.depth = Vec3.dist(out.point, out.surface);
         return null;
+        
+        //Not working
+//        Vec3 aDir = Vec3.sub(pos, a).div(radii);
+//        Vec3 eDir = Vec3.sub(b, a).div(radii);
+//        
+//        float eLenSq = eDir.squareLength();
+//        float et = aDir.dot(eDir)/eLenSq;
+//        if (et < 0.0f || et > 1.0f) return null; //Not touching segment.
+//        
+//        Vec3 dir = Vec3.madd(aDir, eDir, et);
+//        float sqLen = dir.squareLength();
+//        if (sqLen > 1.0f) return null; //Too far away.
+//        
+//        float len = (float)Math.sqrt(sqLen);
+//        
+//        IsectResult out = new IsectResult();
+//        Vec3.lerp(a, b, et, out.point);
+//        Vec3.div(dir, len, out.normal);
+//        Vec3.mult(out.normal, radii, out.surface);
+//        out.surface.add(pos);
+//        out.depth = Vec3.dist(out.point, out.surface);
+//        return out;
     }
 
     @Override
     public IsectResult isect(Vec3 a, Vec3 b, Vec3 c)
     {
-        Vec3 ae = Vec3.div(a, radii);
-        Vec3 be = Vec3.div(b, radii);
-        Vec3 ce = Vec3.div(c, radii);
+        return null;
         
-        Vec4 plane = Geo3DUtil.plane(ae, be, ce);
-        Vec3 normal = Geo3DUtil.normal(plane);
-        float dist = normal.dot(pos) - plane.w;
-        if (dist < 0.0f)
-        {
-            dist = -dist;
-            normal.negate();
-        }
-        if (dist > 1.0f) return null; //Too far apart.
-        
-        Vec3 bary = Geo3DUtil.baryCoords(a, b, c, pos);
-        if (!Geo3DUtil.baryContained(bary)) return null; //Not inside triangle.
-        
-        IsectResult out = new IsectResult();
-        Geo3DUtil.baryPoint(a, b, c, bary, out.point);
-        Vec3.mult(normal, radii, out.normal);
-        out.normal.normalize();
-        Vec3.mult(out.normal, radii, out.surface);
-        out.surface.add(pos);
-        out.depth = Vec3.dist(out.point, out.surface);
-        return out;
+        //Not working
+//        Vec3 ae = Vec3.div(a, radii);
+//        Vec3 be = Vec3.div(b, radii);
+//        Vec3 ce = Vec3.div(c, radii);
+//        
+//        Vec4 plane = Geo3DUtil.plane(ae, be, ce);
+//        Vec3 normal = Geo3DUtil.normal(plane);
+//        float dist = normal.dot(pos) - plane.w;
+//        if (dist < 0.0f)
+//        {
+//            dist = -dist;
+//            normal.negate();
+//        }
+//        if (dist > 1.0f) return null; //Too far apart.
+//        
+//        Vec3 bary = Geo3DUtil.baryCoords(a, b, c, pos);
+//        if (!Geo3DUtil.baryContained(bary)) return null; //Not inside triangle.
+//        
+//        IsectResult out = new IsectResult();
+//        Geo3DUtil.baryPoint(a, b, c, bary, out.point);
+//        Vec3.mult(normal, radii, out.normal);
+//        out.normal.normalize();
+//        Vec3.mult(out.normal, radii, out.surface);
+//        out.surface.add(pos);
+//        out.depth = Vec3.dist(out.point, out.surface);
+//        return out;
     }
 
     @Override
     public SweepResult sweep(Vec3 dp, Vec3 p)
     {
-        Vec3 dpe = Vec3.div(dp, radii);
-        float cSqLen = dpe.squareLength();
-        Vec3 dir = Vec3.sub(pos, p).div(radii);
-
-        float t = Geo3DUtil.solveQuadratic(cSqLen,
-                                           2.0f*dpe.dot(dir),
-                                           dir.squareLength() - 1.0f);
-
-        if (Float.isNaN(t)) return null; //Missed the vertex.
-        if (t < 0.0f || t > 1.0f)
-            return null; //Moving away or won't get there in time.
+        return null;
         
-        SweepResult out = new SweepResult();
-        out.time = t;
-        Vec3.copy(p, out.point);
-        Vec3.madd(pos, dp, t, out.position);
-        Vec3.sub(out.position, p, out.normal);
-        out.normal.div(radii).normalize();
-        return out;
+        //Not working
+//        Vec3 dpe = Vec3.div(dp, radii);
+//        float cSqLen = dpe.squareLength();
+//        Vec3 dir = Vec3.sub(pos, p).div(radii);
+//
+//        float t = Geo3DUtil.solveQuadratic(cSqLen,
+//                                           2.0f*dpe.dot(dir),
+//                                           dir.squareLength() - 1.0f);
+//
+//        if (Float.isNaN(t)) return null; //Missed the vertex.
+//        if (t < 0.0f || t > 1.0f)
+//            return null; //Moving away or won't get there in time.
+//        
+//        SweepResult out = new SweepResult();
+//        out.time = t;
+//        Vec3.copy(p, out.point);
+//        Vec3.madd(pos, dp, t, out.position);
+//        Vec3.sub(out.position, p, out.normal);
+//        out.normal.div(radii).normalize();
+//        return out;
     }
 
     @Override
     public SweepResult sweep(Vec3 dp, Vec3 a, Vec3 b)
     {
-        Vec3 dpe = Vec3.div(dp, radii);
-        float dpeLen = dpe.squareLength();
+        return null;
         
-        Vec3 ae = Vec3.div(a, radii);
-        Vec3 be = Vec3.div(b, radii);
-
-        Vec3 segDir = Vec3.sub(be, ae);
-        float segSqLen = segDir.squareLength();
-        Vec3 aDir = Vec3.sub(a, pos).div(radii);
-
-        float segDotDP = segDir.dot(dpe);
-        float segDotA = segDir.dot(aDir);
-
-        float t = Geo3DUtil.solveQuadratic(
-                segDotDP*segDotDP - segSqLen*dpeLen,
-                2.0f*(segSqLen*dpe.dot(aDir) - segDotDP*segDotA),
-                segSqLen*(1.0f - aDir.squareLength()) + segDotA*segDotA);
-
-        if (Float.isNaN(t)) return null; //Missed the line.
-        if (t < 0.0f || t > 1.0f)  return null; //Moving away or won't get there in time.
-
-        float et = (segDotDP*t - segDotA)/segSqLen;
-        if (et < 0.0f || et > 1.0f) return null; //Hit the line but missed the segment.
-        
-        SweepResult out = new SweepResult();
-        out.time = t;
-        Vec3.lerp(a, b, et, out.point);
-        Vec3.madd(pos, dp, t, out.position);
-        Vec3.sub(out.position, out.point, out.normal);
-        out.normal.div(radii).normalize();
-        return out;
+        //Not working
+//        Vec3 dpe = Vec3.div(dp, radii);
+//        float dpeLen = dpe.squareLength();
+//        
+//        Vec3 ae = Vec3.div(a, radii);
+//        Vec3 be = Vec3.div(b, radii);
+//
+//        Vec3 segDir = Vec3.sub(be, ae);
+//        float segSqLen = segDir.squareLength();
+//        Vec3 aDir = Vec3.sub(a, pos).div(radii);
+//
+//        float segDotDP = segDir.dot(dpe);
+//        float segDotA = segDir.dot(aDir);
+//
+//        float t = Geo3DUtil.solveQuadratic(
+//                segDotDP*segDotDP - segSqLen*dpeLen,
+//                2.0f*(segSqLen*dpe.dot(aDir) - segDotDP*segDotA),
+//                segSqLen*(1.0f - aDir.squareLength()) + segDotA*segDotA);
+//
+//        if (Float.isNaN(t)) return null; //Missed the line.
+//        if (t < 0.0f || t > 1.0f)  return null; //Moving away or won't get there in time.
+//
+//        float et = (segDotDP*t - segDotA)/segSqLen;
+//        if (et < 0.0f || et > 1.0f) return null; //Hit the line but missed the segment.
+//        
+//        SweepResult out = new SweepResult();
+//        out.time = t;
+//        Vec3.lerp(a, b, et, out.point);
+//        Vec3.madd(pos, dp, t, out.position);
+//        Vec3.sub(out.position, out.point, out.normal);
+//        out.normal.div(radii).normalize();
+//        return out;
     }
 
     @Override
     public SweepResult sweep(Vec3 dp, Vec3 a, Vec3 b, Vec3 c)
     {
-        Vec3 p0 = Vec3.div(pos, radii);
-        Vec3 cDir = Vec3.div(dp, radii);
+        return null;
         
-        Vec3 ae = Vec3.div(a, radii);
-        Vec3 be = Vec3.div(b, radii);
-        Vec3 ce = Vec3.div(c, radii);
-        
-        Vec4 plane = Geo3DUtil.plane(ae, be, ce);
-        float t = Geo3DUtil.sweepSpherePlane(p0, cDir, plane, 1.0f);
-        if (t != t || t <= 0.0f || t >= 1.0f)
-            return null; //Moving away or won't get there in time.
-        
-        Vec3 position = Vec3.madd(pos, dp, t);
-        Vec3 bary = Geo3DUtil.baryCoords(a, b, c, position);
-        if (!Geo3DUtil.baryContained(bary)) return null; //Missed the triangle.
-        
-        SweepResult out = new SweepResult();
-        out.time = t;
-        Geo3DUtil.baryPoint(a, b, c, bary, out.point);
-        Vec3.copy(position, out.position);
-        Vec3.sub(position, out.point, out.normal);
-        out.normal.div(radii).normalize();
-        return out;
+        //Not working
+//        Vec3 p0 = Vec3.div(pos, radii);
+//        Vec3 cDir = Vec3.div(dp, radii);
+//        
+//        Vec3 ae = Vec3.div(a, radii);
+//        Vec3 be = Vec3.div(b, radii);
+//        Vec3 ce = Vec3.div(c, radii);
+//        
+//        Vec4 plane = Geo3DUtil.plane(ae, be, ce);
+//        float t = Geo3DUtil.sweepSpherePlane(p0, cDir, plane, 1.0f);
+//        if (t != t || t <= 0.0f || t >= 1.0f)
+//            return null; //Moving away or won't get there in time.
+//        
+//        Vec3 position = Vec3.madd(pos, dp, t);
+//        Vec3 bary = Geo3DUtil.baryCoords(a, b, c, position);
+//        if (!Geo3DUtil.baryContained(bary)) return null; //Missed the triangle.
+//        
+//        SweepResult out = new SweepResult();
+//        out.time = t;
+//        Geo3DUtil.baryPoint(a, b, c, bary, out.point);
+//        Vec3.copy(position, out.position);
+//        Vec3.sub(position, out.point, out.normal);
+//        out.normal.div(radii).normalize();
+//        return out;
     }
 }
