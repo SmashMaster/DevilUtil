@@ -186,6 +186,11 @@ public final class Memory
         allocations--;
     }
     
+    public ByteBuffer makeView()
+    {
+        return memByteBuffer(address, size);
+    }
+    
     /**
      * @return The first byte in this memory block.
      */
