@@ -193,7 +193,7 @@ public class GeoMesh
          */
     }
     
-    private Stream<RaycastResult> raycastUnsorted(Vec3 p0, Vec3 dp)
+    public Stream<RaycastResult> raycastUnsorted(Vec3 p0, Vec3 dp)
     {
         return faces.stream().map(f -> Geo3DUtil.raycast(p0, dp, f.a, f.b, f.c))
                 .filter(e -> e != null);
@@ -212,7 +212,7 @@ public class GeoMesh
                 .orElse(null);
     }
     
-    private Stream<IsectResult> intersectUnsorted(ConvexShape shape)
+    public Stream<IsectResult> intersectUnsorted(ConvexShape shape)
     {
         return Stream.concat(Stream.concat(
                 faces.stream().map(f -> shape.isect(f.a, f.b, f.c)),
@@ -234,7 +234,7 @@ public class GeoMesh
                 .orElse(null);
     }
     
-    private Stream<SweepResult> sweepUnsorted(ConvexShape shape, Vec3 dp)
+    public Stream<SweepResult> sweepUnsorted(ConvexShape shape, Vec3 dp)
     {
         return Stream.concat(Stream.concat(
                 faces.stream().map(f -> shape.sweep(dp, f.a, f.b, f.c)),

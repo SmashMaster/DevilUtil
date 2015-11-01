@@ -199,12 +199,12 @@ public class Geo3DUtil
             d = -d;
             n.negate();
         }
-
+        
         float ood = 1.0f/d;
         Vec3 ap = Vec3.sub(p0, a);
         float t = ap.dot(n)*ood;
         if (t < 0.0f || t > 1.0f) return null; //Behind or too far.
-
+        
         Vec3 e = backface ? Vec3.cross(ap, dp) : Vec3.cross(dp, ap);
         float v = ac.dot(e);
         if (v < 0.0f || v > d) return null; //Missed triangle.
@@ -221,6 +221,30 @@ public class Geo3DUtil
         out.point.madd(b, v).madd(c, w);
         Vec3.normalize(n, out.normal);
         return out;
+    }
+    
+    /**
+     * Reduces the degrees of freedom of the given vector, using the given array
+     * of normal vectors.
+     */
+    public static final Vec3 restrain(Vec3 v, Vec3... normals)
+    {
+        Vec3[] opp = new Vec3[3];
+        int num = 0;
+        
+        for (Vec3 n : normals) if (n.dot(v) < 0.0f)
+        {
+            opp[num++] = n;
+            if (num == 3) break;
+        }
+        
+        switch (num)
+        {
+            case 0: return v;
+            case 1: return v.reject(opp[0]);
+            case 2: return v.project(Vec3.cross(opp[0], opp[1]));
+            default: return v.set();
+        }
     }
     
     private Geo3DUtil()
