@@ -31,6 +31,7 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -207,19 +208,31 @@ public class GeoMesh
                 .sorted((a, b) -> Util.compare(b.depth, a.depth, 0.0f));
     }
     
-    private Stream<SweepResult> sweepUnsorted(ConvexShape shape, Vec3 dt)
+    public Optional<IsectResult> intersectDeepest(ConvexShape shape)
+    {
+        return intersectUnsorted(shape)
+                .reduce((a, b) -> a.depth > b.depth ? a : b);
+    }
+    
+    private Stream<SweepResult> sweepUnsorted(ConvexShape shape, Vec3 dp)
     {
         return Stream.concat(Stream.concat(
-                faces.stream().map(f -> shape.sweep(dt, f.a, f.b, f.c)),
-                edges.stream().map(e -> shape.sweep(dt, e.a, e.b))),
-                verts.stream().map(v -> shape.sweep(dt, v)))
+                faces.stream().map(f -> shape.sweep(dp, f.a, f.b, f.c)),
+                edges.stream().map(e -> shape.sweep(dp, e.a, e.b))),
+                verts.stream().map(v -> shape.sweep(dp, v)))
                     .filter(e -> e != null);
     }
     
-    public Stream<SweepResult> sweep(ConvexShape shape, Vec3 dt)
+    public Stream<SweepResult> sweep(ConvexShape shape, Vec3 dp)
     {
-        return sweepUnsorted(shape, dt)
+        return sweepUnsorted(shape, dp)
                 .sorted((a, b) -> Util.compare(a.time, b.time, 0.0f));
+    }
+    
+    public Optional<SweepResult> sweepFirst(ConvexShape shape, Vec3 dp)
+    {
+        return sweepUnsorted(shape, dp)
+                .reduce((a, b) -> a.time < b.time ? a : b);
     }
     
     public class Edge
