@@ -193,6 +193,25 @@ public class GeoMesh
          */
     }
     
+    private Stream<RaycastResult> raycastUnsorted(Vec3 p0, Vec3 dp)
+    {
+        return faces.stream().map(f -> Geo3DUtil.raycast(p0, dp, f.a, f.b, f.c))
+                .filter(e -> e != null);
+    }
+    
+    public Stream<RaycastResult> raycast(Vec3 p0, Vec3 dp)
+    {
+        return raycastUnsorted(p0, dp)
+                .sorted((a, b) -> Util.compare(a.time, b.time));
+    }
+    
+    public RaycastResult raycastFirst(Vec3 p0, Vec3 dp)
+    {
+        return raycastUnsorted(p0, dp)
+                .reduce((a, b) -> a.time < b.time ? a : b)
+                .orElse(null);
+    }
+    
     private Stream<IsectResult> intersectUnsorted(ConvexShape shape)
     {
         return Stream.concat(Stream.concat(
@@ -208,10 +227,11 @@ public class GeoMesh
                 .sorted((a, b) -> Util.compare(b.depth, a.depth, 0.0f));
     }
     
-    public Optional<IsectResult> intersectDeepest(ConvexShape shape)
+    public IsectResult intersectDeepest(ConvexShape shape)
     {
         return intersectUnsorted(shape)
-                .reduce((a, b) -> a.depth > b.depth ? a : b);
+                .reduce((a, b) -> a.depth > b.depth ? a : b)
+                .orElse(null);
     }
     
     private Stream<SweepResult> sweepUnsorted(ConvexShape shape, Vec3 dp)
@@ -229,10 +249,11 @@ public class GeoMesh
                 .sorted((a, b) -> Util.compare(a.time, b.time, 0.0f));
     }
     
-    public Optional<SweepResult> sweepFirst(ConvexShape shape, Vec3 dp)
+    public SweepResult sweepFirst(ConvexShape shape, Vec3 dp)
     {
         return sweepUnsorted(shape, dp)
-                .reduce((a, b) -> a.time < b.time ? a : b);
+                .reduce((a, b) -> a.time < b.time ? a : b)
+                .orElse(null);
     }
     
     public class Edge

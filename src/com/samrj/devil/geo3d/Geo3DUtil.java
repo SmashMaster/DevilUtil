@@ -181,6 +181,48 @@ public class Geo3DUtil
         return (r - dist)/n.dot(dp);
     }
     
+    /**
+     * Casts the given ray against the given triangle and returns the results of
+     * the cast, or null if the ray missed.
+     */
+    public static RaycastResult raycast(Vec3 p0, Vec3 dp, Vec3 a, Vec3 b, Vec3 c)
+    {
+        Vec3 ab = Vec3.sub(b, a);
+        Vec3 ac = Vec3.sub(c, a);
+
+        Vec3 n = Vec3.cross(ab, ac);
+        float d = dp.dot(n);
+        if (d == 0.0f) return null; //Ray parallel to triangle.
+        boolean backface = d < 0.0f;
+        if (backface)
+        {
+            d = -d;
+            n.negate();
+        }
+
+        float ood = 1.0f/d;
+        Vec3 ap = Vec3.sub(p0, a);
+        float t = ap.dot(n)*ood;
+        if (t < 0.0f || t > 1.0f) return null; //Behind or too far.
+
+        Vec3 e = backface ? Vec3.cross(ap, dp) : Vec3.cross(dp, ap);
+        float v = ac.dot(e);
+        if (v < 0.0f || v > d) return null; //Missed triangle.
+        float w = -ab.dot(e);
+        if (w < 0.0f || v + w > d) return null; //Missed triangle.
+
+        v = v*ood;
+        w = w*ood;
+        float u = 1.0f - v - w;
+        
+        RaycastResult out = new RaycastResult();
+        out.time = t;
+        Vec3.mult(a, u, out.point);
+        out.point.madd(b, v).madd(c, w);
+        Vec3.normalize(n, out.normal);
+        return out;
+    }
+    
     private Geo3DUtil()
     {
     }
