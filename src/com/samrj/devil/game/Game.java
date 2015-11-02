@@ -104,6 +104,32 @@ public abstract class Game
         GLFW.glfwTerminate();
     }
     
+    /**
+     * Provides a simple and convenient way to run a game. The game must have a
+     * zero-argument constructor.
+     * 
+     * To use this method, simply call Game.run(YourGameClass::new);
+     * 
+     * @param constructor Any method which constructs and returns a Game.
+     */
+    public static final void run(GameConstructor constructor) throws Exception
+    {
+        GLFWErrorCallback errorCallback = GLFW.GLFWErrorCallback(DisplayException::glfwThrow);
+        GLFW.glfwSetErrorCallback(errorCallback);
+        
+        Game.init();
+        try
+        {
+            Game instance = constructor.construct();
+            instance.run();
+            instance.destroy();
+        }
+        finally
+        {
+            Game.terminate();
+        }
+    }
+    
     private boolean running;
     private long lastFrameTime;
     private long frameStart;
@@ -444,5 +470,11 @@ public abstract class Game
     public final boolean isDestroyed()
     {
         return destroyed;
+    }
+    
+    @FunctionalInterface
+    public interface GameConstructor
+    {
+        Game construct() throws Exception;
     }
 }
