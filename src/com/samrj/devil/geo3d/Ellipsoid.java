@@ -189,7 +189,7 @@ public class Ellipsoid implements ConvexShape
         Geo3DUtil.baryPoint(a, b, c, bary, out.point);
         Vec3.copy(position, out.position);
         Vec3.sub(position, out.point, out.normal);
-        out.normal.div(radii).normalize();
+        out.normal.normalize();
         return out;
     }
 }
