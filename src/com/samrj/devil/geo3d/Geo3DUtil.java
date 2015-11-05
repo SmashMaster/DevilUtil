@@ -113,7 +113,7 @@ public class Geo3DUtil
      */
     public static final void closest(Vec3 p, Vec4 plane, Vec3 r)
     {
-        Vec3 n = new Vec3(plane.x, plane.y, plane.z);
+        Vec3 n = normal(plane);
         Vec3.madd(p, n, plane.w - p.dot(n), r);
     }
     

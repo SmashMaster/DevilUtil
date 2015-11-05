@@ -22,6 +22,7 @@
 
 package com.samrj.devil.geo3d;
 
+import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.Vec4;
 
@@ -32,9 +33,21 @@ import com.samrj.devil.math.Vec4;
  */
 public class Ellipsoid implements ConvexShape
 {
+    private static final float EPSILON = 1.0f/65536.0f;
     public final Vec3 pos = new Vec3();
     public final Vec3 radii = new Vec3();
-
+    
+    private IsectResult isectCenter()
+    {
+        IsectResult out = new IsectResult();
+        out.point.set(pos);
+        out.surface.set(pos);
+        out.surface.y -= radii.y;
+        out.depth = radii.y;
+        out.normal.y = 1.0f;
+        return out;
+    }
+    
     @Override
     public IsectResult isect(Vec3 p)
     {
@@ -43,6 +56,8 @@ public class Ellipsoid implements ConvexShape
         if (sqLen > 1.0f) return null; //Too far away.
         
         float len = (float)Math.sqrt(sqLen);
+        if (Float.isNaN(len)) return null;
+        if (Util.isZero(len, EPSILON)) return isectCenter(); //Intersecting center.
         
         IsectResult out = new IsectResult();
         Vec3.copy(p, out.point);
@@ -69,6 +84,8 @@ public class Ellipsoid implements ConvexShape
         if (sqLen > 1.0f) return null; //Too far away.
         
         float len = (float)Math.sqrt(sqLen);
+        if (Float.isNaN(len)) return null;
+        if (Util.isZero(len, EPSILON)) return isectCenter(); //Intersecting center.
         
         IsectResult out = new IsectResult();
         Vec3.lerp(a, b, et, out.point);
@@ -89,10 +106,12 @@ public class Ellipsoid implements ConvexShape
         
         Vec4 plane = Geo3DUtil.plane(aDir, bDir, cDir);
         if (plane.w > 0.0f) plane.negate();
-        if (plane.w < -1.0f) return null; //Too far apart.
+        if (plane.w < -1.0f || Float.isNaN(plane.w)) return null; //Too far apart or NaN.
         
         Vec3 bary = Geo3DUtil.baryCoords(a, b, c, pos);
         if (!Geo3DUtil.baryContained(bary)) return null; //Not inside triangle.
+        
+        if (Util.isZero(plane.w, EPSILON)) return isectCenter(); //Intersected center.
         
         IsectResult out = new IsectResult();
         Geo3DUtil.baryPoint(a, b, c, bary, out.point);
@@ -155,6 +174,7 @@ public class Ellipsoid implements ConvexShape
 
         float et = (segDotDP*t - segDotA)/segSqLen;
         if (et < 0.0f || et > 1.0f) return null; //Hit the line but missed the segment.
+        if (!Util.isFinite(et)) return null; //Degenerate segment.
         
         SweepResult out = new SweepResult();
         out.time = t;
@@ -177,7 +197,7 @@ public class Ellipsoid implements ConvexShape
         
         Vec4 plane = Geo3DUtil.plane(ae, be, ce);
         float t = Geo3DUtil.sweepSpherePlane(p0, cDir, plane, 1.0f);
-        if (t != t || t <= 0.0f || t >= 1.0f)
+        if (Float.isNaN(t) || t <= 0.0f || t >= 1.0f)
             return null; //Moving away or won't get there in time.
         
         Vec3 position = Vec3.madd(pos, dp, t);
