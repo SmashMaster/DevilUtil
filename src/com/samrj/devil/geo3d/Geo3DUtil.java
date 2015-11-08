@@ -73,7 +73,7 @@ public class Geo3DUtil
      */
     public static final boolean baryContained(Vec3 bary)
     {
-        return bary.y >= 0.0f && bary.z >= 0.0f && (bary.y + bary.z) <= 1.0f;
+        return bary.y > 0.0f && bary.z > 0.0f && (bary.y + bary.z) < 1.0f;
     }
     
     /**

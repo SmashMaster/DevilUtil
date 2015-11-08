@@ -116,7 +116,7 @@ public class Ellipsoid implements ConvexShape
         IsectResult out = new IsectResult();
         Geo3DUtil.baryPoint(a, b, c, bary, out.point);
         Geo3DUtil.baryPoint(aDir, bDir, cDir, bary, out.surface);
-        out.surface.div(-plane.w).mult(radii).add(pos); //Why does this work?
+        out.surface.div(-plane.w).mult(radii).add(pos);
         Geo3DUtil.normal(plane, out.normal);
         out.normal.div(radii).normalize();
         out.depth = Vec3.dist(out.point, out.surface);
