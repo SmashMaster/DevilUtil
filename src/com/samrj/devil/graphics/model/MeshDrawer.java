@@ -35,7 +35,7 @@ import org.lwjgl.opengl.GL15;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class GLMesh
+public class MeshDrawer
 {
     private static final int POSITION = 0, NORMAL = 1, TANGENT = 2, UV = 3,
                              COLOR = 4, GROUPS = 5, WEIGHTS = 6;
@@ -44,7 +44,7 @@ public class GLMesh
     private final Attribute[] attributes;
     private int vbo, ibo;
     
-    public GLMesh(Mesh mesh)
+    public MeshDrawer(Mesh mesh)
     {
         this.mesh = mesh;
         attributes = new Attribute[7];

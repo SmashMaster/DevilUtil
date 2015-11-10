@@ -14,7 +14,7 @@ public class SunLamp
     
     SunLamp(DataInputStream in) throws IOException
     {
-        name = DevilModel.readPaddedUTF(in);
+        name = Model.readPaddedUTF(in);
         
         rot = new Quat();
         rot.read(in);

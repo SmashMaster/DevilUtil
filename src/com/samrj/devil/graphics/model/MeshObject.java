@@ -25,13 +25,13 @@ public class MeshObject
     
     MeshObject(DataInputStream in, Mesh[] meshes) throws IOException
     {
-        name = DevilModel.readPaddedUTF(in);
+        name = Model.readPaddedUTF(in);
         mesh = meshes[in.readInt()];
         scale = new Vec3(in);
         rotation = new Quat(in);
         position = new Vec3(in);
         int numGroups = in.readInt();
         groups = new String[numGroups];
-        for (int i=0; i<numGroups; i++) groups[i] = DevilModel.readPaddedUTF(in);
+        for (int i=0; i<numGroups; i++) groups[i] = Model.readPaddedUTF(in);
     }
 }

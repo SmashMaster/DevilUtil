@@ -14,7 +14,7 @@ import java.util.Arrays;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class DevilModel
+public class Model
 {
     public static final String readPaddedUTF(DataInputStream in) throws IOException
     {
@@ -33,7 +33,7 @@ public class DevilModel
     public final MeshObject[] meshObjects;
     public final SunLamp[] sunLamps;
     
-    DevilModel(BufferedInputStream inputStream) throws IOException
+    Model(BufferedInputStream inputStream) throws IOException
     {
         try
         {
@@ -65,7 +65,7 @@ public class DevilModel
         }
     }
     
-    public DevilModel(String path) throws IOException
+    public Model(String path) throws IOException
     {
         this(new BufferedInputStream(Resource.open(path)));
     }

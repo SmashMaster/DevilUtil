@@ -29,15 +29,15 @@ public class Mesh
     
     Mesh(DataInputStream in) throws IOException
     {
-        name = DevilModel.readPaddedUTF(in);
+        name = Model.readPaddedUTF(in);
         
         int numUVLayers = in.readInt();
         uvLayers = new String[numUVLayers];
-        for (int i=0; i<numUVLayers; i++) uvLayers[i] = DevilModel.readPaddedUTF(in);
+        for (int i=0; i<numUVLayers; i++) uvLayers[i] = Model.readPaddedUTF(in);
         
         int numColorLayers = in.readInt();
         colorLayers = new String[numColorLayers];
-        for (int i=0; i<numColorLayers; i++) colorLayers[i] = DevilModel.readPaddedUTF(in);
+        for (int i=0; i<numColorLayers; i++) colorLayers[i] = Model.readPaddedUTF(in);
         
         hasTangents = in.readInt() != 0;
         numGroups = in.readInt();
