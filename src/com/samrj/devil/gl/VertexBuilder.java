@@ -297,6 +297,16 @@ public abstract class VertexBuilder extends DGLObj implements VertexData
      */
     public abstract void index(int index);
     
+    /**
+     * Emits each of the given indices, in the order they are given.
+     * 
+     * @param array An array of indices to emit.
+     */
+    public final void indices(int... array)
+    {
+        for (int i : array) index(i);
+    }
+    
     @Override
     public abstract int vbo();
     
