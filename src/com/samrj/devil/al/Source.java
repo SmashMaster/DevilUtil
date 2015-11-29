@@ -44,8 +44,19 @@ public class Source extends DALObj
         AL10.alSource3f(id, AL10.AL_VELOCITY, v.x, v.y, v.z);
     }
     
+    public void setLooping(boolean looping)
+    {
+        AL10.alSourcei(id, AL10.AL_LOOPING, looping ? AL10.AL_TRUE : AL10.AL_FALSE);
+    }
+    
+    public void parami(int param, int value)
+    {
+        AL10.alSourcei(id, param, value);
+    }
+    
     public void play()
     {
+        AL10.alSourcei(id, AL10.AL_LOOPING, id);
         AL10.alSourcePlay(id);
     }
     

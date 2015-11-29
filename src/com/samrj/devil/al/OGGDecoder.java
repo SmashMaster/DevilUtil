@@ -195,9 +195,10 @@ final class OGGDecoder
 
                 index = sync.buffer(BUFFER_SIZE);
                 buffer = sync.data;
+                if (index < 0) break;
+                
                 count = in.read(buffer, index, BUFFER_SIZE);
                 sync.wrote(count);
-
                 if (count == 0) break;
             }
 

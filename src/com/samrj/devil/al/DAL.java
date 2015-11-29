@@ -106,7 +106,7 @@ public class DAL
     public static SoundBuffer decodeFlac(InputStream in) throws IOException
     {
         FLACDecoder decoder = new FLACDecoder(in);
-        PCMBuffer buffer = new PCMBuffer();
+        PCMBufferFLAC buffer = new PCMBufferFLAC();
         try
         {
             decoder.addPCMProcessor(buffer);
