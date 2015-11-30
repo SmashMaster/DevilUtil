@@ -27,6 +27,8 @@ public class Mesh
     public final Memory indexBlock;
     public final ByteBuffer indexData;
     
+    public final int[] materials;
+    
     Mesh(DataInputStream in) throws IOException
     {
         name = Model.readPaddedUTF(in);
@@ -68,6 +70,10 @@ public class Mesh
         for (int i=0; i<triangleIndexDataLength; i++)
             indexData.putInt(in.readInt());
         indexData.rewind();
+        
+        materials = new int[numTriangles];
+        for (int i=0; i<numTriangles; i++)
+            materials[i] = in.readInt();
     }
     
     final void destroy()

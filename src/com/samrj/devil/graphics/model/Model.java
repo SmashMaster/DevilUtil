@@ -29,6 +29,7 @@ public class Model
     }
     
     public final Vec3 backgroundColor;
+    public final String[] materials;
     public final Mesh[] meshes;
     public final MeshObject[] meshObjects;
     public final SunLamp[] sunLamps;
@@ -38,11 +39,16 @@ public class Model
         try
         {
             DataInputStream in = new DataInputStream(inputStream);
-            if (!in.readUTF().equals("DevilModel 0.3"))
+            if (!in.readUTF().equals("DevilModel 0.4"))
                 throw new IOException("Illegal file format specified.");
 
             backgroundColor = new Vec3();
             backgroundColor.read(in);
+            
+            int numMaterials = in.readInt();
+            materials = new String[numMaterials];
+            for (int i=0; i<numMaterials; i++)
+                materials[i] = readPaddedUTF(in);
             
             int numMeshes = in.readInt();
             meshes = new Mesh[numMeshes];

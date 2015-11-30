@@ -87,7 +87,7 @@ public class GeoMesh
         {
             Face f = new Face(verts.get(iBuffer.getInt()),
                               verts.get(iBuffer.getInt()),
-                              verts.get(iBuffer.getInt()));
+                              verts.get(iBuffer.getInt()), mesh.materials[i]);
             faces.add(f);
             edges.add(f.ab);
             edges.add(f.bc);
@@ -280,13 +280,15 @@ public class GeoMesh
     {
         public Vec3 a, b, c;
         public Edge ab, bc, ca;
+        public final int material;
         
-        private Face(Vec3 a, Vec3 b, Vec3 c)
+        private Face(Vec3 a, Vec3 b, Vec3 c, int material)
         {
             this.a = a; this.b = b; this.c = c;
             ab = new Edge(a, b);
             bc = new Edge(b, c);
             ca = new Edge(c, a);
+            this.material = material;
         }
     }
 }
