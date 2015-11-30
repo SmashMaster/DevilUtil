@@ -1,5 +1,6 @@
 package com.samrj.devil.geo3d;
 
+import com.samrj.devil.geo3d.GeoMesh.Face;
 import com.samrj.devil.math.Vec3;
 
 /**
@@ -25,4 +26,14 @@ public class RaycastResult
      * The surface normal of the static primitive at the point of contact.
      */
     public final Vec3 normal = new Vec3();
+    
+    /**
+     * The face that was hit.
+     */
+    public final Face face;
+    
+    RaycastResult(Face face)
+    {
+        this.face = face;
+    }
 }

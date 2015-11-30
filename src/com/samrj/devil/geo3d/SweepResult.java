@@ -30,4 +30,14 @@ public class SweepResult
      * The position of the swept volume at the time of contact.
      */
     public final Vec3 position = new Vec3();
+    
+    /**
+     * The object that was intersected.
+     */
+    public final Object object;
+    
+    SweepResult(Object object)
+    {
+        this.object = object;
+    }
 }

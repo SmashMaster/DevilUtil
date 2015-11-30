@@ -31,4 +31,14 @@ public class IsectResult
      * The surface normal of the clipping volume at the surface point.
      */
     public final Vec3 normal = new Vec3();
+    
+    /**
+     * The object that was intersected.
+     */
+    public final Object object;
+    
+    IsectResult(Object object)
+    {
+        this.object = object;
+    }
 }

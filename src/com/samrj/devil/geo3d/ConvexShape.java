@@ -1,5 +1,7 @@
 package com.samrj.devil.geo3d;
 
+import com.samrj.devil.geo3d.GeoMesh.Edge;
+import com.samrj.devil.geo3d.GeoMesh.Face;
 import com.samrj.devil.math.Vec3;
 
 /**
@@ -22,16 +24,18 @@ public interface ConvexShape
     /**
      * Intersects this shape against the given line segment.
      * 
+     * @param e The edge to clip against.
      * @return The results of the clip test, or null if not intersecting.
      */
-    IsectResult isect(Vec3 a, Vec3 b);
+    IsectResult isect(Edge e);
     
     /**
      * Intersects this shape against the given triangle.
      * 
+     * @param f The face to clip against.
      * @return The results of the clip test, or null if not intersecting.
      */
-    IsectResult isect(Vec3 a, Vec3 b, Vec3 c);
+    IsectResult isect(Face f);
     
     /**
      * Sweeps this shape in the given direction, against the given point.
@@ -46,15 +50,17 @@ public interface ConvexShape
      * Sweeps this shape in the given direction, against the given line segment.
      * 
      * @param dp The direction in which to sweep.
+     * @param e The edge to sweep against.
      * @return The results of the sweep test, or null if missed.
      */
-    SweepResult sweep(Vec3 dp, Vec3 a, Vec3 b);
+    SweepResult sweep(Vec3 dp, Edge e);
     
     /**
      * Sweeps this shape in the given direction, against the given triangle.
      * 
      * @param dp The direction in which to sweep.
+     * @param f The face to sweep against.
      * @return The results of the sweep test, or null if missed.
      */
-    SweepResult sweep(Vec3 dp, Vec3 a, Vec3 b, Vec3 c);
+    SweepResult sweep(Vec3 dp, Face f);
 }

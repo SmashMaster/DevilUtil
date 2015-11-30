@@ -4,6 +4,7 @@ import com.samrj.devil.game.Keyboard;
 import com.samrj.devil.geo3d.Ellipsoid;
 import com.samrj.devil.geo3d.Geo3DUtil;
 import com.samrj.devil.geo3d.GeoMesh;
+import com.samrj.devil.geo3d.GeoMesh.Face;
 import com.samrj.devil.geo3d.SweepResult;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
@@ -28,7 +29,11 @@ public class FPSPlayer
     private final FPSCamera camera;
     private final GeoMesh level;
     private Vec3 ground;
+    private int groundMaterial;
     private boolean applyGravity;
+    private float stepAccum;
+    
+    public Runnable stepCallback, jumpCallback, landCallback;
     
     /**
      * Creates a new FPSPlayer using the given parameters, keyboard, camera, and
@@ -84,6 +89,23 @@ public class FPSPlayer
         if (ground == null) return;
         vel.y = settings.jumpSpeed;
         ground = null;
+        if (jumpCallback != null) jumpCallback.run();
+    }
+    
+    /**
+     * @return Whether or not the player is currently on walkable ground.
+     */
+    public boolean onGround()
+    {
+        return ground != null;
+    }
+    
+    /**
+     * @return The material index of the ground last walked on.
+     */
+    public int groundMaterial()
+    {
+        return groundMaterial;
     }
     
     private void applyAcc(Vec3 desiredVel, float acc)
@@ -162,7 +184,8 @@ public class FPSPlayer
         }
         
         avgVel.add(vel).mult(0.5f);
-        pos.madd(avgVel, dt);
+        Vec3 displacement = Vec3.mult(avgVel, dt);
+        pos.add(displacement);
         
         applyGravity = true;
         
@@ -184,6 +207,8 @@ public class FPSPlayer
                 if (sweep != null)
                 {
                     ground = sweep.normal;
+                    Object object = sweep.object;
+                    if (object instanceof Face) groundMaterial = ((Face)object).material;
                     applyGravity = (sweep.time - 0.5f)*2.0f > settings.groundThreshold;
                 }
             }
@@ -196,8 +221,26 @@ public class FPSPlayer
                 
                 if (isect.normal.y < settings.groundNormalMinY) return;
                 if (ground == null || isect.normal.y > ground.y)
+                {
                     ground = isect.normal;
+                    Object object = isect.object;
+                    if (object instanceof Face) groundMaterial = ((Face)object).material;
+                }
             });
+            
+            //Check for footsteps
+            if (stepCallback != null && ground != null)
+            {
+                float dispLen = displacement.length();
+                stepAccum += dispLen;
+
+                if (stepAccum > settings.strideLength)
+                {
+                    stepAccum -= settings.strideLength;
+                    stepCallback.run();
+                }
+            }
+            else stepAccum = 0.0f;
         }
         
         camera.pos.set(pos);
@@ -224,6 +267,7 @@ public class FPSPlayer
         public float noclipSpeed = 4.0f;
         public float noclipTurboSpeed = 12.0f;
         public float cameraHeight = 1.640625f;
+        public float strideLength = 1.0f;
         
         private float groundNormalMinY;
         private float cameraOffset;
