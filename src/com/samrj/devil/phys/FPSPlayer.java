@@ -101,6 +101,25 @@ public class FPSPlayer
     }
     
     /**
+     * Sets the ground of this player to a virtual, flat surface.
+     */
+    public void setFlatGround()
+    {
+        ground = new Vec3(0.0f, 1.0f, 0.0f);
+    }
+    
+    /**
+     * Sets the given vector to this player's camera position.
+     * 
+     * @param result The vector in which to store the camera position.
+     */
+    public void getCameraPos(Vec3 result)
+    {
+        Vec3.copy(pos, result);
+        result.y += settings.cameraOffset;
+    }
+    
+    /**
      * @return The material index of the ground last walked on.
      */
     public int groundMaterial()
