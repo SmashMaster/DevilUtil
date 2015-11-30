@@ -191,8 +191,10 @@ public class FPSPlayer
         
         if (!noclip)
         {
+            boolean startGround = ground != null;
+            
             //Find the ground
-            if (ground != null)
+            if (startGround)
             {
                 ground = null;
                 float oldY = pos.y;
@@ -241,6 +243,10 @@ public class FPSPlayer
                 }
             }
             else stepAccum = 0.0f;
+            
+            //Check for landing
+            if (landCallback != null && !startGround && ground != null)
+                landCallback.run();
         }
         
         camera.pos.set(pos);
@@ -267,7 +273,7 @@ public class FPSPlayer
         public float noclipSpeed = 4.0f;
         public float noclipTurboSpeed = 12.0f;
         public float cameraHeight = 1.640625f;
-        public float strideLength = 1.0f;
+        public float strideLength = 1.25f;
         
         private float groundNormalMinY;
         private float cameraOffset;
