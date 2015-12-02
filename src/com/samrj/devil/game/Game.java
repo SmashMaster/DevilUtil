@@ -35,6 +35,10 @@ import com.samrj.devil.game.step.TimeStepper;
 import com.samrj.devil.game.sync.SleepHybrid;
 import com.samrj.devil.game.sync.Sync;
 import com.samrj.devil.math.Vec2i;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL11;
@@ -96,9 +100,7 @@ public abstract class Game
      */
     public static final void terminate()
     {
-        if (!initialized) throw new IllegalStateException("Not initialized.");
         ensureMainThread();
-        
         initialized = false;
         mainThread = null;
         GLFW.glfwTerminate();
@@ -114,19 +116,23 @@ public abstract class Game
      */
     public static final void run(GameConstructor constructor) throws Exception
     {
-        GLFWErrorCallback errorCallback = GLFW.GLFWErrorCallback(DisplayException::glfwThrow);
-        GLFW.glfwSetErrorCallback(errorCallback);
-        
         Game.init();
         try
         {
             Game instance = constructor.construct();
             instance.run();
             instance.destroy();
+            Game.terminate();
         }
-        finally
+        catch (Exception e)
         {
             Game.terminate();
+            StringWriter writer = new StringWriter();
+            writer.append("An unhandled exception occured:\n");
+            e.printStackTrace(new PrintWriter(writer));
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            JOptionPane.showMessageDialog(null, writer.getBuffer(), "Exception", JOptionPane.ERROR_MESSAGE);
+            throw e;
         }
     }
     
