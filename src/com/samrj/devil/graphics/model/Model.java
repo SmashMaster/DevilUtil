@@ -1,6 +1,7 @@
 package com.samrj.devil.graphics.model;
 
-import com.samrj.devil.math.Vec3;
+import com.samrj.devil.io.IOUtil;
+import com.samrj.devil.io.StreamConstructor;
 import com.samrj.devil.res.Resource;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -16,54 +17,51 @@ import java.util.Arrays;
  */
 public class Model
 {
-    public static final String readPaddedUTF(DataInputStream in) throws IOException
+    private static final byte[] MAGIC = IOUtil.hexToBytes("9F0A446576696C4D6F64656C");
+    
+    private static void skipBlock(DataInputStream in, int id) throws IOException
     {
-        if (!in.markSupported()) throw new IOException("Cannot read padded UTF-8 on this platform.");
-        in.mark(8);
-        int utflen = in.readUnsignedShort() + 2;
-        in.reset();
-        String out = in.readUTF();
-        int padding = (4 - (utflen % 4)) % 4;
-        if (in.skipBytes(padding) != padding) throw new IOException("Cannot skip bytes properly on this platform.");
-        return out;
+        if (in.readInt() != id) throw new IOException("Corrupt DVM.");
+        in.skip(in.readInt());
     }
     
-    public final Vec3 backgroundColor;
-    public final String[] materials;
+    private static <T> T[] readBlock(DataInputStream in, int id, Class<T> type, StreamConstructor<T> constructor) throws IOException
+    {
+        if (in.readInt() != id) throw new IOException("Corrupt DVM.");
+        in.skip(4);
+        return IOUtil.arrayFromStream(in, type, constructor);
+    }
+    
+    public final int versionMajor, versionMinor;
+    public final Action[] actions;
     public final Mesh[] meshes;
-    public final MeshObject[] meshObjects;
-    public final SunLamp[] sunLamps;
+    public final ModelObject[] objects;
+    public final Scene[] scenes;
     
     Model(BufferedInputStream inputStream) throws IOException
     {
         try
         {
             DataInputStream in = new DataInputStream(inputStream);
-            if (!in.readUTF().equals("DevilModel 0.4"))
+            
+            byte[] header = new byte[12];
+            in.read(header);
+            if (!Arrays.equals(header, MAGIC))
                 throw new IOException("Illegal file format specified.");
-
-            backgroundColor = new Vec3();
-            backgroundColor.read(in);
+            versionMajor = in.readShort();
+            versionMinor = in.readShort();
+            if (versionMajor != 0) throw new IOException("Unable to load DVM version " + versionMajor);
             
-            int numMaterials = in.readInt();
-            materials = new String[numMaterials];
-            for (int i=0; i<numMaterials; i++)
-                materials[i] = readPaddedUTF(in);
+            actions = readBlock(in, 32, Action.class, Action::new);
+            skipBlock(in, 33); //Armatures
+            skipBlock(in, 34); //Lamps
+            skipBlock(in, 35); //Materials
+            meshes = readBlock(in, 36, Mesh.class, Mesh::new);
+            objects = readBlock(in, 37, ModelObject.class, ModelObject::new);
+            scenes = readBlock(in, 38, Scene.class, Scene::new);
             
-            int numMeshes = in.readInt();
-            meshes = new Mesh[numMeshes];
-            for (int i=0; i<numMeshes; i++)
-                meshes[i] = new Mesh(in);
-            
-            int numMeshObjects = in.readInt();
-            meshObjects = new MeshObject[numMeshObjects];
-            for (int i=0; i<numMeshes; i++)
-                meshObjects[i] = new MeshObject(in, meshes);
-            
-            int numSunLamps = in.readInt();
-            sunLamps = new SunLamp[numSunLamps];
-            for (int i=0; i<numSunLamps; i++)
-                sunLamps[i] = new SunLamp(in);
+            for (ModelObject object : objects) object.populate(this);
+            for (Scene scene : scenes) scene.populate(this);
         }
         finally
         {
@@ -76,25 +74,19 @@ public class Model
         this(new BufferedInputStream(Resource.open(path)));
     }
     
-    //Slow but simple. Could add pre-computed hash comparison for extra speed,
-    //or give each array a hash map.
-    
-    public Mesh getMesh(String name)
+    DataBlock getData(DataBlock.Type type, int index)
     {
-        for (Mesh mesh : meshes) if (mesh.name.equals(name)) return mesh;
-        return null;
-    }
-    
-    public MeshObject getMeshObject(String name)
-    {
-        for (MeshObject obj : meshObjects) if (obj.name.equals(name)) return obj;
-        return null;
-    }
-    
-    public SunLamp getSunLamp(String name)
-    {
-        for (SunLamp lamp : sunLamps) if (lamp.name.equals(name)) return lamp;
-        return null;
+        if (index < 0) return null;
+        DataBlock[] array;
+        switch (type)
+        {
+            case ACTION: array = actions; break;
+            case MESH: array = meshes; break;
+            case OBJECT: array = objects; break;
+            case SCENE: array = scenes; break;
+            default: return null;
+        }
+        return array[index];
     }
     
     /**
@@ -103,6 +95,9 @@ public class Model
     public void destroy()
     {
         for (Mesh mesh : meshes) mesh.destroy();
+        Arrays.fill(actions, null);
         Arrays.fill(meshes, null);
+        Arrays.fill(objects, null);
+        Arrays.fill(scenes, null);
     }
 }

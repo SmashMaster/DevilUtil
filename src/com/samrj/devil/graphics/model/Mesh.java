@@ -1,5 +1,6 @@
 package com.samrj.devil.graphics.model;
 
+import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.io.Memory;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -12,7 +13,7 @@ import java.nio.ByteBuffer;
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Mesh
+public class Mesh implements DataBlock
 {
     public final String name;
     public final String[] uvLayers, colorLayers;
@@ -31,15 +32,15 @@ public class Mesh
     
     Mesh(DataInputStream in) throws IOException
     {
-        name = Model.readPaddedUTF(in);
+        name = IOUtil.readPaddedUTF(in);
         
         int numUVLayers = in.readInt();
         uvLayers = new String[numUVLayers];
-        for (int i=0; i<numUVLayers; i++) uvLayers[i] = Model.readPaddedUTF(in);
+        for (int i=0; i<numUVLayers; i++) uvLayers[i] = IOUtil.readPaddedUTF(in);
         
         int numColorLayers = in.readInt();
         colorLayers = new String[numColorLayers];
-        for (int i=0; i<numColorLayers; i++) colorLayers[i] = Model.readPaddedUTF(in);
+        for (int i=0; i<numColorLayers; i++) colorLayers[i] = IOUtil.readPaddedUTF(in);
         
         hasTangents = in.readInt() != 0;
         numGroups = in.readInt();
@@ -80,5 +81,11 @@ public class Mesh
     {
         vertexBlock.free();
         indexBlock.free();
+    }
+    
+    @Override
+    public Type getType()
+    {
+        return Type.MESH;
     }
 }
