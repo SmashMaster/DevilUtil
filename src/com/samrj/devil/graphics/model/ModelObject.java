@@ -11,14 +11,14 @@ public class ModelObject implements DataBlock
     public final String[] vertexGroups;
     public final Pose pose;
     
-    public DataBlock data;
-    public ModelObject parent;
-    public Action action;
-    
     private final Type dataType;
     private final int dataIndex;
     private final int parentIndex;
     private final int actionIndex;
+    
+    private DataBlock data;
+    private ModelObject parent;
+    private Action action;
     
     ModelObject(DataInputStream in) throws IOException
     {
@@ -38,6 +38,21 @@ public class ModelObject implements DataBlock
         parent = model.getData(Type.OBJECT, parentIndex);
         action = model.getData(Type.ACTION, actionIndex);
         if (pose != null) pose.populate((Armature)data);
+    }
+    
+    public DataBlock getData()
+    {
+        return data;
+    }
+    
+    public ModelObject getParent()
+    {
+        return parent;
+    }
+    
+    public Action getAction()
+    {
+        return action;
     }
     
     @Override

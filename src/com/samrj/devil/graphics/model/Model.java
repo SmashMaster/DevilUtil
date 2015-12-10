@@ -94,6 +94,7 @@ public class Model
      */
     public void destroy()
     {
+        for (Armature armature : armatures) armature.destroy();
         for (Mesh mesh : meshes) mesh.destroy();
         Arrays.fill(actions, null);
         Arrays.fill(armatures, null);
