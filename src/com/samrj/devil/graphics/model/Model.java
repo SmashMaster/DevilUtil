@@ -19,12 +19,6 @@ public class Model
 {
     private static final byte[] MAGIC = IOUtil.hexToBytes("9F0A446576696C4D6F64656C");
     
-    private static void skipBlock(DataInputStream in, int id) throws IOException
-    {
-        if (in.readInt() != id) throw new IOException("Corrupt DVM.");
-        in.skip(in.readInt());
-    }
-    
     private static <T> T[] readBlock(DataInputStream in, int id, Class<T> type, StreamConstructor<T> constructor) throws IOException
     {
         if (in.readInt() != id) throw new IOException("Corrupt DVM.");
@@ -34,6 +28,9 @@ public class Model
     
     public final int versionMajor, versionMinor;
     public final Action[] actions;
+    public final Armature[] armatures;
+    public final Lamp[] lamps;
+    public final Material[] materials;
     public final Mesh[] meshes;
     public final ModelObject[] objects;
     public final Scene[] scenes;
@@ -53,9 +50,9 @@ public class Model
             if (versionMajor != 0) throw new IOException("Unable to load DVM version " + versionMajor);
             
             actions = readBlock(in, 32, Action.class, Action::new);
-            skipBlock(in, 33); //Armatures
-            skipBlock(in, 34); //Lamps
-            skipBlock(in, 35); //Materials
+            armatures = readBlock(in, 33, Armature.class, Armature::new);
+            lamps = readBlock(in, 34, Lamp.class, Lamp::new);
+            materials = readBlock(in, 35, Material.class, Material::new);
             meshes = readBlock(in, 36, Mesh.class, Mesh::new);
             objects = readBlock(in, 37, ModelObject.class, ModelObject::new);
             scenes = readBlock(in, 38, Scene.class, Scene::new);
@@ -74,19 +71,22 @@ public class Model
         this(new BufferedInputStream(Resource.open(path)));
     }
     
-    DataBlock getData(DataBlock.Type type, int index)
+    <T extends DataBlock> T getData(DataBlock.Type type, int index)
     {
         if (index < 0) return null;
         DataBlock[] array;
         switch (type)
         {
             case ACTION: array = actions; break;
+            case ARMATURE: array = armatures; break;
+            case LAMP: array = lamps; break;
+            case MATERIAL: array = materials; break;
             case MESH: array = meshes; break;
             case OBJECT: array = objects; break;
             case SCENE: array = scenes; break;
             default: return null;
         }
-        return array[index];
+        return (T)array[index];
     }
     
     /**
@@ -96,6 +96,9 @@ public class Model
     {
         for (Mesh mesh : meshes) mesh.destroy();
         Arrays.fill(actions, null);
+        Arrays.fill(armatures, null);
+        Arrays.fill(lamps, null);
+        Arrays.fill(materials, null);
         Arrays.fill(meshes, null);
         Arrays.fill(objects, null);
         Arrays.fill(scenes, null);

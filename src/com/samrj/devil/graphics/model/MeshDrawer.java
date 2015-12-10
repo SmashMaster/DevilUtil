@@ -61,11 +61,11 @@ public class MeshDrawer
         attributes[NORMAL] = new Attribute(
                 VEC3,
                 (offset += verts*3*4),
-                true);
+                mesh.hasNormals);
         
         attributes[TANGENT] = new Attribute(
                 VEC3,
-                (offset += verts*3*4),
+                (offset += mesh.hasNormals ? verts*3*4 : 0),
                 mesh.hasTangents);
         
         attributes[UV] = new Attribute(

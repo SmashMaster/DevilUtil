@@ -1,41 +1,43 @@
 package com.samrj.devil.graphics.model;
 
 import com.samrj.devil.io.IOUtil;
-import com.samrj.devil.math.Vec3;
 import java.io.DataInputStream;
 import java.io.IOException;
 
 public class ModelObject implements DataBlock
 {
     public final String name;
-    
-    public final Vec3 position;
-    public final Vec3 scale;
+    public final Transform transform;
     public final String[] vertexGroups;
+    public final Pose pose;
     
     public DataBlock data;
+    public ModelObject parent;
     public Action action;
     
     private final Type dataType;
     private final int dataIndex;
+    private final int parentIndex;
     private final int actionIndex;
     
     ModelObject(DataInputStream in) throws IOException
     {
         name = IOUtil.readPaddedUTF(in);
-        dataType = DataBlock.getTypeFromID(in.readInt());
-        dataIndex = dataType != Type.UNKNOWN ? in.readInt() : -1;
-        position = new Vec3(in);
-        if (in.readInt() >= 0) in.skip(16); //Rotation
-        scale = new Vec3(in);
+        dataType = DataBlock.getTypeFromID(in.readShort());
+        dataIndex = in.readShort();
+        parentIndex = in.readInt();
+        transform = new Transform(in);
         vertexGroups = IOUtil.arrayFromStream(in, String.class, stream -> IOUtil.readPaddedUTF(stream));
+        pose = in.readInt() != 0 ? new Pose(in) : null;
         actionIndex = in.readInt();
     }
     
     void populate(Model model)
     {
         data = model.getData(dataType, dataIndex);
-        data = model.getData(Type.ACTION, actionIndex);
+        parent = model.getData(Type.OBJECT, parentIndex);
+        action = model.getData(Type.ACTION, actionIndex);
+        if (pose != null) pose.populate((Armature)data);
     }
     
     @Override

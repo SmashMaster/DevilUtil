@@ -16,10 +16,11 @@ import java.nio.ByteBuffer;
 public class Mesh implements DataBlock
 {
     public final String name;
-    public final String[] uvLayers, colorLayers;
-    public final boolean hasTangents;
+    
+    public final boolean hasNormals, hasTangents;
     public final int numGroups;
     
+    public final String[] uvLayers, colorLayers;
     public final int numVertices;
     public final Memory vertexBlock;
     public final ByteBuffer vertexData;
@@ -34,25 +35,33 @@ public class Mesh implements DataBlock
     {
         name = IOUtil.readPaddedUTF(in);
         
-        int numUVLayers = in.readInt();
-        uvLayers = new String[numUVLayers];
-        for (int i=0; i<numUVLayers; i++) uvLayers[i] = IOUtil.readPaddedUTF(in);
+        int flags = in.readInt();
+        hasNormals = (flags & 1) != 0;
+        hasTangents = (flags & 2) != 0;
+        boolean hasGroups = (flags & 4) != 0;
+        boolean hasMaterials = (flags & 8) != 0;
         
-        int numColorLayers = in.readInt();
-        colorLayers = new String[numColorLayers];
-        for (int i=0; i<numColorLayers; i++) colorLayers[i] = IOUtil.readPaddedUTF(in);
+        uvLayers = IOUtil.arrayFromStream(in, String.class, stream -> IOUtil.readPaddedUTF(stream));
+        colorLayers = IOUtil.arrayFromStream(in, String.class, stream -> IOUtil.readPaddedUTF(stream));
         
-        hasTangents = in.readInt() != 0;
-        numGroups = in.readInt();
+        if (hasGroups) numGroups = in.readInt();
+        else
+        {
+            numGroups = 0;
+            in.skip(4);
+        }
         
         //The order and length of vertex data is defined by io_mesh_dvm.
         int floatsPerVertex = 3; //Positions
-        floatsPerVertex += 3; //Normals
+        if (hasNormals) floatsPerVertex += 3; //Normals
         if (hasTangents) floatsPerVertex += 3; //Tangents
-        floatsPerVertex += 2*numUVLayers; //UVs
-        floatsPerVertex += 3*numColorLayers; //Colors
-        floatsPerVertex += numGroups; //Group indices
-        floatsPerVertex += numGroups; //Group weights
+        floatsPerVertex += 2*uvLayers.length; //UVs
+        floatsPerVertex += 3*colorLayers.length; //Colors
+        if (hasGroups)
+        {
+            floatsPerVertex += numGroups; //Group indices
+            floatsPerVertex += numGroups; //Group weights
+        }
         
         numVertices = in.readInt();
         int vertexDataLength = numVertices*floatsPerVertex;
@@ -72,9 +81,13 @@ public class Mesh implements DataBlock
             indexData.putInt(in.readInt());
         indexData.rewind();
         
-        materials = new int[numTriangles];
-        for (int i=0; i<numTriangles; i++)
-            materials[i] = in.readInt();
+        if (hasMaterials)
+        {
+            materials = new int[numTriangles];
+            for (int i=0; i<numTriangles; i++)
+                materials[i] = in.readInt();
+        }
+        else materials = null;
     }
     
     final void destroy()
