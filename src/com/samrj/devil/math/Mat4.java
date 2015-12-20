@@ -245,6 +245,36 @@ public class Mat4 implements Bufferable, Streamable
     }
     
     /**
+     * Sets the given matrix to a component-wise scaling matrix using the given
+     * vector.
+     * 
+     * @param v The vector to scale by.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void scaling(Vec4 v, Mat4 r)
+    {
+        r.a = v.x; r.b = 0.0f; r.c = 0.0f; r.d = 0.0f;
+        r.e = 0.0f; r.f = v.y; r.g = 0.0f; r.h = 0.0f;
+        r.i = 0.0f; r.j = 0.0f; r.k = v.z; r.l = 0.0f;
+        r.m = 0.0f; r.n = 0.0f; r.o = 0.0f; r.p = v.w;
+    }
+    
+    /**
+     * Sets the given matrix to a component-wise scaling matrix using the given
+     * vector.
+     * 
+     * @param v The vector to scale by.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void scaling(Vec3 v, Mat4 r)
+    {
+        r.a = v.x; r.b = 0.0f; r.c = 0.0f; r.d = 0.0f;
+        r.e = 0.0f; r.f = v.y; r.g = 0.0f; r.h = 0.0f;
+        r.i = 0.0f; r.j = 0.0f; r.k = v.z; r.l = 0.0f;
+        r.m = 0.0f; r.n = 0.0f; r.o = 0.0f; r.p = 1.0f;
+    }
+    
+    /**
      * Sets the given matrix to a scaling matrix by the given scalar.
      * 
      * @param s The scalar to scale by.
@@ -255,7 +285,7 @@ public class Mat4 implements Bufferable, Streamable
         r.a = s; r.b = 0.0f; r.c = 0.0f; r.d = 0.0f;
         r.e = 0.0f; r.f = s; r.g = 0.0f; r.h = 0.0f;
         r.i = 0.0f; r.j = 0.0f; r.k = s; r.l = 0.0f;
-        r.m = 0.0f; r.n = 0.0f; r.o = 0.0f; r.p = 1.0f;
+        r.m = 0.0f; r.n = 0.0f; r.o = 0.0f; r.p = s;
     }
     
     /**
@@ -410,6 +440,36 @@ public class Mat4 implements Bufferable, Streamable
         r.e = e; r.f = f; r.g = g; r.h = h;
         r.i = i; r.j = j; r.k = k; r.l = l;
         r.m = m; r.n = n; r.o = o; r.p = p;
+    }
+    
+    /**
+     * Multiplies the given matrix by the given vector.
+     * 
+     * @param x The matrix to multiply.
+     * @param v The vector to multiply by.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void mult(Mat4 x, Vec4 v, Mat4 r)
+    {
+        r.a = x.a*v.x; r.b = x.b*v.y; r.c = x.c*v.z; r.d = x.d*v.w;
+        r.e = x.e*v.x; r.f = x.f*v.y; r.g = x.g*v.z; r.h = x.h*v.w;
+        r.i = x.i*v.x; r.j = x.j*v.y; r.k = x.k*v.z; r.l = x.l*v.w;
+        r.m = x.m*v.x; r.n = x.n*v.y; r.o = x.o*v.z; r.p = x.p*v.w;
+    }
+    
+    /**
+     * Multiplies the given matrix by the given vector.
+     * 
+     * @param x The matrix to multiply.
+     * @param v The vector to multiply by.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void mult(Mat4 x, Vec3 v, Mat4 r)
+    {
+        r.a = x.a*v.x; r.b = x.b*v.y; r.c = x.c*v.z; r.d = x.d;
+        r.e = x.e*v.x; r.f = x.f*v.y; r.g = x.g*v.z; r.h = x.h;
+        r.i = x.i*v.x; r.j = x.j*v.y; r.k = x.k*v.z; r.l = x.l;
+        r.m = x.m*v.x; r.n = x.n*v.y; r.o = x.o*v.z; r.p = x.p;
     }
     
     /**
@@ -604,6 +664,38 @@ public class Mat4 implements Bufferable, Streamable
     }
     
     /**
+     * Returns a new component-wise scaling matrix using the given vector.
+     * 
+     * @param v The vector to scale by.
+     * @return A new scaling matrix.
+     */
+    public static final Mat4 scaling(Vec4 v)
+    {
+        Mat4 m = new Mat4();
+        m.a = v.x;
+        m.f = v.y;
+        m.k = v.z;
+        m.p = v.w;
+        return m;
+    }
+    
+    /**
+     * Returns a new component-wise scaling matrix using the given vector.
+     * 
+     * @param v The vector to scale by.
+     * @return A new scaling matrix.
+     */
+    public static final Mat4 scaling(Vec3 v)
+    {
+        Mat4 m = new Mat4();
+        m.a = v.x;
+        m.f = v.y;
+        m.k = v.z;
+        m.p = 1.0f;
+        return m;
+    }
+    
+    /**
      * Returns a new scaling matrix, where {@code s} is the scaling factor.
      * 
      * @param s The scaling factor.
@@ -615,7 +707,7 @@ public class Mat4 implements Bufferable, Streamable
         m.a = s;
         m.f = s;
         m.k = s;
-        m.p = 1.0f;
+        m.p = s;
         return m;
     }
     
@@ -673,6 +765,34 @@ public class Mat4 implements Bufferable, Streamable
     {
         Mat4 result = new Mat4();
         mult(m0, m1, result);
+        return result;
+    }
+    
+    /**
+     * Multiplies {@code m} by {@code v} and returns the result as a new matrix.
+     * 
+     * @param m The matrix to multiply.
+     * @param v The vector to multiply by.
+     * @return A new matrix containing the result.
+     */
+    public static final Mat4 mult(Mat4 m, Vec4 v)
+    {
+        Mat4 result = new Mat4();
+        mult(m, v, result);
+        return result;
+    }
+    
+    /**
+     * Multiplies {@code m} by {@code v} and returns the result as a new matrix.
+     * 
+     * @param m The matrix to multiply.
+     * @param v The vector to multiply by.
+     * @return A new matrix containing the result.
+     */
+    public static final Mat4 mult(Mat4 m, Vec3 v)
+    {
+        Mat4 result = new Mat4();
+        mult(m, v, result);
         return result;
     }
     
@@ -977,6 +1097,30 @@ public class Mat4 implements Bufferable, Streamable
     }
     
     /**
+     * Sets this to the component-wise scaling matrix by the given vector.
+     * 
+     * @param vec The vector to scale by.
+     * @return This matrix.
+     */
+    public Mat4 setScaling(Vec4 vec)
+    {
+        scaling(vec, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to the component-wise scaling matrix by the given vector.
+     * 
+     * @param vec The vector to scale by.
+     * @return This matrix.
+     */
+    public Mat4 setScaling(Vec3 vec)
+    {
+        scaling(vec, this);
+        return this;
+    }
+    
+    /**
      * Sets this to the scaling matrix by the given scalar.
      * 
      * @param sca The scalar to scale by.
@@ -1075,6 +1219,30 @@ public class Mat4 implements Bufferable, Streamable
     public Mat4 mult(Mat4 mat)
     {
         mult(this, mat, this);
+        return this;
+    }
+    
+    /**
+     * Multiplies this matrix by the given vector.
+     * 
+     * @param vec The matrix to multiply by.
+     * @return This matrix.
+     */
+    public Mat4 mult(Vec4 vec)
+    {
+        mult(this, vec, this);
+        return this;
+    }
+    
+    /**
+     * Multiplies this matrix by the given vector.
+     * 
+     * @param vec The matrix to multiply by.
+     * @return This matrix.
+     */
+    public Mat4 mult(Vec3 vec)
+    {
+        mult(this, vec, this);
         return this;
     }
     

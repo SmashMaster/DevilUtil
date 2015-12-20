@@ -114,6 +114,34 @@ public class Mat3 implements Bufferable, Streamable
     }
     
     /**
+     * Sets the given matrix to a component-wise scaling matrix using the given
+     * vector.
+     * 
+     * @param v The vector to scale by.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void scaling(Vec3 v, Mat3 r)
+    {
+        r.a = v.x; r.b = 0.0f; r.c = 0.0f;
+        r.d = 0.0f; r.e = v.y; r.f = 0.0f;
+        r.g = 0.0f; r.h = 0.0f; r.i = v.z;
+    }
+    
+    /**
+     * Sets the given matrix to a component-wise scaling matrix using the given
+     * vector.
+     * 
+     * @param v The vector to scale by.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void scaling(Vec2 v, Mat3 r)
+    {
+        r.a = v.x; r.b = 0.0f; r.c = 0.0f;
+        r.d = 0.0f; r.e = v.y; r.f = 0.0f;
+        r.g = 0.0f; r.h = 0.0f; r.i = 1.0f;
+    }
+    
+    /**
      * Sets the given matrix to a scaling matrix by the given scalar.
      * 
      * @param s The scalar to scale by.
@@ -123,7 +151,7 @@ public class Mat3 implements Bufferable, Streamable
     {
         r.a = s; r.b = 0.0f; r.c = 0.0f;
         r.d = 0.0f; r.e = s; r.f = 0.0f;
-        r.g = 0.0f; r.h = 0.0f; r.i = 1.0f;
+        r.g = 0.0f; r.h = 0.0f; r.i = s;
     }
     
     /**
@@ -264,6 +292,34 @@ public class Mat3 implements Bufferable, Streamable
     }
     
     /**
+     * Multiplies the given matrix by the given vector.
+     * 
+     * @param m The matrix to multiply.
+     * @param v The vector to multiply by.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void mult(Mat3 m, Vec3 v, Mat3 r)
+    {
+        r.a = m.a*v.x; r.b = m.b*v.y; r.c = m.c*v.z;
+        r.d = m.d*v.x; r.e = m.e*v.y; r.f = m.f*v.z;
+        r.g = m.g*v.x; r.h = m.h*v.y; r.i = m.i*v.z;
+    }
+    
+    /**
+     * Multiplies the given matrix by the given vector.
+     * 
+     * @param m The matrix to multiply.
+     * @param v The vector to multiply by.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void mult(Mat3 m, Vec2 v, Mat3 r)
+    {
+        r.a = m.a*v.x; r.b = m.b*v.y; r.c = m.c;
+        r.d = m.d*v.x; r.e = m.e*v.y; r.f = m.f;
+        r.g = m.g*v.x; r.h = m.h*v.y; r.i = m.i;
+    }
+    
+    /**
      * Multiplies each entry in the given matrix by the given scalar.
      * 
      * @param m The matrix to multiply.
@@ -343,6 +399,35 @@ public class Mat3 implements Bufferable, Streamable
     }
     
     /**
+     * Returns a new component-wise scaling matrix using the given vector.
+     * 
+     * @param v The vector to scale by.
+     * @return A new scaling matrix.
+     */
+    public static final Mat3 scaling(Vec3 v)
+    {
+        Mat3 m = new Mat3();
+        m.a = v.x;
+        m.e = v.y;
+        m.i = v.z;
+        return m;
+    }
+    
+    /**
+     * Returns a new component-wise scaling matrix using the given vector.
+     * 
+     * @param v The vector to scale by.
+     * @return A new scaling matrix.
+     */
+    public static final Mat3 scaling(Vec2 v)
+    {
+        Mat3 m = new Mat3();
+        m.a = v.x;
+        m.e = v.y;
+        return m;
+    }
+    
+    /**
      * Returns a new scaling matrix, where {@code s} is the scaling factor.
      * 
      * @param s The scaling factor.
@@ -353,6 +438,7 @@ public class Mat3 implements Bufferable, Streamable
         Mat3 m = new Mat3();
         m.a = s;
         m.e = s;
+        m.i = s;
         return m;
     }
     
@@ -409,6 +495,34 @@ public class Mat3 implements Bufferable, Streamable
     {
         Mat3 result = new Mat3();
         mult(m0, m1, result);
+        return result;
+    }
+    
+    /**
+     * Multiplies {@code m} by {@code v} and returns the result as a new matrix.
+     * 
+     * @param m The matrix to multiply.
+     * @param v The vector to multiply by.
+     * @return A new matrix containing the result.
+     */
+    public static final Mat3 mult(Mat3 m, Vec3 v)
+    {
+        Mat3 result = new Mat3();
+        mult(m, v, result);
+        return result;
+    }
+    
+    /**
+     * Multiplies {@code m} by {@code v} and returns the result as a new matrix.
+     * 
+     * @param m The matrix to multiply.
+     * @param v The vector to multiply by.
+     * @return A new matrix containing the result.
+     */
+    public static final Mat3 mult(Mat3 m, Vec2 v)
+    {
+        Mat3 result = new Mat3();
+        mult(m, v, result);
         return result;
     }
     
@@ -615,6 +729,30 @@ public class Mat3 implements Bufferable, Streamable
     }
     
     /**
+     * Sets this to the component-wise scaling matrix by the given vector.
+     * 
+     * @param vec The vector to scale by.
+     * @return This matrix.
+     */
+    public Mat3 setScaling(Vec3 vec)
+    {
+        scaling(vec, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to the component-wise scaling matrix by the given vector.
+     * 
+     * @param vec The vector to scale by.
+     * @return This matrix.
+     */
+    public Mat3 setScaling(Vec2 vec)
+    {
+        scaling(vec, this);
+        return this;
+    }
+    
+    /**
      * Sets this to the scaling matrix by the given scalar.
      * 
      * @param sca The scalar to scale by.
@@ -712,6 +850,30 @@ public class Mat3 implements Bufferable, Streamable
     public Mat3 mult(Mat3 mat)
     {
         mult(this, mat, this);
+        return this;
+    }
+    
+    /**
+     * Multiplies this matrix by the given vector.
+     * 
+     * @param vec The matrix to multiply by.
+     * @return This matrix.
+     */
+    public Mat3 mult(Vec3 vec)
+    {
+        mult(this, vec, this);
+        return this;
+    }
+    
+    /**
+     * Multiplies this matrix by the given vector.
+     * 
+     * @param vec The matrix to multiply by.
+     * @return This matrix.
+     */
+    public Mat3 mult(Vec2 vec)
+    {
+        mult(this, vec, this);
         return this;
     }
     

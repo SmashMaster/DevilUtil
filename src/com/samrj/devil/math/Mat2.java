@@ -106,6 +106,19 @@ public class Mat2 implements Bufferable, Streamable
     }
     
     /**
+     * Sets the given matrix to a component-wise scaling matrix using the given
+     * vector.
+     * 
+     * @param v The vector to scale by.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void scaling(Vec2 v, Mat2 r)
+    {
+        r.a = v.x; r.b = 0.0f;
+        r.c = 0.0f; r.d = v.y;
+    }
+    
+    /**
      * Sets the given matrix to a scaling matrix by the given scalar.
      * 
      * @param s The scalar to scale by.
@@ -169,6 +182,19 @@ public class Mat2 implements Bufferable, Streamable
         
         r.a = a; r.b = b;
         r.c = c; r.d = d;
+    }
+    
+    /**
+     * Multiplies the given matrix by the given vector.
+     * 
+     * @param m The matrix to multiply.
+     * @param v The vector to multiply by.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void mult(Mat2 m, Vec2 v, Mat2 r)
+    {
+        r.a = m.a*v.x; r.b = m.b*v.y;
+        r.c = m.c*v.x; r.d = m.d*v.y;
     }
     
     /**
@@ -242,6 +268,20 @@ public class Mat2 implements Bufferable, Streamable
     }
     
     /**
+     * Returns a new component-wise scaling matrix using the given vector.
+     * 
+     * @param v The vector to scale by.
+     * @return A new scaling matrix.
+     */
+    public static final Mat2 scaling(Vec2 v)
+    {
+        Mat2 m = new Mat2();
+        m.a = v.x;
+        m.d = v.y;
+        return m;
+    }
+    
+    /**
      * Returns a new scaling matrix, where {@code s} is the scaling factor.
      * 
      * @param s The scaling factor.
@@ -279,6 +319,20 @@ public class Mat2 implements Bufferable, Streamable
     {
         Mat2 result = new Mat2();
         mult(m0, m1, result);
+        return result;
+    }
+    
+    /**
+     * Multiplies {@code m} by {@code v} and returns the result as a new matrix.
+     * 
+     * @param m The matrix to multiply.
+     * @param v The vector to multiply by.
+     * @return A new matrix containing the result.
+     */
+    public static final Mat2 mult(Mat2 m, Vec2 v)
+    {
+        Mat2 result = new Mat2();
+        mult(m, v, result);
         return result;
     }
     
@@ -487,6 +541,18 @@ public class Mat2 implements Bufferable, Streamable
     }
     
     /**
+     * Sets this to the component-wise scaling matrix by the given vector.
+     * 
+     * @param vec The vector to scale by.
+     * @return This matrix.
+     */
+    public Mat2 setScaling(Vec2 vec)
+    {
+        scaling(vec, this);
+        return this;
+    }
+    
+    /**
      * Sets this to the scaling matrix by the given scalar.
      * 
      * @param sca The scalar to scale by.
@@ -495,7 +561,6 @@ public class Mat2 implements Bufferable, Streamable
     public Mat2 setScaling(float sca)
     {
         scaling(sca, this);
-        
         return this;
     }
     
@@ -536,10 +601,23 @@ public class Mat2 implements Bufferable, Streamable
     }
     
     /**
+     * Multiplies this matrix by the given vector.
+     * 
+     * @param vec The matrix to multiply by.
+     * @return This matrix.
+     */
+    public Mat2 mult(Vec2 vec)
+    {
+        mult(this, vec, this);
+        return this;
+    }
+    
+    /**
      * Multiplies each entry in this matrix by the given scalar. Equivalent to
      * scaling this matrix by the given scalar.
      * 
      * @param sca The scalar to multiply by.
+     * @return This matrix.
      */
     public Mat2 mult(float sca)
     {
