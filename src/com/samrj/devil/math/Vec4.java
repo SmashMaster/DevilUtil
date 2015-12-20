@@ -822,6 +822,25 @@ public class Vec4 implements Bufferable, Streamable
     }
     
     /**
+     * Sets the component specified by the given index to the given float.
+     * 
+     * @param i The index of the component to set.
+     * @param f The value to set the component to.
+     * @return This vector.
+     */
+    public Vec4 setComponent(int i, float f)
+    {
+        switch (i)
+        {
+            case 0: x = f; return this;
+            case 1: y = f; return this;
+            case 2: z = f; return this;
+            case 3: w = f; return this;
+            default: throw new ArrayIndexOutOfBoundsException();
+        }
+    }
+    
+    /**
      * Adds the given vector to this.
      * 
      * @param v The vector to add to this.

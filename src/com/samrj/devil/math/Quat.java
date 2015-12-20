@@ -658,6 +658,25 @@ public class Quat implements Bufferable, Streamable
     }
     
     /**
+     * Sets the component specified by the given index to the given float.
+     * 
+     * @param i The index of the component to set.
+     * @param f The value to set the component to.
+     * @return This quaternion.
+     */
+    public Quat setComponent(int i, float f)
+    {
+        switch (i)
+        {
+            case 0: w = f; return this;
+            case 1: x = f; return this;
+            case 2: y = f; return this;
+            case 3: z = f; return this;
+            default: throw new ArrayIndexOutOfBoundsException();
+        }
+    }
+    
+    /**
      * Sets this to the identity quaternion.
      * 
      * @return This quaternion.
