@@ -164,25 +164,24 @@ public class FCurve
     }
     
     public final String boneName;
-    public final int propertyID;
-    public final int arrayIndex;
+    public final Transform.Property property;
+    public final int propertyIndex;
     public final Keyframe[] keyframes;
     public final float minX, maxX;
     private final TreeMap<Float, Integer> keyInds;
     
     FCurve(DataInputStream in) throws IOException
     {
-        boolean hasBone = in.readShort() == 1;
-        propertyID = in.readShort();
+        boolean hasBone = in.readShort() != 0;
+        property = Transform.propFromID(in.readShort());
         boneName = hasBone ? IOUtil.readPaddedUTF(in) : null;
-        arrayIndex = in.readInt();
+        propertyIndex = in.readInt();
         keyframes = IOUtil.arrayFromStream(in, Keyframe.class, Keyframe::new);
         
         float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY;
         keyInds = new TreeMap<>();
         for (int i=0; i<keyframes.length; i++)
         {
-            keyframes[i] = new Keyframe(in);
             float x = keyframes[i].co.x;
             if (x < min) min = x;
             if (x > max) max = x;
@@ -212,9 +211,7 @@ public class FCurve
         Bone bone = armature.getBone(boneName);
         if (bone == null) return;
         float value = evaluate(time);
-        throw new UnsupportedOperationException();
-        //Set bone/pose property to evaluation
-        //bone.set(property, propIndex, value);
+        bone.transform.setProperty(property, propertyIndex, value);
     }
     
     public class Keyframe

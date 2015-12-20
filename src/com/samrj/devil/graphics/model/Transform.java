@@ -8,7 +8,7 @@ import java.io.IOException;
 
 public class Transform
 {
-    enum Property
+    public enum Property
     {
         POSITION, ROTATION, SCALE;
     }
@@ -19,7 +19,7 @@ public class Transform
         {
             case 0: return Property.POSITION;
             case 1: return Property.ROTATION;
-            case 2: return Property.SCALE;
+            case 3: return Property.SCALE;
             default: return null;
         }
     }
@@ -56,7 +56,7 @@ public class Transform
         scale.set(transform.scale);
     }
     
-    void setProperty(Property property, int index, float value)
+    public void setProperty(Property property, int index, float value)
     {
         switch (property)
         {
