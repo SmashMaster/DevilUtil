@@ -3,6 +3,8 @@ package com.samrj.devil.graphics.model;
 import com.samrj.devil.io.IOUtil;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Action implements DataBlock
 {
@@ -24,9 +26,13 @@ public class Action implements DataBlock
         minX = min; maxX = max;
     }
     
-    public void apply(Armature armature, float time)
+    public Pose evaluate(float time)
     {
-        for (FCurve fcurve : fcurves) fcurve.apply(armature, time);
+        Set<String> names = new HashSet<>();
+        for (FCurve fcurve : fcurves) names.add(fcurve.boneName);
+        Pose pose = new Pose(names);
+        for (FCurve fcurve : fcurves) fcurve.apply(pose, time);
+        return pose;
     }
 
     @Override

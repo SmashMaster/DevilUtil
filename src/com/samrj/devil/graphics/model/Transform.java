@@ -39,7 +39,7 @@ public class Transform
     {
         position = new Vec3();
         rotation = Quat.identity();
-        scale = new Vec3();
+        scale = new Vec3(1.0f);
     }
     
     public void apply(Mat4 matrix)
@@ -56,6 +56,13 @@ public class Transform
         scale.set(transform.scale);
     }
     
+    public void lerp(Transform transform, float t)
+    {
+        position.lerp(transform.position, t);
+        rotation.slerp(transform.rotation, t);
+        scale.lerp(transform.scale, t);
+    }
+    
     public void setProperty(Property property, int index, float value)
     {
         switch (property)
@@ -64,5 +71,11 @@ public class Transform
             case ROTATION: rotation.setComponent(index, value); return;
             case SCALE: scale.setComponent(index, value);
         }
+    }
+    
+    @Override
+    public String toString()
+    {
+        return "{ " + position + " " + rotation + " " + scale + " }";
     }
 }

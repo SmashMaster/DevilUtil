@@ -8,7 +8,6 @@ public class ModelObject implements DataBlock
 {
     public final String name;
     public final Transform transform;
-    public final String[] vertexGroups;
     public final Pose pose;
     
     private final Type dataType;
@@ -27,7 +26,6 @@ public class ModelObject implements DataBlock
         dataIndex = in.readShort();
         parentIndex = in.readInt();
         transform = new Transform(in);
-        vertexGroups = IOUtil.arrayFromStream(in, String.class, stream -> IOUtil.readPaddedUTF(stream));
         pose = in.readInt() != 0 ? new Pose(in) : null;
         actionIndex = in.readInt();
     }
@@ -37,7 +35,6 @@ public class ModelObject implements DataBlock
         data = model.getData(dataType, dataIndex);
         parent = model.getData(Type.OBJECT, parentIndex);
         action = model.getData(Type.ACTION, actionIndex);
-        if (pose != null) pose.populate((Armature)data);
     }
     
     public DataBlock getData()

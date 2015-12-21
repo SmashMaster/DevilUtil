@@ -206,12 +206,9 @@ public class FCurve
         return evaluate(k0, k1, time);
     }
     
-    public void apply(Armature armature, float time)
+    public void apply(Pose pose, float time)
     {
-        Bone bone = armature.getBone(boneName);
-        if (bone == null) return;
-        float value = evaluate(time);
-        bone.transform.setProperty(property, propertyIndex, value);
+        pose.setBoneProperty(boneName, property, propertyIndex, evaluate(time));
     }
     
     public class Keyframe

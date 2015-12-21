@@ -1,5 +1,6 @@
 package com.samrj.devil.graphics.model;
 
+import com.samrj.devil.graphics.model.Transform.Property;
 import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.io.Memory;
 import com.samrj.devil.math.topo.DAG;
@@ -26,7 +27,7 @@ public class Armature implements DataBlock
         bones = IOUtil.arrayFromStream(in, Bone.class, Bone::new);
         for (Bone bone : bones) bone.populate(bones);
         
-        nameMap = new HashMap<>();
+        nameMap = new HashMap<>(bones.length);
         for (Bone bone : bones) nameMap.put(bone.name, bone);
         
         //Do a topological sort so that we can simply update matrices in-order.
@@ -47,6 +48,13 @@ public class Armature implements DataBlock
     public Bone getBone(String name)
     {
         return nameMap.get(name);
+    }
+    
+    public void setBoneProperty(String name, Property property, int index, float value)
+    {
+        Bone bone = nameMap.get(name);
+        if (bone == null) return;
+        bone.transform.setProperty(property, index, value);
     }
     
     public void updatePoseMatrices()
