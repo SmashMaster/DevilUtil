@@ -4,12 +4,18 @@ import com.samrj.devil.io.IOUtil;
 import java.io.DataInputStream;
 import java.io.IOException;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2015 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public class ModelObject implements DataBlock
 {
     public final String name;
     public final Transform transform;
     public final String[] vertexGroups;
     public final Pose pose;
+    public final IKConstraint[] ikConstraints;
     
     private final Type dataType;
     private final int dataIndex;
@@ -28,7 +34,17 @@ public class ModelObject implements DataBlock
         parentIndex = in.readInt();
         transform = new Transform(in);
         vertexGroups = IOUtil.arrayFromStream(in, String.class, (s) -> IOUtil.readPaddedUTF(s));
-        pose = in.readInt() != 0 ? new Pose(in) : null;
+        boolean hasPose = in.readInt() != 0;
+        if (hasPose)
+        {
+            pose = new Pose(in);
+            ikConstraints = IOUtil.arrayFromStream(in, IKConstraint.class, IKConstraint::new);
+        }
+        else
+        {
+            pose = null;
+            ikConstraints = new IKConstraint[0];
+        }
         actionIndex = in.readInt();
     }
     
