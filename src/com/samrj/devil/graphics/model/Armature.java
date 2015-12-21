@@ -57,12 +57,16 @@ public class Armature implements DataBlock
         bone.transform.setProperty(property, index, value);
     }
     
-    public void updatePoseMatrices()
+    
+    public void bufferPoseMatrices(String[] vertexGroups)
     {
         matrixData.rewind();
-        for (Bone bone : topoSorted)
+        for (Bone bone : topoSorted) bone.updatePoseMatrix();
+        
+        for (String group : vertexGroups)
         {
-            bone.updatePoseMatrix();
+            Bone bone = nameMap.get(group);
+            if (bone == null) continue;
             bone.poseMatrix.write(matrixData);
         }
     }

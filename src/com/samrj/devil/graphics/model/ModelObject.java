@@ -8,6 +8,7 @@ public class ModelObject implements DataBlock
 {
     public final String name;
     public final Transform transform;
+    public final String[] vertexGroups;
     public final Pose pose;
     
     private final Type dataType;
@@ -26,6 +27,7 @@ public class ModelObject implements DataBlock
         dataIndex = in.readShort();
         parentIndex = in.readInt();
         transform = new Transform(in);
+        vertexGroups = IOUtil.arrayFromStream(in, String.class, (s) -> IOUtil.readPaddedUTF(s));
         pose = in.readInt() != 0 ? new Pose(in) : null;
         actionIndex = in.readInt();
     }
