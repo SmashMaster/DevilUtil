@@ -13,7 +13,7 @@ import java.nio.ByteBuffer;
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Mesh implements DataBlock
+public class Mesh
 {
     public final String name;
     
@@ -94,11 +94,5 @@ public class Mesh implements DataBlock
     {
         vertexBlock.free();
         indexBlock.free();
-    }
-    
-    @Override
-    public Type getType()
-    {
-        return Type.MESH;
     }
 }

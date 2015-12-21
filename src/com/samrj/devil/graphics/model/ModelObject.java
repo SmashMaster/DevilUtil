@@ -9,7 +9,7 @@ import java.io.IOException;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class ModelObject implements DataBlock
+public class ModelObject
 {
     public final String name;
     public final Transform transform;
@@ -17,19 +17,19 @@ public class ModelObject implements DataBlock
     public final Pose pose;
     public final IKConstraint[] ikConstraints;
     
-    private final Type dataType;
+    private final int type;
     private final int dataIndex;
     private final int parentIndex;
     private final int actionIndex;
     
-    private DataBlock data;
+    private Object data;
     private ModelObject parent;
     private Action action;
     
     ModelObject(DataInputStream in) throws IOException
     {
         name = IOUtil.readPaddedUTF(in);
-        dataType = DataBlock.getTypeFromID(in.readShort());
+        type = in.readShort();
         dataIndex = in.readShort();
         parentIndex = in.readInt();
         transform = new Transform(in);
@@ -48,14 +48,29 @@ public class ModelObject implements DataBlock
         actionIndex = in.readInt();
     }
     
-    void populate(Model model)
+    private Object[] dataArray(Model model)
     {
-        data = model.getData(dataType, dataIndex);
-        parent = model.getData(Type.OBJECT, parentIndex);
-        action = model.getData(Type.ACTION, actionIndex);
+        switch (type)
+        {
+            case 0: return model.actions;
+            case 1: return model.armatures;
+            case 2: return model.lamps;
+            case 3: return model.materials;
+            case 4: return model.meshes;
+            default: throw new IllegalArgumentException();
+        }
     }
     
-    public DataBlock getData()
+    void populate(Model model)
+    {
+        data = dataIndex < 0 ? null : dataArray(model)[dataIndex];
+        if (data instanceof Armature)
+            for (IKConstraint ik : ikConstraints) ik.populate((Armature)data);
+        parent = parentIndex < 0 ? null : model.objects[parentIndex];
+        action = actionIndex < 0 ? null : model.actions[actionIndex];
+    }
+    
+    public Object getData()
     {
         return data;
     }
@@ -68,11 +83,5 @@ public class ModelObject implements DataBlock
     public Action getAction()
     {
         return action;
-    }
-    
-    @Override
-    public Type getType()
-    {
-        return Type.OBJECT;
     }
 }

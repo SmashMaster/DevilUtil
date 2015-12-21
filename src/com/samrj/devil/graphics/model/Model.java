@@ -71,24 +71,6 @@ public class Model
         this(new BufferedInputStream(Resource.open(path)));
     }
     
-    <T extends DataBlock> T getData(DataBlock.Type type, int index)
-    {
-        if (index < 0) return null;
-        DataBlock[] array;
-        switch (type)
-        {
-            case ACTION: array = actions; break;
-            case ARMATURE: array = armatures; break;
-            case LAMP: array = lamps; break;
-            case MATERIAL: array = materials; break;
-            case MESH: array = meshes; break;
-            case OBJECT: array = objects; break;
-            case SCENE: array = scenes; break;
-            default: return null;
-        }
-        return (T)array[index];
-    }
-    
     /**
      * Releases any system resources (native memory) associated with this model.
      */

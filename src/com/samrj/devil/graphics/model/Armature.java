@@ -16,7 +16,7 @@ import java.util.Map;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Armature implements DataBlock
+public class Armature
 {
     public final String name;
     public final Bone[] bones;
@@ -79,11 +79,5 @@ public class Armature implements DataBlock
     final void destroy()
     {
         matrixBlock.free();
-    }
-
-    @Override
-    public Type getType()
-    {
-        return Type.ARMATURE;
     }
 }

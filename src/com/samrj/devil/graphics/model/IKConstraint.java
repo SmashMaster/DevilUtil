@@ -11,16 +11,28 @@ import java.io.IOException;
  */
 public class IKConstraint
 {
-    public final String bone;
-    public final String target;
-    public final String pole;
+    public final String boneName;
+    public final String targetName;
+    public final String poleName;
     public final float poleAngle;
+    
+    private Bone end, middle, start;
+    private Bone target, pole;
     
     IKConstraint(DataInputStream in) throws IOException
     {
-        bone = IOUtil.readPaddedUTF(in);
-        target = IOUtil.readPaddedUTF(in);
-        pole = IOUtil.readPaddedUTF(in);
+        boneName = IOUtil.readPaddedUTF(in);
+        targetName = IOUtil.readPaddedUTF(in);
+        poleName = IOUtil.readPaddedUTF(in);
         poleAngle = in.readFloat();
+    }
+    
+    void populate(Armature armature)
+    {
+        end = armature.getBone(boneName);
+        middle = end.getParent();
+        start = middle.getParent();
+        target = armature.getBone(targetName);
+        pole = armature.getBone(poleName);
     }
 }
