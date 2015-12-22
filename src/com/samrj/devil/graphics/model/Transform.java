@@ -1,5 +1,6 @@
 package com.samrj.devil.graphics.model;
 
+import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Vec3;
@@ -50,6 +51,12 @@ public class Transform
     public void apply(Mat4 matrix)
     {
         matrix.translate(position);
+        matrix.rotate(rotation);
+        matrix.mult(scale);
+    }
+    
+    public void apply(Mat3 matrix)
+    {
         matrix.rotate(rotation);
         matrix.mult(scale);
     }

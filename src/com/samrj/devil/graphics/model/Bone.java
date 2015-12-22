@@ -12,14 +12,20 @@ import java.io.IOException;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Bone
+public class Bone implements BoneSolver.Solvable
 {
     public final String name;
+    
+    /**
+     * Resting properties: head and tail define the resting positions of the
+     * bone. matrix transforms from local directions to global resting
+     * directions.
+     */
     public final Vec3 head, tail;
-    public final Mat4 matrix, invMat;
+    public final Mat3 matrix, invMat;
     
     public final Transform transform;
-    public final Mat4 poseMatrix;
+    public final Mat4 skinMatrix;
     
     private Bone parent;
     
@@ -31,31 +37,37 @@ public class Bone
         parentIndex = in.readInt();
         head = new Vec3(in);
         tail = new Vec3(in);
-        Mat3 mat3 = new Mat3(in);
-        matrix = new Mat4(mat3);
-        invMat = new Mat4(Mat3.invert(mat3));
+        matrix = new Mat3(in);
+        invMat = Mat3.invert(matrix);
         transform = new Transform();
-        poseMatrix = new Mat4();
-    }
-    
-    public void updatePoseMatrix()
-    {
-        poseMatrix.setIdentity();
-        if (parent != null) poseMatrix.mult(parent.poseMatrix);
-        poseMatrix.translate(head);
-        poseMatrix.mult(matrix);
-        transform.apply(poseMatrix);
-        poseMatrix.mult(invMat);
-        poseMatrix.translate(Vec3.negate(head));
-    }
-    
-    public Bone getParent()
-    {
-        return parent;
+        skinMatrix = new Mat4();
     }
     
     void populate(Bone[] bones)
     {
         if (parentIndex >= 0) parent = bones[parentIndex];
+    }
+    
+    public Vec3 getHeadPos()
+    {
+        return parent != null ? Vec3.mult(head, parent.skinMatrix) : new Vec3(head);
+    }
+    
+    @Override
+    public void solve()
+    {
+        skinMatrix.setIdentity();
+        if (parent != null) skinMatrix.mult(parent.skinMatrix);
+        skinMatrix.translate(head);
+        skinMatrix.mult(new Mat4(matrix));
+        transform.apply(skinMatrix);
+        skinMatrix.mult(new Mat4(invMat));
+        skinMatrix.translate(Vec3.negate(head));
+    }
+    
+    @Override
+    public Bone getParent()
+    {
+        return parent;
     }
 }
