@@ -16,16 +16,14 @@ public class Bone implements BoneSolver.Solvable
 {
     public final String name;
     
-    /**
-     * Resting properties: head and tail define the resting positions of the
-     * bone. matrix transforms from local directions to global resting
-     * directions.
-     */
     public final Vec3 head, tail;
-    public final Mat3 matrix, invMat;
+    public final Mat3 matrix; //bone direction -> object rest direction
+    public final Mat3 invMat; //object rest direction -> bone direction
     
     public final Transform transform;
-    public final Mat4 skinMatrix;
+    public final Mat4 skinMatrix; //object rest position -> object pose position
+    public final Mat3 rotMatrix; //object rest direction -> object pose direction
+    public final Mat3 invRotMat; //object pose direction -> object rest direction
     
     private Bone parent;
     
@@ -41,6 +39,8 @@ public class Bone implements BoneSolver.Solvable
         invMat = Mat3.invert(matrix);
         transform = new Transform();
         skinMatrix = new Mat4();
+        rotMatrix = new Mat3();
+        invRotMat = new Mat3();
     }
     
     void populate(Bone[] bones)
@@ -50,7 +50,10 @@ public class Bone implements BoneSolver.Solvable
     
     public Vec3 getHeadPos()
     {
-        return parent != null ? Vec3.mult(head, parent.skinMatrix) : new Vec3(head);
+        Vec3 out = new Vec3(head);
+        out.add(transform.position);
+        if (parent != null) out.mult(parent.skinMatrix);
+        return out;
     }
     
     @Override
@@ -63,9 +66,16 @@ public class Bone implements BoneSolver.Solvable
         transform.apply(skinMatrix);
         skinMatrix.mult(new Mat4(invMat));
         skinMatrix.translate(Vec3.negate(head));
+        
+        rotMatrix.setIdentity();
+        if (parent != null) rotMatrix.mult(parent.rotMatrix);
+        rotMatrix.mult(matrix);
+        transform.apply(rotMatrix);
+        rotMatrix.mult(invMat);
+        
+        Mat3.invert(rotMatrix, invRotMat);
     }
     
-    @Override
     public Bone getParent()
     {
         return parent;

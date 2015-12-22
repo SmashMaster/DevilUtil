@@ -35,6 +35,8 @@ public class BoneSolver
         for (IKConstraint ik : ikConstraints)
         {
             solveGraph.addEdge(ik.getParent(), ik);
+            solveGraph.addEdge(ik.getTarget(), ik);
+            solveGraph.addEdge(ik.getPole(), ik);
             solveGraph.addEdge(ik, ik.getStart());
         }
         solveOrder = solveGraph.sort();
@@ -61,6 +63,5 @@ public class BoneSolver
     interface Solvable
     {
         void solve();
-        Bone getParent();
     }
 }

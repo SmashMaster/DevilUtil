@@ -214,6 +214,32 @@ public class Util
         return x0 >= x1 ? x0 : x1;
     }
     
+    
+    /**
+     * Returns the index of the largest value in the given array. 
+     * 
+     * @param values An array of floats.
+     * @return The index of the largest value in the given array. 
+     */
+    public static final int maxdex(float... values)
+    {
+        int index = 0;
+        float max = values[0];
+        
+        for (int i=1; i<values.length; i++)
+        {
+            float value = values[i];
+            if (value > max)
+            {
+                max = value;
+                index = i;
+            }
+        }
+        
+        return index;
+    }
+    
+    
     /**
      * Loops the given value into the given range.
      * 
@@ -559,6 +585,15 @@ public class Util
     public static final boolean isFinite(float x)
     {
         return !(Float.isInfinite(x) || Float.isNaN(x));
+    }
+    
+    /**
+     * Returns a random positive float, greater than or equal to {@code 0.0} and
+     * less than {@code 1.0}.
+     */
+    public static final float random()
+    {
+        return (float)Math.random();
     }
     
     /**

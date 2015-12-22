@@ -1,6 +1,9 @@
 package com.samrj.devil.graphics.model;
 
 import com.samrj.devil.io.IOUtil;
+import com.samrj.devil.math.Mat3;
+import com.samrj.devil.math.Quat;
+import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -42,10 +45,42 @@ public class IKConstraint implements BoneSolver.Solvable
         d2 = Vec3.dist(end.head, end.tail);
     }
     
+    private float signedAngle(Vec3 a, Vec3 b, Vec3 axis)
+    {
+        a = Vec3.reject(a, axis).normalize();
+        b = Vec3.reject(b, axis).normalize();
+        float sign = Util.signum(Vec3.dot(axis, a.cross(b)));
+        float angle = (float)Math.acos(Vec3.dot(a, b));
+        return sign*angle;
+    }
+    
     @Override
     public void solve()
     {
-        //I dont even know
+        Quat rot = start.transform.rotation.setIdentity();
+        Vec3 headPos = start.getHeadPos();
+        
+        Vec3 ikAxis = target.getHeadPos().sub(headPos);
+        float x = ikAxis.length();
+        ikAxis.div(x);
+        Vec3 poleAxis = pole.getHeadPos().sub(headPos).reject(ikAxis).normalize();
+        Vec3 yAxis = Vec3.cross(ikAxis, poleAxis).normalize();
+        
+        //An idea: Create orthogonal basis vectors then convert into transform.
+        //X -> ik axis
+        //Y -> calculate from X and Z
+        //Z -> rejected pole direction
+        
+        Mat3 basis = new Mat3(ikAxis.x, yAxis.x, poleAxis.x,
+                              ikAxis.y, yAxis.y, poleAxis.y,
+                              ikAxis.z, yAxis.z, poleAxis.z);
+        
+        Mat3 rotMat = Mat3.identity();
+        rotMat.mult(start.invMat);
+        if (parent != null) rotMat.mult(parent.invRotMat);
+        rotMat.mult(basis);
+        
+        rot.setRotation(rotMat).normalize();
     }
     
     public Bone getEnd()
@@ -58,9 +93,18 @@ public class IKConstraint implements BoneSolver.Solvable
         return start;
     }
     
-    @Override
     public Bone getParent()
     {
         return parent;
+    }
+    
+    public Bone getTarget()
+    {
+        return target;
+    }
+    
+    public Bone getPole()
+    {
+        return pole;
     }
 }

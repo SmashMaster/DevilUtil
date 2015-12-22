@@ -157,6 +157,45 @@ public class Quat implements Bufferable, Streamable
     }
     
     /**
+     * Sets {@code result} to the rotation represented by the given matrix.
+     * 
+     * @param m A rotation matrix.
+     * @param result The quaternion in which to store the result.
+     */
+    public static final void rotation(Mat3 m, Quat result)
+    {
+        float[] tr = {m.a + m.e + m.i,
+                      m.a - m.e - m.i,
+                      m.e - m.a - m.i,
+                      m.i - m.a - m.e};
+        
+        int i = Util.maxdex(tr);
+        float s = 2.0f*(float)Math.sqrt(1.0f + tr[i]);
+        switch(i)
+        {
+            case 0: result.w = 0.25f*s;
+                    result.x = (m.h - m.f)/s;
+                    result.y = (m.c - m.g)/s;
+                    result.z = (m.d - m.b)/s;
+                    return;
+            case 1: result.w = (m.h - m.f)/s;
+                    result.x = 0.25f*s;
+                    result.y = (m.b + m.d)/s;
+                    result.z = (m.c + m.g)/s;
+                    return;
+            case 2: result.w = (m.c - m.g)/s;
+                    result.x = (m.b + m.d)/s;
+                    result.y = 0.25f*s;
+                    result.z = (m.f + m.h)/s;
+                    return;
+            case 3: result.w = (m.d - m.b)/s;
+                    result.x = (m.c + m.g)/s;
+                    result.y = (m.f + m.h)/s;
+                    result.z = 0.25f*s;
+        }
+    }
+    
+    /**
      * Rotates {@code q} about the given {@code axis} by the given angle
      * {@code angle} and stores the result in {@code result}. The axis must be
      * normalized.
@@ -393,6 +432,19 @@ public class Quat implements Bufferable, Streamable
         return result;
     }
     
+    /**
+     * Returns a new quaternion from the given rotation matrix.
+     * 
+     * @param m A rotation matrix.
+     * @return A new quaternion containing the result.
+     */
+    public static final Quat rotation(Mat3 m)
+    {
+        Quat result = new Quat();
+        rotation(m, result);
+        return result;
+    }
+            
     /**
      * Rotates {@code q} about the given {@code axis} by the given angle
      * {@code angle} and returns the result as a new quaternion. The axis must
@@ -711,6 +763,18 @@ public class Quat implements Bufferable, Streamable
     public Quat setRotation(Vec3 start, Vec3 end)
     {
         rotation(start, end, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to the rotation of the given matrix.
+     * 
+     * @param mat A rotation matrix.
+     * @return This quaternion.
+     */
+    public Quat setRotation(Mat3 mat)
+    {
+        rotation(mat, this);
         return this;
     }
     
