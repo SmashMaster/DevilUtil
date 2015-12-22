@@ -50,8 +50,9 @@ public class Bone implements BoneSolver.Solvable
     
     public Vec3 getHeadPos()
     {
-        Vec3 out = new Vec3(head);
-        out.add(transform.position);
+        Vec3 out = new Vec3(transform.position);
+        out.mult(matrix);
+        out.add(head);
         if (parent != null) out.mult(parent.skinMatrix);
         return out;
     }
