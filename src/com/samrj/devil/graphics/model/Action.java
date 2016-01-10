@@ -11,7 +11,7 @@ import java.util.Set;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Action
+public class Action implements DataBlock
 {
     public final String name;
     public final FCurve[] fcurves;
@@ -38,5 +38,11 @@ public class Action
         Pose pose = new Pose(names);
         for (FCurve fcurve : fcurves) fcurve.apply(pose, time);
         return pose;
+    }
+
+    @Override
+    public String getName()
+    {
+        return name;
     }
 }

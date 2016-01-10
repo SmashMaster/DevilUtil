@@ -9,7 +9,7 @@ import java.io.IOException;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class ModelObject
+public class ModelObject implements DataBlock
 {
     public final String name;
     public final Transform transform;
@@ -48,7 +48,7 @@ public class ModelObject
         actionIndex = in.readInt();
     }
     
-    private Object[] dataArray(Model model)
+    private Model.ArrayMap dataArray(Model model)
     {
         switch (type)
         {
@@ -63,11 +63,11 @@ public class ModelObject
     
     void populate(Model model)
     {
-        data = dataIndex < 0 ? null : dataArray(model)[dataIndex];
+        data = dataIndex < 0 ? null : dataArray(model).get(dataIndex);
         if (data instanceof Armature)
             for (IKConstraint ik : ikConstraints) ik.populate((Armature)data);
-        parent = parentIndex < 0 ? null : model.objects[parentIndex];
-        action = actionIndex < 0 ? null : model.actions[actionIndex];
+        parent = parentIndex < 0 ? null : model.objects.get(parentIndex);
+        action = actionIndex < 0 ? null : model.actions.get(actionIndex);
     }
     
     public Object getData()
@@ -83,5 +83,11 @@ public class ModelObject
     public Action getAction()
     {
         return action;
+    }
+    
+    @Override
+    public String getName()
+    {
+        return name;
     }
 }

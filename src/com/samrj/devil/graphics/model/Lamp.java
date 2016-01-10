@@ -9,12 +9,18 @@ import java.io.IOException;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Lamp
+public class Lamp implements DataBlock
 {
     public final String name;
     
     Lamp(DataInputStream in) throws IOException
     {
         name = IOUtil.readPaddedUTF(in);
+    }
+    
+    @Override
+    public String getName()
+    {
+        return name;
     }
 }

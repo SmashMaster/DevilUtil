@@ -12,7 +12,7 @@ import java.util.Map;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Armature
+public class Armature implements DataBlock
 {
     public final String name;
     public final Bone[] bones;
@@ -38,5 +38,11 @@ public class Armature
         Bone bone = nameMap.get(name);
         if (bone == null) return;
         bone.transform.setProperty(property, index, value);
+    }
+    
+    @Override
+    public String getName()
+    {
+        return name;
     }
 }

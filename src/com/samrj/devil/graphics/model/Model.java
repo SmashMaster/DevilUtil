@@ -7,6 +7,10 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 /**
  * .DVM file loader. Corresponds with the Blender python exporter.
@@ -19,21 +23,14 @@ public class Model
 {
     private static final byte[] MAGIC = IOUtil.hexToBytes("9F0A446576696C4D6F64656C");
     
-    private static <T> T[] readBlock(DataInputStream in, int id, Class<T> type, StreamConstructor<T> constructor) throws IOException
-    {
-        if (in.readInt() != id) throw new IOException("Corrupt DVM.");
-        in.skip(4);
-        return IOUtil.arrayFromStream(in, type, constructor);
-    }
-    
     public final int versionMajor, versionMinor;
-    public final Action[] actions;
-    public final Armature[] armatures;
-    public final Lamp[] lamps;
-    public final Material[] materials;
-    public final Mesh[] meshes;
-    public final ModelObject[] objects;
-    public final Scene[] scenes;
+    public final ArrayMap<Action> actions;
+    public final ArrayMap<Armature> armatures;
+    public final ArrayMap<Lamp> lamps;
+    public final ArrayMap<Material> materials;
+    public final ArrayMap<Mesh> meshes;
+    public final ArrayMap<ModelObject> objects;
+    public final ArrayMap<Scene> scenes;
     
     Model(BufferedInputStream inputStream) throws IOException
     {
@@ -49,13 +46,13 @@ public class Model
             versionMinor = in.readShort();
             if (versionMajor != 0) throw new IOException("Unable to load DVM version " + versionMajor);
             
-            actions = readBlock(in, 32, Action.class, Action::new);
-            armatures = readBlock(in, 33, Armature.class, Armature::new);
-            lamps = readBlock(in, 34, Lamp.class, Lamp::new);
-            materials = readBlock(in, 35, Material.class, Material::new);
-            meshes = readBlock(in, 36, Mesh.class, Mesh::new);
-            objects = readBlock(in, 37, ModelObject.class, ModelObject::new);
-            scenes = readBlock(in, 38, Scene.class, Scene::new);
+            actions = new ArrayMap<>(in, 32, Action.class, Action::new);
+            armatures = new ArrayMap<>(in, 33, Armature.class, Armature::new);
+            lamps = new ArrayMap<>(in, 34, Lamp.class, Lamp::new);
+            materials = new ArrayMap<>(in, 35, Material.class, Material::new);
+            meshes = new ArrayMap<>(in, 36, Mesh.class, Mesh::new);
+            objects = new ArrayMap<>(in, 37, ModelObject.class, ModelObject::new);
+            scenes = new ArrayMap<>(in, 38, Scene.class, Scene::new);
             
             for (ModelObject object : objects) object.populate(this);
             for (Scene scene : scenes) scene.populate(this);
@@ -77,12 +74,51 @@ public class Model
     public void destroy()
     {
         for (Mesh mesh : meshes) mesh.destroy();
-        Arrays.fill(actions, null);
-        Arrays.fill(armatures, null);
-        Arrays.fill(lamps, null);
-        Arrays.fill(materials, null);
-        Arrays.fill(meshes, null);
-        Arrays.fill(objects, null);
-        Arrays.fill(scenes, null);
+        actions.clear();
+        armatures.clear();
+        lamps.clear();
+        materials.clear();
+        meshes.clear();
+        objects.clear();
+        scenes.clear();
+    }
+    
+    public static final class ArrayMap<T extends DataBlock> implements Iterable<T>
+    {
+        private T[] array;
+        private Map<String, T> map;
+        
+        private ArrayMap(DataInputStream in, int id, Class<T> type, StreamConstructor<T> constructor) throws IOException
+        {
+            if (in.readInt() != id) throw new IOException("Corrupt DVM.");
+            in.skip(4);
+            array = IOUtil.arrayFromStream(in, type, constructor);
+            map = new HashMap<>(array.length);
+            for (T data : array) map.put(data.getName(), data);
+        }
+
+        public T get(String name)
+        {
+            T out = map.get(name);
+            if (out == null) throw new NoSuchElementException();
+            return out;
+        }
+        
+        public T get(int i)
+        {
+            return array[i];
+        }
+        
+        @Override
+        public Iterator<T> iterator()
+        {
+            return new IOUtil.ArrayIterator<>(array);
+        }
+        
+        private void clear()
+        {
+            array = null;
+            map = null;
+        }
     }
 }

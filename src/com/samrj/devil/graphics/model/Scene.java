@@ -10,7 +10,7 @@ import java.io.IOException;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Scene
+public class Scene implements DataBlock
 {
     public final String name;
     public final Vec3 backgroundColor;
@@ -31,6 +31,12 @@ public class Scene
     void populate(Model model)
     {
         for (int i=0; i<objects.length; i++)
-            objects[i] = model.objects[objectIndices[i]];
+            objects[i] = model.objects.get(objectIndices[i]);
+    }
+    
+    @Override
+    public String getName()
+    {
+        return name;
     }
 }

@@ -3,6 +3,8 @@ package com.samrj.devil.io;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * Utility methods for data munging.
@@ -44,5 +46,29 @@ public final class IOUtil
     
     private IOUtil()
     {
+    }
+    
+    public static final class ArrayIterator<T> implements Iterator<T>
+    {
+        private final T[] array;
+        private int index;
+        
+        public ArrayIterator(T[] array)
+        {
+            this.array = array;
+        }
+
+        @Override
+        public boolean hasNext()
+        {
+            return index < array.length;
+        }
+
+        @Override
+        public T next()
+        {
+            if (hasNext()) return array[index++];
+            else throw new NoSuchElementException();
+        }
     }
 }
