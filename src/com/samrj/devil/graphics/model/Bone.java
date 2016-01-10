@@ -15,6 +15,7 @@ import java.io.IOException;
 public class Bone implements BoneSolver.Solvable
 {
     public final String name;
+    public final boolean inheritRotation;
     
     public final Vec3 head, tail;
     public final Mat3 matrix; //bone direction -> object rest direction
@@ -33,6 +34,7 @@ public class Bone implements BoneSolver.Solvable
     {
         name = IOUtil.readPaddedUTF(in);
         parentIndex = in.readInt();
+        inheritRotation = in.readInt() != 0;
         head = new Vec3(in);
         tail = new Vec3(in);
         matrix = new Mat3(in);
@@ -63,13 +65,14 @@ public class Bone implements BoneSolver.Solvable
         skinMatrix.setIdentity();
         if (parent != null) skinMatrix.mult(parent.skinMatrix);
         skinMatrix.translate(head);
+        if (parent != null && !inheritRotation) skinMatrix.mult(new Mat4(parent.invRotMat));
         skinMatrix.mult(new Mat4(matrix));
         transform.apply(skinMatrix);
         skinMatrix.mult(new Mat4(invMat));
         skinMatrix.translate(Vec3.negate(head));
         
         rotMatrix.setIdentity();
-        if (parent != null) rotMatrix.mult(parent.rotMatrix);
+        if (parent != null && inheritRotation) rotMatrix.mult(parent.rotMatrix);
         rotMatrix.mult(matrix);
         transform.apply(rotMatrix);
         rotMatrix.mult(invMat);
