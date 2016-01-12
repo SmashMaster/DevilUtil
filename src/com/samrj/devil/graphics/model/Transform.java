@@ -68,7 +68,7 @@ public class Transform
         scale.set(transform.scale);
     }
     
-    public void lerp(Transform transform, float t)
+    public void mix(Transform transform, float t)
     {
         position.lerp(transform.position, t);
         rotation.slerp(transform.rotation, t);

@@ -379,7 +379,7 @@ public class Quat implements Bufferable, Streamable
         }
         else copy(q1, temp);
         
-        if (cos == 1.0f) lerp(q0, temp, t, result);
+        if (cos >= 0.99609375f) lerp(q0, temp, t, result);
         else
         {
             float angle = (float)Math.acos(cos);

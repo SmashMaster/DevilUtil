@@ -51,6 +51,18 @@ public class Pose
         }
     }
     
+    public Pose mix(Pose pose, float t)
+    {
+        for (PoseBone bone : bones.values())
+        {
+            PoseBone target = pose.bones.get(bone.name);
+            if (target == null) continue;
+            bone.mix(target, t);
+        }
+        
+        return this;
+    }
+    
     public class PoseBone
     {
         public final String name;
@@ -66,6 +78,11 @@ public class Pose
         {
             this.name = name;
             transform = new Transform();
+        }
+        
+        private void mix(PoseBone bone, float t)
+        {
+            transform.mix(bone.transform, t);
         }
     }
 }
