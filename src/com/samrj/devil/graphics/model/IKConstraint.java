@@ -91,11 +91,15 @@ public class IKConstraint implements BoneSolver.Solvable
         rot1.mult(Quat.rotation(basis));
         rot1.rotate(new Vec3(1,0,0), poleAngle);
         
-        //Calculate IK angles and perform hinge rotations.
-        float ang1 = (float)Math.acos((d1*d1 + x*x - d2*d2)/(2.0f*d1*x));
-        rot1.rotate(hinge1, -ang1);
-        float ang2 = (float)Math.acos((d1*d1 + d2*d2 - x*x)/(2.0f*d1*d2));
-        rot2.rotate(hinge2, Util.PI - ang2 - ang2init);
+        if (x < d1 + d2) //Calculate IK angles and perform hinge rotations.
+        {
+            float ang1 = (float)Math.acos((d1*d1 + x*x - d2*d2)/(2.0f*d1*x));
+            rot1.rotate(hinge1, -ang1);
+            float ang2 = (float)Math.acos((d1*d1 + d2*d2 - x*x)/(2.0f*d1*d2));
+            rot2.rotate(hinge2, Util.PI - ang2 - ang2init);
+        }
+        else rot2.rotate(hinge2, -ang2init); //Reach towards target.
+        //Also need cases for targets that are too close.
     }
     
     public Bone getEnd()
