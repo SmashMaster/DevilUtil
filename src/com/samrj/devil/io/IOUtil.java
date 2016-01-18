@@ -1,8 +1,11 @@
 package com.samrj.devil.io;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Array;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -42,6 +45,11 @@ public final class IOUtil
         T[] out = (T[])Array.newInstance(type, in.readInt());
         for (int i=0; i<out.length; i++) out[i] = constructor.construct(in);
         return out;
+    }
+    
+    public static InputStream stringStream(String string)
+    {
+        return new ByteArrayInputStream(string.getBytes(StandardCharsets.UTF_8));
     }
     
     private IOUtil()
