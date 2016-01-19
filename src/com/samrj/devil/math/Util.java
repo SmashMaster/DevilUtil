@@ -412,6 +412,19 @@ public class Util
     }
     
     /**
+     * Returns the smallest signed difference between the two given angles, from
+     * a to b.
+     * 
+     * @param a The starting angle.
+     * @param b The ending angle.
+     * @return The smallest difference between the two given angles.
+     */
+    public static final float angleDiff(float a, float b)
+    {
+        return (b - a + PI)%PIm2 - PI;
+    }
+    
+    /**
      * Loop the given square angle into the range between
      * 
      * @param a The square angle to reduce.

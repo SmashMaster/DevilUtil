@@ -48,6 +48,13 @@ public class Transform
         scale = new Vec3(1.0f);
     }
     
+    Transform(Transform transform)
+    {
+        position = new Vec3(transform.position);
+        rotation = new Quat(transform.rotation);
+        scale = new Vec3(transform.scale);
+    }
+    
     public void apply(Mat4 matrix)
     {
         matrix.translate(position);

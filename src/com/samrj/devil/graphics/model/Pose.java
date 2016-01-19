@@ -34,6 +34,13 @@ public class Pose
         for (String name : names) bones.put(name, new PoseBone(name));
     }
     
+    public Pose(Pose pose)
+    {
+        bones = new HashMap<>(pose.bones.size());
+        for (PoseBone bone : pose.bones.values())
+            bones.put(bone.name, new PoseBone(bone));
+    }
+    
     public void setBoneProperty(String name, Property property, int index, float value)
     {
         PoseBone bone = bones.get(name);
@@ -78,6 +85,12 @@ public class Pose
         {
             this.name = name;
             transform = new Transform();
+        }
+        
+        private PoseBone(PoseBone bone)
+        {
+            name = bone.name;
+            transform = new Transform(bone.transform);
         }
         
         private void mix(PoseBone bone, float t)
