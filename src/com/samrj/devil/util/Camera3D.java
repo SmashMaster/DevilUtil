@@ -76,8 +76,6 @@ public class Camera3D
         right = new Vec3(1.0f, 0.0f, 0.0f);
         up = new Vec3(0.0f, 1.0f, 0.0f);
         matrix = Mat4.identity();
-        
-        Camera3D.this.update();
     }
     
     /**
@@ -93,6 +91,11 @@ public class Camera3D
         float roll = (float)Math.asin(2.0f*(dir.x*dir.y - dir.w*dir.z));
         
         return new Vec3(pitch, yaw, roll);
+    }
+    
+    public void pointAt(Vec3 p)
+    {
+        dir.setRotation(new Vec3(0.0f, 0.0f, -1.0f), Vec3.sub(p, pos));
     }
     
     /**
@@ -149,7 +152,6 @@ public class Camera3D
         
         return array;
     }
-    
     
     /**
      * Returns an array of eight vectors, each one a vertex of this camera's

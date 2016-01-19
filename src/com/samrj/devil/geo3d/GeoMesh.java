@@ -87,7 +87,7 @@ public class GeoMesh
         {
             Face f = new Face(verts.get(iBuffer.getInt()),
                               verts.get(iBuffer.getInt()),
-                              verts.get(iBuffer.getInt()), mesh.materials[i]);
+                              verts.get(iBuffer.getInt()), mesh.materials != null ? mesh.materials[i] : 0);
             faces.add(f);
             edges.add(f.ab);
             edges.add(f.bc);

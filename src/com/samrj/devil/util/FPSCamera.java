@@ -5,6 +5,13 @@ import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 import org.lwjgl.glfw.GLFW;
 
+/**
+ * Camera class for first person shooters.
+ * 
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2015 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public class FPSCamera extends Camera3D
 {
     public final float sensitivity;
@@ -31,10 +38,15 @@ public class FPSCamera extends Camera3D
         {
             yaw = Util.reduceAngle(yaw);
             pitch = Util.clamp(pitch, -Util.PId2, Util.PId2);
-            
-            dir.setRotation(new Vec3(0, 1, 0), yaw);
-            dir.rotate(new Vec3(1, 0, 0), pitch);
         }
+    }
+    
+    @Override
+    public void update()
+    {
+        dir.setRotation(new Vec3(0, 1, 0), yaw);
+        dir.rotate(new Vec3(1, 0, 0), pitch);
+        super.update();
     }
     
     public void fly(Keyboard keyboard, float speed, float dt)

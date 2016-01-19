@@ -88,6 +88,19 @@ public abstract class Actor<SETTINGS_TYPE extends Settings>
         return groundMaterial;
     }
     
+    public Vec3 getFeetPos()
+    {
+        Vec3 out = new Vec3(pos);
+        out.y -= shape.radii.y;
+        return out;
+    }
+    
+    public Vec3 getRadii()
+    {
+        return new Vec3(shape.radii);
+    }
+    
+    
     protected void applyAcc(Vec3 desiredVel, float acc)
     {
         Vec3 dv = Vec3.sub(desiredVel, vel);
