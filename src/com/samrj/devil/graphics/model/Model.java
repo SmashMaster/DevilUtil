@@ -100,7 +100,7 @@ public class Model
         public T get(String name)
         {
             T out = map.get(name);
-            if (out == null) throw new NoSuchElementException();
+            if (out == null) throw new NoSuchElementException(name);
             return out;
         }
         

@@ -421,7 +421,7 @@ public class Util
      */
     public static final float angleDiff(float a, float b)
     {
-        return (b - a + PI)%PIm2 - PI;
+        return reduceAngle(b - a);
     }
     
     /**

@@ -1,6 +1,7 @@
 package com.samrj.devil.graphics.model;
 
 import com.samrj.devil.io.IOUtil;
+import com.samrj.devil.math.Util;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.HashSet;
@@ -29,6 +30,11 @@ public class Action implements DataBlock
             if (fcurves[i].maxX > max) max = fcurves[i].maxX;
         }
         minX = min; maxX = max;
+    }
+    
+    public float loop(float time)
+    {
+        return Util.loop(time, minX, maxX);
     }
     
     public Pose evaluate(float time)
