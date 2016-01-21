@@ -58,10 +58,9 @@ public class ThirdPersonCamera extends Camera3D
         dir.rotate(temp.set(1, 0, 0), pitch);
         
         pos.set(target);
-        pos.add(temp.set(0.0f, height, 0.0f));
-        Vec3 dp = new Vec3();
-        dp.add(temp.set(1, 0, 0).mult(dir).mult(offset));
-        dp.add(temp.set(0, 0, 1).mult(dir).mult(distance));
+        pos.y += height;
+        pos.add(temp.set(1, 0, 0).mult(dir).mult(offset));
+        Vec3 dp = new Vec3(0, 0, 1).mult(dir).mult(distance);
         
         if (level != null)
         {
