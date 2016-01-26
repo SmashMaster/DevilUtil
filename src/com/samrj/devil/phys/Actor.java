@@ -100,6 +100,15 @@ public abstract class Actor<SETTINGS_TYPE extends Settings>
         return new Vec3(shape.radii);
     }
     
+    public void setSpeed(float maxSpeed)
+    {
+        settings.maxSpeed = maxSpeed;
+    }
+    
+    public void setAcceleration(float acceleration)
+    {
+        settings.acceleration = acceleration;
+    }
     
     protected void applyAcc(Vec3 desiredVel, float acc)
     {
