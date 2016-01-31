@@ -175,6 +175,23 @@ public class Util
     }
     
     /**
+     * Moves the given value towards the given target, by the given distance.
+     * If the value is closer than the given distance to the target, returns the
+     * target.
+     * 
+     * @param x
+     * @param target
+     * @param distance
+     * @return 
+     */
+    public static final float move(float x, float target, float distance)
+    {
+        float diff = target - x;
+        if (Math.abs(diff) <= distance) return target;
+        else return x + signum(diff)*distance;
+    }
+    
+    /**
      * Returns the smaller of the two given values. Does not check for negative
      * zero or NaN.
      * 
