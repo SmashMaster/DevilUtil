@@ -6,6 +6,7 @@ import com.samrj.devil.math.Vec3;
 import com.samrj.devil.phys.Actor.Settings;
 import com.samrj.devil.util.ThirdPersonCamera;
 import org.lwjgl.glfw.GLFW;
+import java.util.function.Consumer;
 
 /**
  * Third person player with collision and movement.
@@ -18,6 +19,7 @@ public class ThirdPersonPlayer extends Actor<Settings>
 {
     protected final Keyboard keyboard;
     protected final ThirdPersonCamera camera;
+    public Consumer<Vec3> moveFunction;
     
     /**
      * Creates a new FPSPlayer using the given parameters, keyboard, camera, and
@@ -72,7 +74,7 @@ public class ThirdPersonPlayer extends Actor<Settings>
             if (keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL)) vel.y -= 1.0f;
             noclipTurbo = keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT);
         }
-        else //Walking/falling
+        else if (moveFunction == null)//Walking/falling
         {
             float sin = (float)Math.sin(camera.yaw);
             float cos = (float)Math.cos(camera.yaw);
@@ -86,6 +88,7 @@ public class ThirdPersonPlayer extends Actor<Settings>
             if (keyboard.isKeyDown(GLFW.GLFW_KEY_A)) moveDir.sub(flatRight);
             if (keyboard.isKeyDown(GLFW.GLFW_KEY_D)) moveDir.add(flatRight);
         }
+        else moveFunction.accept(moveDir);
         
         super.step(dt);
         

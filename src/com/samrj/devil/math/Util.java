@@ -663,6 +663,23 @@ public class Util
     }
     
     /**
+     * Creates a "dead zone" around the origin, within which v will be set to
+     * zero. Useful for controller input from analog sticks.
+     * 
+     * @param v The vector to alter.
+     * @param threshold The radius of the dead-zone around the origin.
+     * @return The given vector.
+     */
+    public static final Vec3 deadZone(Vec3 v, float threshold)
+    {
+        float length = v.length();
+        if (length < threshold) v.set();
+        else if (length < 1.0f) v.mult((length - threshold)/(1.0f - threshold));
+        else v.div(length);
+        return v;
+    }
+    
+    /**
      * Don't let anyone instantiate this.
      */
     private Util()
