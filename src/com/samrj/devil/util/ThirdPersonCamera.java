@@ -17,7 +17,7 @@ import com.samrj.devil.math.Vec3;
 public class ThirdPersonCamera extends Camera3D
 {
     public final Vec3 target = new Vec3();
-    public final float sensitivity, distance, height, offset;
+    public float sensitivity, distance, height, offset;
     public float pitch, yaw;
     private GeoMesh level;
     private Ellipsoid blockShape;

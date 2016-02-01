@@ -37,6 +37,16 @@ public class Action implements DataBlock
         return Util.loop(time, minX, maxX);
     }
     
+    public float clamp(float time)
+    {
+        return Util.clamp(time, minX, maxX);
+    }
+    
+    public float envelope(float time, float fadeIn, float fadeOut)
+    {
+        return Util.envelope(time, minX, fadeIn, fadeOut, maxX);
+    }
+    
     public Pose evaluate(float time)
     {
         Set<String> names = new HashSet<>();

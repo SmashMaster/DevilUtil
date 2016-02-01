@@ -175,6 +175,42 @@ public class Util
     }
     
     /**
+     * Clamps the given value to between zero and one (inclusive) and returns
+     * the result.
+     * 
+     * @param x The value to saturate.
+     * @return The saturated value.
+     */
+    public static final float saturate(float x)
+    {
+        return clamp(x, 0.0f, 1.0f);
+    }
+    
+    /**
+     * Returns a value between zero and one (inclusive) depending on the given
+     * values. The value starts at zero as x increases, linearly fades to one,
+     * stays there, and then fades back down to zero.
+     * 
+     * @param x The 'time' value.
+     * @param start The time at which to start fading in.
+     * @param fadeIn The amount of time to spend fading in.
+     * @param fadeOut The amount of time to spend fading out.
+     * @param end The time at which to finish fading out.
+     * @return The envelope of the given value.
+     */
+    public static final float envelope(float x, float start, float fadeIn, float fadeOut, float end)
+    {
+        if (x >= end || x <= start) return 0.0f;
+        
+        if (x <= end - fadeOut)
+        {
+            if (x < start + fadeIn) return (x - start)/fadeIn;
+            else return 1.0f;
+        }
+        else return (end - x)/fadeOut;
+    }
+    
+    /**
      * Moves the given value towards the given target, by the given distance.
      * If the value is closer than the given distance to the target, returns the
      * target.

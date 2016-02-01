@@ -3,6 +3,7 @@ package com.samrj.devil.graphics.model;
 import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
+import com.samrj.devil.math.SingularMatrixException;
 import com.samrj.devil.math.Vec3;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -77,7 +78,7 @@ public class Bone implements BoneSolver.Solvable
         transform.apply(rotMatrix);
         rotMatrix.mult(invMat);
         
-        Mat3.invert(rotMatrix, invRotMat);
+        if (!transform.scale.isZero(0.0f)) Mat3.invert(rotMatrix, invRotMat);
     }
     
     public Bone getParent()
