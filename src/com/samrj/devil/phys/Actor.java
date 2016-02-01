@@ -146,7 +146,7 @@ public abstract class Actor<SETTINGS_TYPE extends Settings>
                 {
                     float moveSpeed = moveDir.length();
                     moveDir.y = -ground.dot(moveDir)*moveSpeed/ground.y;
-                    if (moveSpeed > settings.maxSpeed) moveDir.normalize();
+                    if (moveSpeed > 1.0f) moveDir.normalize();
                     moveDir.mult(settings.maxSpeed);
                 }
 
@@ -159,7 +159,7 @@ public abstract class Actor<SETTINGS_TYPE extends Settings>
                 if (wantToMove)
                 {
                     float moveSpeed = moveDir.length();
-                     if (moveSpeed > settings.maxSpeed) moveDir.normalize();
+                    if (moveSpeed > 1.0f) moveDir.normalize();
                     moveDir.mult(settings.maxSpeed);
                     moveDir.y = vel.y;
                     applyAcc(moveDir, settings.airAcceleration*dt);
