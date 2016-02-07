@@ -26,6 +26,7 @@ public class Model
     public final int versionMajor, versionMinor;
     public final ArrayMap<Action> actions;
     public final ArrayMap<Armature> armatures;
+    public final ArrayMap<Curve> curves;
     public final ArrayMap<Lamp> lamps;
     public final ArrayMap<Material> materials;
     public final ArrayMap<Mesh> meshes;
@@ -46,13 +47,14 @@ public class Model
             versionMinor = in.readShort();
             if (versionMajor != 0) throw new IOException("Unable to load DVM version " + versionMajor);
             
-            actions = new ArrayMap<>(in, 32, Action.class, Action::new);
-            armatures = new ArrayMap<>(in, 33, Armature.class, Armature::new);
-            lamps = new ArrayMap<>(in, 34, Lamp.class, Lamp::new);
-            materials = new ArrayMap<>(in, 35, Material.class, Material::new);
-            meshes = new ArrayMap<>(in, 36, Mesh.class, Mesh::new);
-            objects = new ArrayMap<>(in, 37, ModelObject.class, ModelObject::new);
-            scenes = new ArrayMap<>(in, 38, Scene.class, Scene::new);
+            actions   = new ArrayMap<>(in, 1112276993, Action.class, Action::new);
+            armatures = new ArrayMap<>(in, 1112276994, Armature.class, Armature::new);
+            curves    = new ArrayMap<>(in, 1112276995, Curve.class, Curve::new);
+            lamps     = new ArrayMap<>(in, 1112276996, Lamp.class, Lamp::new);
+            materials = new ArrayMap<>(in, 1112276997, Material.class, Material::new);
+            meshes    = new ArrayMap<>(in, 1112276998, Mesh.class, Mesh::new);
+            objects   = new ArrayMap<>(in, 1112276999, ModelObject.class, ModelObject::new);
+            scenes    = new ArrayMap<>(in, 1112277000, Scene.class, Scene::new);
             
             for (ModelObject object : objects) object.populate(this);
             for (Scene scene : scenes) scene.populate(this);
@@ -76,6 +78,7 @@ public class Model
         for (Mesh mesh : meshes) mesh.destroy();
         actions.clear();
         armatures.clear();
+        curves.clear();
         lamps.clear();
         materials.clear();
         meshes.clear();
