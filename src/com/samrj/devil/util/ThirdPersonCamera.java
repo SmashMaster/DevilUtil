@@ -32,6 +32,13 @@ public class ThirdPersonCamera extends Camera3D
         this.offset = offset;
     }
     
+    public void setAnglesFromRotation()
+    {
+        Vec3 angles = angles();
+        pitch = angles.x;
+        yaw = angles.y;
+    }
+    
     public void enableLevelBlocking(GeoMesh level, float blockRadius)
     {
         this.level = level;

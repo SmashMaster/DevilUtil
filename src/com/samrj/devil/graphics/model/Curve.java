@@ -27,7 +27,7 @@ public class Curve implements DataBlock
         return name;
     }
     
-    public class Spline
+    public static class Spline
     {
         public final boolean cyclic;
         public final SplinePoint[] points;
@@ -39,14 +39,12 @@ public class Curve implements DataBlock
         }
     }
     
-    public class SplinePoint
+    public static class SplinePoint
     {
-        public final boolean cyclic;
         public final Vec3 co, left, right;
         
         SplinePoint(DataInputStream in) throws IOException
         {
-            cyclic = in.readInt() != 0;
             co = new Vec3(in);
             left = new Vec3(in);
             right = new Vec3(in);
