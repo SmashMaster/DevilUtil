@@ -17,8 +17,8 @@ public class ModelObject implements DataBlock
     public final Pose pose;
     public final IKConstraint[] ikConstraints;
     
-    private final int type;
-    private final int dataIndex;
+    private final int dataType, dataIndex, dataLibIndex;
+    private final String dataLibName;
     private final int parentIndex;
     private final int actionIndex;
     
@@ -29,8 +29,10 @@ public class ModelObject implements DataBlock
     ModelObject(DataInputStream in) throws IOException
     {
         name = IOUtil.readPaddedUTF(in);
-        type = in.readShort();
-        dataIndex = in.readShort();
+        dataType = in.readInt();
+        dataLibIndex = dataType >= 0 ? in.readInt() : -1;
+        dataIndex = dataType >= 0 && dataLibIndex < 0 ? in.readInt() : -1;
+        dataLibName = dataLibIndex >= 0 ? IOUtil.readPaddedUTF(in) : null;
         parentIndex = in.readInt();
         transform = new Transform(in);
         vertexGroups = IOUtil.arrayFromStream(in, String.class, (s) -> IOUtil.readPaddedUTF(s));
@@ -50,13 +52,16 @@ public class ModelObject implements DataBlock
     
     private Model.ArrayMap dataArray(Model model)
     {
-        switch (type)
+        switch (dataType)
         {
-            case 0: return model.actions;
-            case 1: return model.armatures;
-            case 2: return model.lamps;
-            case 3: return model.materials;
-            case 4: return model.meshes;
+            case 0: return model.libraries;
+            case 1: return model.actions;
+            case 2: return model.armatures;
+            case 3: return model.curves;
+            case 4: return model.lamps;
+            case 5: return model.materials;
+            case 6: return model.meshes;
+            case 7: return model.scenes;
             default: throw new IllegalArgumentException();
         }
     }

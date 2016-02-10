@@ -24,6 +24,7 @@ public class Model
     private static final byte[] MAGIC = IOUtil.hexToBytes("9F0A446576696C4D6F64656C");
     
     public final int versionMajor, versionMinor;
+    public final ArrayMap<Library> libraries;
     public final ArrayMap<Action> actions;
     public final ArrayMap<Armature> armatures;
     public final ArrayMap<Curve> curves;
@@ -45,16 +46,18 @@ public class Model
                 throw new IOException("Illegal file format specified.");
             versionMajor = in.readShort();
             versionMinor = in.readShort();
-            if (versionMajor != 0) throw new IOException("Unable to load DVM version " + versionMajor);
+            if (versionMajor != 0 || versionMinor != 11)
+                throw new IOException("Unable to load DVM version " + versionMajor + "." + versionMinor);
             
-            actions   = new ArrayMap<>(in, 1112276993, Action.class, Action::new);
-            armatures = new ArrayMap<>(in, 1112276994, Armature.class, Armature::new);
-            curves    = new ArrayMap<>(in, 1112276995, Curve.class, Curve::new);
-            lamps     = new ArrayMap<>(in, 1112276996, Lamp.class, Lamp::new);
-            materials = new ArrayMap<>(in, 1112276997, Material.class, Material::new);
-            meshes    = new ArrayMap<>(in, 1112276998, Mesh.class, Mesh::new);
-            objects   = new ArrayMap<>(in, 1112276999, ModelObject.class, ModelObject::new);
-            scenes    = new ArrayMap<>(in, 1112277000, Scene.class, Scene::new);
+            libraries = new ArrayMap<>(in, 1112276993, Library.class, Library::new);
+            actions   = new ArrayMap<>(in, 1112276994, Action.class, Action::new);
+            armatures = new ArrayMap<>(in, 1112276995, Armature.class, Armature::new);
+            curves    = new ArrayMap<>(in, 1112276996, Curve.class, Curve::new);
+            lamps     = new ArrayMap<>(in, 1112276997, Lamp.class, Lamp::new);
+            materials = new ArrayMap<>(in, 1112276998, Material.class, Material::new);
+            meshes    = new ArrayMap<>(in, 1112276999, Mesh.class, Mesh::new);
+            objects   = new ArrayMap<>(in, 1112277000, ModelObject.class, ModelObject::new);
+            scenes    = new ArrayMap<>(in, 1112277001, Scene.class, Scene::new);
             
             for (ModelObject object : objects) object.populate(this);
             for (Scene scene : scenes) scene.populate(this);
