@@ -17,19 +17,20 @@ import com.samrj.devil.math.Vec3;
 public class ThirdPersonCamera extends Camera3D
 {
     public final Vec3 target = new Vec3();
-    public float sensitivity, distance, height, offset;
+    public final Vec3 offset = new Vec3();
+    public float sensitivity, distance, height;
     public float pitch, yaw;
     private GeoMesh level;
     private Ellipsoid blockShape;
     
     public ThirdPersonCamera(float zNear, float zFar, float fov, float aspectRatio,
-            float sensitivity, float distance, float height, float offset)
+            float sensitivity, float distance, float height, Vec3 offset)
     {
         super(zNear, zFar, fov, aspectRatio);
         this.sensitivity = sensitivity;
         this.distance = distance;
         this.height = height;
-        this.offset = offset;
+        this.offset.set(offset);
     }
     
     public void setAnglesFromRotation()
@@ -66,10 +67,9 @@ public class ThirdPersonCamera extends Camera3D
         
         pos.set(target);
         pos.y += height;
-        pos.add(temp.set(1, 0, 0).mult(dir).mult(offset));
-        Vec3 dp = new Vec3(0, 0, 1).mult(dir).mult(distance);
-        
-        if (level != null)
+        Vec3 dp = new Vec3(0, 0, distance).mult(dir);
+        dp.add(temp.set(offset).mult(dir));
+        if (level != null && !dp.isZero(0.0f))
         {
             blockShape.pos.set(pos);
             SweepResult ray = level.sweepFirst(blockShape, dp);
