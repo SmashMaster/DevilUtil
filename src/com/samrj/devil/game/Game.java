@@ -127,11 +127,11 @@ public abstract class Game
         catch (Exception e)
         {
             Game.terminate();
-            StringWriter writer = new StringWriter();
-            writer.append("An unhandled exception occured:\n");
-            e.printStackTrace(new PrintWriter(writer));
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            JOptionPane.showMessageDialog(null, writer.getBuffer(), "Exception", JOptionPane.ERROR_MESSAGE);
+//            StringWriter writer = new StringWriter();
+//            writer.append("An unhandled exception occured:\n");
+//            e.printStackTrace(new PrintWriter(writer));
+//            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+//            JOptionPane.showMessageDialog(null, writer.getBuffer(), "Exception", JOptionPane.ERROR_MESSAGE);
             throw e;
         }
     }

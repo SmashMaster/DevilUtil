@@ -68,6 +68,13 @@ public class Transform
         matrix.mult(scale);
     }
     
+    public void setIdentity()
+    {
+        position.set();
+        rotation.setIdentity();
+        scale.set(1.0f);
+    }
+    
     public void set(Transform transform)
     {
         position.set(transform.position);
