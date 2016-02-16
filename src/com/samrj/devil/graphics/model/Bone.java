@@ -4,6 +4,7 @@ import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Vec3;
+import com.samrj.devil.math.topo.DAG;
 import java.io.DataInputStream;
 import java.io.IOException;
 
@@ -21,7 +22,7 @@ public class Bone implements BoneSolver.Solvable
     public final Mat3 matrix; //bone direction -> object rest direction
     public final Mat3 invMat; //object rest direction -> bone direction
     
-    public final Transform transform;
+    public final Transform poseTransform, finalTransform;
     public final Mat4 skinMatrix; //object rest position -> object pose position
     public final Mat3 rotMatrix; //object rest direction -> object pose direction
     public final Mat3 invRotMat; //object pose direction -> object rest direction
@@ -39,7 +40,8 @@ public class Bone implements BoneSolver.Solvable
         tail = new Vec3(in);
         matrix = new Mat3(in);
         invMat = Mat3.invert(matrix);
-        transform = new Transform();
+        poseTransform = new Transform();
+        finalTransform = new Transform();
         skinMatrix = new Mat4();
         rotMatrix = new Mat3();
         invRotMat = new Mat3();
@@ -52,7 +54,7 @@ public class Bone implements BoneSolver.Solvable
     
     public Vec3 getHeadPos()
     {
-        Vec3 out = new Vec3(transform.position);
+        Vec3 out = new Vec3(finalTransform.position);
         out.mult(matrix);
         out.add(head);
         if (parent != null) out.mult(parent.skinMatrix);
@@ -67,21 +69,28 @@ public class Bone implements BoneSolver.Solvable
         skinMatrix.translate(head);
         if (parent != null && !inheritRotation) skinMatrix.mult(new Mat4(parent.invRotMat));
         skinMatrix.mult(new Mat4(matrix));
-        transform.apply(skinMatrix);
+        finalTransform.apply(skinMatrix);
         skinMatrix.mult(new Mat4(invMat));
         skinMatrix.translate(Vec3.negate(head));
         
         rotMatrix.setIdentity();
         if (parent != null && inheritRotation) rotMatrix.mult(parent.rotMatrix);
         rotMatrix.mult(matrix);
-        transform.apply(rotMatrix);
+        finalTransform.apply(rotMatrix);
         rotMatrix.mult(invMat);
         
-        if (!transform.scale.isZero(0.0f)) Mat3.invert(rotMatrix, invRotMat);
+        if (!finalTransform.scale.isZero(0.0f)) Mat3.invert(rotMatrix, invRotMat);
     }
     
     public Bone getParent()
     {
         return parent;
+    }
+
+    @Override
+    public void populateSolveGraph(DAG<BoneSolver.Solvable> graph)
+    {
+        if (parent != null) graph.addEdge(parent, this);
+        else graph.add(this);
     }
 }

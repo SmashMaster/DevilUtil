@@ -54,7 +54,7 @@ public class Pose
         {
             Bone bone = armature.getBone(bonePose.name);
             if (bone == null) continue;
-            bone.transform.set(bonePose.transform);
+            bone.poseTransform.set(bonePose.transform);
         }
     }
     

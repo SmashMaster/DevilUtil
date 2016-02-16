@@ -37,7 +37,7 @@ public class Armature implements DataBlock
     {
         Bone bone = nameMap.get(name);
         if (bone == null) return;
-        bone.transform.setProperty(property, index, value);
+        bone.poseTransform.setProperty(property, index, value);
     }
     
     @Override

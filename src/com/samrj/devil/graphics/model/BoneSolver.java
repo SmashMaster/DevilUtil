@@ -2,8 +2,12 @@ package com.samrj.devil.graphics.model;
 
 import com.samrj.devil.io.Memory;
 import com.samrj.devil.math.topo.DAG;
+import com.samrj.devil.util.IdentitySet;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -19,7 +23,9 @@ public class BoneSolver
     public final Memory matrixBlock;
     public final ByteBuffer matrixData;
     
-    private final List<Solvable> solveOrder;
+    private final List<Solvable> extraSolvables;
+    private final IdentitySet<Bone> independent;
+    private List<Solvable> solveOrder;
     
     public BoneSolver(ModelObject meshObject)
     {
@@ -29,26 +35,46 @@ public class BoneSolver
         vertexGroups = meshObject.vertexGroups;
         matrixBlock = new Memory(vertexGroups.length*16*4);
         matrixData = matrixBlock.buffer;
+        extraSolvables = new LinkedList<>();
+        independent = new IdentitySet<>();
+    }
+    
+    public void addSolvable(Solvable s)
+    {
+        solveOrder = null;
+        extraSolvables.add(s);
+    }
+    
+    public void clearSolvables()
+    {
+        solveOrder = null;
+        extraSolvables.clear();
+    }
+    
+    public void sortSolvables()
+    {
+        independent.clear();
+        independent.addAll(Arrays.asList(armature.bones));
+        for (IKConstraint ik : ikConstraints) ik.removeSolved(independent);
+        for (Solvable s : extraSolvables) s.removeSolved(independent);
         
         DAG<Solvable> solveGraph = new DAG<>();
-        for (Bone bone : armature.bones)
-        {
-            Bone parent = bone.getParent();
-            if (parent == null) continue;
-            solveGraph.addEdge(parent, bone);
-        }
-        for (IKConstraint ik : ikConstraints)
-        {
-            solveGraph.addEdge(ik.getParent(), ik);
-            solveGraph.addEdge(ik.getTarget(), ik);
-            solveGraph.addEdge(ik.getPole(), ik);
-            solveGraph.addEdge(ik, ik.getStart());
-        }
+        for (Bone bone : armature.bones) bone.populateSolveGraph(solveGraph);
+        for (IKConstraint ik : ikConstraints) ik.populateSolveGraph(solveGraph);
+        for (Solvable s : extraSolvables) s.populateSolveGraph(solveGraph);
         solveOrder = solveGraph.sort();
     }
     
     public void solve()
     {
+        if (solveOrder == null) throw new IllegalStateException("Unsorted. Call sortSolvables() first.");
+        
+        for (Bone bone : independent)
+        {
+            bone.finalTransform.set(bone.poseTransform);
+            bone.finalTransform.rotation.normalize();
+        }
+        
         matrixData.rewind();
         for (Solvable s : solveOrder) s.solve();
         
@@ -65,8 +91,10 @@ public class BoneSolver
         matrixBlock.free();
     }
     
-    interface Solvable
+    public interface Solvable
     {
-        void solve();
+        public void populateSolveGraph(DAG<Solvable> graph);
+        public default void removeSolved(Set<Bone> independent) {}
+        public void solve();
     }
 }

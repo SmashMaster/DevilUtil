@@ -5,8 +5,10 @@ import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
+import com.samrj.devil.math.topo.DAG;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.Set;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -72,10 +74,29 @@ public class IKConstraint implements BoneSolver.Solvable
     }
     
     @Override
+    public void populateSolveGraph(DAG<BoneSolver.Solvable> graph)
+    {
+        graph.addEdge(parent, this);
+        graph.addEdge(target, this);
+        graph.addEdge(pole, this);
+        graph.addEdge(this, start);
+    }
+
+    @Override
+    public void removeSolved(Set<Bone> independent)
+    {
+        independent.remove(start);
+        independent.remove(end);
+    }
+    
+    @Override
     public void solve()
     {
-        Quat rot1 = start.transform.rotation.setIdentity();
-        Quat rot2 = end.transform.rotation.setIdentity();
+        start.finalTransform.setIdentity();
+        end.finalTransform.setIdentity();
+        
+        Quat rot1 = start.finalTransform.rotation;
+        Quat rot2 = end.finalTransform.rotation;
         Vec3 headPos = start.getHeadPos();
         
         //Create basis vectors for bone orientation.
@@ -100,30 +121,5 @@ public class IKConstraint implements BoneSolver.Solvable
         }
         else rot2.rotate(hinge2, -ang2init); //Reach towards target.
         //Also need cases for targets that are too close.
-    }
-    
-    public Bone getEnd()
-    {
-        return end;
-    }
-    
-    public Bone getStart()
-    {
-        return start;
-    }
-    
-    public Bone getParent()
-    {
-        return parent;
-    }
-    
-    public Bone getTarget()
-    {
-        return target;
-    }
-    
-    public Bone getPole()
-    {
-        return pole;
     }
 }
