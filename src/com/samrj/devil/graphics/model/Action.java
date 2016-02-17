@@ -4,7 +4,9 @@ import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Util;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -16,12 +18,15 @@ public class Action implements DataBlock
 {
     public final String name;
     public final FCurve[] fcurves;
+    public final Marker[] markers;
     public final float minX, maxX;
+    private final Map<String, Marker> markerMap;
     
     Action(DataInputStream in) throws IOException
     {
         name = IOUtil.readPaddedUTF(in);
         fcurves = IOUtil.arrayFromStream(in, FCurve.class, FCurve::new);
+        markers = IOUtil.arrayFromStream(in, Marker.class, Marker::new);
         
         float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY;
         for (int i=0; i<fcurves.length; i++)
@@ -30,6 +35,9 @@ public class Action implements DataBlock
             if (fcurves[i].maxX > max) max = fcurves[i].maxX;
         }
         minX = min; maxX = max;
+        
+        markerMap = new HashMap<>(markers.length);
+        for (Marker marker : markers) markerMap.put(marker.name, marker);
     }
     
     public float loop(float time)
@@ -55,10 +63,27 @@ public class Action implements DataBlock
         for (FCurve fcurve : fcurves) fcurve.apply(pose, time);
         return pose;
     }
+    
+    public Marker getMarker(String name)
+    {
+        return markerMap.get(name);
+    }
 
     @Override
     public String getName()
     {
         return name;
+    }
+    
+    public class Marker
+    {
+        public final String name;
+        public final float frame;
+        
+        private Marker(DataInputStream in) throws IOException
+        {
+            name = IOUtil.readPaddedUTF(in);
+            frame = in.readInt();
+        }
     }
 }
