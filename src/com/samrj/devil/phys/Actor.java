@@ -16,7 +16,7 @@ import com.samrj.devil.phys.Actor.Settings;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public abstract class Actor<SETTINGS_TYPE extends Settings>
+public class Actor<SETTINGS_TYPE extends Settings>
 {
     public final Vec3 pos, vel = new Vec3();
     public final Vec3 moveDir = new Vec3();
@@ -30,7 +30,7 @@ public abstract class Actor<SETTINGS_TYPE extends Settings>
     protected int groundMaterial;
     protected boolean applyGravity;
     
-    public Runnable jumpCallback, landCallback;
+    public Runnable jumpCallback, fallCallback, landCallback;
     
     /**
      * Creates a new FPSPlayer using the given parameters, keyboard, camera, and
@@ -49,9 +49,6 @@ public abstract class Actor<SETTINGS_TYPE extends Settings>
         pos = shape.pos;
         this.level = level;
     }
-    
-    public abstract void onMouseMoved(float x, float y, float dx, float dy);
-    
     
     /**
      * Makes the player jump. May only jump when standing on something.
@@ -139,30 +136,32 @@ public abstract class Actor<SETTINGS_TYPE extends Settings>
         else //Walking/falling
         {
             boolean wantToMove = !moveDir.isZero(0.0f);
+            Vec3 adjMoveDir = new Vec3(moveDir);
 
             if (ground != null) //Walking
             {
                 if (wantToMove)
                 {
-                    float moveSpeed = moveDir.length();
-                    moveDir.y = -ground.dot(moveDir)*moveSpeed/ground.y;
-                    if (moveSpeed > 1.0f) moveDir.normalize();
-                    moveDir.mult(settings.maxSpeed);
+                    float moveSpeed = adjMoveDir.length();
+                    
+                    adjMoveDir.y = -ground.dot(adjMoveDir)*moveSpeed/ground.y;
+                    if (moveSpeed > 1.0f) adjMoveDir.normalize();
+                    adjMoveDir.mult(settings.maxSpeed);
                 }
 
                 //Lock to ground
                 Geo3DUtil.restrain(vel, Vec3.negate(ground));
-                applyAcc(moveDir, settings.acceleration*dt);
+                applyAcc(adjMoveDir, settings.acceleration*dt);
             }
             else //Falling
             {
                 if (wantToMove)
                 {
-                    float moveSpeed = moveDir.length();
-                    if (moveSpeed > 1.0f) moveDir.normalize();
-                    moveDir.mult(settings.maxSpeed);
-                    moveDir.y = vel.y;
-                    applyAcc(moveDir, settings.airAcceleration*dt);
+                    float moveSpeed = adjMoveDir.length();
+                    if (moveSpeed > 1.0f) adjMoveDir.normalize();
+                    adjMoveDir.mult(settings.maxSpeed);
+                    adjMoveDir.y = vel.y;
+                    applyAcc(adjMoveDir, settings.airAcceleration*dt);
                 }
             }
             
@@ -219,6 +218,10 @@ public abstract class Actor<SETTINGS_TYPE extends Settings>
             //Check for landing
             if (landCallback != null && !startGround && ground != null)
                 landCallback.run();
+            
+            //Check for falling
+            if (fallCallback != null && startGround && ground == null)
+                fallCallback.run();
         }
     }
     

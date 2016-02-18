@@ -60,7 +60,6 @@ public class FPSPlayer extends Actor<Settings>
      * Call to move the player's view around. You may alternatively call
      * camera.onMouseMoved().
      */
-    @Override
     public void onMouseMoved(float x, float y, float dx, float dy)
     {
         camera.onMouseMoved(x, y, dx, dy);
