@@ -102,6 +102,14 @@ public class Geo3DUtil
     }
     
     /**
+     * Returns the area of the triangle formed by the three given points.
+     */
+    public static final float area(Vec3 a, Vec3 b, Vec3 c)
+    {
+        return Vec3.sub(b, a).cross(Vec3.sub(c, a)).length()*0.5f;
+    }
+    
+    /**
      * Returns the distance from the given point to the given plane.
      */
     public static final float dist(Vec3 p, Vec4 plane)

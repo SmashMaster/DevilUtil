@@ -150,7 +150,7 @@ public class GeoMesh
             while (it.hasNext())
             {
                 Face f = it.next();
-                if (f.a == f.b || f.b == f.c || f.c == f.a) it.remove();
+                if (Geo3DUtil.area(f.a, f.b, f.c) < 0.0001f) it.remove();
             }
         }
         
