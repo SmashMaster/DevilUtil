@@ -1,4 +1,4 @@
-package com.samrj.devil.graphics.model;
+package com.samrj.devil.model;
 
 /**
  * @author Samuel Johnson (SmashMaster)

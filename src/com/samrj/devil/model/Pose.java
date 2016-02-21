@@ -1,6 +1,6 @@
-package com.samrj.devil.graphics.model;
+package com.samrj.devil.model;
 
-import com.samrj.devil.graphics.model.Transform.Property;
+import com.samrj.devil.model.Transform.Property;
 import com.samrj.devil.io.IOUtil;
 import java.io.DataInputStream;
 import java.io.IOException;

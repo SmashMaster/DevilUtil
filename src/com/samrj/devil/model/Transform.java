@@ -1,4 +1,4 @@
-package com.samrj.devil.graphics.model;
+package com.samrj.devil.model;
 
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;

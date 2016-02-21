@@ -1,4 +1,4 @@
-package com.samrj.devil.graphics.model;
+package com.samrj.devil.model;
 
 import com.samrj.devil.io.IOUtil;
 import java.io.DataInputStream;
@@ -9,18 +9,18 @@ import java.io.IOException;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Library implements DataBlock
+public class Material implements DataBlock
 {
-    public final String filepath;
+    public final String name;
     
-    Library(DataInputStream in) throws IOException
+    Material(DataInputStream in) throws IOException
     {
-        filepath = IOUtil.readPaddedUTF(in);
+        name = IOUtil.readPaddedUTF(in);
     }
     
     @Override
     public String getName()
     {
-        return filepath;
+        return name;
     }
 }

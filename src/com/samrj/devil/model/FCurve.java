@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-package com.samrj.devil.graphics.model;
+package com.samrj.devil.model;
 
 import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Vec2;

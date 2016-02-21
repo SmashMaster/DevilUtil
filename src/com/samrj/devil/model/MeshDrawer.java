@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-package com.samrj.devil.graphics.model;
+package com.samrj.devil.model;
 
 import com.samrj.devil.gl.AttributeType;
 import static com.samrj.devil.gl.AttributeType.*;
