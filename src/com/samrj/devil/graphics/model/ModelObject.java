@@ -20,10 +20,13 @@ public class ModelObject implements DataBlock
     private final int dataType, dataIndex, dataLibIndex;
     private final String dataLibName;
     private final int parentIndex;
+    private final String parentBoneName;
     private final int actionIndex;
     
+    private boolean populated;
     private Object data;
     private ModelObject parent;
+    private Bone parentBone;
     private Action action;
     
     ModelObject(DataInputStream in) throws IOException
@@ -34,6 +37,7 @@ public class ModelObject implements DataBlock
         dataIndex = dataType >= 0 && dataLibIndex < 0 ? in.readInt() : -1;
         dataLibName = dataLibIndex >= 0 ? IOUtil.readPaddedUTF(in) : null;
         parentIndex = in.readInt();
+        parentBoneName = parentIndex >= 0 ? IOUtil.readPaddedUTF(in) : null;
         transform = new Transform(in);
         vertexGroups = IOUtil.arrayFromStream(in, String.class, (s) -> IOUtil.readPaddedUTF(s));
         boolean hasPose = in.readInt() != 0;
@@ -68,11 +72,24 @@ public class ModelObject implements DataBlock
     
     void populate(Model model)
     {
+        if (populated) return;
+        
         data = dataIndex < 0 ? null : dataArray(model).get(dataIndex);
         if (data instanceof Armature)
             for (IKConstraint ik : ikConstraints) ik.populate((Armature)data);
         parent = parentIndex < 0 ? null : model.objects.get(parentIndex);
+        if (parent != null)
+        {
+            parent.populate(model);
+            if (parent.getData() instanceof Armature)
+            {
+                Armature armature = (Armature)parent.getData();
+                parentBone = armature.getBone(parentBoneName);
+            }
+        }
         action = actionIndex < 0 ? null : model.actions.get(actionIndex);
+        
+        populated = true;
     }
     
     public Object getData()
@@ -83,6 +100,11 @@ public class ModelObject implements DataBlock
     public ModelObject getParent()
     {
         return parent;
+    }
+    
+    public Bone getParentBone()
+    {
+        return parentBone;
     }
     
     public Action getAction()
