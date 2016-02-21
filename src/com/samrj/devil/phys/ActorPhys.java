@@ -6,7 +6,7 @@ import com.samrj.devil.geo3d.GeoMesh;
 import com.samrj.devil.geo3d.SweepResult;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
-import com.samrj.devil.phys.Actor.Settings;
+import com.samrj.devil.phys.ActorPhys.Settings;
 
 /**
  * Basic class handling collision and movement.
@@ -16,7 +16,7 @@ import com.samrj.devil.phys.Actor.Settings;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Actor<SETTINGS_TYPE extends Settings>
+public class ActorPhys<SETTINGS_TYPE extends Settings>
 {
     public final Vec3 pos, vel = new Vec3();
     public final Vec3 moveDir = new Vec3();
@@ -39,7 +39,7 @@ public class Actor<SETTINGS_TYPE extends Settings>
      * @param settings The FPSPlayer parameters to use.
      * @param level The level to collide with.
      */
-    public Actor(SETTINGS_TYPE settings, GeoMesh level)
+    public ActorPhys(SETTINGS_TYPE settings, GeoMesh level)
     {
         if (settings == null || level == null) throw new NullPointerException();
         
@@ -48,6 +48,7 @@ public class Actor<SETTINGS_TYPE extends Settings>
         shape.radii.set(settings.width, settings.height, settings.width).mult(0.5f);
         pos = shape.pos;
         this.level = level;
+        ground = new Vec3(0.0f, 1.0f, 0.0f);
     }
     
     /**

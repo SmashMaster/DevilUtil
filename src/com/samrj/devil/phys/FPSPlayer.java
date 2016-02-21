@@ -14,7 +14,7 @@ import org.lwjgl.glfw.GLFW;
  * @copyright 2016 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class FPSPlayer extends Actor<Settings>
+public class FPSPlayer extends ActorPhys<Settings>
 {
     protected final Keyboard keyboard;
     protected final FPSCamera camera;
@@ -138,7 +138,7 @@ public class FPSPlayer extends Actor<Settings>
      * A container for all of the parameters needed to define a player. Has good
      * defaults for each value.
      */
-    public static class Settings extends Actor.Settings
+    public static class Settings extends ActorPhys.Settings
     {
         public float cameraHeight = 1.640625f;
         public float strideLength = 1.25f;

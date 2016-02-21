@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public class Pose
 {
-    public final Map<String, PoseBone> bones;
+    private final Map<String, PoseBone> bones;
     
     Pose(DataInputStream in) throws IOException
     {
@@ -28,7 +28,7 @@ public class Pose
         }
     }
     
-    Pose(Set<String> names)
+    public Pose(Set<String> names)
     {
         bones = new HashMap<>(names.size());
         for (String name : names) bones.put(name, new PoseBone(name));
@@ -39,6 +39,11 @@ public class Pose
         bones = new HashMap<>(pose.bones.size());
         for (PoseBone bone : pose.bones.values())
             bones.put(bone.name, new PoseBone(bone));
+    }
+    
+    public Pose()
+    {
+        bones = new HashMap<>();
     }
     
     public void setBoneProperty(String name, Property property, int index, float value)
@@ -58,6 +63,46 @@ public class Pose
         }
     }
     
+    public PoseBone getBone(String name)
+    {
+        return bones.get(name);
+    }
+    
+    public Pose clear()
+    {
+        bones.clear();
+        return this;
+    }
+    
+    /**
+     * Adds a single new pose bone to this pose with the given name. Does
+     * nothing if a bone with that name already exists.
+     */
+    public Pose register(String name)
+    {
+        if (name == null) throw new NullPointerException();
+        if (!bones.containsKey(name)) bones.put(name, new PoseBone(name));
+        return this;
+    }
+    
+    /**
+     * Adds new pose bones and overwrites shared ones.
+     */
+    public Pose put(Pose pose)
+    {
+        for (PoseBone bone : pose.bones.values())
+        {
+            PoseBone existing = bones.get(bone.name);
+            if (existing == null) bones.put(bone.name, new PoseBone(bone));
+            else existing.set(bone);
+        }
+        
+        return this;
+    }
+    
+    /**
+     * Mixes any shared pose bones.
+     */
     public Pose mix(Pose pose, float t)
     {
         for (PoseBone bone : bones.values())
@@ -91,6 +136,11 @@ public class Pose
         {
             name = bone.name;
             transform = new Transform(bone.transform);
+        }
+        
+        private void set(PoseBone bone)
+        {
+            transform.set(bone.transform);
         }
         
         private void mix(PoseBone bone, float t)
