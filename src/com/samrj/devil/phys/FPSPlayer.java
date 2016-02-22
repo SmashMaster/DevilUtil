@@ -146,7 +146,7 @@ public class FPSPlayer extends ActorPhys<Settings>
         protected float cameraOffset;
         
         @Override
-        protected void calcValues()
+        public void calcValues()
         {
             groundNormalMinY = (float)Math.cos(groundMaxIncline);
             cameraOffset = cameraHeight - height*0.5f;

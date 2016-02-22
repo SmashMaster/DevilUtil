@@ -102,6 +102,11 @@ public class Model
             map = new HashMap<>(array.length);
             for (T data : array) map.put(data.getName(), data);
         }
+        
+        public boolean contains(String name)
+        {
+            return map.containsKey(name);
+        }
 
         public T get(String name)
         {

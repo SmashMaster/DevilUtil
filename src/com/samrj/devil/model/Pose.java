@@ -68,20 +68,25 @@ public class Pose
         return bones.get(name);
     }
     
+    /**
+     * Adds a single new pose bone to this pose with the given name. Does
+     * nothing if a bone with that name already exists. Returns the bone.
+     */
+    public PoseBone regBone(String name)
+    {
+        if (name == null) throw new NullPointerException();
+        PoseBone out = bones.get(name);
+        if (out == null)
+        {
+            out = new PoseBone(name);
+            bones.put(name, out);
+        }
+        return out;
+    }
+    
     public Pose clear()
     {
         bones.clear();
-        return this;
-    }
-    
-    /**
-     * Adds a single new pose bone to this pose with the given name. Does
-     * nothing if a bone with that name already exists.
-     */
-    public Pose register(String name)
-    {
-        if (name == null) throw new NullPointerException();
-        if (!bones.containsKey(name)) bones.put(name, new PoseBone(name));
         return this;
     }
     

@@ -243,7 +243,7 @@ public class ActorPhys<SETTINGS_TYPE extends Settings>
         
         protected float groundNormalMinY;
         
-        protected void calcValues()
+        public void calcValues()
         {
             groundNormalMinY = (float)Math.cos(groundMaxIncline);
         }

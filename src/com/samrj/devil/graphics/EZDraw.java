@@ -5,12 +5,16 @@ import com.samrj.devil.gl.Shader;
 import com.samrj.devil.gl.ShaderProgram;
 import com.samrj.devil.gl.VAO;
 import com.samrj.devil.gl.VertexStream;
+import static com.samrj.devil.graphics.GraphicsUtil.glVertex;
+import static com.samrj.devil.graphics.GraphicsUtil.glVertex;
 import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Mat4;
+import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.Vec4;
 import java.io.IOException;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
 /**
@@ -26,7 +30,7 @@ public final class EZDraw
         "#version 140\n" +
         "\n" +
         "uniform mat4 u_projection_matrix;\n" +
-        "uniform mat4 u_view_matrix;\n" +
+        "uniform mat4 u_model_view_matrix;\n" +
         "\n" +
         "in vec3 in_pos;\n" +
         "in vec4 in_color;\n" +
@@ -36,7 +40,7 @@ public final class EZDraw
         "void main()\n" +
         "{\n" +
         "    v_color = in_color;\n" +
-        "    gl_Position = u_projection_matrix*u_view_matrix*vec4(in_pos, 1.0);\n" +
+        "    gl_Position = u_projection_matrix*u_model_view_matrix*vec4(in_pos, 1.0);\n" +
         "}\n";
     
     private static final String FRAG_SOURCE =
@@ -54,7 +58,8 @@ public final class EZDraw
     private static final int DEFAULT_MAX_VERTS = 4096;
     
     private static ShaderProgram shader;
-    private static Mat4 projMat, viewMat;
+    private static Mat4 projMat;
+    private static MatStack modelViewStack;
     private static VertexStream stream;
     private static Vec3 pos;
     private static Vec4 color;
@@ -84,7 +89,7 @@ public final class EZDraw
             DGL.delete(vert, frag);
             
             projMat = Mat4.identity();
-            viewMat = Mat4.identity();
+            modelViewStack = new MatStack();
         }
         catch (IOException e)
         {
@@ -138,7 +143,7 @@ public final class EZDraw
      * 
      * @param matrix The projection matrix to use.
      */
-    public static void projection(Mat4 matrix)
+    public static void setProjection(Mat4 matrix)
     {
         ensureInitialized();
         projMat.set(matrix);
@@ -149,10 +154,10 @@ public final class EZDraw
      * 
      * @param matrix The view matrix to use.
      */
-    public static void view(Mat4 matrix)
+    public static MatStack getModelViewStack()
     {
         ensureInitialized();
-        viewMat.set(matrix);
+        return modelViewStack;
     }
     
     /**
@@ -249,6 +254,65 @@ public final class EZDraw
         stream.vertex();
     }
     
+    public static void ellipsoid(Vec3 radii, int segments)
+    {
+        float dt = 8.0f/segments;
+        
+        begin(GL11.GL_LINE_LOOP);
+        for (float t=0.0f; t<8.0f; t+=dt)
+        {
+            Vec2 dir = Util.squareDir(t).normalize();
+            vertex(dir.x*radii.x, dir.y*radii.y, 0.0f);
+        }
+        end();
+        begin(GL11.GL_LINE_LOOP);
+        for (float t=0.0f; t<8.0f; t+=dt)
+        {
+            Vec2 dir = Util.squareDir(t).normalize();
+            vertex(dir.x*radii.x, 0.0f, dir.y*radii.z);
+        }
+        end();
+        begin(GL11.GL_LINE_LOOP);
+        for (float t=0.0f; t<8.0f; t+=dt)
+        {
+            Vec2 dir = Util.squareDir(t).normalize();
+            vertex(0.0f, dir.x*radii.y, dir.y*radii.z);
+        }
+        end();
+    }
+    
+    public static void box(Vec3 radii)
+    {
+        begin(GL11.GL_LINES);
+        vertex(-radii.x, -radii.y, -radii.z);
+        vertex(-radii.x, -radii.y,  radii.z);
+        vertex(-radii.x,  radii.y, -radii.z);
+        vertex(-radii.x,  radii.y,  radii.z);
+        vertex( radii.x,  radii.y, -radii.z);
+        vertex( radii.x,  radii.y,  radii.z);
+        vertex( radii.x, -radii.y, -radii.z);
+        vertex( radii.x, -radii.y,  radii.z);
+        
+        vertex(-radii.x, -radii.y, -radii.z);
+        vertex(-radii.x,  radii.y, -radii.z);
+        vertex(-radii.x, -radii.y,  radii.z);
+        vertex(-radii.x,  radii.y,  radii.z);
+        vertex( radii.x, -radii.y,  radii.z);
+        vertex( radii.x,  radii.y,  radii.z);
+        vertex( radii.x, -radii.y, -radii.z);
+        vertex( radii.x,  radii.y, -radii.z);
+        
+        vertex(-radii.x, -radii.y, -radii.z);
+        vertex( radii.x, -radii.y, -radii.z);
+        vertex(-radii.x, -radii.y,  radii.z);
+        vertex( radii.x, -radii.y,  radii.z);
+        vertex(-radii.x,  radii.y,  radii.z);
+        vertex( radii.x,  radii.y,  radii.z);
+        vertex(-radii.x,  radii.y, -radii.z);
+        vertex( radii.x,  radii.y, -radii.z);
+        end();
+    }
+    
     /**
      * Ends the current draw command, uploading the data to the GPU and drawing
      * to the current frame buffer.
@@ -263,7 +327,7 @@ public final class EZDraw
         stream.upload();
         DGL.useProgram(shader);
         shader.uniformMat4("u_projection_matrix", projMat);
-        shader.uniformMat4("u_view_matrix", viewMat);
+        shader.uniformMat4("u_model_view_matrix", modelViewStack.mat);
         DGL.bindVAO(vao);
         DGL.draw(stream, drawMode);
         drawMode = -1;
@@ -283,7 +347,7 @@ public final class EZDraw
         DGL.delete(vao, stream, shader);
         shader = null;
         projMat = null;
-        viewMat = null;
+        modelViewStack = null;
         stream = null;
         pos = null;
         color = null;
