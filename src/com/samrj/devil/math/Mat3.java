@@ -587,6 +587,7 @@ public class Mat3 implements Bufferable, Streamable
                  d, e, f,
                  g, h, i;
     
+    // <editor-fold defaultstate="collapsed" desc="Constructors">
     /**
      * Creates a new 3x3 zero matrix, NOT an identity matrix. Use identity() to
      * create an identity matrix.
@@ -653,7 +654,44 @@ public class Mat3 implements Bufferable, Streamable
     {
         Mat3.this.read(in);
     }
-    
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Instance accessor methods">
+    /**
+     * Returns the entry at the specified position in this matrix.
+     * 
+     * @param row A row of this matrix.
+     * @param column A column of this matrix.
+     * @return The entry at the given row and column.
+     */
+    public float getEntry(int row, int column)
+    {
+        switch (row)
+        {
+            case 0: switch (column)
+            {
+                case 0: return a;
+                case 1: return b;
+                case 2: return c;
+                default: throw new ArrayIndexOutOfBoundsException();
+            }
+            case 1: switch (column)
+            {
+                case 0: return d;
+                case 1: return e;
+                case 2: return f;
+                default: throw new ArrayIndexOutOfBoundsException();
+            }
+            case 2: switch (column)
+            {
+                case 0: return g;
+                case 1: return h;
+                case 2: return i;
+                default: throw new ArrayIndexOutOfBoundsException();
+            }
+            default: throw new ArrayIndexOutOfBoundsException();
+        }
+    }
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Instance mutator methods">
     /**
      * Sets this to the given matrix, expanded.
@@ -704,6 +742,91 @@ public class Mat3 implements Bufferable, Streamable
         this.d = d; this.e = e; this.f = f;
         this.g = g; this.h = h; this.i = i;
         return this;
+    }
+    
+    /**
+     * Sets the entry at the given position in this matrix to the given float.
+     * 
+     * @param row A row of this matrix.
+     * @param column A column of this matrix.
+     * @param v The value to set the entry to.
+     * @return This matrix.
+     */
+    public Mat3 setEntry(int row, int column, float v)
+    {
+        switch (row)
+        {
+            case 0: switch (column)
+            {
+                case 0: a = v; return this;
+                case 1: b = v; return this;
+                case 2: c = v; return this;
+                default: throw new ArrayIndexOutOfBoundsException();
+            }
+            case 1: switch (column)
+            {
+                case 0: d = v; return this;
+                case 1: e = v; return this;
+                case 2: f = v; return this;
+                default: throw new ArrayIndexOutOfBoundsException();
+            }
+            case 2: switch (column)
+            {
+                case 0: g = v; return this;
+                case 1: h = v; return this;
+                case 2: i = v; return this;
+                default: throw new ArrayIndexOutOfBoundsException();
+            }
+            default: throw new ArrayIndexOutOfBoundsException();
+        }
+    }
+    
+    /**
+     * Sets the specified row of this matrix to the given vector.
+     * 
+     * @param v The vector to copy.
+     * @param row The row of the matrix to copy to.
+     * @return This matrix.
+     */
+    public Mat3 setRow(Vec3 v, int row)
+    {
+        switch (row)
+        {
+            case 0: a = v.x;
+                    b = v.y;
+                    c = v.z; return this;
+            case 1: d = v.x;
+                    e = v.y;
+                    f = v.z; return this;
+            case 2: g = v.x;
+                    h = v.y;
+                    i = v.z; return this;
+            default: throw new ArrayIndexOutOfBoundsException();
+        }
+    }
+    
+    /**
+     * Sets the specified column of this matrix to the given vector.
+     * 
+     * @param v The vector to copy.
+     * @param column The column of the matrix to copy to.
+     * @return This matrix.
+     */
+    public Mat3 setColumn(Vec3 v, int column)
+    {
+        switch (column)
+        {
+            case 0: a = v.x;
+                    d = v.y;
+                    g = v.z; return this;
+            case 1: b = v.x;
+                    e = v.y;
+                    h = v.z; return this;
+            case 2: c = v.x;
+                    f = v.y;
+                    i = v.z; return this;
+            default: throw new ArrayIndexOutOfBoundsException();
+        }
     }
     
     /**

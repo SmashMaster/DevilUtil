@@ -858,6 +858,7 @@ public class Mat4 implements Bufferable, Streamable
                  i, j, k, l,
                  m, n, o, p;
     
+    // <editor-fold defaultstate="collapsed" desc="Constructors">
     /**
      * Creates a new 4x4 zero matrix, NOT an identity matrix. Use identity() to
      * create an identity matrix.
@@ -928,7 +929,55 @@ public class Mat4 implements Bufferable, Streamable
     {
         Mat4.this.read(in);
     }
-    
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Instance accessor methods">
+    /**
+     * Returns the entry at the specified position in this matrix.
+     * 
+     * @param row A row of this matrix.
+     * @param column A column of this matrix.
+     * @return The entry at the given row and column.
+     */
+    public float getEntry(int row, int column)
+    {
+        switch (row)
+        {
+            case 0: switch (column)
+            {
+                case 0: return a;
+                case 1: return b;
+                case 2: return c;
+                case 3: return d;
+                default: throw new ArrayIndexOutOfBoundsException();
+            }
+            case 1: switch (column)
+            {
+                case 0: return e;
+                case 1: return f;
+                case 2: return g;
+                case 3: return h;
+                default: throw new ArrayIndexOutOfBoundsException();
+            }
+            case 2: switch (column)
+            {
+                case 0: return i;
+                case 1: return j;
+                case 2: return k;
+                case 3: return l;
+                default: throw new ArrayIndexOutOfBoundsException();
+            }
+            case 3: switch (column)
+            {
+                case 0: return m;
+                case 1: return n;
+                case 2: return o;
+                case 3: return p;
+                default: throw new ArrayIndexOutOfBoundsException();
+            }
+            default: throw new ArrayIndexOutOfBoundsException();
+        }
+    }
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Instance mutator methods">
     /**
      * Sets this to the given matrix, expanded.
@@ -981,6 +1030,116 @@ public class Mat4 implements Bufferable, Streamable
         this.i = i; this.j = j; this.k = k; this.l = l;
         this.m = m; this.n = n; this.o = o; this.p = p;
         return this;
+    }
+    
+    /**
+     * Sets the entry at the given position in this matrix to the given float.
+     * 
+     * @param row A row of this matrix.
+     * @param column A column of this matrix.
+     * @param v The value to set the entry to.
+     * @return This matrix.
+     */
+    public Mat4 setEntry(int row, int column, float v)
+    {
+        switch (row)
+        {
+            case 0: switch (column)
+            {
+                case 0: a = v; return this;
+                case 1: b = v; return this;
+                case 2: c = v; return this;
+                case 3: d = v; return this;
+                default: throw new ArrayIndexOutOfBoundsException();
+            }
+            case 1: switch (column)
+            {
+                case 0: e = v; return this;
+                case 1: f = v; return this;
+                case 2: g = v; return this;
+                case 3: h = v; return this;
+                default: throw new ArrayIndexOutOfBoundsException();
+            }
+            case 2: switch (column)
+            {
+                case 0: i = v; return this;
+                case 1: j = v; return this;
+                case 2: k = v; return this;
+                case 3: l = v; return this;
+                default: throw new ArrayIndexOutOfBoundsException();
+            }
+            case 3: switch (column)
+            {
+                case 0: m = v; return this;
+                case 1: n = v; return this;
+                case 2: o = v; return this;
+                case 3: p = v; return this;
+                default: throw new ArrayIndexOutOfBoundsException();
+            }
+            default: throw new ArrayIndexOutOfBoundsException();
+        }
+    }
+    
+    /**
+     * Sets the specified row of this matrix to the given vector.
+     * 
+     * @param v The vector to copy.
+     * @param row The row of the matrix to copy to.
+     * @return This matrix.
+     */
+    public Mat4 setRow(Vec4 v, int row)
+    {
+        switch (row)
+        {
+            case 0: a = v.x;
+                    b = v.y;
+                    c = v.z;
+                    d = v.w; return this;
+            case 1: e = v.x;
+                    f = v.y;
+                    g = v.z;
+                    h = v.w; return this;
+            case 2: i = v.x;
+                    j = v.y;
+                    k = v.z;
+                    l = v.w; return this;
+            case 3: m = v.x;
+                    n = v.y;
+                    o = v.z;
+                    p = v.w; return this;
+            default: throw new ArrayIndexOutOfBoundsException();
+        }
+    }
+    
+    /**
+     * Sets the specified column of this matrix to the given vector.
+     * 
+     * @param v The vector to copy.
+     * @param column The column of the matrix to copy to.
+     * @return This matrix.
+     */
+    public Mat4 setColumn(Vec4 v, int column)
+    {
+        switch (column)
+        {
+            case 0: a = v.x;
+                    e = v.y;
+                    i = v.z;
+                    m = v.w; return this;
+            case 1: b = v.x;
+                    f = v.y;
+                    j = v.z;
+                    n = v.w; return this;
+            case 2: c = v.x;
+                    g = v.y;
+                    k = v.z;
+                    o = v.w; return this;
+            case 3: d = v.x;
+                    h = v.y;
+                    l = v.z;
+                    p = v.w; return this;
+            default: throw new ArrayIndexOutOfBoundsException();
+        }
     }
     
     /**

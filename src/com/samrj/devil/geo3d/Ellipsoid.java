@@ -36,6 +36,7 @@ import com.samrj.devil.math.Vec4;
 public class Ellipsoid implements ConvexShape
 {
     private static final float EPSILON = 1.0f/65536.0f;
+    
     public final Vec3 pos = new Vec3();
     public final Vec3 radii = new Vec3();
     

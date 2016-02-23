@@ -38,6 +38,25 @@ public class Vec4 implements Bufferable, Streamable
 {
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
+     * Returns the given component of a vector.
+     * 
+     * @param v The vector whose component to get.
+     * @param i The component to get.
+     * @return The component of the vector.
+     */
+    public float getComponent(Vec4 v, int i)
+    {
+        switch (i)
+        {
+            case 0: return v.x;
+            case 1: return v.y;
+            case 2: return v.z;
+            case 3: return v.w;
+            default: throw new ArrayIndexOutOfBoundsException();
+        }
+    }
+    
+    /**
      * Returns the dot product of two given vectors.
      * 
      * @param v0 The first vector.
@@ -161,6 +180,68 @@ public class Vec4 implements Bufferable, Streamable
         target.y = source.y;
         target.z = source.z;
         target.w = source.w;
+    }
+    
+    /**
+     * Sets a vector to the given row of a matrix.
+     * 
+     * @param m The matrix to copy from.
+     * @param row A row of the matrix.
+     * @param result The vector in which to store the result.
+     */
+    public static final void copyRow(Mat4 m, int row, Vec4 result)
+    {
+        switch (row)
+        {
+            case 0: result.x = m.a;
+                    result.y = m.b;
+                    result.z = m.c;
+                    result.w = m.d; return;
+            case 1: result.x = m.e;
+                    result.y = m.f;
+                    result.z = m.g;
+                    result.w = m.h; return;
+            case 2: result.x = m.i;
+                    result.y = m.j;
+                    result.z = m.k;
+                    result.w = m.l; return;
+            case 3: result.x = m.m;
+                    result.y = m.n;
+                    result.z = m.o;
+                    result.w = m.p; return;
+            default: throw new ArrayIndexOutOfBoundsException();
+        }
+    }
+    
+    /**
+     * Sets a vector to the given column of a matrix.
+     * 
+     * @param m The matrix to copy from.
+     * @param column A column of the matrix.
+     * @param result The vector in which to store the result.
+     */
+    public static final void copyColumn(Mat4 m, int column, Vec4 result)
+    {
+        switch (column)
+        {
+            case 0: result.x = m.a;
+                    result.y = m.e;
+                    result.z = m.i;
+                    result.w = m.m; return;
+            case 1: result.x = m.b;
+                    result.y = m.f;
+                    result.z = m.j;
+                    result.w = m.n; return;
+            case 2: result.x = m.c;
+                    result.y = m.g;
+                    result.z = m.k;
+                    result.w = m.o; return;
+            case 3: result.x = m.d;
+                    result.y = m.h;
+                    result.z = m.l;
+                    result.w = m.p; return;
+            default: throw new ArrayIndexOutOfBoundsException();
+        }
     }
     
     /**
@@ -377,6 +458,34 @@ public class Vec4 implements Bufferable, Streamable
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
+    /**
+     * Returns the given row of a matrix in a new vector.
+     * 
+     * @param m The matrix to copy from.
+     * @param row The row to get.
+     * @return A new vector containing the result.
+     */
+    public static final Vec4 fromRow(Mat4 m, int row)
+    {
+        Vec4 result = new Vec4();
+        copyRow(m, row, result);
+        return result;
+    }
+    
+    /**
+     * Returns the given column of a matrix in a new vector.
+     * 
+     * @param m The matrix to copy from.
+     * @param column The column to get.
+     * @return A new vector containing the result.
+     */
+    public static final Vec4 fromColumn(Mat4 m, int column)
+    {
+        Vec4 result = new Vec4();
+        copyColumn(m, column, result);
+        return result;
+    }
+    
     /**
      * Returns the sum of {@code v0} and {@code v1} in a new vector.
      * 
@@ -684,6 +793,17 @@ public class Vec4 implements Bufferable, Streamable
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Instance accessor methods">
     /**
+     * Gets the component of this vector specified by the given index.
+     * 
+     * @param i The index of the component to get.
+     * @return The component.
+     */
+    public float getComponent(int i)
+    {
+        return getComponent(this, i);
+    }
+    
+    /**
      * Returns the dot product of this and the given vector.
      * 
      * @param v The vector with which to calculate the dot product.
@@ -838,6 +958,32 @@ public class Vec4 implements Bufferable, Streamable
             case 3: w = f; return this;
             default: throw new ArrayIndexOutOfBoundsException();
         }
+    }
+    
+    /**
+     * Copies the given row of a matrix into this vector.
+     * 
+     * @param m The matrix to copy from.
+     * @param row The row to copy.
+     * @return This vector.
+     */
+    public Vec4 setAsRow(Mat4 m, int row)
+    {
+        copyRow(m, row, this);
+        return this;
+    }
+    
+    /**
+     * Copies the given row of a matrix into this vector.
+     * 
+     * @param m The matrix to copy from.
+     * @param column The column to copy.
+     * @return This vector.
+     */
+    public Vec4 setAsColumn(Mat4 m, int column)
+    {
+        copyColumn(m, column, this);
+        return this;
     }
     
     /**

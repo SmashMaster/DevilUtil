@@ -57,6 +57,24 @@ public class Vec3 implements Bufferable, Streamable
 {
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
+     * Returns the given component of a vector.
+     * 
+     * @param v The vector whose component to get.
+     * @param i The component to get.
+     * @return The component of the vector.
+     */
+    public float getComponent(Vec3 v, int i)
+    {
+        switch (i)
+        {
+            case 0: return v.x;
+            case 1: return v.y;
+            case 2: return v.z;
+            default: throw new ArrayIndexOutOfBoundsException();
+        }
+    }
+    
+    /**
      * Returns the dot product of two given vectors.
      * 
      * @param v0 The first vector.
@@ -176,6 +194,54 @@ public class Vec3 implements Bufferable, Streamable
         target.x = source.x;
         target.y = source.y;
         target.z = source.z;
+    }
+    
+    /**
+     * Sets a vector to the given row of a matrix.
+     * 
+     * @param m The matrix to copy from.
+     * @param row A row of the matrix.
+     * @param result The vector in which to store the result.
+     */
+    public static final void copyRow(Mat3 m, int row, Vec3 result)
+    {
+        switch (row)
+        {
+            case 0: result.x = m.a;
+                    result.y = m.b;
+                    result.z = m.c; return;
+            case 1: result.x = m.d;
+                    result.y = m.e;
+                    result.z = m.f; return;
+            case 2: result.x = m.g;
+                    result.y = m.h;
+                    result.z = m.i; return;
+            default: throw new ArrayIndexOutOfBoundsException();
+        }
+    }
+    
+    /**
+     * Sets a vector to the given column of a matrix.
+     * 
+     * @param m The matrix to copy from.
+     * @param column A column of the matrix.
+     * @param result The vector in which to store the result.
+     */
+    public static final void copyColumn(Mat3 m, int column, Vec3 result)
+    {
+        switch (column)
+        {
+            case 0: result.x = m.a;
+                    result.y = m.d;
+                    result.z = m.g; return;
+            case 1: result.x = m.b;
+                    result.y = m.e;
+                    result.z = m.h; return;
+            case 2: result.x = m.c;
+                    result.y = m.f;
+                    result.z = m.i; return;
+            default: throw new ArrayIndexOutOfBoundsException();
+        }
     }
     
     /**
@@ -436,6 +502,34 @@ public class Vec3 implements Bufferable, Streamable
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
+    /**
+     * Returns the given row of a matrix in a new vector.
+     * 
+     * @param m The matrix to copy from.
+     * @param row The row to get.
+     * @return A new vector containing the result.
+     */
+    public static final Vec3 fromRow(Mat3 m, int row)
+    {
+        Vec3 result = new Vec3();
+        copyRow(m, row, result);
+        return result;
+    }
+    
+    /**
+     * Returns the given column of a matrix in a new vector.
+     * 
+     * @param m The matrix to copy from.
+     * @param column The column to get.
+     * @return A new vector containing the result.
+     */
+    public static final Vec3 fromColumn(Mat3 m, int column)
+    {
+        Vec3 result = new Vec3();
+        copyColumn(m, column, result);
+        return result;
+    }
+    
     /**
      * Returns the sum of {@code v0} and {@code v1} in a new vector.
      * 
@@ -751,6 +845,17 @@ public class Vec3 implements Bufferable, Streamable
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Instance accessor methods">
     /**
+     * Gets the component of this vector specified by the given index.
+     * 
+     * @param i The index of the component to get.
+     * @return The component.
+     */
+    public float getComponent(int i)
+    {
+        return getComponent(this, i);
+    }
+    
+    /**
      * Returns the dot product of this and the given vector.
      * 
      * @param v The vector with which to calculate the dot product.
@@ -904,6 +1009,32 @@ public class Vec3 implements Bufferable, Streamable
             case 2: z = f; return this;
             default: throw new ArrayIndexOutOfBoundsException();
         }
+    }
+    
+    /**
+     * Copies the given row of a matrix into this vector.
+     * 
+     * @param m The matrix to copy from.
+     * @param row The row to copy.
+     * @return This vector.
+     */
+    public Vec3 setAsRow(Mat3 m, int row)
+    {
+        copyRow(m, row, this);
+        return this;
+    }
+    
+    /**
+     * Copies the given row of a matrix into this vector.
+     * 
+     * @param m The matrix to copy from.
+     * @param column The column to copy.
+     * @return This vector.
+     */
+    public Vec3 setAsColumn(Mat3 m, int column)
+    {
+        copyColumn(m, column, this);
+        return this;
     }
     
     /**

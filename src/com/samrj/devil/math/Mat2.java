@@ -396,6 +396,7 @@ public class Mat2 implements Bufferable, Streamable
     public float a, b,
                  c, d;
     
+    // <editor-fold defaultstate="collapsed" desc="Constructors">
     /**
      * Creates a new 2x2 zero matrix, NOT an identity matrix. Use identity() to
      * create an identity matrix.
@@ -457,6 +458,34 @@ public class Mat2 implements Bufferable, Streamable
     {
         Mat2.this.read(in);
     }
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Instance accessor methods">
+    /**
+     * Returns the entry at the specified position in this matrix.
+     * 
+     * @param row A row of this matrix.
+     * @param column A column of this matrix.
+     * @return The entry at the given row and column.
+     */
+    public float getEntry(int row, int column)
+    {
+        switch (row)
+        {
+            case 0: switch (column)
+            {
+                case 0: return a;
+                case 1: return b;
+                default: throw new ArrayIndexOutOfBoundsException();
+            }
+            case 1: switch (column)
+            {
+                case 0: return c;
+                case 1: return d;
+                default: throw new ArrayIndexOutOfBoundsException();
+            }
+            default: throw new ArrayIndexOutOfBoundsException();
+        }
+    }
     
     /**
      * Returns the determinant of this matrix.
@@ -467,7 +496,7 @@ public class Mat2 implements Bufferable, Streamable
     {
         return determinant(this);
     }
-    
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Instance mutator methods">
     /**
      * Sets this to the given matrix.
@@ -516,6 +545,72 @@ public class Mat2 implements Bufferable, Streamable
         this.a = a; this.b = b;
         this.c = c; this.d = d;
         return this;
+    }
+    
+    /**
+     * Sets the entry at the given position in this matrix to the given float.
+     * 
+     * @param row A row of this matrix.
+     * @param column A column of this matrix.
+     * @param v The value to set the entry to.
+     * @return This matrix.
+     */
+    public Mat2 setEntry(int row, int column, float v)
+    {
+        switch (row)
+        {
+            case 0: switch (column)
+            {
+                case 0: a = v; return this;
+                case 1: b = v; return this;
+                default: throw new ArrayIndexOutOfBoundsException();
+            }
+            case 1: switch (column)
+            {
+                case 0: c = v; return this;
+                case 1: d = v; return this;
+                default: throw new ArrayIndexOutOfBoundsException();
+            }
+            default: throw new ArrayIndexOutOfBoundsException();
+        }
+    }
+    
+    /**
+     * Sets the specified row of this matrix to the given vector.
+     * 
+     * @param v The vector to copy.
+     * @param row The row of the matrix to copy to.
+     * @return This matrix.
+     */
+    public Mat2 setRow(Vec2 v, int row)
+    {
+        switch (row)
+        {
+            case 0: a = v.x;
+                    b = v.y; return this;
+            case 1: c = v.x;
+                    d = v.y; return this;
+            default: throw new ArrayIndexOutOfBoundsException();
+        }
+    }
+    
+    /**
+     * Sets the specified column of this matrix to the given vector.
+     * 
+     * @param v The vector to copy.
+     * @param column The column of the matrix to copy to.
+     * @return This matrix.
+     */
+    public Mat2 setColumn(Vec2 v, int column)
+    {
+        switch (column)
+        {
+            case 0: a = v.x;
+                    c = v.y; return this;
+            case 1: b = v.x;
+                    d = v.y; return this;
+            default: throw new ArrayIndexOutOfBoundsException();
+        }
     }
     
     /**
