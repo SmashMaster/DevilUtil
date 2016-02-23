@@ -1,12 +1,12 @@
 package com.samrj.devil.graphics;
 
+import com.samrj.devil.geo3d.Ellipsoid;
+import com.samrj.devil.geo3d.OBox3;
 import com.samrj.devil.gl.DGL;
 import com.samrj.devil.gl.Shader;
 import com.samrj.devil.gl.ShaderProgram;
 import com.samrj.devil.gl.VAO;
 import com.samrj.devil.gl.VertexStream;
-import static com.samrj.devil.graphics.GraphicsUtil.glVertex;
-import static com.samrj.devil.graphics.GraphicsUtil.glVertex;
 import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Util;
@@ -59,7 +59,7 @@ public final class EZDraw
     
     private static ShaderProgram shader;
     private static Mat4 projMat;
-    private static MatStack modelViewStack;
+    private static MatStack stack;
     private static VertexStream stream;
     private static Vec3 pos;
     private static Vec4 color;
@@ -89,7 +89,7 @@ public final class EZDraw
             DGL.delete(vert, frag);
             
             projMat = Mat4.identity();
-            modelViewStack = new MatStack();
+            stack = new MatStack();
         }
         catch (IOException e)
         {
@@ -157,7 +157,7 @@ public final class EZDraw
     public static MatStack getModelViewStack()
     {
         ensureInitialized();
-        return modelViewStack;
+        return stack;
     }
     
     /**
@@ -254,7 +254,7 @@ public final class EZDraw
         stream.vertex();
     }
     
-    public static void ellipsoid(Vec3 radii, int segments)
+    public static void ellipsoid(int segments)
     {
         float dt = 8.0f/segments;
         
@@ -262,55 +262,74 @@ public final class EZDraw
         for (float t=0.0f; t<8.0f; t+=dt)
         {
             Vec2 dir = Util.squareDir(t).normalize();
-            vertex(dir.x*radii.x, dir.y*radii.y, 0.0f);
+            vertex(dir.x, dir.y, 0.0f);
         }
         end();
         begin(GL11.GL_LINE_LOOP);
         for (float t=0.0f; t<8.0f; t+=dt)
         {
             Vec2 dir = Util.squareDir(t).normalize();
-            vertex(dir.x*radii.x, 0.0f, dir.y*radii.z);
+            vertex(dir.x, 0.0f, dir.y);
         }
         end();
         begin(GL11.GL_LINE_LOOP);
         for (float t=0.0f; t<8.0f; t+=dt)
         {
             Vec2 dir = Util.squareDir(t).normalize();
-            vertex(0.0f, dir.x*radii.y, dir.y*radii.z);
+            vertex(0.0f, dir.x, dir.y);
         }
         end();
     }
     
-    public static void box(Vec3 radii)
+    public static void ellipsoid(Ellipsoid e, int segments)
+    {
+        stack.push();
+        stack.mat.translate(e.pos);
+        stack.mat.mult(e.radii);
+        ellipsoid(segments);
+        stack.pop();
+    }
+    
+    public static void box()
     {
         begin(GL11.GL_LINES);
-        vertex(-radii.x, -radii.y, -radii.z);
-        vertex(-radii.x, -radii.y,  radii.z);
-        vertex(-radii.x,  radii.y, -radii.z);
-        vertex(-radii.x,  radii.y,  radii.z);
-        vertex( radii.x,  radii.y, -radii.z);
-        vertex( radii.x,  radii.y,  radii.z);
-        vertex( radii.x, -radii.y, -radii.z);
-        vertex( radii.x, -radii.y,  radii.z);
+        vertex(-1.0f, -1.0f, -1.0f);
+        vertex(-1.0f, -1.0f,  1.0f);
+        vertex(-1.0f,  1.0f, -1.0f);
+        vertex(-1.0f,  1.0f,  1.0f);
+        vertex( 1.0f,  1.0f, -1.0f);
+        vertex( 1.0f,  1.0f,  1.0f);
+        vertex( 1.0f, -1.0f, -1.0f);
+        vertex( 1.0f, -1.0f,  1.0f);
         
-        vertex(-radii.x, -radii.y, -radii.z);
-        vertex(-radii.x,  radii.y, -radii.z);
-        vertex(-radii.x, -radii.y,  radii.z);
-        vertex(-radii.x,  radii.y,  radii.z);
-        vertex( radii.x, -radii.y,  radii.z);
-        vertex( radii.x,  radii.y,  radii.z);
-        vertex( radii.x, -radii.y, -radii.z);
-        vertex( radii.x,  radii.y, -radii.z);
+        vertex(-1.0f, -1.0f, -1.0f);
+        vertex(-1.0f,  1.0f, -1.0f);
+        vertex(-1.0f, -1.0f,  1.0f);
+        vertex(-1.0f,  1.0f,  1.0f);
+        vertex( 1.0f, -1.0f,  1.0f);
+        vertex( 1.0f,  1.0f,  1.0f);
+        vertex( 1.0f, -1.0f, -1.0f);
+        vertex( 1.0f,  1.0f, -1.0f);
         
-        vertex(-radii.x, -radii.y, -radii.z);
-        vertex( radii.x, -radii.y, -radii.z);
-        vertex(-radii.x, -radii.y,  radii.z);
-        vertex( radii.x, -radii.y,  radii.z);
-        vertex(-radii.x,  radii.y,  radii.z);
-        vertex( radii.x,  radii.y,  radii.z);
-        vertex(-radii.x,  radii.y, -radii.z);
-        vertex( radii.x,  radii.y, -radii.z);
+        vertex(-1.0f, -1.0f, -1.0f);
+        vertex( 1.0f, -1.0f, -1.0f);
+        vertex(-1.0f, -1.0f,  1.0f);
+        vertex( 1.0f, -1.0f,  1.0f);
+        vertex(-1.0f,  1.0f,  1.0f);
+        vertex( 1.0f,  1.0f,  1.0f);
+        vertex(-1.0f,  1.0f, -1.0f);
+        vertex( 1.0f,  1.0f, -1.0f);
         end();
+    }
+    
+    public static void oBox(OBox3 box)
+    {
+        stack.push();
+        stack.mat.translate(box.pos);
+        stack.mat.mult(new Mat4(box.rot));
+        stack.mat.mult(box.sca);
+        box();
+        stack.pop();
     }
     
     /**
@@ -327,7 +346,7 @@ public final class EZDraw
         stream.upload();
         DGL.useProgram(shader);
         shader.uniformMat4("u_projection_matrix", projMat);
-        shader.uniformMat4("u_model_view_matrix", modelViewStack.mat);
+        shader.uniformMat4("u_model_view_matrix", stack.mat);
         DGL.bindVAO(vao);
         DGL.draw(stream, drawMode);
         drawMode = -1;
@@ -347,7 +366,7 @@ public final class EZDraw
         DGL.delete(vao, stream, shader);
         shader = null;
         projMat = null;
-        modelViewStack = null;
+        stack = null;
         stream = null;
         pos = null;
         color = null;
