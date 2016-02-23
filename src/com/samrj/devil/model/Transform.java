@@ -34,21 +34,21 @@ public class Transform
     public final Quat rotation;
     public final Vec3 scale;
     
-    Transform(DataInputStream in) throws IOException
+    public Transform(DataInputStream in) throws IOException
     {
         position = new Vec3(in);
         rotation = in.readInt() == 0 ? new Quat(in) : new Quat();
         scale = new Vec3(in);
     }
     
-    Transform()
+    public Transform()
     {
         position = new Vec3();
         rotation = Quat.identity();
         scale = new Vec3(1.0f);
     }
     
-    Transform(Transform transform)
+    public Transform(Transform transform)
     {
         position = new Vec3(transform.position);
         rotation = new Quat(transform.rotation);

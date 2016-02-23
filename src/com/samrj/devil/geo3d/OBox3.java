@@ -29,7 +29,6 @@ public class OBox3
         sca.set(box.sca);
     }
     
-    //TEST ME
     public boolean touching(OBox3 b)
     {
         Mat3 m = Mat3.mult(rot, b.rot);
@@ -55,6 +54,8 @@ public class OBox3
             rb = b.sca.getComponent(i);
             if (Math.abs(t.dot(temp.setAsColumn(m, i))) > ra + rb) return false;
         }
+        
+        //One of these seperating axis tests is incorrect.
         
         ra = sca.y*absM.g + sca.z*absM.d;
         rb = b.sca.y*absM.c + b.sca.z*absM.b;
@@ -91,6 +92,7 @@ public class OBox3
         ra = sca.x*absM.f + sca.y*absM.c;
         rb = b.sca.x*absM.h + b.sca.y*absM.g;
         if (Math.abs(t.y*m.c - t.x*m.f) > ra + rb) return false;
+        
         return true;
     }
 }
