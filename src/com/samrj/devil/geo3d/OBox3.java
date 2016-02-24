@@ -31,31 +31,30 @@ public class OBox3
     
     public boolean touching(OBox3 b)
     {
-        Mat3 m = Mat3.mult(rot, b.rot);
-        Vec3 t = Vec3.sub(b.pos, pos).mult(rot);
+        Mat3 m = new Mat3();
+        for (int i=0; i<3; i++) for (int j=0; j<3; j++)
+            m.setEntry(i, j, Vec3.fromColumn(rot, i).dot(Vec3.fromColumn(b.rot, j)));
+        
+        Vec3 t = Vec3.sub(b.pos, pos).mult(Mat3.transpose(rot));
         
         Mat3 absM = new Mat3();
         for (int i=0; i<3; i++) for (int j=0; j<3; j++)
             absM.setEntry(i, j, Math.abs(m.getEntry(i, j)) + EPSILON);
         
-        Vec3 temp = new Vec3();
         float ra, rb;
-        
         for (int i=0; i<3; i++)
         {
             ra = sca.getComponent(i);
-            rb = b.sca.dot(temp.setAsRow(absM, i));
+            rb = b.sca.dot(Vec3.fromRow(absM, i));
             if (Math.abs(t.getComponent(i)) > ra + rb) return false;
         }
         
         for (int i=0; i<3; i++)
         {
-            ra = sca.dot(temp.setAsColumn(absM, i));
+            ra = sca.dot(Vec3.fromColumn(absM, i));
             rb = b.sca.getComponent(i);
-            if (Math.abs(t.dot(temp.setAsColumn(m, i))) > ra + rb) return false;
+            if (Math.abs(t.dot(Vec3.fromColumn(m, i))) > ra + rb) return false;
         }
-        
-        //One of these seperating axis tests is incorrect.
         
         ra = sca.y*absM.g + sca.z*absM.d;
         rb = b.sca.y*absM.c + b.sca.z*absM.b;
@@ -76,19 +75,19 @@ public class OBox3
         ra = sca.x*absM.h + sca.z*absM.b;
         rb = b.sca.x*absM.f + b.sca.z*absM.d;
         if (Math.abs(t.x*m.h - t.z*m.b) > ra + rb) return false;
-
+        
         ra = sca.x*absM.i + sca.z*absM.c;
         rb = b.sca.x*absM.e + b.sca.y*absM.d;
         if (Math.abs(t.x*m.i - t.z*m.c) > ra + rb) return false;
-
+        
         ra = sca.x*absM.d + sca.y*absM.a;
         rb = b.sca.y*absM.i + b.sca.z*absM.h;
         if (Math.abs(t.y*m.a - t.x*m.d) > ra + rb) return false;
-
+        
         ra = sca.x*absM.e + sca.y*absM.b;
         rb = b.sca.x*absM.i + b.sca.z*absM.g;
         if (Math.abs(t.y*m.b - t.x*m.e) > ra + rb) return false;
-
+        
         ra = sca.x*absM.f + sca.y*absM.c;
         rb = b.sca.x*absM.h + b.sca.y*absM.g;
         if (Math.abs(t.y*m.c - t.x*m.f) > ra + rb) return false;
