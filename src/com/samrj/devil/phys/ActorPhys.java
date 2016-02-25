@@ -194,6 +194,8 @@ public class ActorPhys<SETTINGS_TYPE extends Settings>
                 pos.y = oldY;
                 if (sweep != null)
                 {
+                    float groundDist = (sweep.time*2.0f - 1.0f)*settings.stepHeight;
+                    pos.y -= groundDist*(1.0f - (float)Math.pow(0.5f, dt*settings.groundFloatDecay));
                     ground = sweep.normal;
                     Object object = sweep.object;
                     if (object instanceof GeoMesh.Face) groundMaterial = ((GeoMesh.Face)object).material;
@@ -234,6 +236,7 @@ public class ActorPhys<SETTINGS_TYPE extends Settings>
         public float stepHeight = 0.25f;
         public float groundMaxIncline = Util.toRadians(46.0f);
         public float groundThreshold = 1.0f/64.0f;
+        public float groundFloatDecay = 32.0f;
         public float maxSpeed = 3.0f;
         public float acceleration = 16.0f;
         public float airAcceleration = 4.0f;

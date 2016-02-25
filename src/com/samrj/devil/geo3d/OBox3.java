@@ -31,9 +31,11 @@ public class OBox3
     
     public boolean touching(OBox3 b)
     {
+        Vec3 temp = new Vec3(), temp2 = new Vec3();
+        
         Mat3 m = new Mat3();
         for (int i=0; i<3; i++) for (int j=0; j<3; j++)
-            m.setEntry(i, j, Vec3.fromColumn(rot, i).dot(Vec3.fromColumn(b.rot, j)));
+            m.setEntry(i, j, temp.setAsColumn(rot, i).dot(temp2.setAsColumn(b.rot, j)));
         
         Vec3 t = Vec3.sub(b.pos, pos).mult(Mat3.transpose(rot));
         
@@ -45,15 +47,15 @@ public class OBox3
         for (int i=0; i<3; i++)
         {
             ra = sca.getComponent(i);
-            rb = b.sca.dot(Vec3.fromRow(absM, i));
+            rb = b.sca.dot(temp.setAsRow(absM, i));
             if (Math.abs(t.getComponent(i)) > ra + rb) return false;
         }
         
         for (int i=0; i<3; i++)
         {
-            ra = sca.dot(Vec3.fromColumn(absM, i));
+            ra = sca.dot(temp.setAsColumn(absM, i));
             rb = b.sca.getComponent(i);
-            if (Math.abs(t.dot(Vec3.fromColumn(m, i))) > ra + rb) return false;
+            if (Math.abs(t.dot(temp.setAsColumn(m, i))) > ra + rb) return false;
         }
         
         ra = sca.y*absM.g + sca.z*absM.d;
