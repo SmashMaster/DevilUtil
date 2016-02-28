@@ -13,7 +13,7 @@ public class Lamp implements DataBlock
 {
     public final String name;
     
-    Lamp(DataInputStream in) throws IOException
+    Lamp(Model model, DataInputStream in) throws IOException
     {
         name = IOUtil.readPaddedUTF(in);
     }

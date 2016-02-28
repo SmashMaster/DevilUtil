@@ -15,7 +15,7 @@ public class Curve implements DataBlock
     public final String name;
     public final Spline[] splines;
     
-    Curve(DataInputStream in) throws IOException
+    Curve(Model model, DataInputStream in) throws IOException
     {
         name = IOUtil.readPaddedUTF(in);
         splines = IOUtil.arrayFromStream(in, Spline.class, Spline::new);

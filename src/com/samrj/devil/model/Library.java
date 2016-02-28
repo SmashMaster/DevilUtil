@@ -13,7 +13,7 @@ public class Library implements DataBlock
 {
     public final String filepath;
     
-    Library(DataInputStream in) throws IOException
+    Library(Model model, DataInputStream in) throws IOException
     {
         filepath = IOUtil.readPaddedUTF(in);
     }

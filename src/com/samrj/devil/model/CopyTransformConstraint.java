@@ -3,6 +3,7 @@ package com.samrj.devil.model;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.topo.DAG;
+import com.samrj.devil.model.Armature.Bone;
 import java.util.Set;
 
 /**
@@ -10,11 +11,11 @@ import java.util.Set;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class CopyTransformConstraint implements BoneSolver.Solvable
+public class CopyTransformConstraint implements MeshSkinner.Solvable
 {
-    private final Bone source, parent, target;
+    private final PoseBone source, parent, target;
     
-    public CopyTransformConstraint(Bone source, Bone target)
+    public CopyTransformConstraint(PoseBone source, PoseBone target)
     {
         this.source = source;
         parent = target.getParent();
@@ -22,7 +23,7 @@ public class CopyTransformConstraint implements BoneSolver.Solvable
     }
 
     @Override
-    public void populateSolveGraph(DAG<BoneSolver.Solvable> graph)
+    public void populateSolveGraph(DAG<MeshSkinner.Solvable> graph)
     {
         graph.addEdge(source, this);
         if (parent != null) graph.addEdge(parent, this);
@@ -30,7 +31,7 @@ public class CopyTransformConstraint implements BoneSolver.Solvable
     }
     
     @Override
-    public void removeSolved(Set<Bone> independent)
+    public void removeSolved(Set<PoseBone> independent)
     {
         independent.remove(target);
     }
@@ -38,21 +39,23 @@ public class CopyTransformConstraint implements BoneSolver.Solvable
     @Override
     public void solve()
     {
-        Vec3 head = new Vec3(target.head);
+        Bone targetBone = target.getBone();
+        
+        Vec3 head = new Vec3(targetBone.head);
         if (parent != null) head.mult(parent.skinMatrix);
         
         Vec3 pos = target.finalTransform.position;
         pos.set(source.getHeadPos()); //object
         pos.sub(head);
         if (parent != null) pos.mult(parent.invRotMat);
-        pos.mult(target.invMat);
+        pos.mult(targetBone.invMat);
         
         Mat3 basis = Mat3.identity();
-        basis.mult(target.invMat);
-        if (target.inheritRotation) basis.mult(parent.invRotMat);
+        basis.mult(targetBone.invMat);
+        if (targetBone.inheritRotation) basis.mult(parent.invRotMat);
         basis.mult(source.rotMatrix);
-        basis.mult(source.matrix); //is this where it should be?
-        basis.mult(target.matrix);
+        basis.mult(source.getBone().matrix); //is this where it should be?
+        basis.mult(targetBone.matrix);
         
         target.finalTransform.rotation.setRotation(basis);
     }

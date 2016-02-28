@@ -14,24 +14,15 @@ public class Scene implements DataBlock
 {
     public final String name;
     public final Vec3 backgroundColor;
-    public final ModelObject[] objects;
+    public final DataPointer<ModelObject<?>>[] objects;
     
-    private final int[] objectIndices;
-    
-    Scene(DataInputStream in) throws IOException
+    Scene(Model model, DataInputStream in) throws IOException
     {
         name = IOUtil.readPaddedUTF(in);
         backgroundColor = new Vec3(in);
-        objectIndices = new int[in.readInt()];
-        objects = new ModelObject[objectIndices.length];
-        for (int i=0; i<objectIndices.length; i++)
-            objectIndices[i] = in.readInt();
-    }
-    
-    void populate(Model model)
-    {
+        objects = new DataPointer[in.readInt()];
         for (int i=0; i<objects.length; i++)
-            objects[i] = model.objects.get(objectIndices[i]);
+            objects[i] = new DataPointer(model, Type.OBJECT, in.readInt());
     }
     
     @Override

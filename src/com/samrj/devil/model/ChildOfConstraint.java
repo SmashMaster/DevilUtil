@@ -13,11 +13,11 @@ import java.util.Set;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class ChildOfConstraint implements BoneSolver.Solvable
+public class ChildOfConstraint implements MeshSkinner.Solvable
 {
-    private final Bone parent, realParent, child;
+    private final PoseBone parent, realParent, child;
     
-    public ChildOfConstraint(Bone parent, Bone child)
+    public ChildOfConstraint(PoseBone parent, PoseBone child)
     {
         this.parent = parent;
         realParent = child.getParent();
@@ -25,7 +25,7 @@ public class ChildOfConstraint implements BoneSolver.Solvable
     }
 
     @Override
-    public void populateSolveGraph(DAG<BoneSolver.Solvable> graph)
+    public void populateSolveGraph(DAG<MeshSkinner.Solvable> graph)
     {
         graph.addEdge(parent, this);
         if (realParent != null) graph.addEdge(realParent, this);
@@ -33,7 +33,7 @@ public class ChildOfConstraint implements BoneSolver.Solvable
     }
     
     @Override
-    public void removeSolved(Set<Bone> independent)
+    public void removeSolved(Set<PoseBone> independent)
     {
         independent.remove(child);
     }
@@ -44,10 +44,10 @@ public class ChildOfConstraint implements BoneSolver.Solvable
         child.finalTransform.position.set(child.poseTransform.position);
         
         Mat3 basis = Mat3.identity();
-        basis.mult(child.invMat);
+        basis.mult(child.getBone().invMat);
         basis.mult(parent.rotMatrix);
-        basis.mult(parent.matrix); //is this where it should be? everything else is I think.
-        basis.mult(child.matrix);
+        basis.mult(parent.getBone().matrix); //is this where it should be? everything else is I think.
+        basis.mult(child.getBone().matrix);
         basis.rotate(Quat.normalize(child.poseTransform.rotation));
         
         child.finalTransform.rotation.setRotation(basis);

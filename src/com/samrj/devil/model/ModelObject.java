@@ -6,38 +6,36 @@ import java.io.IOException;
 
 /**
  * @author Samuel Johnson (SmashMaster)
+ * @param <DATA_TYPE> The type of datablock this ModelObject encapsulates.
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class ModelObject implements DataBlock
+public class ModelObject<DATA_TYPE extends DataBlock> implements DataBlock
 {
     public final String name;
     public final Transform transform;
     public final String[] vertexGroups;
     public final Pose pose;
     public final IKConstraint[] ikConstraints;
+    public final DataPointer<?> data;
+    public final DataPointer<ModelObject<?>> parent;
+    public final String parentBoneName;
+    public final DataPointer<Action> action;
     
-    private final int dataType, dataIndex, dataLibIndex;
-    private final String dataLibName;
-    private final int parentIndex;
-    private final String parentBoneName;
-    private final int actionIndex;
-    
-    private boolean populated;
-    private Object data;
-    private ModelObject parent;
-    private Bone parentBone;
-    private Action action;
-    
-    ModelObject(DataInputStream in) throws IOException
+    ModelObject(Model model, DataInputStream in) throws IOException
     {
         name = IOUtil.readPaddedUTF(in);
-        dataType = in.readInt();
-        dataLibIndex = dataType >= 0 ? in.readInt() : -1;
-        dataIndex = dataType >= 0 && dataLibIndex < 0 ? in.readInt() : -1;
-        dataLibName = dataLibIndex >= 0 ? IOUtil.readPaddedUTF(in) : null;
-        parentIndex = in.readInt();
+        
+        int dataType = in.readInt();
+        int dataLibIndex = dataType >= 0 ? in.readInt() : -1;
+        int dataIndex = dataType >= 0 && dataLibIndex < 0 ? in.readInt() : -1;
+        if (dataLibIndex >= 0) IOUtil.readPaddedUTF(in); //Data library name
+        data = new DataPointer(model, dataType, dataIndex);
+        
+        int parentIndex = in.readInt();
+        parent = new DataPointer<>(model, Type.OBJECT, parentIndex);
         parentBoneName = parentIndex >= 0 ? IOUtil.readPaddedUTF(in) : null;
+        
         transform = new Transform(in);
         vertexGroups = IOUtil.arrayFromStream(in, String.class, (s) -> IOUtil.readPaddedUTF(s));
         boolean hasPose = in.readInt() != 0;
@@ -51,65 +49,23 @@ public class ModelObject implements DataBlock
             pose = null;
             ikConstraints = new IKConstraint[0];
         }
-        actionIndex = in.readInt();
+        
+        action = new DataPointer<>(model, Type.ACTION, in.readInt());
     }
     
-    private Model.ArrayMap dataArray(Model model)
+    public boolean isArmature()
     {
-        switch (dataType)
-        {
-            case 0: return model.libraries;
-            case 1: return model.actions;
-            case 2: return model.armatures;
-            case 3: return model.curves;
-            case 4: return model.lamps;
-            case 5: return model.materials;
-            case 6: return model.meshes;
-            case 7: return model.scenes;
-            default: throw new IllegalArgumentException();
-        }
+        return parent.get().getData() instanceof Armature && parent.get().pose != null;
     }
     
-    void populate(Model model)
+    public boolean isMesh()
     {
-        if (populated) return;
-        
-        data = dataIndex < 0 ? null : dataArray(model).get(dataIndex);
-        if (data instanceof Armature)
-            for (IKConstraint ik : ikConstraints) ik.populate((Armature)data);
-        parent = parentIndex < 0 ? null : model.objects.get(parentIndex);
-        if (parent != null)
-        {
-            parent.populate(model);
-            if (parent.getData() instanceof Armature)
-            {
-                Armature armature = (Armature)parent.getData();
-                parentBone = armature.getBone(parentBoneName);
-            }
-        }
-        action = actionIndex < 0 ? null : model.actions.get(actionIndex);
-        
-        populated = true;
+        return data.get() instanceof Mesh;
     }
     
     public Object getData()
     {
         return data;
-    }
-    
-    public ModelObject getParent()
-    {
-        return parent;
-    }
-    
-    public Bone getParentBone()
-    {
-        return parentBone;
-    }
-    
-    public Action getAction()
-    {
-        return action;
     }
     
     @Override

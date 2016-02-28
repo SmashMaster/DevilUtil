@@ -6,6 +6,7 @@ import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.topo.DAG;
+import com.samrj.devil.model.Armature.Bone;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Set;
@@ -15,7 +16,7 @@ import java.util.Set;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class IKConstraint implements BoneSolver.Solvable
+public class IKConstraint implements MeshSkinner.Solvable
 {
     private static float nrm(Vec3 v)
     {
@@ -29,8 +30,8 @@ public class IKConstraint implements BoneSolver.Solvable
     public final String poleName;
     public final float poleAngle;
     
-    private Bone end, start, parent;
-    private Bone target, pole;
+    private PoseBone end, start, parent;
+    private PoseBone target, pole;
     
     private float d1, d2;
     private final Vec3 hinge1, hinge2;
@@ -46,23 +47,26 @@ public class IKConstraint implements BoneSolver.Solvable
         hinge2 = new Vec3();
     }
     
-    void populate(Armature armature)
+    void populate(Pose pose)
     {
-        end = armature.getBone(boneName);
+        end = pose.getBone(boneName);
         start = end.getParent();
         parent = start.getParent();
-        target = armature.getBone(targetName);
-        pole = armature.getBone(poleName);
+        target = pose.getBone(targetName);
+        pole = pose.getBone(poleName);
         
-        Vec3 dp1 = Vec3.sub(end.head, start.head);
-        Vec3 dp2 = Vec3.sub(end.tail, end.head);
+        Bone endBone = end.getBone();
+        Bone startBone = start.getBone();
+        
+        Vec3 dp1 = Vec3.sub(endBone.head, startBone.head);
+        Vec3 dp2 = Vec3.sub(endBone.tail, endBone.head);
         d1 = nrm(dp1);
         d2 = nrm(dp2);
         
         Vec3 hinge = Vec3.cross(dp1, dp2);
         float hingeLen = nrm(hinge);
-        Vec3.mult(hinge, start.invMat, hinge1);
-        Vec3.mult(hinge, end.invMat, hinge2);
+        Vec3.mult(hinge, startBone.invMat, hinge1);
+        Vec3.mult(hinge, endBone.invMat, hinge2);
         
         ang2init = (float)Math.atan2(hingeLen, dp1.dot(dp2));
     }
@@ -70,11 +74,11 @@ public class IKConstraint implements BoneSolver.Solvable
     private void toStart(Vec3 v)
     {
         if (parent != null) v.mult(parent.invRotMat);
-        v.mult(start.invMat);
+        v.mult(start.getBone().invMat);
     }
     
     @Override
-    public void populateSolveGraph(DAG<BoneSolver.Solvable> graph)
+    public void populateSolveGraph(DAG<MeshSkinner.Solvable> graph)
     {
         graph.addEdge(parent, this);
         graph.addEdge(target, this);
@@ -83,7 +87,7 @@ public class IKConstraint implements BoneSolver.Solvable
     }
 
     @Override
-    public void removeSolved(Set<Bone> independent)
+    public void removeSolved(Set<PoseBone> independent)
     {
         independent.remove(start);
         independent.remove(end);

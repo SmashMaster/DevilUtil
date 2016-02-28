@@ -5,9 +5,7 @@ import com.samrj.devil.math.Util;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -22,7 +20,7 @@ public class Action implements DataBlock
     public final float minX, maxX;
     private final Map<String, Marker> markerMap;
     
-    Action(DataInputStream in) throws IOException
+    Action(Model model, DataInputStream in) throws IOException
     {
         name = IOUtil.readPaddedUTF(in);
         fcurves = IOUtil.arrayFromStream(in, FCurve.class, FCurve::new);
@@ -55,11 +53,8 @@ public class Action implements DataBlock
         return Util.envelope(time, minX, fadeIn, fadeOut, maxX);
     }
     
-    public Pose evaluate(float time)
+    public Pose evaluate(Pose pose, float time)
     {
-        Set<String> names = new HashSet<>();
-        for (FCurve fcurve : fcurves) names.add(fcurve.boneName);
-        Pose pose = new Pose(names);
         for (FCurve fcurve : fcurves) fcurve.apply(pose, time);
         return pose;
     }

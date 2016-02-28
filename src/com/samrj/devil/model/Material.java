@@ -13,7 +13,7 @@ public class Material implements DataBlock
 {
     public final String name;
     
-    Material(DataInputStream in) throws IOException
+    Material(Model model, DataInputStream in) throws IOException
     {
         name = IOUtil.readPaddedUTF(in);
     }

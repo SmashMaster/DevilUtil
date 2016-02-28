@@ -31,7 +31,7 @@ public class Mesh implements DataBlock
     
     public final int[] materials;
     
-    Mesh(DataInputStream in) throws IOException
+    Mesh(Model model, DataInputStream in) throws IOException
     {
         name = IOUtil.readPaddedUTF(in);
         

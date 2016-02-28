@@ -1,12 +1,12 @@
 package com.samrj.devil.model;
 
 import com.samrj.devil.model.Transform.Property;
-import com.samrj.devil.io.IOUtil;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -16,6 +16,7 @@ import java.util.Set;
 public class Pose
 {
     private final Map<String, PoseBone> bones;
+    private Armature armature;
     
     Pose(DataInputStream in) throws IOException
     {
@@ -28,60 +29,41 @@ public class Pose
         }
     }
     
-    public Pose(Set<String> names)
-    {
-        bones = new HashMap<>(names.size());
-        for (String name : names) bones.put(name, new PoseBone(name));
-    }
-    
     public Pose(Pose pose)
     {
         bones = new HashMap<>(pose.bones.size());
         for (PoseBone bone : pose.bones.values())
             bones.put(bone.name, new PoseBone(bone));
+        
+        populate(pose.armature);
     }
     
-    public Pose()
+    public Armature getArmature()
     {
-        bones = new HashMap<>();
+        return armature;
+    }
+    
+    public Collection<PoseBone> getBones()
+    {
+        return Collections.unmodifiableCollection(bones.values());
+    }
+    
+    void populate(Armature armature)
+    {
+        this.armature = armature;
+        for (PoseBone bone : bones.values()) bone.populate(armature, this);
     }
     
     public void setBoneProperty(String name, Property property, int index, float value)
     {
         PoseBone bone = bones.get(name);
-        if (bone == null) return;
+        if (bone == null) throw new IllegalArgumentException("No such bone '" + name + "'");
         bone.transform.setProperty(property, index, value);
-    }
-    
-    public void apply(Armature armature)
-    {
-        for (PoseBone bonePose : bones.values())
-        {
-            Bone bone = armature.getBone(bonePose.name);
-            if (bone == null) continue;
-            bone.poseTransform.set(bonePose.transform);
-        }
     }
     
     public PoseBone getBone(String name)
     {
         return bones.get(name);
-    }
-    
-    /**
-     * Adds a single new pose bone to this pose with the given name. Does
-     * nothing if a bone with that name already exists. Returns the bone.
-     */
-    public PoseBone regBone(String name)
-    {
-        if (name == null) throw new NullPointerException();
-        PoseBone out = bones.get(name);
-        if (out == null)
-        {
-            out = new PoseBone(name);
-            bones.put(name, out);
-        }
-        return out;
     }
     
     public Pose clear()
@@ -90,67 +72,15 @@ public class Pose
         return this;
     }
     
-    /**
-     * Adds new pose bones and overwrites shared ones.
-     */
-    public Pose put(Pose pose)
-    {
-        for (PoseBone bone : pose.bones.values())
-        {
-            PoseBone existing = bones.get(bone.name);
-            if (existing == null) bones.put(bone.name, new PoseBone(bone));
-            else existing.set(bone);
-        }
-        
-        return this;
-    }
-    
-    /**
-     * Mixes any shared pose bones.
-     */
     public Pose mix(Pose pose, float t)
     {
-        for (PoseBone bone : bones.values())
+        for (PoseBone target : pose.bones.values())
         {
-            PoseBone target = pose.bones.get(bone.name);
-            if (target == null) continue;
+            PoseBone bone = bones.get(target.name);
+            if (target == null) throw new IllegalArgumentException("No such pose bone '" + bone.name + "'");
             bone.mix(target, t);
         }
         
         return this;
-    }
-    
-    public class PoseBone
-    {
-        public final String name;
-        public final Transform transform;
-        
-        private PoseBone(DataInputStream in) throws IOException
-        {
-            name = IOUtil.readPaddedUTF(in);
-            transform = new Transform(in);
-        }
-        
-        private PoseBone(String name)
-        {
-            this.name = name;
-            transform = new Transform();
-        }
-        
-        private PoseBone(PoseBone bone)
-        {
-            name = bone.name;
-            transform = new Transform(bone.transform);
-        }
-        
-        private void set(PoseBone bone)
-        {
-            transform.set(bone.transform);
-        }
-        
-        private void mix(PoseBone bone, float t)
-        {
-            transform.mix(bone.transform, t);
-        }
     }
 }

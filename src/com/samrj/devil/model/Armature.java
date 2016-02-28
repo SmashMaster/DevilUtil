@@ -1,7 +1,8 @@
 package com.samrj.devil.model;
 
-import com.samrj.devil.model.Transform.Property;
 import com.samrj.devil.io.IOUtil;
+import com.samrj.devil.math.Mat3;
+import com.samrj.devil.math.Vec3;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -18,7 +19,7 @@ public class Armature implements DataBlock
     public final Bone[] bones;
     private final Map<String, Bone> nameMap;
     
-    Armature(DataInputStream in) throws IOException
+    Armature(Model model, DataInputStream in) throws IOException
     {
         name = IOUtil.readPaddedUTF(in);
         bones = IOUtil.arrayFromStream(in, Bone.class, Bone::new);
@@ -33,16 +34,44 @@ public class Armature implements DataBlock
         return nameMap.get(name);
     }
     
-    public void setBoneProperty(String name, Property property, int index, float value)
-    {
-        Bone bone = nameMap.get(name);
-        if (bone == null) return;
-        bone.poseTransform.setProperty(property, index, value);
-    }
-    
     @Override
     public String getName()
     {
         return name;
+    }
+    
+    public class Bone
+    {
+        public final String name;
+        public final boolean inheritRotation;
+
+        public final Vec3 head, tail;
+        public final Mat3 matrix; //bone direction -> object rest direction
+        public final Mat3 invMat; //object rest direction -> bone direction
+
+        private Bone parent;
+
+        private final int parentIndex;
+
+        private Bone(DataInputStream in) throws IOException
+        {
+            name = IOUtil.readPaddedUTF(in);
+            parentIndex = in.readInt();
+            inheritRotation = in.readInt() != 0;
+            head = new Vec3(in);
+            tail = new Vec3(in);
+            matrix = new Mat3(in);
+            invMat = Mat3.invert(matrix);
+        }
+
+        void populate(Bone[] bones)
+        {
+            if (parentIndex >= 0) parent = bones[parentIndex];
+        }
+
+        public Bone getParent()
+        {
+            return parent;
+        }
     }
 }

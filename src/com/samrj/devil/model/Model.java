@@ -1,11 +1,11 @@
 package com.samrj.devil.model;
 
 import com.samrj.devil.io.IOUtil;
-import com.samrj.devil.io.StreamConstructor;
 import com.samrj.devil.res.Resource;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -58,9 +58,6 @@ public class Model
             meshes    = new ArrayMap<>(in, 1112276999, Mesh.class, Mesh::new);
             objects   = new ArrayMap<>(in, 1112277000, ModelObject.class, ModelObject::new);
             scenes    = new ArrayMap<>(in, 1112277001, Scene.class, Scene::new);
-            
-            for (ModelObject object : objects) object.populate(this);
-            for (Scene scene : scenes) scene.populate(this);
         }
         finally
         {
@@ -73,12 +70,30 @@ public class Model
         this(new BufferedInputStream(Resource.open(path)));
     }
     
+    public ArrayMap<? extends DataBlock> getMap(DataBlock.Type dataType)
+    {
+        switch (dataType)
+        {
+            case LIBRARY:  return libraries;
+            case ACTION:   return actions;
+            case ARMATURE: return armatures;
+            case CURVE:    return curves;
+            case LAMP:     return lamps;
+            case MATERIAL: return materials;
+            case MESH:     return meshes;
+            case OBJECT:   return objects;
+            case SCENE:    return scenes;
+            default: throw new IllegalArgumentException();
+        }
+    }
+    
     /**
      * Releases any system resources (native memory) associated with this model.
      */
     public void destroy()
     {
         for (Mesh mesh : meshes) mesh.destroy();
+        libraries.clear();
         actions.clear();
         armatures.clear();
         curves.clear();
@@ -89,16 +104,23 @@ public class Model
         scenes.clear();
     }
     
-    public static final class ArrayMap<T extends DataBlock> implements Iterable<T>
+    @FunctionalInterface
+    interface ModelConstructor<T>
+    {
+        T construct(Model model, DataInputStream in) throws IOException;
+    }
+    
+    public final class ArrayMap<T extends DataBlock> implements Iterable<T>
     {
         private T[] array;
         private Map<String, T> map;
         
-        private ArrayMap(DataInputStream in, int id, Class<T> type, StreamConstructor<T> constructor) throws IOException
+        private ArrayMap(DataInputStream in, int id, Class<T> type, ModelConstructor<T> constructor) throws IOException
         {
             if (in.readInt() != id) throw new IOException("Corrupt DVM.");
             in.skip(4);
-            array = IOUtil.arrayFromStream(in, type, constructor);
+            array = (T[])Array.newInstance(type, in.readInt());
+            for (int i=0; i<array.length; i++) array[i] = constructor.construct(Model.this, in);
             map = new HashMap<>(array.length);
             for (T data : array) map.put(data.getName(), data);
         }

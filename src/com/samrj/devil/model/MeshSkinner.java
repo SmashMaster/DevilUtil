@@ -4,7 +4,6 @@ import com.samrj.devil.io.Memory;
 import com.samrj.devil.math.topo.DAG;
 import com.samrj.devil.util.IdentitySet;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -14,9 +13,9 @@ import java.util.Set;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class BoneSolver
+public class MeshSkinner
 {
-    public final Armature armature;
+    public final Pose pose;
     public final IKConstraint[] ikConstraints;
     public final String[] vertexGroups;
     
@@ -24,19 +23,20 @@ public class BoneSolver
     public final ByteBuffer matrixData;
     
     private final List<Solvable> extraSolvables;
-    private final IdentitySet<Bone> independent;
+    private final IdentitySet<PoseBone> independent;
     private List<Solvable> solveOrder;
     
-    public BoneSolver(ModelObject meshObject)
+    public MeshSkinner(ModelObject<Mesh> object)
     {
-        ModelObject armatureObject = meshObject.getParent();
-        armature = (Armature)armatureObject.getData();
-        ikConstraints = armatureObject.ikConstraints;
-        vertexGroups = meshObject.vertexGroups;
+        ModelObject<Armature> armObj = (ModelObject<Armature>)object.parent.get();
+        pose = armObj.pose;
+        ikConstraints = armObj.ikConstraints;
+        vertexGroups = object.vertexGroups;
         matrixBlock = new Memory(vertexGroups.length*16*4);
         matrixData = matrixBlock.buffer;
         extraSolvables = new LinkedList<>();
         independent = new IdentitySet<>();
+        MeshSkinner.this.sortSolvables();
     }
     
     public void addSolvable(Solvable s)
@@ -54,12 +54,12 @@ public class BoneSolver
     public void sortSolvables()
     {
         independent.clear();
-        independent.addAll(Arrays.asList(armature.bones));
+        independent.addAll(pose.getBones());
         for (IKConstraint ik : ikConstraints) ik.removeSolved(independent);
         for (Solvable s : extraSolvables) s.removeSolved(independent);
         
         DAG<Solvable> solveGraph = new DAG<>();
-        for (Bone bone : armature.bones) bone.populateSolveGraph(solveGraph);
+        for (PoseBone bone : pose.getBones()) bone.populateSolveGraph(solveGraph);
         for (IKConstraint ik : ikConstraints) ik.populateSolveGraph(solveGraph);
         for (Solvable s : extraSolvables) s.populateSolveGraph(solveGraph);
         solveOrder = solveGraph.sort();
@@ -69,7 +69,7 @@ public class BoneSolver
     {
         if (solveOrder == null) throw new IllegalStateException("Unsorted. Call sortSolvables() first.");
         
-        for (Bone bone : independent)
+        for (PoseBone bone : independent)
         {
             bone.finalTransform.set(bone.poseTransform);
             bone.finalTransform.rotation.normalize();
@@ -80,7 +80,7 @@ public class BoneSolver
         
         for (String group : vertexGroups)
         {
-            Bone bone = armature.getBone(group);
+            PoseBone bone = pose.getBone(group);
             if (bone == null) continue;
             bone.skinMatrix.write(matrixData);
         }
@@ -94,7 +94,7 @@ public class BoneSolver
     public interface Solvable
     {
         public void populateSolveGraph(DAG<Solvable> graph);
-        public default void removeSolved(Set<Bone> independent) {}
+        public default void removeSolved(Set<PoseBone> independent) {}
         public void solve();
     }
 }
