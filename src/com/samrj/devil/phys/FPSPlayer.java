@@ -2,9 +2,11 @@ package com.samrj.devil.phys;
 
 import com.samrj.devil.game.Keyboard;
 import com.samrj.devil.geo3d.GeoMesh;
+import com.samrj.devil.graphics.Camera3D;
+import com.samrj.devil.graphics.Camera3DController;
+import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.phys.FPSPlayer.Settings;
-import com.samrj.devil.util.FPSCamera;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -17,7 +19,8 @@ import org.lwjgl.glfw.GLFW;
 public class FPSPlayer extends ActorPhys<Settings>
 {
     protected final Keyboard keyboard;
-    protected final FPSCamera camera;
+    protected final Camera3D camera;
+    protected final Camera3DController camControl;
     
     public Runnable stepCallback;
     private float stepAccum;
@@ -31,7 +34,7 @@ public class FPSPlayer extends ActorPhys<Settings>
      * @param camera An FPSCamera.
      * @param level The level to collide with.
      */
-    public FPSPlayer(Settings settings, Keyboard keyboard, FPSCamera camera, GeoMesh level)
+    public FPSPlayer(Settings settings, Keyboard keyboard, Camera3D camera, GeoMesh level)
     {
         super(settings, level);
         if (settings == null || keyboard == null || camera == null || level == null)
@@ -41,6 +44,7 @@ public class FPSPlayer extends ActorPhys<Settings>
         this.keyboard = keyboard;
         shape.radii.set(settings.width, settings.height, settings.width).mult(0.5f);
         this.camera = camera;
+        camControl = new Camera3DController(camera, settings.sensitivity);
     }
     
     /**
@@ -51,7 +55,7 @@ public class FPSPlayer extends ActorPhys<Settings>
      * @param camera An FPSCamera.
      * @param level The level to collide with.
      */
-    public FPSPlayer(Keyboard keyboard, FPSCamera camera, GeoMesh level)
+    public FPSPlayer(Keyboard keyboard, Camera3D camera, GeoMesh level)
     {
         this(new Settings(), keyboard, camera, level);
     }
@@ -62,7 +66,7 @@ public class FPSPlayer extends ActorPhys<Settings>
      */
     public void onMouseMoved(float x, float y, float dx, float dy)
     {
-        camera.onMouseMoved(x, y, dx, dy);
+        camControl.onMouseMoved(x, y, dx, dy);
     }
     
     /**
@@ -97,8 +101,8 @@ public class FPSPlayer extends ActorPhys<Settings>
         }
         else //Walking/falling
         {
-            float sin = (float)Math.sin(camera.yaw);
-            float cos = (float)Math.cos(camera.yaw);
+            float sin = (float)Math.sin(camControl.yaw);
+            float cos = (float)Math.cos(camControl.yaw);
 
             Vec3 flatForward = new Vec3(-sin, 0.0f, -cos);
             Vec3 flatRight   = new Vec3(cos, 0.0f, -sin);
@@ -140,6 +144,7 @@ public class FPSPlayer extends ActorPhys<Settings>
      */
     public static class Settings extends ActorPhys.Settings
     {
+        public float sensitivity = Util.toRadians(1.0f/8.0f);
         public float cameraHeight = 1.640625f;
         public float strideLength = 1.25f;
         

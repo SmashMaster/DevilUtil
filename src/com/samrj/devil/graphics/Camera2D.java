@@ -1,4 +1,4 @@
-package com.samrj.devil.util;
+package com.samrj.devil.graphics;
 
 import com.samrj.devil.geo2d.AAB2;
 import com.samrj.devil.graphics.GraphicsUtil;

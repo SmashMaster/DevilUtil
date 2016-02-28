@@ -20,9 +20,8 @@
  * THE SOFTWARE.
  */
 
-package com.samrj.devil.util;
+package com.samrj.devil.graphics;
 
-import com.samrj.devil.graphics.GraphicsUtil;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Quat;
@@ -31,22 +30,45 @@ import com.samrj.devil.math.Vec3;
 import org.lwjgl.opengl.GL11;
 
 /**
- * Utility 3D camera class.
+ * 3D camera class.
  * 
  * @author Samuel Johnson (SmashMaster)
  */
 public class Camera3D
 {
+    /**
+     * Returns an array of eight vectors, each one a vertex of this camera's
+     * frustum. Returned in local space.
+     * 
+     * @param near The near plane of the frustum.
+     * @param far The far plane of the frustum.
+     * @return The frustum of this camera.
+     */
+    public static Vec3[] getFrustum(float near, float far, float hSlope, float vSlope)
+    {
+        float wn = near*hSlope, wf = far*hSlope;
+        float hn = near*vSlope, hf = far*vSlope;
+        
+        Vec3[] array = {
+            new Vec3(-wn, -hn, -near),
+            new Vec3(-wf, -hf, -far),
+            new Vec3(-wn,  hn, -near),
+            new Vec3(-wf,  hf, -far),
+            new Vec3( wn, -hn, -near),
+            new Vec3( wf, -hf, -far),
+            new Vec3( wn,  hn, -near),
+            new Vec3( wf,  hf, -far),
+        };
+        
+        return array;
+    }
+    
     public final Vec3 pos;
     public final Quat dir;
     public final float zNear, zFar;
     public final float hSlope, vSlope;
-    public final float slopeSq;
     public final Mat4 projMat, viewMat;
-    public final Mat4 invViewMat;
-    public final Mat3 invDirMat;
-    public final Vec3 forward, right, up;
-    public final Mat4 matrix;
+    public final Vec3 right, up, forward;
     
     public Camera3D(float zNear, float zFar, float fov, float aspectRatio)
     {
@@ -67,15 +89,11 @@ public class Camera3D
             vSlope = tanFov;
         }
         
-        slopeSq = hSlope*hSlope + vSlope*vSlope;
         projMat = Mat4.frustum(hSlope*zNear, vSlope*zNear, zNear, zFar);
         viewMat = Mat4.identity();
-        invViewMat = Mat4.identity();
-        invDirMat = Mat3.identity();
-        forward = new Vec3(0.0f, 0.0f, -1.0f);
         right = new Vec3(1.0f, 0.0f, 0.0f);
         up = new Vec3(0.0f, 1.0f, 0.0f);
-        matrix = Mat4.identity();
+        forward = new Vec3(0.0f, 0.0f, -1.0f);
     }
     
     /**
@@ -106,15 +124,10 @@ public class Camera3D
         viewMat.setRotation(Quat.invert(dir));
         viewMat.translate(Vec3.negate(pos));
         
-        invViewMat.setTranslation(pos);
-        invViewMat.rotate(dir);
-        
-        invDirMat.set(invViewMat);
-        forward.set(0.0f, 0.0f, -1.0f).mult(invDirMat);
-        right.set(1.0f, 0.0f, 0.0f).mult(invDirMat);
-        up.set(0.0f, 1.0f, 0.0f).mult(invDirMat);
-        
-        matrix.set(projMat).mult(viewMat);
+        Mat3 rot = Mat3.rotation(dir);
+        right.setAsColumn(rot, 0);
+        up.setAsColumn(rot, 1);
+        forward.setAsColumn(rot, 2).negate();
     }
     
     /**
@@ -128,40 +141,13 @@ public class Camera3D
     
     /**
      * Returns an array of eight vectors, each one a vertex of this camera's
-     * frustum.
-     * 
-     * @param near The near plane of the frustum.
-     * @param far The far plane of the frustum.
-     * @return The frustum of this camera.
-     */
-    public Vec3[] getFrustum(float near, float far)
-    {
-        float wn = near*hSlope, wf = far*hSlope;
-        float hn = near*vSlope, hf = far*vSlope;
-        
-        Vec3[] array = {
-            new Vec3(-wn, -hn, -near),
-            new Vec3(-wf, -hf, -far),
-            new Vec3(-wn,  hn, -near),
-            new Vec3(-wf,  hf, -far),
-            new Vec3( wn, -hn, -near),
-            new Vec3( wf, -hf, -far),
-            new Vec3( wn,  hn, -near),
-            new Vec3( wf,  hf, -far),
-        };
-        
-        return array;
-    }
-    
-    /**
-     * Returns an array of eight vectors, each one a vertex of this camera's
-     * frustum.
+     * frustum. Returned in local space, with actual.
      * 
      * @return The frustum of this camera.
      */
     public Vec3[] getFrustum()
     {
-        return getFrustum(zNear, zFar);
+        return getFrustum(zNear, zFar, hSlope, vSlope);
     }
     
     /**
@@ -175,6 +161,7 @@ public class Camera3D
      */
     public Vec2 getFrustumCircumsphere(float near, float far)
     {
+        float slopeSq = hSlope*hSlope + vSlope*vSlope;
         float z = (near*(slopeSq - 1.0f) + far*(slopeSq + 1.0f))*0.5f;
         float r = (float)Math.sqrt(near*near*slopeSq + z*z);
         
