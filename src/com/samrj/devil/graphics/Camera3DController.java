@@ -1,7 +1,7 @@
 package com.samrj.devil.graphics;
 
 import com.samrj.devil.geo3d.Ellipsoid;
-import com.samrj.devil.geo3d.GeoMesh;
+import com.samrj.devil.geo3d.Geometry;
 import com.samrj.devil.geo3d.SweepResult;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
@@ -21,7 +21,7 @@ public class Camera3DController
     public final Vec3 offset = new Vec3();
     public float sensitivity, distance, height;
     public float pitch, yaw;
-    private GeoMesh level;
+    private Geometry geom;
     private Ellipsoid blockShape;
     
     public Camera3DController(Camera3D camera, float sensitivity, float distance, float height, Vec3 offset)
@@ -46,9 +46,9 @@ public class Camera3DController
         yaw = angles.y;
     }
     
-    public void enableLevelBlocking(GeoMesh level, float blockRadius)
+    public void enableBlocking(Geometry geom, float blockRadius)
     {
-        this.level = level;
+        this.geom = geom;
         blockShape = new Ellipsoid();
         blockShape.radii.set(blockRadius);
     }
@@ -76,10 +76,10 @@ public class Camera3DController
         camera.pos.y += height;
         Vec3 dp = new Vec3(0, 0, distance).mult(camera.dir);
         dp.add(temp.set(offset).mult(camera.dir));
-        if (level != null && !dp.isZero(0.0f))
+        if (geom != null && !dp.isZero(0.0f))
         {
             blockShape.pos.set(camera.pos);
-            SweepResult ray = level.sweepFirst(blockShape, dp);
+            SweepResult ray = geom.sweepFirst(blockShape, dp);
             if (ray != null) camera.pos.madd(dp, ray.time);
             else camera.pos.add(dp);
         }

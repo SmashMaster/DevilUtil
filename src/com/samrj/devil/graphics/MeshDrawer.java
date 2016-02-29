@@ -174,7 +174,7 @@ public class MeshDrawer
         GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.numTriangles*3, GL11.GL_UNSIGNED_INT, 0);
     }
     
-    public void delete()
+    public void destroy()
     {
         GL15.glDeleteBuffers(vbo);
         GL15.glDeleteBuffers(ibo);

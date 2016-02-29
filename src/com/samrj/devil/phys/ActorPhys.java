@@ -3,6 +3,7 @@ package com.samrj.devil.phys;
 import com.samrj.devil.geo3d.Ellipsoid;
 import com.samrj.devil.geo3d.Geo3DUtil;
 import com.samrj.devil.geo3d.GeoMesh;
+import com.samrj.devil.geo3d.Geometry;
 import com.samrj.devil.geo3d.SweepResult;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
@@ -24,7 +25,7 @@ public class ActorPhys<SETTINGS_TYPE extends Settings>
     
     protected final SETTINGS_TYPE settings;
     protected final Ellipsoid shape = new Ellipsoid();
-    protected final GeoMesh level;
+    protected final Geometry geom;
     protected final Vec3 displacement = new Vec3();
     protected Vec3 ground;
     protected int groundMaterial;
@@ -37,17 +38,17 @@ public class ActorPhys<SETTINGS_TYPE extends Settings>
      * level.
      * 
      * @param settings The FPSPlayer parameters to use.
-     * @param level The level to collide with.
+     * @param geom The geometry to collide with.
      */
-    public ActorPhys(SETTINGS_TYPE settings, GeoMesh level)
+    public ActorPhys(SETTINGS_TYPE settings, Geometry geom)
     {
-        if (settings == null || level == null) throw new NullPointerException();
+        if (settings == null || geom == null) throw new NullPointerException();
         
         settings.calcValues();
         this.settings = settings;
         shape.radii.set(settings.width, settings.height, settings.width).mult(0.5f);
         pos = shape.pos;
-        this.level = level;
+        this.geom = geom;
         ground = new Vec3(0.0f, 1.0f, 0.0f);
     }
     
@@ -186,7 +187,7 @@ public class ActorPhys<SETTINGS_TYPE extends Settings>
                 float oldY = pos.y;
                 pos.y += settings.stepHeight;
                 Vec3 step = new Vec3(0.0f, -2.0f*settings.stepHeight, 0.0f);
-                SweepResult sweep = level.sweepUnsorted(shape, step)
+                SweepResult sweep = geom.sweepUnsorted(shape, step)
                         .filter(e -> e.normal.y >= settings.groundNormalMinY)
                         .reduce((a, b) -> a.time < b.time ? a : b)
                         .orElse(null);
@@ -204,7 +205,7 @@ public class ActorPhys<SETTINGS_TYPE extends Settings>
             }
 
             //Clip against the level
-            level.intersectUnsorted(shape).forEach(isect ->
+            geom.intersectUnsorted(shape).forEach(isect ->
             {
                 pos.add(Vec3.sub(isect.point, isect.surface));
                 Geo3DUtil.restrain(vel, isect.normal);

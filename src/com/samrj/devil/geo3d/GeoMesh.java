@@ -22,9 +22,10 @@
 
 package com.samrj.devil.geo3d;
 
+import com.samrj.devil.math.Mat4;
 import com.samrj.devil.model.Mesh;
-import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
+import com.samrj.devil.model.ModelObject;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -38,7 +39,7 @@ import java.util.stream.Stream;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class GeoMesh
+public class GeoMesh implements Geometry
 {
     private static void replace(List<Edge> edges, List<Face> faces, Vec3 ov, Vec3 nv)
     {
@@ -66,7 +67,7 @@ public class GeoMesh
     public final List<Edge> edges;
     public final List<Face> faces;
     
-    public GeoMesh(Mesh mesh)
+    public GeoMesh(Mesh mesh, Mat4 transform)
     {
         ByteBuffer vBuffer = mesh.vertexData;
         vBuffer.rewind();
@@ -75,7 +76,7 @@ public class GeoMesh
         {
             Vec3 p = new Vec3();
             p.read(vBuffer);
-            verts.add(p);
+            verts.add(p.mult(transform));
         }
         vBuffer.rewind();
         
@@ -96,6 +97,16 @@ public class GeoMesh
         iBuffer.rewind();
         
         optimize(0.0f);
+    }
+    
+    public GeoMesh(Mesh mesh)
+    {
+        this(mesh, Mat4.identity());
+    }
+    
+    public GeoMesh(ModelObject<Mesh> object)
+    {
+        this(object.data.get(), object.transform.toMatrix());
     }
     
     /**
@@ -192,25 +203,14 @@ public class GeoMesh
          */
     }
     
+    @Override
     public Stream<RaycastResult> raycastUnsorted(Vec3 p0, Vec3 dp)
     {
         return faces.stream().map(f -> Geo3DUtil.raycast(p0, dp, f))
                 .filter(e -> e != null);
     }
     
-    public Stream<RaycastResult> raycast(Vec3 p0, Vec3 dp)
-    {
-        return raycastUnsorted(p0, dp)
-                .sorted((a, b) -> Util.compare(a.time, b.time));
-    }
-    
-    public RaycastResult raycastFirst(Vec3 p0, Vec3 dp)
-    {
-        return raycastUnsorted(p0, dp)
-                .reduce((a, b) -> a.time < b.time ? a : b)
-                .orElse(null);
-    }
-    
+    @Override
     public Stream<IsectResult> intersectUnsorted(ConvexShape shape)
     {
         return Stream.concat(Stream.concat(
@@ -220,19 +220,7 @@ public class GeoMesh
                     .filter(e -> e != null);
     }
     
-    public Stream<IsectResult> intersect(ConvexShape shape)
-    {
-        return intersectUnsorted(shape)
-                .sorted((a, b) -> Util.compare(b.depth, a.depth, 0.0f));
-    }
-    
-    public IsectResult intersectDeepest(ConvexShape shape)
-    {
-        return intersectUnsorted(shape)
-                .reduce((a, b) -> a.depth > b.depth ? a : b)
-                .orElse(null);
-    }
-    
+    @Override
     public Stream<SweepResult> sweepUnsorted(ConvexShape shape, Vec3 dp)
     {
         return Stream.concat(Stream.concat(
@@ -240,19 +228,6 @@ public class GeoMesh
                 edges.stream().map(e -> shape.sweep(dp, e))),
                 verts.stream().map(v -> shape.sweep(dp, v)))
                     .filter(e -> e != null);
-    }
-    
-    public Stream<SweepResult> sweep(ConvexShape shape, Vec3 dp)
-    {
-        return sweepUnsorted(shape, dp)
-                .sorted((a, b) -> Util.compare(a.time, b.time, 0.0f));
-    }
-    
-    public SweepResult sweepFirst(ConvexShape shape, Vec3 dp)
-    {
-        return sweepUnsorted(shape, dp)
-                .reduce((a, b) -> a.time < b.time ? a : b)
-                .orElse(null);
     }
     
     public class Edge

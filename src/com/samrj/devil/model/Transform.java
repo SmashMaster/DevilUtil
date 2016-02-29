@@ -68,6 +68,13 @@ public class Transform
         matrix.mult(scale);
     }
     
+    public Mat4 toMatrix()
+    {
+        Mat4 out = Mat4.identity();
+        apply(out);
+        return out;
+    }
+    
     public void setIdentity()
     {
         position.set();
