@@ -232,6 +232,7 @@ public final class ShaderProgram extends DGLObj
      */
     public int getUniformLocation(String name)
     {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
         return GL20.glGetUniformLocation(id, name);
     }
     

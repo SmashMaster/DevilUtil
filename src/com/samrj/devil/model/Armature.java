@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Armature definition class. Can be shared between multiple objects. Give to
+ * an ArmatureSolver to pose.
+ * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
@@ -43,6 +46,7 @@ public class Armature implements DataBlock
     public class Bone
     {
         public final String name;
+        final int parentIndex;
         public final boolean inheritRotation;
 
         public final Vec3 head, tail;
@@ -50,8 +54,6 @@ public class Armature implements DataBlock
         public final Mat3 invMat; //object rest direction -> bone direction
 
         private Bone parent;
-
-        private final int parentIndex;
 
         private Bone(DataInputStream in) throws IOException
         {

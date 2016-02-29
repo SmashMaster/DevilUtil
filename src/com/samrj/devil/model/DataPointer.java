@@ -11,7 +11,7 @@ public final class DataPointer<T extends DataBlock>
     private final Model model;
     private final String name;
     private final int index;
-    private final DataBlock.Type type;
+    public final DataBlock.Type type;
     
     private T data;
     

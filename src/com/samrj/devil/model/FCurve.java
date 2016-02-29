@@ -233,7 +233,7 @@ public class FCurve
     
     public void apply(Pose pose, float time)
     {
-        pose.setBoneProperty(boneName, property, propertyIndex, evaluate(time));
+        pose.setProperty(boneName, property, propertyIndex, evaluate(time));
     }
     
     public class Keyframe

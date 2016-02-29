@@ -59,6 +59,11 @@ public class Action implements DataBlock
         return pose;
     }
     
+    public Pose evaluate(float time)
+    {
+        return evaluate(new Pose(), time);
+    }
+    
     public Marker getMarker(String name)
     {
         return markerMap.get(name);

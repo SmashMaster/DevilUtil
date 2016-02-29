@@ -20,13 +20,14 @@
  * THE SOFTWARE.
  */
 
-package com.samrj.devil.model;
+package com.samrj.devil.graphics;
 
 import com.samrj.devil.gl.AttributeType;
 import static com.samrj.devil.gl.AttributeType.*;
 import com.samrj.devil.gl.DGL;
 import com.samrj.devil.gl.ShaderProgram;
 import com.samrj.devil.gl.VAO;
+import com.samrj.devil.model.Mesh;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 

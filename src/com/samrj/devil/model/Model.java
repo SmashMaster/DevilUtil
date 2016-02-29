@@ -93,6 +93,7 @@ public class Model
     public void destroy()
     {
         for (Mesh mesh : meshes) mesh.destroy();
+        
         libraries.clear();
         actions.clear();
         armatures.clear();

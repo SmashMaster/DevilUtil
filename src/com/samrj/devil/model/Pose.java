@@ -1,18 +1,43 @@
+/*
+ * Copyright (c) 2015 Sam Johnson
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package com.samrj.devil.model;
 
 import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.model.Transform.Property;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
- * Class for storing and manipulating bone pose information.
+ * Class for storing and manipulating bone pose information. Is not tied to
+ * armatures--give to an ArmatureSolver to actually solve a pose.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
- * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class Pose
 {
@@ -51,9 +76,6 @@ public class Pose
     
     /**
      * Returns the bone with the given name, or null if there is no such bone.
-     * 
-     * @param name
-     * @return 
      */
     public PoseBone getBone(String name)
     {
@@ -61,7 +83,16 @@ public class Pose
     }
     
     /**
-     * Sets a specific property of a bone.
+     * Returns a collection of each pose bone belonging to this pose.
+     */
+    public Collection<PoseBone> getBones()
+    {
+        return Collections.unmodifiableCollection(bones.values());
+    }
+    
+    /**
+     * Sets a specific property of a bone. Adds a bone with the given name if
+     * none already exists.
      * 
      * @param name The name of the bone to change.
      * @param property The property to change.
@@ -91,21 +122,29 @@ public class Pose
     /**
      * Removes any bones not shared between this and the given pose.
      * 
-     * @param pose The pose to mask with.
+     * @param pose The pose to intersect with.
      * @return This pose.
      */
     public Pose intersect(Pose pose)
     {
+        Iterator<Entry<String, PoseBone>> it = bones.entrySet().iterator();
+        while (it.hasNext())
+        {
+            Entry<String, PoseBone> e = it.next();
+            if (!pose.bones.containsKey(e.getKey())) it.remove();
+        }
         return this;
     }
     
     /**
      * Removes any bone shared between this and the given pose.
-     * @param pose
-     * @return 
+     * 
+     * @param pose The pose to mask with.
+     * @return This pose.
      */
-    public Pose remove(Pose pose)
+    public Pose mask(Pose pose)
     {
+        for (PoseBone source : pose.bones.values()) bones.remove(source.name); 
         return this;
     }
     

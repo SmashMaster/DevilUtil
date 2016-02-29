@@ -1,6 +1,8 @@
 package com.samrj.devil.model;
 
 import com.samrj.devil.io.IOUtil;
+import com.samrj.devil.model.ArmatureSolver.BoneSolver;
+import com.samrj.devil.model.constraint.IKConstraint;
 import java.io.DataInputStream;
 import java.io.IOException;
 
@@ -17,10 +19,11 @@ public class ModelObject<DATA_TYPE extends DataBlock> implements DataBlock
     public final String[] vertexGroups;
     public final Pose pose;
     public final IKConstraint[] ikConstraints;
-    public final DataPointer<?> data;
+    public final DataPointer<DATA_TYPE> data;
     public final DataPointer<ModelObject<?>> parent;
     public final String parentBoneName;
     public final DataPointer<Action> action;
+    public final ArmatureSolver armatureSolver;
     
     ModelObject(Model model, DataInputStream in) throws IOException
     {
@@ -31,7 +34,6 @@ public class ModelObject<DATA_TYPE extends DataBlock> implements DataBlock
         int dataIndex = dataType >= 0 && dataLibIndex < 0 ? in.readInt() : -1;
         if (dataLibIndex >= 0) IOUtil.readPaddedUTF(in); //Data library name
         data = new DataPointer(model, dataType, dataIndex);
-        
         int parentIndex = in.readInt();
         parent = new DataPointer<>(model, Type.OBJECT, parentIndex);
         parentBoneName = parentIndex >= 0 ? IOUtil.readPaddedUTF(in) : null;
@@ -51,21 +53,16 @@ public class ModelObject<DATA_TYPE extends DataBlock> implements DataBlock
         }
         
         action = new DataPointer<>(model, Type.ACTION, in.readInt());
+        
+        armatureSolver = (data.type == Type.ARMATURE) ?
+                new ArmatureSolver((ModelObject<Armature>)this) : null;
     }
     
-    public boolean isArmature()
+    public BoneSolver getParentBone()
     {
-        return parent.get().getData() instanceof Armature && parent.get().pose != null;
-    }
-    
-    public boolean isMesh()
-    {
-        return data.get() instanceof Mesh;
-    }
-    
-    public Object getData()
-    {
-        return data;
+        ModelObject p = parent.get();
+        if (p == null || parentBoneName == null || p.data.type != Type.ARMATURE) return null;
+        return p.armatureSolver.getBone(parentBoneName);
     }
     
     @Override
