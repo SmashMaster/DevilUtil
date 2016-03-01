@@ -13,45 +13,45 @@ import java.util.stream.Stream;
  */
 public interface Geometry
 {
-    public Stream<RaycastResult> raycastUnsorted(Vec3 p0, Vec3 dp);
+    Stream<RaycastResult> raycastUnsorted(Vec3 p0, Vec3 dp);
     
-    public default Stream<RaycastResult> raycast(Vec3 p0, Vec3 dp)
+    default Stream<RaycastResult> raycast(Vec3 p0, Vec3 dp)
     {
         return raycastUnsorted(p0, dp)
                 .sorted((a, b) -> Util.compare(a.time, b.time));
     }
     
-    public default RaycastResult raycastFirst(Vec3 p0, Vec3 dp)
+    default RaycastResult raycastFirst(Vec3 p0, Vec3 dp)
     {
         return raycastUnsorted(p0, dp)
                 .reduce((a, b) -> a.time < b.time ? a : b)
                 .orElse(null);
     }
     
-    public Stream<IsectResult> intersectUnsorted(ConvexShape shape);
+    Stream<IsectResult> intersectUnsorted(ConvexShape shape);
     
-    public default Stream<IsectResult> intersect(ConvexShape shape)
+    default Stream<IsectResult> intersect(ConvexShape shape)
     {
         return intersectUnsorted(shape)
                 .sorted((a, b) -> Util.compare(b.depth, a.depth, 0.0f));
     }
     
-    public default IsectResult intersectDeepest(ConvexShape shape)
+    default IsectResult intersectDeepest(ConvexShape shape)
     {
         return intersectUnsorted(shape)
                 .reduce((a, b) -> a.depth > b.depth ? a : b)
                 .orElse(null);
     }
     
-    public Stream<SweepResult> sweepUnsorted(ConvexShape shape, Vec3 dp);
+    Stream<SweepResult> sweepUnsorted(ConvexShape shape, Vec3 dp);
     
-    public default Stream<SweepResult> sweep(ConvexShape shape, Vec3 dp)
+    default Stream<SweepResult> sweep(ConvexShape shape, Vec3 dp)
     {
         return sweepUnsorted(shape, dp)
                 .sorted((a, b) -> Util.compare(a.time, b.time, 0.0f));
     }
     
-    public default SweepResult sweepFirst(ConvexShape shape, Vec3 dp)
+    default SweepResult sweepFirst(ConvexShape shape, Vec3 dp)
     {
         return sweepUnsorted(shape, dp)
                 .reduce((a, b) -> a.time < b.time ? a : b)
