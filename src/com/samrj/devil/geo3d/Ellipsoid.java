@@ -215,4 +215,10 @@ public class Ellipsoid implements ConvexShape
         out.normal.normalize();
         return out;
     }
+
+    @Override
+    public Box3 bounds()
+    {
+        return new Box3(Vec3.sub(pos, radii), Vec3.add(pos, radii));
+    }
 }

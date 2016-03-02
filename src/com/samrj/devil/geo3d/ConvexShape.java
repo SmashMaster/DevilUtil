@@ -63,4 +63,10 @@ public interface ConvexShape
      * @return The results of the sweep test, or null if missed.
      */
     SweepResult sweep(Vec3 dp, Face f);
+    
+    /**
+     * Returns a bounding box that contains this convex shape. Should be as
+     * small as possible.
+     */
+    Box3 bounds();
 }

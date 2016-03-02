@@ -66,6 +66,7 @@ public class GeoMesh implements Geometry
     public final List<Vec3> verts;
     public final List<Edge> edges;
     public final List<Face> faces;
+    public final Box3 bounds;
     
     public GeoMesh(Mesh mesh, Mat4 transform)
     {
@@ -97,6 +98,9 @@ public class GeoMesh implements Geometry
         iBuffer.rewind();
         
         optimize(0.0f);
+        
+        bounds = Box3.empty();
+        for (Vec3 vert : verts) bounds.expand(vert);
     }
     
     public GeoMesh(Mesh mesh)

@@ -5,6 +5,16 @@ import com.samrj.devil.math.Vec3;
 
 public class Box3
 {
+    /**
+     * Returns whether or not the two boxes are touching each-other.
+     */
+    public static boolean touching(Box3 a, Box3 b)
+    {
+        return a.max.x >= b.min.x && b.max.x >= a.min.x &&
+               a.max.y >= b.min.y && b.max.y >= a.min.y &&
+               a.max.z >= b.min.z && b.max.z >= a.min.z;
+    }
+    
     // <editor-fold defaultstate="collapsed" desc="Static mutator methods">
     /**
      * Copies the source box into the target box. 
@@ -63,6 +73,24 @@ public class Box3
         r.max.x = Util.max(b0.max.x, b1.max.x);
         r.max.y = Util.max(b0.max.y, b1.max.y);
         r.max.z = Util.max(b0.max.z, b1.max.z);
+    }
+    
+    /**
+     * Sets {@code r} to a box containing {@code b} in its initial position and
+     * in an offset position defined by {@code dp}.
+     * 
+     * @param b The initial box.
+     * @param dp The offset to sweep by.
+     * @param r The box in which to store the result.
+     */
+    public static final void sweep(Box3 b, Vec3 dp, Box3 r)
+    {
+        r.min.x = Util.min(b.min.x, b.min.x + dp.x);
+        r.min.y = Util.min(b.min.y, b.min.y + dp.y);
+        r.min.z = Util.min(b.min.z, b.min.z + dp.z);
+        r.max.x = Util.max(b.max.x, b.max.x + dp.x);
+        r.max.y = Util.max(b.max.y, b.max.y + dp.y);
+        r.max.z = Util.max(b.max.z, b.max.z + dp.z);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
@@ -177,6 +205,18 @@ public class Box3
     public Box3 expand(Box3 b)
     {
         expand(this, b, this);
+        return this;
+    }
+    
+    /**
+     * Expands this box by with an offset version of itself.
+     * 
+     * @param v The vector to offset by.
+     * @return This box.
+     */
+    public Box3 sweep(Vec3 v)
+    {
+        sweep(this, v, this);
         return this;
     }
     // </editor-fold>
