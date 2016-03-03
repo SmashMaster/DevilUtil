@@ -312,7 +312,7 @@ public abstract class Game
         GLFW.glfwSetWindowTitle(window, title);
     }
     
-    // <editor-fold defaultstate="collapsed" desc="Abstract Methods">
+    // <editor-fold defaultstate="collapsed" desc="Overridable Methods">
     /**
      * Called whenever the mouse is moved. Always called before step() and
      * render(). The coordinates are relative to the bottom left corner of the
@@ -323,7 +323,7 @@ public abstract class Game
      * @param dx The amount the x position has changed since the last call.
      * @param dy The amount the y position has changed since the last call.
      */
-    public abstract void onMouseMoved(float x, float y, float dx, float dy);
+    public void onMouseMoved(float x, float y, float dx, float dy) {};
     
     /**
      * Called whenever a mouse button is pressed. Always called before step()
@@ -335,7 +335,7 @@ public abstract class Game
      * @param action One of GLFW_PRESS or GLFW_RELEASE.
      * @param mods Bit field describing which modifier keys were held down.
      */
-    public abstract void onMouseButton(int button, int action, int mods);
+    public void onMouseButton(int button, int action, int mods) {};
     
     /**
      * Called whenever the scroll wheel is moved. Always called before step()
@@ -344,7 +344,7 @@ public abstract class Game
      * @param dx The horizontal scroll offset.
      * @param dy The vertical scroll offset.
      */
-    public abstract void onMouseScroll(float dx, float dy);
+    public void onMouseScroll(float dx, float dy) {};
     
     /**
      * Called whenever a key is pressed. Always called before step() and
@@ -356,7 +356,7 @@ public abstract class Game
      * @param action One of GLFW_PRESS, GLFW_RELEASE or GLFW_REPEAT.
      * @param mods Bit field describing which modifier keys were held down.
      */
-    public abstract void onKey(int key, int action, int mods);
+    public void onKey(int key, int action, int mods) {};
     
     /**
      * Steps the simulation by a given amount of time. Called after input and
@@ -365,19 +365,19 @@ public abstract class Game
      * 
      * @param dt The time step, in seconds.
      */
-    public abstract void step(float dt);
+    public void step(float dt) {};
     
     /**
      * Called once per frame after all input and time steps, should be used for
      * any rendering code with OpenGL.
      */
-    public abstract void render();
+    public void render() {};
     
     /**
      * Called when this game is destroyed. Should release any system resources
      * associated with this game.
      */
-    public abstract void onDestroy();
+    public void onDestroy() {};
     // </editor-fold>
     
     /**
