@@ -679,6 +679,15 @@ public class Util
         return v;
     }
     
+    public static final Vec2 deadZone(Vec2 v, float threshold)
+    {
+        float length = v.length();
+        if (length < threshold) v.set();
+        else if (length < 1.0f) v.mult((length - threshold)/(1.0f - threshold));
+        else v.div(length);
+        return v;
+    }
+    
     /**
      * Don't let anyone instantiate this.
      */

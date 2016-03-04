@@ -4,6 +4,7 @@ import com.samrj.devil.geo3d.Ellipsoid;
 import com.samrj.devil.geo3d.Geometry;
 import com.samrj.devil.geo3d.SweepResult;
 import com.samrj.devil.math.Util;
+import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
 
 /**
@@ -53,16 +54,18 @@ public class Camera3DController
         blockShape.radii.set(blockRadius);
     }
     
+    public void applyDelta(Vec2 delta)
+    {
+        if (!delta.isZero(0.0f))
+        {
+            yaw = Util.reduceAngle(yaw - delta.x);
+            pitch = Util.clamp(pitch + delta.y, -Util.PId2, Util.PId2);
+        }
+    }
+    
     public void onMouseMoved(float x, float y, float dx, float dy)
     {
-        yaw -= sensitivity*dx;
-        pitch += sensitivity*dy;
-        if (dx != 0.0f || dy != 0.0f)
-        {
-            yaw = Util.reduceAngle(yaw);
-            pitch = Util.clamp(pitch, -Util.PId2, Util.PId2);
-        }
-        
+        applyDelta(new Vec2(dx, dy).mult(sensitivity));
         update();
     }
     
