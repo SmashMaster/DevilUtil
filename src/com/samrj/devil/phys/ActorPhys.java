@@ -118,6 +118,11 @@ public class ActorPhys<SETTINGS_TYPE extends Settings>
         else vel.set(desiredVel);
     }
     
+    public boolean isValidGround(Vec3 normal)
+    {
+        return normal.y >= settings.groundNormalMinY;
+    }
+    
     /**
      * Steps the player's simulation forward by the given time-step.
      * 
@@ -188,7 +193,7 @@ public class ActorPhys<SETTINGS_TYPE extends Settings>
                 pos.y += settings.stepHeight;
                 Vec3 step = new Vec3(0.0f, -2.0f*settings.stepHeight, 0.0f);
                 SweepResult sweep = geom.sweepUnsorted(shape, step)
-                        .filter(e -> e.normal.y >= settings.groundNormalMinY)
+                        .filter(e -> isValidGround(e.normal))
                         .reduce((a, b) -> a.time < b.time ? a : b)
                         .orElse(null);
 
@@ -210,7 +215,7 @@ public class ActorPhys<SETTINGS_TYPE extends Settings>
                 pos.add(Vec3.sub(isect.point, isect.surface));
                 Geo3DUtil.restrain(vel, isect.normal);
                 
-                if (isect.normal.y < settings.groundNormalMinY) return;
+                if (!isValidGround(isect.normal)) return;
                 if (ground == null || isect.normal.y > ground.y)
                 {
                     ground = isect.normal;

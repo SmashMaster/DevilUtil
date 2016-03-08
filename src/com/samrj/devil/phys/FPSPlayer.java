@@ -1,7 +1,7 @@
 package com.samrj.devil.phys;
 
 import com.samrj.devil.game.Keyboard;
-import com.samrj.devil.geo3d.GeoMesh;
+import com.samrj.devil.geo3d.Geometry;
 import com.samrj.devil.graphics.Camera3D;
 import com.samrj.devil.graphics.Camera3DController;
 import com.samrj.devil.math.Util;
@@ -32,12 +32,12 @@ public class FPSPlayer extends ActorPhys<Settings>
      * @param settings The FPSPlayer parameters to use.
      * @param keyboard A keyboard.
      * @param camera An FPSCamera.
-     * @param level The level to collide with.
+     * @param geom The geometry to collide with.
      */
-    public FPSPlayer(Settings settings, Keyboard keyboard, Camera3D camera, GeoMesh level)
+    public FPSPlayer(Settings settings, Keyboard keyboard, Camera3D camera, Geometry geom)
     {
-        super(settings, level);
-        if (settings == null || keyboard == null || camera == null || level == null)
+        super(settings, geom);
+        if (settings == null || keyboard == null || camera == null || geom == null)
             throw new NullPointerException();
         
         settings.calcValues();
@@ -53,11 +53,11 @@ public class FPSPlayer extends ActorPhys<Settings>
      * 
      * @param keyboard A keyboard.
      * @param camera An FPSCamera.
-     * @param level The level to collide with.
+     * @param geom The geometry to collide with.
      */
-    public FPSPlayer(Keyboard keyboard, Camera3D camera, GeoMesh level)
+    public FPSPlayer(Keyboard keyboard, Camera3D camera, Geometry geom)
     {
-        this(new Settings(), keyboard, camera, level);
+        this(new Settings(), keyboard, camera, geom);
     }
     
     /**

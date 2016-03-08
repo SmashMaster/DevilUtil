@@ -34,6 +34,13 @@ public class Camera3DController
         this.offset.set(offset);
     }
     
+    public Camera3DController(Camera3D camera, float sensitivity, float height)
+    {
+        this.camera = camera;
+        this.sensitivity = sensitivity;
+        this.height = height;
+    }
+    
     public Camera3DController(Camera3D camera, float sensitivity)
     {
         this.camera = camera;

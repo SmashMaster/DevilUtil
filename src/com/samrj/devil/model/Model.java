@@ -143,6 +143,11 @@ public class Model
             return array[i];
         }
         
+        public int size()
+        {
+            return array.length;
+        }
+        
         @Override
         public Iterator<T> iterator()
         {
