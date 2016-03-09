@@ -6,6 +6,7 @@ import com.samrj.devil.geo3d.GeoMesh;
 import com.samrj.devil.geo3d.Geometry;
 import com.samrj.devil.geo3d.SweepResult;
 import com.samrj.devil.math.Util;
+import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.phys.ActorPhys.Settings;
 
@@ -165,8 +166,8 @@ public class ActorPhys<SETTINGS_TYPE extends Settings>
                 if (wantToMove)
                 {
                     float moveSpeed = adjMoveDir.length();
-                    if (moveSpeed > 1.0f) adjMoveDir.normalize();
-                    adjMoveDir.mult(settings.maxSpeed);
+                    if (moveSpeed > 1.0f) adjMoveDir.div(moveSpeed);
+                    adjMoveDir.mult(new Vec2(vel.x, vel.z).length());
                     adjMoveDir.y = vel.y;
                     applyAcc(adjMoveDir, settings.airAcceleration*dt);
                 }

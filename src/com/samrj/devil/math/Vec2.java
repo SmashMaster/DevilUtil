@@ -427,6 +427,25 @@ public class Vec2 implements Bufferable, Streamable
         result.x = Util.lerp(v0.x, v1.x, t);
         result.y = Util.lerp(v0.y, v1.y, t);
     }
+    
+    /**
+     * Linearly moves {@code v} towards the given destination, by specified
+     * distance, and stores the result in {@code result}. If the starting
+     * distance to the destination equals or is lower than {@code dist}, sets
+     * result to {@code dest}.
+     * 
+     * @param v The vector to move.
+     * @param dest The destination to move towards.
+     * @param dist The distance to move by.
+     * @param result The vector in which to store the result.
+     */
+    public static final void move(Vec2 v, Vec2 dest, float dist, Vec2 result)
+    {
+        Vec2 dp = sub(dest, v);
+        float d0 = length(dp);
+        if (d0 <= dist) copy(dest, result);
+        else madd(v, dp, dist/d0, result);
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
     /**
@@ -671,6 +690,24 @@ public class Vec2 implements Bufferable, Streamable
     {
         Vec2 result = new Vec2();
         lerp(v0, v1, t, result);
+        return result;
+    }
+    
+    /**
+     * Linearly moves {@code v} towards the given destination, by specified
+     * distance, and returns the result in a new vector. If the starting
+     * distance to the destination equals or is lower than {@code dist}, sets
+     * the result to {@code dest}.
+     * 
+     * @param v The vector to move.
+     * @param dest The destination to move towards.
+     * @param dist The distance to move by.
+     * @return A new vector containing the result.
+     */
+    public static final Vec2 move(Vec2 v, Vec2 dest, float dist)
+    {
+        Vec2 result = new Vec2();
+        move(v, dest, dist, result);
         return result;
     }
     // </editor-fold>
@@ -1108,6 +1145,21 @@ public class Vec2 implements Bufferable, Streamable
     public Vec2 lerp(Vec2 v, float t)
     {
         lerp(this, v, t, this);
+        return this;
+    }
+    
+    /**
+     * Moves this vector towards the given destination by the specified
+     * distance. If the starting distance to the destination is lesser than
+     * or equal to that distance, sets this vector to the destination.
+     * 
+     * @param dest The destination to move towards.
+     * @param dist The distance to move by.
+     * @return This vector.
+     */
+    public Vec2 move(Vec2 dest, float dist)
+    {
+        move(this, dest, dist, this);
         return this;
     }
     // </editor-fold>
