@@ -6,6 +6,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -68,7 +69,47 @@ public class Action implements DataBlock
     {
         return markerMap.get(name);
     }
-
+    
+    private int getPrevMarkerIndex(float time)
+    {
+        for (int i=0; i<markers.length; i++) if (markers[i].frame >= time)
+            return i - 1;
+        return markers.length - 1;
+    }
+    
+    private int getNextMarkerIndex(float time)
+    {
+        for (int i=0; i<markers.length; i++) if (markers[i].frame >= time)
+            return i;
+        return -1;
+    }
+    
+    /**
+     * For each marker between the two given times, calls the given marker
+     * callback. If the starting time is greater than the end, assumes this
+     * action loops. Inclusive with the starting time, exclusive with the end.
+     * 
+     * @param start The starting time.
+     * @param end The ending time.
+     * @param markerCallback The function to call for each marker passed.
+     */
+    public void passMarkers(float start, float end, Consumer<Marker> markerCallback)
+    {
+        int i0 = getNextMarkerIndex(start);
+        int i1 = getPrevMarkerIndex(end);
+        if (i0 < 0 || i1 < 0) return;
+        
+        if (start <= end)
+        {
+            for (int i=i0; i<=i1; i++) markerCallback.accept(markers[i]);
+        }
+        else
+        {
+            for (int i=i0; i<markers.length; i++) markerCallback.accept(markers[i]);
+            for (int i=0; i<=i1; i++) markerCallback.accept(markers[i]);
+        }
+    }
+    
     @Override
     public String getName()
     {
@@ -84,6 +125,12 @@ public class Action implements DataBlock
         {
             name = IOUtil.readPaddedUTF(in);
             frame = in.readInt();
+        }
+        
+        @Override
+        public String toString()
+        {
+            return frame + ": \"" + name + "\"";
         }
     }
 }
