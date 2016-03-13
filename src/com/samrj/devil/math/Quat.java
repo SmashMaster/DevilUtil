@@ -380,6 +380,8 @@ public class Quat implements Bufferable, Streamable
      * Performs a spherical linear interpolation between the two given
      * quaternions and stores the result in {@code r}.
      * 
+     * TODO: Actually fix this crap.
+     * 
      * @param q0 The 'start' quaternion to interpolate from.
      * @param q1 The 'end' quaternion to interpolate to.
      * @param t The scalar interpolant, between zero and one (inclusive).
@@ -387,25 +389,8 @@ public class Quat implements Bufferable, Streamable
      */
     public static final void slerp(Quat q0, Quat q1, float t, Quat result)
     {
-        float cos = dot(q0, q1);
-        if (Math.abs(cos) >= 0.99609375f)
-        {
-            copy(q0, result);
-            return;
-        }
-        
-        float ang = (float)Math.acos(cos);
-	float sin = (float)Math.sqrt(1.0 - cos*cos);
-        
-        if (Math.abs(ang) < 0.00390625f)
-        {
-            add(q0, q1, result);
-            mult(result, 0.5f, result);
-            return;
-	}
-        
-        mult(q0, (float)Math.sin((1.0f - t)*ang)/sin, result);
-        madd(result, q1, (float)Math.sin(t*ang)/sin, result);
+        lerp(q0, q1, t, result);
+        normalize(result, result);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
