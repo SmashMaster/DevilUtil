@@ -220,10 +220,10 @@ public class Quat implements Bufferable, Streamable
      */
     public static final void add(Quat q0, Quat q1, Quat result)
     {
-        result.w = q0.w+q1.w;
-        result.x = q0.x+q1.x;
-        result.y = q0.y+q1.y;
-        result.z = q0.z+q1.z;
+        result.w = q0.w + q1.w;
+        result.x = q0.x + q1.x;
+        result.y = q0.y + q1.y;
+        result.z = q0.z + q1.z;
     }
     
     /**
@@ -235,10 +235,10 @@ public class Quat implements Bufferable, Streamable
      */
     public static final void sub(Quat q0, Quat q1, Quat result)
     {
-        result.w = q0.w-q1.w;
-        result.x = q0.x-q1.x;
-        result.y = q0.y-q1.y;
-        result.z = q0.z-q1.z;
+        result.w = q0.w - q1.w;
+        result.x = q0.x - q1.x;
+        result.y = q0.y - q1.y;
+        result.z = q0.z - q1.z;
     }
     
     /**
@@ -256,6 +256,23 @@ public class Quat implements Bufferable, Streamable
         float z = q0.w*q1.z + q0.x*q1.y - q0.y*q1.x + q0.z*q1.w;
         
         result.w = w; result.x = x; result.y = y; result.z = z;
+    }
+    
+    /**
+     * Multiplies {@code q1} by {@code s}, adds {@code q0}, and stores the
+     * result in {@code result}.
+     * 
+     * @param v0 The quaternion to add to.
+     * @param v1 The quaternion to multiply by {@code s} and then add to {@code q0}.
+     * @param s The scalar by which to multiply {@code q1}.
+     * @param result The quaternion in which to store the result.
+     */
+    public static final void madd(Quat v0, Quat v1, float s, Quat result)
+    {
+        result.w = v0.w + v1.w*s;
+        result.x = v0.x + v1.x*s;
+        result.y = v0.y + v1.y*s;
+        result.z = v0.z + v1.z*s;
     }
     
     /**
@@ -370,24 +387,25 @@ public class Quat implements Bufferable, Streamable
      */
     public static final void slerp(Quat q0, Quat q1, float t, Quat result)
     {
-        Quat temp = new Quat();
         float cos = dot(q0, q1);
-        if (cos < 0f)
+        if (Math.abs(cos) >= 0.99609375f)
         {
-            negate(q1, temp);
-            cos = -cos;
+            copy(q0, result);
+            return;
         }
-        else copy(q1, temp);
         
-        if (cos >= 0.99609375f) lerp(q0, temp, t, result);
-        else
+        float ang = (float)Math.acos(cos);
+	float sin = (float)Math.sqrt(1.0 - cos*cos);
+        
+        if (Math.abs(ang) < 0.00390625f)
         {
-            float angle = (float)Math.acos(cos);
-            mult(q0, (float)Math.sin((1.0f - t)*angle), result);
-            mult(temp, (float)Math.sin(t*angle), temp);
-            add(result, temp, result);
-            div(result, (float)Math.sin(angle), result);
-        }
+            add(q0, q1, result);
+            mult(result, 0.5f, result);
+            return;
+	}
+        
+        mult(q0, (float)Math.sin((1.0f - t)*ang)/sin, result);
+        madd(result, q1, (float)Math.sin(t*ang)/sin, result);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
@@ -504,6 +522,22 @@ public class Quat implements Bufferable, Streamable
     {
         Quat result = new Quat();
         mult(q0, q1, result);
+        return result;
+    }
+    
+    /**
+     * Multiplies {@code q1} by {@code s}, adds {@code q0}, and returns a new
+     * vector contain the result.
+     * 
+     * @param q0 The quaternion to add to.
+     * @param q1 The quaternion to multiply by {@code s} and then add to {@code q0}.
+     * @param s The scalar by which to multiply {@code q1}.
+     * @return A new quaternion containing the result.
+     */
+    public static final Quat madd(Quat q0, Quat q1, float s)
+    {
+        Quat result = new Quat();
+        madd(q0, q1, s, result);
         return result;
     }
     
@@ -824,6 +858,20 @@ public class Quat implements Bufferable, Streamable
     public Quat mult(Quat q)
     {
         mult(this, q, this);
+        return this;
+    }
+    
+    /**
+     * Multiplies the given quaternion by the given scalar, and adds the result
+     * to this.
+     * 
+     * @param v The quaternion to multiply-add.
+     * @param s The scalar to multiply {@code v} by.
+     * @return This quaternion.
+     */
+    public Quat madd(Quat v, float s)
+    {
+        madd(this, v, s, this);
         return this;
     }
     
