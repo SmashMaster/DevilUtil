@@ -4,6 +4,7 @@ import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Util;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -70,43 +71,22 @@ public class Action implements DataBlock
         return markerMap.get(name);
     }
     
-    private int getPrevMarkerIndex(float time)
-    {
-        for (int i=0; i<markers.length; i++) if (markers[i].frame >= time)
-            return i - 1;
-        return markers.length - 1;
-    }
-    
-    private int getNextMarkerIndex(float time)
-    {
-        for (int i=0; i<markers.length; i++) if (markers[i].frame >= time)
-            return i;
-        return -1;
-    }
-    
     /**
      * For each marker between the two given times, calls the given marker
-     * callback. If the starting time is greater than the end, assumes this
-     * action loops. Inclusive with the starting time, exclusive with the end.
+     * callback. Inclusive with the starting time, exclusive with the end.
      * 
-     * @param start The starting time.
-     * @param end The ending time.
+     * @param start The starting time. (Inclusive)
+     * @param end The ending time. (Exclusive)
      * @param markerCallback The function to call for each marker passed.
      */
     public void passMarkers(float start, float end, Consumer<Marker> markerCallback)
     {
-        int i0 = getNextMarkerIndex(start);
-        int i1 = getPrevMarkerIndex(end);
-        if (i0 < 0 || i1 < 0) return;
+        if (start >= end) throw new IllegalArgumentException();
         
-        if (start <= end)
+        for (Marker marker : markers) if (marker.frame >= start)
         {
-            for (int i=i0; i<=i1; i++) markerCallback.accept(markers[i]);
-        }
-        else
-        {
-            for (int i=i0; i<markers.length; i++) markerCallback.accept(markers[i]);
-            for (int i=0; i<=i1; i++) markerCallback.accept(markers[i]);
+            if (marker.frame >= end) return;
+            markerCallback.accept(marker);
         }
     }
     
