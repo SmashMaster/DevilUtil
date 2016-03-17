@@ -6,7 +6,6 @@ import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.topo.DAG;
-import com.samrj.devil.model.Armature.Bone;
 import com.samrj.devil.model.ArmatureSolver;
 import com.samrj.devil.model.ArmatureSolver.BoneSolver;
 import java.io.DataInputStream;
@@ -27,48 +26,31 @@ public class IKConstraint implements ArmatureSolver.Constraint
         return len;
     }
     
-    public final String boneName;
-    public final String targetName;
-    public final String poleName;
-    public final float poleAngle;
+    private final BoneSolver end, start, parent;
+    private final BoneSolver target, pole;
+    private final float poleAngle;
+    private final float d1, d2;
+    private final Vec3 hinge1 = new Vec3(), hinge2 = new Vec3();
+    private final float ang2init;
     
-    private BoneSolver end, start, parent;
-    private BoneSolver target, pole;
-    
-    private float d1, d2;
-    private final Vec3 hinge1, hinge2;
-    private float ang2init;
-    
-    public IKConstraint(DataInputStream in) throws IOException
+    public IKConstraint(IKDefinition def, ArmatureSolver solver)
     {
-        boneName = IOUtil.readPaddedUTF(in);
-        targetName = IOUtil.readPaddedUTF(in);
-        poleName = IOUtil.readPaddedUTF(in);
-        poleAngle = in.readFloat();
-        hinge1 = new Vec3();
-        hinge2 = new Vec3();
-    }
-    
-    public void populate(ArmatureSolver solver)
-    {
-        end = solver.getBone(boneName);
+        end = solver.getBone(def.boneName);
         start = end.getParent();
         parent = start.getParent();
-        target = solver.getBone(targetName);
-        pole = solver.getBone(poleName);
+        target = solver.getBone(def.targetName);
+        pole = solver.getBone(def.poleName);
+        poleAngle = def.poleAngle;
         
-        Bone endBone = end.bone;
-        Bone startBone = start.bone;
-        
-        Vec3 dp1 = Vec3.sub(endBone.head, startBone.head);
-        Vec3 dp2 = Vec3.sub(endBone.tail, endBone.head);
+        Vec3 dp1 = Vec3.sub(end.bone.head, start.bone.head);
+        Vec3 dp2 = Vec3.sub(end.bone.tail, end.bone.head);
         d1 = nrm(dp1);
         d2 = nrm(dp2);
         
         Vec3 hinge = Vec3.cross(dp1, dp2);
         float hingeLen = nrm(hinge);
-        Vec3.mult(hinge, startBone.invMat, hinge1);
-        Vec3.mult(hinge, endBone.invMat, hinge2);
+        Vec3.mult(hinge, start.bone.invMat, hinge1);
+        Vec3.mult(hinge, end.bone.invMat, hinge2);
         
         ang2init = (float)Math.atan2(hingeLen, dp1.dot(dp2));
     }
@@ -116,7 +98,7 @@ public class IKConstraint implements ArmatureSolver.Constraint
                               ikAxis.y, yAxis.y, poleAxis.y,
                               ikAxis.z, yAxis.z, poleAxis.z);
         rot1.mult(Quat.rotation(basis));
-        rot1.rotate(new Vec3(1,0,0), poleAngle);
+        rot1.rotate(new Vec3(1, 0, 0), poleAngle);
         
         if (x < d1 + d2) //Calculate IK angles and perform hinge rotations.
         {
@@ -127,5 +109,21 @@ public class IKConstraint implements ArmatureSolver.Constraint
         }
         else rot2.rotate(hinge2, -ang2init); //Reach towards target.
         //Also need cases for targets that are too close.
+    }
+    
+    public static class IKDefinition
+    {
+        public final String boneName;
+        public final String targetName;
+        public final String poleName;
+        public final float poleAngle;
+        
+        public IKDefinition(DataInputStream in) throws IOException
+        {
+            boneName = IOUtil.readPaddedUTF(in);
+            targetName = IOUtil.readPaddedUTF(in);
+            poleName = IOUtil.readPaddedUTF(in);
+            poleAngle = in.readFloat();
+        }
     }
 }

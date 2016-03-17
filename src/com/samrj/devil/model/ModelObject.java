@@ -1,8 +1,7 @@
 package com.samrj.devil.model;
 
 import com.samrj.devil.io.IOUtil;
-import com.samrj.devil.model.ArmatureSolver.BoneSolver;
-import com.samrj.devil.model.constraint.IKConstraint;
+import com.samrj.devil.model.constraint.IKConstraint.IKDefinition;
 import java.io.DataInputStream;
 import java.io.IOException;
 
@@ -18,12 +17,11 @@ public class ModelObject<DATA_TYPE extends DataBlock> implements DataBlock
     public final Transform transform;
     public final String[] vertexGroups;
     public final Pose pose;
-    public final IKConstraint[] ikConstraints;
+    public final IKDefinition[] ikConstraints;
     public final DataPointer<DATA_TYPE> data;
     public final DataPointer<ModelObject<?>> parent;
     public final String parentBoneName;
     public final DataPointer<Action> action;
-    public final ArmatureSolver armatureSolver;
     
     ModelObject(Model model, DataInputStream in) throws IOException
     {
@@ -44,25 +42,15 @@ public class ModelObject<DATA_TYPE extends DataBlock> implements DataBlock
         if (hasPose)
         {
             pose = new Pose(in);
-            ikConstraints = IOUtil.arrayFromStream(in, IKConstraint.class, IKConstraint::new);
+            ikConstraints = IOUtil.arrayFromStream(in, IKDefinition.class, IKDefinition::new);
         }
         else
         {
             pose = null;
-            ikConstraints = new IKConstraint[0];
+            ikConstraints = new IKDefinition[0];
         }
         
         action = new DataPointer<>(model, Type.ACTION, in.readInt());
-        
-        armatureSolver = (data.type == Type.ARMATURE) ?
-                new ArmatureSolver((ModelObject<Armature>)this) : null;
-    }
-    
-    public BoneSolver getParentBone()
-    {
-        ModelObject p = parent.get();
-        if (p == null || parentBoneName == null || p.data.type != Type.ARMATURE) return null;
-        return p.armatureSolver.getBone(parentBoneName);
     }
     
     @Override

@@ -42,7 +42,7 @@ import java.util.Set;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class ArmatureSolver
+public final class ArmatureSolver
 {
     private final BoneSolver[] bones;
     private final Map<String, BoneSolver> nameMap;
@@ -57,7 +57,7 @@ public class ArmatureSolver
      * 
      * @param object A mesh object.
      */
-    ArmatureSolver(ModelObject<Armature> object)
+    public ArmatureSolver(ModelObject<Armature> object)
     {
         Armature armature = object.data.get();
         
@@ -67,8 +67,9 @@ public class ArmatureSolver
         nameMap = new HashMap<>(bones.length);
         for (BoneSolver bone : bones) nameMap.put(bone.bone.name, bone);
         
-        ikConstraints = object.ikConstraints;
-        for (IKConstraint ik : ikConstraints) ik.populate(this);
+        ikConstraints = new IKConstraint[object.ikConstraints.length];
+        for (int i=0; i<ikConstraints.length; i++)
+            ikConstraints[i] = new IKConstraint(object.ikConstraints[i], this);
         constraints = new LinkedList<>();
         independent = new IdentitySet<>();
         sortSolvables();

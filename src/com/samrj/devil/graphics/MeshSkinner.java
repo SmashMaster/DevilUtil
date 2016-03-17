@@ -18,20 +18,28 @@ import org.lwjgl.opengl.GL20;
  */
 public class MeshSkinner
 {
-    private final Mesh mesh;
-    private final ArmatureSolver solver;
-    private final String[] vertexGroups;
+    private final int numGroups;
+    private final BoneSolver[] bones;
     private final Memory matrixBlock;
     private final ByteBuffer matrixData;
     
-    public MeshSkinner(ModelObject<Mesh> object)
+    public MeshSkinner(ModelObject<Mesh> object, ArmatureSolver solver)
     {
-        mesh = object.data.get();
-        solver = object.parent.get().armatureSolver;
-        if (solver == null) throw new IllegalArgumentException("Mesh parent is not an armature.");
-        vertexGroups = object.vertexGroups;
-        matrixBlock = new Memory(vertexGroups.length*16*4);
+        numGroups = object.data.get().numGroups;
+        bones = new BoneSolver[object.vertexGroups.length];
+        for (int i=0; i<bones.length; i++) bones[i] = solver.getBone(object.vertexGroups[i]);
+        matrixBlock = new Memory(bones.length*16*4);
         matrixData = matrixBlock.buffer;
+    }
+    
+    /**
+     * Loads the bone matrix data from the armature solver into this skinner's
+     * buffer.
+     */
+    public void update()
+    {
+        matrixData.rewind();
+        for (BoneSolver bone : bones) bone.skinMatrix.write(matrixData);
     }
     
     /**
@@ -44,23 +52,8 @@ public class MeshSkinner
     public void glUniform(ShaderProgram shader, String arrayName, String countName)
     {
         int boneLoc = shader.getUniformLocation(arrayName);
-        GL20.nglUniformMatrix4fv(boneLoc, vertexGroups.length, false, matrixBlock.address);
-        shader.uniform1i(countName, mesh.numGroups);
-    }
-    
-    /**
-     * Loads the bone matrix data from the armature solver into this skinner's
-     * buffer.
-     */
-    public void update()
-    {
-        matrixData.rewind();
-        for (String group : vertexGroups)
-        {
-            BoneSolver bone = solver.getBone(group);
-            if (bone == null) continue;
-            bone.skinMatrix.write(matrixData);
-        }
+        GL20.nglUniformMatrix4fv(boneLoc, bones.length, false, matrixBlock.address);
+        shader.uniform1i(countName, numGroups);
     }
     
     /**
