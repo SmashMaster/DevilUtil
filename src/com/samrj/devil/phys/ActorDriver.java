@@ -80,6 +80,22 @@ public final class ActorDriver
         shape.radii.set(0.5f, 0.875f, 0.5f);
     }
     
+    private boolean isValidGround(Vec3 normal)
+    {
+        return normal.y >= groundNormalMinY;
+    }
+    
+    private void applyAcc(Vec3 desiredVel, float acc)
+    {
+        if (acc == 0.0f) return;
+        
+        Vec3 dv = Vec3.sub(desiredVel, vel);
+        float dvLen = dv.length();
+        
+        if (dvLen > acc) vel.madd(dv, acc/dvLen);
+        else vel.set(desiredVel);
+    }
+    
     /**
      * Sets the maximum angle of surfaces this driver can walk up.
      * 
@@ -92,11 +108,19 @@ public final class ActorDriver
     }
     
     /**
-     * Makes the actor jump. May only jump when standing on something.
-     * 
-     * @param jumpSpeed The vertical speed at which to jump.
+     * Sets the horizontal and vertical size of this driver's collision volume.
      */
-    public void jump(float jumpSpeed)
+    public void setRadii(float horizontal, float vertical)
+    {
+        if (horizontal <= 0.0f || vertical <= 0.0f)
+            throw new IllegalArgumentException();
+        shape.radii.set(horizontal, vertical, horizontal);
+    }
+    
+    /**
+     * Makes the actor jump. May only jump when standing on something.
+     */
+    public void jump()
     {
         if (ground == null) return;
         vel.y = jumpSpeed;
@@ -128,32 +152,14 @@ public final class ActorDriver
         return groundMaterial;
     }
     
+    /**
+     * Returns the position of this driver's feet.
+     */
     public Vec3 getFeetPos()
     {
         Vec3 out = new Vec3(pos);
         out.y -= shape.radii.y;
         return out;
-    }
-    
-    public Vec3 getRadii()
-    {
-        return new Vec3(shape.radii);
-    }
-    
-    public boolean isValidGround(Vec3 normal)
-    {
-        return normal.y >= groundNormalMinY;
-    }
-    
-    private void applyAcc(Vec3 desiredVel, float acc)
-    {
-        if (acc == 0.0f) return;
-        
-        Vec3 dv = Vec3.sub(desiredVel, vel);
-        float dvLen = dv.length();
-        
-        if (dvLen > acc) vel.madd(dv, acc/dvLen);
-        else vel.set(desiredVel);
     }
     
     /**

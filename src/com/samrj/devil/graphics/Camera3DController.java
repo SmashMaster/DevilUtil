@@ -4,6 +4,7 @@ import com.samrj.devil.geo3d.Ellipsoid;
 import com.samrj.devil.geo3d.Geometry;
 import com.samrj.devil.geo3d.SweepResult;
 import com.samrj.devil.math.Util;
+import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
 
 /**
@@ -102,7 +103,6 @@ public final class Camera3DController
     {
         Vec3 angles = camera.angles();
         setAngles(angles.x, angles.y);
-        
     }
     
     /**
@@ -111,6 +111,14 @@ public final class Camera3DController
     public void deltaAngles(float dPitch, float dYaw)
     {
         setAngles(pitch + dPitch, yaw - dYaw);
+    }
+    
+    /**
+     * Applies a change in rotation to this camera as a given pitch and yaw.
+     */
+    public void deltaAngles(Vec2 delta)
+    {
+        deltaAngles(delta.x, delta.y);
     }
     
     /**
