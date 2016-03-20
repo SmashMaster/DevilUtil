@@ -389,8 +389,21 @@ public class Quat implements Bufferable, Streamable
      */
     public static final void slerp(Quat q0, Quat q1, float t, Quat result)
     {
-        lerp(q0, q1, t, result);
-        normalize(result, result);
+        float dot = dot(q0, q1);
+        if (dot < 0.0)
+        {
+            dot = -dot;
+            q1 = negate(q1);
+        }
+        
+        if (dot > 0.9995f) lerp(q0, q1, t, result);
+        else
+        {
+            float ang = (float)Math.acos(dot);
+            mult(q0, (float)Math.sin((1.0f - t)*ang), result);
+            madd(result, q1, (float)Math.sin(t*ang), result);
+            normalize(result, result);
+        }
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">

@@ -5,6 +5,7 @@ import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.topo.DAG;
 import com.samrj.devil.model.ArmatureSolver;
 import com.samrj.devil.model.ArmatureSolver.BoneSolver;
+import com.samrj.devil.model.Transform;
 import java.util.Set;
 
 /**
@@ -15,6 +16,7 @@ import java.util.Set;
 public class CopyTransformConstraint implements ArmatureSolver.Constraint
 {
     private final BoneSolver source, parent, target;
+    public float influence = 1.0f;
     
     public CopyTransformConstraint(BoneSolver source, BoneSolver target)
     {
@@ -43,11 +45,12 @@ public class CopyTransformConstraint implements ArmatureSolver.Constraint
         Vec3 head = new Vec3(target.bone.head);
         if (parent != null) head.mult(parent.skinMatrix);
         
-        Vec3 pos = target.finalTransform.position;
-        pos.set(source.getHeadPos()); //object
-        pos.sub(head);
-        if (parent != null) pos.mult(parent.invRotMat);
-        pos.mult(target.bone.invMat);
+        Transform t = new Transform();
+        
+        t.position.set(source.getHeadPos()); //object
+        t.position.sub(head);
+        if (parent != null) t.position.mult(parent.invRotMat);
+        t.position.mult(target.bone.invMat);
         
         Mat3 basis = Mat3.identity();
         basis.mult(target.bone.invMat);
@@ -55,7 +58,9 @@ public class CopyTransformConstraint implements ArmatureSolver.Constraint
         basis.mult(source.rotMatrix);
         basis.mult(source.bone.matrix); //is this where it should be?
         basis.mult(target.bone.matrix);
+        t.rotation.setRotation(basis);
         
-        target.finalTransform.rotation.setRotation(basis);
+        target.finalTransform.set(target.poseTransform);
+        target.finalTransform.mix(t, influence);
     }
 }
