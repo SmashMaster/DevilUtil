@@ -325,6 +325,37 @@ public class Util
     }
     
     /**
+     * Loops the given value into the given range.
+     * 
+     * @param x The value to loop.
+     * @param min The minimum output value, inclusive.
+     * @param max The maximum output value, exclusive.
+     * @return The value, looped to within the given range.
+     */
+    public static final int loop(int x, int min, int max)
+    {
+        if (x >= min && x < max) return x;
+        
+        int t = (x - min)%(max - min);
+        return t < 0 ? t + max : t + min;
+    }
+    
+    /**
+     * Loops the given value into the range between zero and the given bound.
+     * 
+     * @param x The value to loop.
+     * @param max The maximum output value, exclusive.
+     * @return The looped value.
+     */
+    public static final int loop(int x, int max)
+    {
+        if (x >= 0 && x < max) return x;
+        
+        int t = x%max;
+        return t < 0 ? t + max : t;
+    }
+    
+    /**
      * Compares two floats for order. Returns a negative integer,
      * zero, or a positive integer as the first float is less than, equal
      * to, or greater than the second. The two floats are considered to be equal
