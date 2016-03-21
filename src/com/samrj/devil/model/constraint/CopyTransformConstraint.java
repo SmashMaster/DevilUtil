@@ -34,9 +34,9 @@ public class CopyTransformConstraint implements ArmatureSolver.Constraint
     }
     
     @Override
-    public void removeSolved(Set<BoneSolver> independent)
+    public void removeSolved(Set<BoneSolver> nonconstrained)
     {
-        independent.remove(target);
+        nonconstrained.remove(target);
     }
     
     @Override

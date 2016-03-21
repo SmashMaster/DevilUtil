@@ -71,10 +71,10 @@ public class IKConstraint implements ArmatureSolver.Constraint
     }
 
     @Override
-    public void removeSolved(Set<BoneSolver> independent)
+    public void removeSolved(Set<BoneSolver> nonconstrained)
     {
-        independent.remove(start);
-        independent.remove(end);
+        nonconstrained.remove(start);
+        nonconstrained.remove(end);
     }
     
     @Override

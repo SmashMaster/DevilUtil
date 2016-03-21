@@ -35,9 +35,9 @@ public class ChildOfConstraint implements ArmatureSolver.Constraint
     }
     
     @Override
-    public void removeSolved(Set<BoneSolver> independent)
+    public void removeSolved(Set<BoneSolver> nonconstrained)
     {
-        independent.remove(child);
+        nonconstrained.remove(child);
     }
     
     @Override

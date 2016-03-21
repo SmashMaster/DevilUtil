@@ -49,7 +49,7 @@ public final class ArmatureSolver
     
     private final List<Constraint> constraints;
     private final IKConstraint[] ikConstraints;
-    private final IdentitySet<BoneSolver> independent;
+    private final IdentitySet<BoneSolver> nonconstrained;
     private List<Constraint> solveOrder;
     
     /**
@@ -71,7 +71,7 @@ public final class ArmatureSolver
         for (int i=0; i<ikConstraints.length; i++)
             ikConstraints[i] = new IKConstraint(object.ikConstraints[i], this);
         constraints = new LinkedList<>();
-        independent = new IdentitySet<>();
+        nonconstrained = new IdentitySet<>();
         sortSolvables();
     }
     
@@ -115,10 +115,10 @@ public final class ArmatureSolver
      */
     public void sortSolvables()
     {
-        independent.clear();
-        independent.addAll(Arrays.asList(bones));
-        for (IKConstraint ik : ikConstraints) ik.removeSolved(independent);
-        for (Constraint s : constraints) s.removeSolved(independent);
+        nonconstrained.clear();
+        nonconstrained.addAll(Arrays.asList(bones));
+        for (IKConstraint ik : ikConstraints) ik.removeSolved(nonconstrained);
+        for (Constraint s : constraints) s.removeSolved(nonconstrained);
         
         DAG<Constraint> solveGraph = new DAG<>();
         for (BoneSolver bone : bones) bone.populateSolveGraph(solveGraph);
@@ -146,7 +146,7 @@ public final class ArmatureSolver
     {
         if (solveOrder == null) throw new IllegalStateException("Unsorted. Call sortSolvables() first.");
         
-        for (BoneSolver bone : independent)
+        for (BoneSolver bone : nonconstrained)
         {
             bone.finalTransform.set(bone.poseTransform);
             bone.finalTransform.rotation.normalize();
@@ -161,7 +161,7 @@ public final class ArmatureSolver
     public interface Constraint
     {
         public void populateSolveGraph(DAG<Constraint> graph);
-        public default void removeSolved(Set<BoneSolver> independent) {}
+        public default void removeSolved(Set<BoneSolver> nonconstrained) {}
         public void solve();
     }
     

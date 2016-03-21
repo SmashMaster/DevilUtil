@@ -2,6 +2,7 @@ package com.samrj.devil.model;
 
 import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Util;
+import com.samrj.devil.model.Pose.PoseBone;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -57,6 +58,7 @@ public class Action implements DataBlock
     public Pose evaluate(Pose pose, float time)
     {
         for (FCurve fcurve : fcurves) fcurve.apply(pose, time);
+        for (PoseBone bone : pose.getBones()) bone.transform.rotation.normalize();
         return pose;
     }
     

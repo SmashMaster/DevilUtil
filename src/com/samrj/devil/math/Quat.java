@@ -393,7 +393,7 @@ public class Quat implements Bufferable, Streamable
         if (dot < 0.0)
         {
             dot = -dot;
-            q1 = negate(q1);
+            q0 = negate(q0);
         }
         
         if (dot > 0.9995f) lerp(q0, q1, t, result);
@@ -402,8 +402,9 @@ public class Quat implements Bufferable, Streamable
             float ang = (float)Math.acos(dot);
             mult(q0, (float)Math.sin((1.0f - t)*ang), result);
             madd(result, q1, (float)Math.sin(t*ang), result);
-            normalize(result, result);
         }
+        
+        normalize(result, result);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
