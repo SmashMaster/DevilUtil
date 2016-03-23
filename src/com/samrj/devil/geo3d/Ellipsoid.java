@@ -94,6 +94,7 @@ public class Ellipsoid implements ConvexShape
         Vec3.lerp(e.a, e.b, et, out.point);
         Vec3 tmp = Vec3.div(dir, len);
         Vec3.negate(tmp, out.normal);
+        out.normal.div(radii).normalize();
         Vec3.mult(tmp, radii, out.surface);
         out.surface.add(pos);
         out.depth = Vec3.dist(out.point, out.surface);
@@ -184,7 +185,7 @@ public class Ellipsoid implements ConvexShape
         Vec3.lerp(e.a, e.b, et, out.point);
         Vec3.madd(pos, dp, t, out.position);
         Vec3.sub(out.position, out.point, out.normal);
-        out.normal.div(radii).normalize();
+        out.normal.div(radii).div(radii).normalize(); //wtf?
         return out;
     }
 

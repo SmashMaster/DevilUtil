@@ -145,6 +145,15 @@ public final class ActorDriver
     }
     
     /**
+     * Returns a new vector containing the current ground normal, or null if not
+     * on ground.
+     */
+    public Vec3 getGround()
+    {
+        return ground != null ? new Vec3(ground) : null;
+    }
+    
+    /**
      * @return The material index of the ground last walked on.
      */
     public int getGroundMaterial()
