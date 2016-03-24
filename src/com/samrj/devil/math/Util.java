@@ -509,6 +509,22 @@ public class Util
     }
     
     /**
+     * Moves the given angle towards the given target along the shortest
+     * available path, using the given distance.
+     * 
+     * @param angle The angle to move.
+     * @param target The angle to move towards.
+     * @param distance The amount to move.
+     * @return The moved angle.
+     */
+    public static final float moveAngle(float angle, float target, float distance)
+    {
+        float diff = angleDiff(angle, target);
+        if (Math.abs(diff) <= distance) return target;
+        else return reduceAngle(angle + signum(diff)*distance);
+    }
+    
+    /**
      * Loop the given square angle into the range between
      * 
      * @param a The square angle to reduce.
