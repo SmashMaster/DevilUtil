@@ -114,6 +114,41 @@ public class Mat3 implements Bufferable, Streamable
     }
     
     /**
+     * Sets the given matrix to a symmetric orthographic projection matrix with
+     * the given dimensions.
+     * 
+     * @param width The half-width of the prism.
+     * @param height The half-height of the prism.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void orthographic(float width, float height, Mat3 r)
+    {
+        r.a = 1.0f/width; r.b = 0.0f; r.c = 0.0f;
+        r.d = 0.0f; r.e = 1.0f/height; r.f = 0.0f;
+        r.g = 0.0f; r.h = 0.0f; r.i = 1.0f;
+    }
+    
+    /**
+     * Sets the given matrix to an orthographic projection matrix with the given
+     * bounds.
+     * 
+     * @param left The left bound of the prism.
+     * @param right The right bound of the prism.
+     * @param bottom The lower bound of the prism.
+     * @param top The upper bound of the prism.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void orthographic(float left, float right, float bottom, float top, Mat3 r)
+    {
+        final float rml = right - left;
+        final float tmb = top - bottom;
+        
+        r.a = 2.0f/rml; r.b = 0.0f; r.c = -(right + left)/rml;
+        r.d = 0.0f; r.e = 2.0f/tmb; r.f = -(top + bottom)/tmb;
+        r.g = 0.0f; r.h = 0.0f; r.i = 1.0f;
+    }
+    
+    /**
      * Sets the given matrix to a component-wise scaling matrix using the given
      * vector.
      * 
@@ -396,6 +431,37 @@ public class Mat3 implements Bufferable, Streamable
     public static final Mat3 identity()
     {
         return scaling(1.0f);
+    }
+    
+    /**
+     * Creates a new symmetric orthographic projection matrix with the given
+     * dimensions.
+     * 
+     * @param width The half-width of the prism.
+     * @param height The half-height of the prism.
+     * @return A new matrix containing the result.
+     */
+    public static final Mat3 orthographic(float width, float height)
+    {
+        Mat3 m = new Mat3();
+        orthographic(width, height, m);
+        return m;
+    }
+    
+    /**
+     * Creates a new orthographic projection matrix with the given bounds.
+     * 
+     * @param left The left bound of the prism.
+     * @param right The right bound of the prism.
+     * @param bottom The lower bound of the prism.
+     * @param top The upper bound of the prism.
+     * @return A new matrix containing the result.
+     */
+    public static final Mat3 orthographic(float left, float right, float bottom, float top)
+    {
+        Mat3 m = new Mat3();
+        orthographic(left, right, bottom, top, m);
+        return m;
     }
     
     /**
@@ -848,6 +914,35 @@ public class Mat3 implements Bufferable, Streamable
     public Mat3 setIdentity()
     {
         identity(this);
+        return this;
+    }
+    
+    /**
+     * Sets this to a symmetric orthographic projection matrix with the given
+     * dimensions.
+     * 
+     * @param width The half-width of the prism.
+     * @param height The half-height of the prism.
+     * @return This matrix.
+     */
+    public Mat3 setOrthographic(float width, float height)
+    {
+        orthographic(width, height, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to a orthographic projection matrix with the given bounds.
+     * 
+     * @param left The left bound of the prism.
+     * @param right The right bound of the prism.
+     * @param bottom The lower bound of the prism.
+     * @param top The upper bound of the prism.
+     * @return This matrix.
+     */
+    public Mat3 setOrthographic(float left, float right, float bottom, float top)
+    {
+        orthographic(left, right, bottom, top, this);
         return this;
     }
     

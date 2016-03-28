@@ -24,7 +24,10 @@ package com.samrj.devil.ui;
 
 import com.samrj.devil.gl.DGL;
 import com.samrj.devil.gl.Image;
+import com.samrj.devil.gl.ShaderProgram;
 import com.samrj.devil.gl.Texture2D;
+import com.samrj.devil.gl.VAO;
+import com.samrj.devil.gl.VertexStream;
 import com.samrj.devil.io.LittleEndianInputStream;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
@@ -62,6 +65,12 @@ public class AtlasFont
     private final Texture2D texture;
     private final Char[] chars;
     private final int firstCharID;
+    
+    private final VertexStream stream;
+    private final Vec2 pos, coord;
+    
+    private ShaderProgram shader;
+    private VAO vao;
     
     public AtlasFont(String directory, String fontFile) throws IOException
     {
@@ -105,6 +114,9 @@ public class AtlasFont
         
         texture = DGL.genTex2D();
         texture.image(image, GL11.GL_ALPHA8);
+        texture.bind();
+        texture.parami(GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+        texture.parami(GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
         DGL.delete(image);
         
         //CHARS BLOCK
@@ -126,6 +138,11 @@ public class AtlasFont
         firstCharID = minChar;
         
         in.close();
+        
+        stream = DGL.genVertexStream(1024, -1);
+        pos = stream.vec2("in_pos");
+        coord = stream.vec2("in_tex_coord");
+        stream.begin();
     }
     
     public String getName()
@@ -159,43 +176,50 @@ public class AtlasFont
         return lineHeight;
     }
     
+    public void setShader(ShaderProgram shader)
+    {
+        this.shader = shader;
+        if (vao != null) DGL.delete(vao);
+        vao = DGL.genVAO(stream, shader);
+    }
+    
     public void draw(String text, Vec2 pos, Vec2 align)
     {
+        if (shader == null) throw new IllegalStateException("No shader chosen.");
+        
         pos = new Vec2(pos.x, pos.y - lineHeight + baseHeight);
         align = new Vec2(align.x - 1.0f, -align.y - 1.0f).mult(0.5f);
         align.x *= getWidth(text);
         align.y *= baseHeight-lineHeight;
         pos.add(align);
         
-        GL11.glMatrixMode(GL11.GL_MODELVIEW);
-        GL11.glPushMatrix();
-        GL11.glTranslatef(Math.round(pos.x), Math.round(pos.y), 0.0f);
-
-        float x = 0f;
-        GL11.glEnable(GL11.GL_TEXTURE_2D);
-        texture.bind();
-        GL11.glBegin(GL11.GL_QUADS);
+        pos.x = Math.round(pos.x);
+        pos.y = Math.round(pos.y);
+        
+        float x = 0.0f;
         for (int i=0; i<text.length(); i++)
         {
             Char c = getChar(text.charAt(i));
             if (c == null) continue;
             
-            float lf = x + c.xOffset;
+            float lf = pos.x + x + c.xOffset;
             float rt = lf + c.width;
-            float bt = c.yOffset;
+            float bt = pos.y + c.yOffset;
             float tp = bt + c.height;
             
-            GL11.glTexCoord2f(c.tx0, c.ty0); GL11.glVertex2f(lf, bt);
-            GL11.glTexCoord2f(c.tx0, c.ty1); GL11.glVertex2f(lf, tp);
-            GL11.glTexCoord2f(c.tx1, c.ty1); GL11.glVertex2f(rt, tp);
-            GL11.glTexCoord2f(c.tx1, c.ty0); GL11.glVertex2f(rt, bt);
-
+            coord.set(c.tx0, c.ty0); this.pos.set(lf, bt); stream.vertex();
+            coord.set(c.tx0, c.ty1); this.pos.set(lf, tp); stream.vertex();
+            coord.set(c.tx1, c.ty1); this.pos.set(rt, tp); stream.vertex();
+            coord.set(c.tx1, c.ty0); this.pos.set(rt, bt); stream.vertex();
+            
             x += c.xAdvance;
         }
-        GL11.glEnd();
-        GL11.glDisable(GL11.GL_TEXTURE_2D);
-
-        GL11.glPopMatrix();
+        stream.upload();
+        
+        texture.bind();
+        DGL.useProgram(shader);
+        DGL.bindVAO(vao);
+        DGL.draw(stream, GL11.GL_QUADS);
     }
     
     public void draw(String text, Vec2 p, Alignment align)
@@ -210,7 +234,8 @@ public class AtlasFont
     
     public void delete()
     {
-        DGL.delete(texture);
+        DGL.delete(stream, texture);
+        if (vao != null) DGL.delete(vao);
     }
     
     private class Char
@@ -235,10 +260,10 @@ public class AtlasFont
             skip(in, 2);
             
             tx0 = x/texWidth;
-            tx1 = (x + width)/texHeight;
+            tx1 = (x + width)/texWidth;
             
-            ty0 = 1.0f - (y + height)/texWidth;
-            ty1 = 1.0f - y/texWidth;
+            ty0 = 1.0f - (y + height)/texHeight;
+            ty1 = 1.0f - y/texHeight;
         }
     }
 }
