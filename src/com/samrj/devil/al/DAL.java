@@ -34,7 +34,6 @@ import org.kc7bfi.jflac.FLACDecoder;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.ALCapabilities;
-import org.lwjgl.openal.ALContext;
 
 /**
  * DevilAL. An object-oriented OpenAL wrapper.
@@ -46,7 +45,6 @@ public class DAL
     //Constant fields
     private static boolean init;
     private static Thread thread;
-    private static ALContext context;
     private static ALCapabilities capabilities;
     private static Set<DALObj> objects;
     
@@ -65,8 +63,7 @@ public class DAL
     {
         if (init) throw new IllegalStateException("DGL already initialized.");
         thread = Thread.currentThread();
-        context = ALContext.create();
-        capabilities = context.getCapabilities();
+        capabilities = AL.getCapabilities();
         objects = new IdentitySet<>();
         init = true;
     }
@@ -216,8 +213,6 @@ public class DAL
         objects = null;
         
         thread = null;
-        AL.destroy(context);
-        context = null;
         capabilities = null;
     }
 }

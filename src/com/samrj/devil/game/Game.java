@@ -29,7 +29,6 @@ import com.samrj.devil.config.Configuration;
 import com.samrj.devil.display.DisplayException;
 import com.samrj.devil.display.GLFWUtil;
 import com.samrj.devil.display.HintSet;
-import com.samrj.devil.display.VideoMode;
 import com.samrj.devil.game.step.StepDynamicSplit;
 import com.samrj.devil.game.step.TimeStepper;
 import com.samrj.devil.game.sync.SleepHybrid;
@@ -41,9 +40,11 @@ import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
-import org.lwjgl.opengl.GLContext;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GLCapabilities;
 import org.lwjgl.opengl.OpenGLException;
 
 /**
@@ -85,7 +86,7 @@ public abstract class Game
         
         if (!errorCallInit)
         {
-            GLFWErrorCallback errorCallback = GLFW.GLFWErrorCallback(DisplayException::glfwThrow);
+            GLFWErrorCallback errorCallback = GLFWErrorCallback.create(DisplayException::glfwThrow);
             GLFW.glfwSetErrorCallback(errorCallback);
             errorCallInit = true;
         }
@@ -142,7 +143,7 @@ public abstract class Game
     
     public final Configuration config;
     public final long monitor, window;
-    public final GLContext context;
+    public final GLCapabilities capabilities;
     public final Sync sync;
     public final Mouse mouse;
     public final Keyboard keyboard;
@@ -211,16 +212,15 @@ public abstract class Game
         if (!fullscreen) //Center window
         {
             Vec2i windowSize = GLFWUtil.getWindowSize(window);
-            VideoMode videoMode = GLFWUtil.getPrimaryMonitorVideoMode();
+            GLFWVidMode mode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
             
-            GLFW.glfwSetWindowPos(window, (videoMode.width - windowSize.x)/2,
-                                          (videoMode.height - windowSize.y)/2);
+            GLFW.glfwSetWindowPos(window, (mode.width() - windowSize.x)/2,
+                                          (mode.height() - windowSize.y)/2);
         }
         // </editor-fold>
         // <editor-fold defaultstate="collapsed" desc="Initialize OpenGL Context">
         {
-            context = GLContext.createFromCurrent();
-            
+            capabilities = GL.createCapabilities();
             GL11.glViewport(0, 0, res.width, res.height);
             GL11.glDisable(GL13.GL_MULTISAMPLE);
         }
@@ -235,8 +235,8 @@ public abstract class Game
             else
             {
                 sync = null;
-                VideoMode mode = GLFWUtil.getPrimaryMonitorVideoMode();
-                frameTime = Math.round(1_000_000_000.0/mode.refreshRate);
+                GLFWVidMode mode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
+                frameTime = Math.round(1_000_000_000.0/mode.refreshRate());
             }
         }
         // </editor-fold>
@@ -275,8 +275,6 @@ public abstract class Game
         }
         // </editor-fold>
         stepper = new StepDynamicSplit(1.0f/480.0f, 1.0f/120.0f);
-        
-        context.checkGLError();
     }
     
     /**
@@ -393,7 +391,6 @@ public abstract class Game
         try
         {
             running = true;
-            if (!context.isCurrent()) context.makeCurrent(window);
             GLFW.glfwShowWindow(window);
 
             long lastFrameStart = System.nanoTime() - frameTime;
@@ -466,7 +463,6 @@ public abstract class Game
         destroyed = true;
         
         onDestroy();
-        context.destroy();
         GLFW.glfwDestroyWindow(window);
     }
     

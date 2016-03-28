@@ -32,11 +32,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Set;
 import javax.imageio.ImageIO;
-import org.lwjgl.opengl.ContextCapabilities;
+import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GLContext;
+import org.lwjgl.opengl.GLCapabilities;
 
 /**
  * DevilGL. A state-based, object-oriented, forward compatible OpenGL wrapper;
@@ -49,8 +49,7 @@ public final class DGL
     //Constant fields
     private static boolean init;
     private static Thread thread;
-    private static GLContext context;
-    private static ContextCapabilities capabilities;
+    private static GLCapabilities capabilities;
     private static Set<DGLObj> objects;
     
     //State fields
@@ -73,8 +72,7 @@ public final class DGL
     {
         if (init) throw new IllegalStateException("DGL already initialized.");
         thread = Thread.currentThread();
-        context = GLContext.createFromCurrent();
-        capabilities = context.getCapabilities();
+        capabilities = GL.getCapabilities();
         objects = new IdentitySet<>();
         init = true;
     }
@@ -82,7 +80,7 @@ public final class DGL
     /**
      * @return The current OpenGL context's capabilities.
      */
-    public static ContextCapabilities getCapabilities()
+    public static GLCapabilities getCapabilities()
     {
         checkState();
         return capabilities;
@@ -745,7 +743,6 @@ public final class DGL
         drawFBO = null;
         
         thread = null;
-        context = null;
         capabilities = null;
     }
     

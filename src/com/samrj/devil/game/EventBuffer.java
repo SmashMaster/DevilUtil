@@ -35,10 +35,10 @@ public final class EventBuffer
         this.window = window;
         eventQueue = new ConcurrentLinkedQueue<>();
             
-        cursorPosCallback = GLFW.GLFWCursorPosCallback(this::cursorPosCallback);
-        mouseButtonCallback = GLFW.GLFWMouseButtonCallback(this::mouseButtonCallback);
-        scrollCallback = GLFW.GLFWScrollCallback(this::mouseScrollCallback);
-        keyCallback = GLFW.GLFWKeyCallback(this::keyCallback);
+        cursorPosCallback = GLFWCursorPosCallback.create(this::cursorPosCallback);
+        mouseButtonCallback = GLFWMouseButtonCallback.create(this::mouseButtonCallback);
+        scrollCallback = GLFWScrollCallback.create(this::mouseScrollCallback);
+        keyCallback = GLFWKeyCallback.create(this::keyCallback);
         
         GLFW.glfwSetCursorPosCallback(window, cursorPosCallback);
         GLFW.glfwSetMouseButtonCallback(window, mouseButtonCallback);

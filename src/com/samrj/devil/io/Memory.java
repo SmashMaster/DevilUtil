@@ -165,9 +165,9 @@ public final class Memory
         if (size <= 0) throw new IllegalArgumentException();
         
         this.size = size;
-        address = memAlloc(size);
+        buffer = memAlloc(size);
+        address = memAddress(buffer);
         if (address == NULL) throw new RuntimeException("Failed to allocate memory.");
-        buffer = memByteBuffer(address, size);
         allocations++;
         
         debugLeakTrace = debug ? new Throwable() : null;
@@ -181,14 +181,14 @@ public final class Memory
     public void free()
     {
         if (free) throw new IllegalStateException();
-        memFree(address);
+        memFree(buffer);
         free = true;
         allocations--;
     }
     
     public ByteBuffer makeView()
     {
-        return memByteBuffer(address, size);
+        return memByteBuffer(memAddress(buffer), size);
     }
     
     /**

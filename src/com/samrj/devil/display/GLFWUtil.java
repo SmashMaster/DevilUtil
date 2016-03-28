@@ -121,40 +121,6 @@ public final class GLFWUtil
         return out;
     }
     
-    public static VideoMode[] getMonitorVideoModes(long monitor)
-    {
-        Memory countBlock = new Memory(4);
-        ByteBuffer buffer = GLFW.glfwGetVideoModes(monitor, countBlock.buffer);
-        int count = countBlock.readInt();
-        countBlock.free();
-        
-        VideoMode[] out = new VideoMode[count];
-        for (int i=0; i<count; i++) out[i] = new VideoMode(buffer);
-        return out;
-    }
-    
-    public static VideoMode getMonitorVideoMode(long monitor)
-    {
-        return new VideoMode(GLFW.glfwGetVideoMode(monitor));
-    }
-    
-    public static VideoMode getPrimaryMonitorVideoMode()
-    {
-        return getMonitorVideoMode(GLFW.glfwGetPrimaryMonitor());
-    }
-    
-    public static GammaRamp getMonitorGammaRamp(long monitor)
-    {
-        return new GammaRamp(GLFW.glfwGetGammaRamp(monitor));
-    }
-    
-    public static void setMonitorGammaRamp(long monitor, GammaRamp gammaRamp)
-    {
-        Memory[] blocks = gammaRamp.allocate();
-        GLFW.nglfwSetGammaRamp(monitor, blocks[3].address);
-        for (Memory mem : blocks) mem.free();
-    }
-    
     private GLFWUtil()
     {
     }
