@@ -34,9 +34,9 @@ public class Model
     public final ArrayMap<ModelObject> objects;
     public final ArrayMap<Scene> scenes;
     
-    Model(BufferedInputStream inputStream) throws IOException
+    public Model(String path) throws IOException
     {
-        try
+        try  (BufferedInputStream inputStream = new BufferedInputStream(Resource.open(path)))
         {
             DataInputStream in = new DataInputStream(inputStream);
             
@@ -59,15 +59,6 @@ public class Model
             objects   = new ArrayMap<>(in, 1112277000, ModelObject.class, ModelObject::new);
             scenes    = new ArrayMap<>(in, 1112277001, Scene.class, Scene::new);
         }
-        finally
-        {
-            inputStream.close();
-        }
-    }
-    
-    public Model(String path) throws IOException
-    {
-        this(new BufferedInputStream(Resource.open(path)));
     }
     
     public ArrayMap<? extends DataBlock> getMap(DataBlock.Type dataType)
