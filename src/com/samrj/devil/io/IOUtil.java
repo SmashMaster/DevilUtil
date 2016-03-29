@@ -8,6 +8,7 @@ import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.function.Function;
 
 /**
  * Utility methods for data munging.
@@ -50,6 +51,13 @@ public final class IOUtil
     public static InputStream stringStream(String string)
     {
         return new ByteArrayInputStream(string.getBytes(StandardCharsets.UTF_8));
+    }
+    
+    public static <T, R> R[] mapArray(T[] array, Class<R> type, Function<T, R> func)
+    {
+        R[] out = (R[])Array.newInstance(type, array.length);
+        for (int i=0; i<out.length; i++) out[i] = func.apply(array[i]);
+        return out;
     }
     
     private IOUtil()
