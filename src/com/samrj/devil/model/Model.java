@@ -34,6 +34,8 @@ public class Model
     public final ArrayMap<ModelObject> objects;
     public final ArrayMap<Scene> scenes;
     
+    private boolean destroyed;
+    
     public Model(String path) throws IOException
     {
         try  (BufferedInputStream inputStream = new BufferedInputStream(Resource.open(path)))
@@ -83,6 +85,8 @@ public class Model
      */
     public void destroy()
     {
+        if (destroyed) throw new IllegalStateException("Already destroyed.");
+        
         for (Mesh mesh : meshes) mesh.destroy();
         
         libraries.clear();
@@ -94,6 +98,8 @@ public class Model
         meshes.clear();
         objects.clear();
         scenes.clear();
+        
+        destroyed = true;
     }
     
     @FunctionalInterface

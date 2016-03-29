@@ -71,6 +71,7 @@ public final class IOUtil
         
         public ArrayIterator(T[] array)
         {
+            if (array == null) throw new NullPointerException();
             this.array = array;
         }
 
