@@ -30,6 +30,7 @@ import com.samrj.devil.gl.VAO;
 import com.samrj.devil.model.Mesh;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL31;
 
 /**
  * Utility OpenGL wrapper for DevilModel meshes.
@@ -172,6 +173,11 @@ public class MeshDrawer
     public void draw()
     {
         GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.numTriangles*3, GL11.GL_UNSIGNED_INT, 0);
+    }
+    
+    public void drawInstanced(int primcount)
+    {
+        GL31.glDrawElementsInstanced(GL11.GL_TRIANGLES, mesh.numTriangles*3, GL11.GL_UNSIGNED_INT, 0, primcount);
     }
     
     public void destroy()

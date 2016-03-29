@@ -36,6 +36,7 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GLCapabilities;
 
 /**
@@ -687,10 +688,8 @@ public final class DGL
     // </editor-fold>
     
     /**
-     * Draws the given vertex data using the given primitive mode. If using a
-     * VAO, it must be compatible with the given data, or this method will have
-     * undefined behavior. If not using a VAO, attributes will be automatically
-     * enabled, but this is not recommended.
+     * Draws the given vertex data using the given primitive mode. A compatible
+     * VAO and shader should both be bound.
      * 
      * @param <T> A type of vertex data.
      * @param data The vertex data to render.
@@ -704,10 +703,31 @@ public final class DGL
         int verts = data.numVertices();
         int inds = data.numIndices();
         
-        //TODO: Automatically enable and disable attributes if no VAO is bound.
-        
         if (inds < 0) GL11.glDrawArrays(mode, 0, verts);
         else GL11.glDrawElements(mode, inds, GL11.GL_UNSIGNED_INT, 0);
+        return data;
+    }
+    
+    /**
+     * Performs instanced rendering on the given vertex data, using the given
+     * primitive mode. The instance ID may be read as by a vertex shader as
+     * {@code gl_InstanceID}.
+     * 
+     * @param <T> A type of vertex data.
+     * @param data The vertex data to render.
+     * @param mode An OpenGL primitive draw mode.
+     * @param primcount The number of instances to render.
+     * @return The given vertex data.
+     */
+    public static <T extends VertexData> T drawInstanced(T data, int mode, int primcount)
+    {
+        if (boundProgram == null) throw new IllegalStateException("No shader program is in use.");
+        
+        int verts = data.numVertices();
+        int inds = data.numIndices();
+        
+        if (inds < 0) GL31.glDrawArraysInstanced(mode, 0, verts, primcount);
+        else GL31.glDrawElementsInstanced(mode, inds, GL11.GL_UNSIGNED_INT, 0, primcount);
         return data;
     }
     
