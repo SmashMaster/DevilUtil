@@ -63,19 +63,19 @@ public class Model
         }
     }
     
-    public ArrayMap<? extends DataBlock> getMap(DataBlock.Type dataType)
+    public <T extends DataBlock> ArrayMap<T> getMap(DataBlock.Type dataType)
     {
         switch (dataType)
         {
-            case LIBRARY:  return libraries;
-            case ACTION:   return actions;
-            case ARMATURE: return armatures;
-            case CURVE:    return curves;
-            case LAMP:     return lamps;
-            case MATERIAL: return materials;
-            case MESH:     return meshes;
-            case OBJECT:   return objects;
-            case SCENE:    return scenes;
+            case LIBRARY:  return (ArrayMap<T>)libraries;
+            case ACTION:   return (ArrayMap<T>)actions;
+            case ARMATURE: return (ArrayMap<T>)armatures;
+            case CURVE:    return (ArrayMap<T>)curves;
+            case LAMP:     return (ArrayMap<T>)lamps;
+            case MATERIAL: return (ArrayMap<T>)materials;
+            case MESH:     return (ArrayMap<T>)meshes;
+            case OBJECT:   return (ArrayMap<T>)objects;
+            case SCENE:    return (ArrayMap<T>)scenes;
             default: throw new IllegalArgumentException();
         }
     }
