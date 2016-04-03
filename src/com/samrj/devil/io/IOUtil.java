@@ -7,7 +7,9 @@ import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
@@ -58,6 +60,17 @@ public final class IOUtil
         R[] out = (R[])Array.newInstance(type, array.length);
         for (int i=0; i<out.length; i++) out[i] = func.apply(array[i]);
         return out;
+    }
+    
+    public static <T> void forEachPair(List<T> list, BiConsumer<T, T> func)
+    {
+        int len = list.size();
+        for (int i0=0; i0<len-1; i0++)
+        {
+            T e0 = list.get(i0);
+            for (int i1=i0+1; i1<len; i1++)
+                func.accept(e0, list.get(i1));
+        }
     }
     
     private IOUtil()
