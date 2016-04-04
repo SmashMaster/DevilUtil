@@ -7,7 +7,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -18,7 +17,6 @@ public class Action implements DataBlock
 {
     public final String name;
     public final FCurve[] fcurves;
-    public final Marker[] markers;
     public final float minX, maxX;
     private final Map<String, Marker> markerMap;
     
@@ -26,7 +24,6 @@ public class Action implements DataBlock
     {
         name = IOUtil.readPaddedUTF(in);
         fcurves = IOUtil.arrayFromStream(in, FCurve.class, FCurve::new);
-        markers = IOUtil.arrayFromStream(in, Marker.class, Marker::new);
         
         float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY;
         for (int i=0; i<fcurves.length; i++)
@@ -36,6 +33,7 @@ public class Action implements DataBlock
         }
         minX = min; maxX = max;
         
+        Marker[] markers = IOUtil.arrayFromStream(in, Marker.class, Marker::new);
         markerMap = new HashMap<>(markers.length);
         for (Marker marker : markers) markerMap.put(marker.name, marker);
     }
@@ -70,25 +68,6 @@ public class Action implements DataBlock
     public Marker getMarker(String name)
     {
         return markerMap.get(name);
-    }
-    
-    /**
-     * For each marker between the two given times, calls the given marker
-     * callback. Inclusive with the starting time, exclusive with the end.
-     * 
-     * @param start The starting time. (Inclusive)
-     * @param end The ending time. (Exclusive)
-     * @param markerCallback The function to call for each marker passed.
-     */
-    public void passMarkers(float start, float end, Consumer<Marker> markerCallback)
-    {
-        if (start >= end) throw new IllegalArgumentException();
-        
-        for (Marker marker : markers) if (marker.frame >= start)
-        {
-            if (marker.frame >= end) return;
-            markerCallback.accept(marker);
-        }
     }
     
     @Override
