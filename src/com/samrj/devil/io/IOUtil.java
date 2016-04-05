@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -59,6 +60,13 @@ public final class IOUtil
     {
         R[] out = (R[])Array.newInstance(type, array.length);
         for (int i=0; i<out.length; i++) out[i] = func.apply(array[i]);
+        return out;
+    }
+    
+    public static <T, R> List<R> mapList(List<T> list, Function<T, R> func)
+    {
+        List<R> out = new ArrayList<>(list.size());
+        for (T value : list) out.add(func.apply(value));
         return out;
     }
     
