@@ -326,7 +326,7 @@ public final class EZDraw
     {
         stack.push();
         stack.mat.translate(box.pos);
-        stack.mat.mult(new Mat4(box.rot));
+        stack.mat.rotate(box.rot);
         stack.mat.mult(box.sca);
         box();
         stack.pop();
