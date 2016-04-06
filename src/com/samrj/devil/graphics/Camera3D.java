@@ -96,21 +96,6 @@ public class Camera3D
         forward = new Vec3(0.0f, 0.0f, -1.0f);
     }
     
-    /**
-     * Returns a 3D vector containing the pitch, yaw, and roll of this camera,
-     * in that order, in radians.
-     * 
-     * @return The pitch, yaw, and roll of this camera.
-     */
-    public Vec3 angles()
-    {
-        float pitch = (float)Math.atan2(2.0f*(dir.w*dir.x - dir.y*dir.z), 1.0f - 2.0f*(dir.z*dir.z + dir.x*dir.x));
-        float yaw = (float)Math.atan2(2.0f*(dir.w*dir.y - dir.z*dir.x), 1.0f - 2.0f*(dir.y*dir.y + dir.z*dir.z));
-        float roll = (float)Math.asin(2.0f*(dir.x*dir.y - dir.w*dir.z));
-        
-        return new Vec3(pitch, yaw, roll);
-    }
-    
     public void pointAt(Vec3 p)
     {
         dir.setRotation(new Vec3(0.0f, 0.0f, -1.0f), Vec3.sub(p, pos));

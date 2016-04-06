@@ -406,6 +406,20 @@ public class Quat implements Bufferable, Streamable
         
         normalize(result, result);
     }
+    
+    /**
+     * Calculates the Tait–Bryan angles of this quaternion, and stores them in
+     * the given vector as pitch, yaw, and roll.
+     * 
+     * @param q The quaternion whose angles to calculate.
+     * @param result The vector in which to store the result.
+     */
+    public static final void angles(Quat q, Vec3 result)
+    {
+        result.x = (float)Math.atan2(2.0f*(q.w*q.x - q.y*q.z), 1.0f - 2.0f*(q.z*q.z + q.x*q.x));
+        result.y = (float)Math.atan2(2.0f*(q.w*q.y - q.z*q.x), 1.0f - 2.0f*(q.y*q.y + q.z*q.z));
+        result.z = (float)Math.asin(2.0f*(q.x*q.y - q.w*q.z));
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
     /**
@@ -654,6 +668,20 @@ public class Quat implements Bufferable, Streamable
         slerp(q0, q1, t, result);
         return result;
     }
+    
+    /**
+     * Calculates the Tait–Bryan angles of this quaternion, and returns them in
+     * the a new vector as pitch, yaw, and roll.
+     * 
+     * @param q The quaternion whose angles to calculate.
+     * @return A new vector containing the result.
+     */
+    public static final Vec3 angles(Quat q)
+    {
+        Vec3 result = new Vec3();
+        angles(q, result);
+        return result;
+    }
     // </editor-fold>
     
     public float w, x, y, z;
@@ -716,6 +744,16 @@ public class Quat implements Bufferable, Streamable
     public float length()
     {
         return length(this);
+    }
+    
+    /**
+     * Returns the Tait–Bryan angles of this quaternion as a new vector.
+     * 
+     * @return THe Tait-Bryan angles of this quaternion.
+     */
+    public Vec3 angles()
+    {
+        return angles(this);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Instance mutator methods">

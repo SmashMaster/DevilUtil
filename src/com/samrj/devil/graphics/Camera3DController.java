@@ -101,7 +101,7 @@ public final class Camera3DController
      */
     public void setAnglesFromCamera()
     {
-        Vec3 angles = camera.angles();
+        Vec3 angles = camera.dir.angles();
         setAngles(angles.x, angles.y);
     }
     
