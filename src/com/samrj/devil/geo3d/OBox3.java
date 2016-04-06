@@ -2,6 +2,7 @@ package com.samrj.devil.geo3d;
 
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Quat;
+import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 
 /**
@@ -15,35 +16,7 @@ public class OBox3
 {
     private static final float EPSILON = 1.0f/65536.0f;
     
-    /**
-     * Copies the first given box into the second.
-     * 
-     * @param source The box to copy from.
-     * @param target The box to copy into.
-     */
-    public static void copy(OBox3 source, OBox3 target)
-    {
-        Vec3.copy(source.pos, target.pos);
-        Quat.copy(source.rot, target.rot);
-        Vec3.copy(source.sca, target.sca);
-    }
-    
-    /**
-     * Interpolates between the two given boxes using the given scalar, and
-     * stores the result in {@code result}.
-     * 
-     * @param b0 The 'start' box to interpolate from.
-     * @param b1 The 'end' box to interpolate to.
-     * @param t The scalar interpolant, between zero and one (inclusive).
-     * @param result The box in which to store the result.
-     */
-    public static void lerp(OBox3 b0, OBox3 b1, float t, OBox3 result)
-    {
-        Vec3.lerp(b0.pos, b1.pos, t, result.pos);
-        Quat.slerp(b0.rot, b1.rot, t, result.rot);
-        Vec3.lerp(b0.sca, b1.sca, t, result.sca);
-    }
-    
+    // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
      * Returns whether the two given oriented boxes are touching.
      * 
@@ -120,7 +93,101 @@ public class OBox3
         
         return true;
     }
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Static mutator methods">
+    /**
+     * Copies the first given box into the second.
+     * 
+     * @param source The box to copy from.
+     * @param target The box to copy into.
+     */
+    public static void copy(OBox3 source, OBox3 target)
+    {
+        Vec3.copy(source.pos, target.pos);
+        Quat.copy(source.rot, target.rot);
+        Vec3.copy(source.sca, target.sca);
+    }
     
+    /**
+     * Interpolates between the two given boxes using the given scalar, and
+     * stores the result in {@code result}.
+     * 
+     * @param b0 The 'start' box to interpolate from.
+     * @param b1 The 'end' box to interpolate to.
+     * @param t The scalar interpolant, between zero and one (inclusive).
+     * @param result The box in which to store the result.
+     */
+    public static void lerp(OBox3 b0, OBox3 b1, float t, OBox3 result)
+    {
+        Vec3.lerp(b0.pos, b1.pos, t, result.pos);
+        Quat.slerp(b0.rot, b1.rot, t, result.rot);
+        Vec3.lerp(b0.sca, b1.sca, t, result.sca);
+    }
+    
+    /**
+     * Transforms the given vector to the local space of the given box and
+     * stores the result in {@code result}.
+     * 
+     * @param b The box whose space to transform into.
+     * @param v The vector to transform.
+     * @param result The vector in which to store the result.
+     */
+    public static void toLocal(OBox3 b, Vec3 v, Vec3 result)
+    {
+        Vec3.sub(v, b.pos, result);
+        Vec3.mult(result, Quat.invert(b.rot), result);
+        Vec3.div(result, b.sca, result);
+    }
+    
+    /**
+     * Transforms the given vector out of the local space of the given box and
+     * stores the result in {@code result}.
+     * 
+     * @param b The box whose space to transform out of.
+     * @param v The vector to transform.
+     * @param result The vector in which to store the result.
+     */
+    public static void toGlobal(OBox3 b, Vec3 v, Vec3 result)
+    {
+        Vec3.mult(v, b.sca, result);
+        Vec3.mult(result, b.rot, result);
+        Vec3.add(result, b.pos, result);
+    }
+    
+    /**
+     * Clamps the given global vector to the boundary of the given box, if it
+     * lies outside that boundary.
+     * 
+     * @param b The box to clamp to.
+     * @param v The vector to clamp.
+     * @param result The vector in which to store the result.
+     */
+    public static void clamp(OBox3 b, Vec3 v, Vec3 result)
+    {
+        toLocal(b, v, result);
+        float chebyLen = Util.max(Math.abs(result.x),
+                         Util.max(Math.abs(result.y),
+                                  Math.abs(result.z)));
+        if (chebyLen > 1.0f) Vec3.div(result, chebyLen, result);
+        toGlobal(b, result, result);
+    }
+    
+    /**
+     * Returns a point that is contained by both of the given boxes. Should be
+     * vaguely near the center of their intersection. If they are not touching,
+     * returns the average of their positions.
+     * 
+     * @param b0 The first box to test.
+     * @param b1 The second box to test.
+     * @param result The vector in which to store the result.
+     */
+    public static void mutualPoint(OBox3 b0, OBox3 b1, Vec3 result)
+    {
+        Vec3.add(clamp(b0, b1.pos), clamp(b1, b0.pos), result);
+        Vec3.mult(result, 0.5f, result);
+    }
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Static factory methods">
     /**
      * Interpolates between the two given boxes using the given scalar, and
      * returns the result as a new box.
@@ -137,6 +204,35 @@ public class OBox3
         return result;
     }
     
+    public static Vec3 toLocal(OBox3 b, Vec3 v)
+    {
+        Vec3 result = new Vec3();
+        toLocal(b, v, result);
+        return result;
+    }
+    
+    public static Vec3 toGlobal(OBox3 b, Vec3 v)
+    {
+        Vec3 result = new Vec3();
+        toGlobal(b, v, result);
+        return result;
+    }
+    
+    public static Vec3 clamp(OBox3 b, Vec3 v)
+    {
+        Vec3 result = new Vec3();
+        clamp(b, v, result);
+        return result;
+    }
+    
+    public static Vec3 mutualPoint(OBox3 b0, OBox3 b1)
+    {
+        Vec3 result = new Vec3();
+        mutualPoint(b0, b1, result);
+        return result;
+    }
+    // </editor-fold>
+    
     public final Vec3 pos = new Vec3();
     public final Quat rot = new Quat();
     public final Vec3 sca = new Vec3();
@@ -152,6 +248,7 @@ public class OBox3
         Vec3.copy(b.sca, sca);
     }
     
+    // <editor-fold defaultstate="collapsed" desc="Instance accessor methods">
     /**
      * Returns whether this is touching the given box.
      * 
@@ -162,6 +259,27 @@ public class OBox3
     {
         return touching(this, b);
     }
+    
+    public Vec3 toLocal(Vec3 v)
+    {
+        return toLocal(this, v);
+    }
+    
+    public Vec3 toGlobal(Vec3 v)
+    {
+        return toGlobal(this, v);
+    }
+    
+    public Vec3 clamp(Vec3 v)
+    {
+        return clamp(this, v);
+    }
+    
+    public Vec3 mutualPoint(OBox3 b)
+    {
+        return mutualPoint(this, b);
+    }
+    // </editor-fold>
     
     /**
      * Sets this to the given box.
