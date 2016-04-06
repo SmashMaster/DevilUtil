@@ -171,21 +171,6 @@ public class OBox3
         if (chebyLen > 1.0f) Vec3.div(result, chebyLen, result);
         toGlobal(b, result, result);
     }
-    
-    /**
-     * Returns a point that is contained by both of the given boxes. Should be
-     * vaguely near the center of their intersection. If they are not touching,
-     * returns the average of their positions.
-     * 
-     * @param b0 The first box to test.
-     * @param b1 The second box to test.
-     * @param result The vector in which to store the result.
-     */
-    public static void mutualPoint(OBox3 b0, OBox3 b1, Vec3 result)
-    {
-        Vec3.add(clamp(b0, b1.pos), clamp(b1, b0.pos), result);
-        Vec3.mult(result, 0.5f, result);
-    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
     /**
@@ -222,13 +207,6 @@ public class OBox3
     {
         Vec3 result = new Vec3();
         clamp(b, v, result);
-        return result;
-    }
-    
-    public static Vec3 mutualPoint(OBox3 b0, OBox3 b1)
-    {
-        Vec3 result = new Vec3();
-        mutualPoint(b0, b1, result);
         return result;
     }
     // </editor-fold>
@@ -273,11 +251,6 @@ public class OBox3
     public Vec3 clamp(Vec3 v)
     {
         return clamp(this, v);
-    }
-    
-    public Vec3 mutualPoint(OBox3 b)
-    {
-        return mutualPoint(this, b);
     }
     // </editor-fold>
     
