@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2016 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -118,6 +118,12 @@ public final class FBO extends DGLObj
         GL30.glFramebufferTextureLayer(GL30.GL_FRAMEBUFFER, attachment, texture.id, 0, layer);
     }
     
+    public void texture2DMultisample(Texture2DMultisample texture, int attachment)
+    {
+        ensureBound();
+        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, attachment, texture.target, texture.id, 0);
+    }
+    
     /**
      * Attaches the given render buffer to this frame buffer. This frame buffer
      * must be bound.
@@ -145,7 +151,7 @@ public final class FBO extends DGLObj
     }
     
     /**
-     * Specified which color buffer to read from for this frame buffer.
+     * Specifies which color buffer to read from for this frame buffer.
      * 
      * @param buffer The buffer to read from.
      */

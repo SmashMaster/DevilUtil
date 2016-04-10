@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2016 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@ import org.lwjgl.system.MemoryUtil;
  * @author Samuel Johnson (SmashMaster)
  * @param <T> This texture's own type.
  */
-public abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture<T>
+abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture<T>
 {
     private int width, height;
     

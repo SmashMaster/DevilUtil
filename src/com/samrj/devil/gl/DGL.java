@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2016 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -559,6 +559,16 @@ public final class DGL
         Texture2DArray texture = loadTex2DArray(images);
         delete(images);
         return texture;
+    }
+    
+    /**
+     * Generates a new OpenGL name for a mulisampled 2D texture.
+     * 
+     * @return A new multisampled 2D texture object.
+     */
+    public static Texture2DMultisample genTex2DMultisample()
+    {
+        return gen(new Texture2DMultisample());
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="RBO methods">

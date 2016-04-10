@@ -11,10 +11,10 @@ import org.lwjgl.system.MemoryUtil;
  * 
  * @author Samuel Johnson (SmashMaster)
  * @param <T> This texture's own type.
- * @copyright 2015 Samuel Johnson
+ * @copyright 2016 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public abstract class Texture3DAbstract<T extends Texture3DAbstract<T>> extends Texture<T>
+abstract class Texture3DAbstract<T extends Texture3DAbstract<T>> extends Texture<T>
 {
     private int width, height, depth;
     
