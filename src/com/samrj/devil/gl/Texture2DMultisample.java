@@ -67,21 +67,4 @@ public class Texture2DMultisample extends Texture<Texture2DMultisample>
         tempUnbind(oldID);
         return getThis();
     }
-    
-    /**
-     * Generates mipmaps for this texture.
-     * 
-     * @return This texture.
-     */
-    public Texture2DMultisample generateMipmap()
-    {
-        if (!DGL.getCapabilities().OpenGL30) throw new UnsupportedOperationException();
-        if (!Util.isPower2(getWidth()) || !Util.isPower2(getHeight()))
-            throw new IllegalStateException("Cannot generate mipmap for NPOT texture.");
-        
-        int oldID = tempBind();
-        GL30.glGenerateMipmap(GL32.GL_TEXTURE_2D_MULTISAMPLE);
-        tempUnbind(oldID);
-        return this;
-    }
 }

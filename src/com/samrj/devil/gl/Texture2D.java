@@ -30,21 +30,4 @@ public final class Texture2D extends Texture2DAbstract<Texture2D>
     {
         return this;
     }
-    
-    /**
-     * Generates mipmaps for this texture.
-     * 
-     * @return This texture.
-     */
-    public Texture2D generateMipmap()
-    {
-        if (!DGL.getCapabilities().OpenGL30) throw new UnsupportedOperationException();
-        if (!Util.isPower2(getWidth()) || !Util.isPower2(getHeight()))
-            throw new IllegalStateException("Cannot generate mipmap for NPOT texture.");
-        
-        int oldID = tempBind();
-        GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
-        tempUnbind(oldID);
-        return this;
-    }
 }

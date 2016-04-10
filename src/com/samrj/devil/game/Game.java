@@ -34,10 +34,6 @@ import com.samrj.devil.game.step.TimeStepper;
 import com.samrj.devil.game.sync.SleepHybrid;
 import com.samrj.devil.game.sync.Sync;
 import com.samrj.devil.math.Vec2i;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import javax.swing.JOptionPane;
-import javax.swing.UIManager;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
@@ -72,7 +68,7 @@ public abstract class Game
     private static void ensureMainThread()
     {
         if (Thread.currentThread() !=  mainThread)
-            throw new IllegalThreadStateException("Not on main thread.");
+            throw new IllegalThreadStateException("Not on main thread " + mainThread);
     }
     
     /**
@@ -118,23 +114,10 @@ public abstract class Game
     public static final void run(GameConstructor constructor) throws Exception
     {
         Game.init();
-        try
-        {
-            Game instance = constructor.construct();
-            instance.run();
-            instance.destroy();
-            Game.terminate();
-        }
-        catch (Exception e)
-        {
-            Game.terminate();
-//            StringWriter writer = new StringWriter();
-//            writer.append("An unhandled exception occured:\n");
-//            e.printStackTrace(new PrintWriter(writer));
-//            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-//            JOptionPane.showMessageDialog(null, writer.getBuffer(), "Exception", JOptionPane.ERROR_MESSAGE);
-            throw e;
-        }
+        Game instance = constructor.construct();
+        instance.run();
+        instance.destroy();
+        Game.terminate();
     }
     
     private boolean running;

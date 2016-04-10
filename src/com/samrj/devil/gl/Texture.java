@@ -24,6 +24,7 @@ package com.samrj.devil.gl;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GL30;
 
 /**
  * Abstract OpenGL texture class.
@@ -121,6 +122,7 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
      * 
      * @param param The OpenGL texture parameter to set.
      * @param value The value to set the parameter to.
+     * @return This texture.
      */
     public final T parami(int param, int value)
     {
@@ -135,11 +137,25 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
      * 
      * @param param The OpenGL texture parameter to set.
      * @param value The value to set the parameter to.
+     * @return This texture.
      */
     public final T paramf(int param, float value)
     {
         if (!isBound()) throw new IllegalStateException("Texture must be bound.");
         GL11.glTexParameterf(target, param, value);
+        return getThis();
+    }
+    
+    /**
+     * Generates mipmaps for this texture.
+     * 
+     * @return This texture.
+     */
+    public final T generateMipmap()
+    {
+        int oldID = tempBind();
+        GL30.glGenerateMipmap(target);
+        tempUnbind(oldID);
         return getThis();
     }
 }

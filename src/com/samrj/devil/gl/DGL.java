@@ -75,6 +75,7 @@ public final class DGL
         thread = Thread.currentThread();
         capabilities = GL.getCapabilities();
         objects = new IdentitySet<>();
+        DGLException.init();
         init = true;
     }
     
@@ -771,6 +772,8 @@ public final class DGL
         boundVAO = null;
         readFBO = null;
         drawFBO = null;
+        
+        DGLException.terminate();
         
         thread = null;
         capabilities = null;
