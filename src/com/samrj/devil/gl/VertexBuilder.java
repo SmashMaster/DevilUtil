@@ -108,7 +108,7 @@ public abstract class VertexBuilder extends DGLObj implements VertexData
     
     private <T extends AttWriter> T regAtt(String name, T att)
     {
-        vertexSize += att.type.size*att.type.layers;
+        vertexSize += att.getType().size*att.getType().layers;
         attributes.add(att);
         attMap.put(name, att);
         return att;
@@ -333,11 +333,35 @@ public abstract class VertexBuilder extends DGLObj implements VertexData
         onDelete();
     }
     
-    abstract class AttWriter extends Attribute
+    abstract class AttWriter implements Attribute
     {
+        private final String name;
+        private final AttributeType type;
+        private final int offset;
+        
         private AttWriter(String name, AttributeType type, int offset)
         {
-            super(name, type, offset);
+            this.name = name;
+            this.type = type;
+            this.offset = offset;
+        }
+
+        @Override
+        public String getName()
+        {
+            return name;
+        }
+        
+        @Override
+        public AttributeType getType()
+        {
+            return type;
+        }
+        
+        @Override
+        public int getOffset()
+        {
+            return offset;
         }
         
         abstract void write(ByteBuffer buffer);

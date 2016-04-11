@@ -119,7 +119,7 @@ public final class VAO extends DGLObj
             AttributeType type  = satt.type;
             VertexData.Attribute att = data.getAttribute(satt.name);
             
-            if (att != null && att.type == type) for (int layer=0; layer<type.layers; layer++)
+            if (att != null && att.getType() == type) for (int layer=0; layer<type.layers; layer++)
             {
                 int location = satt.location + layer;
                 enableVertexAttribArray(location);
@@ -128,7 +128,7 @@ public final class VAO extends DGLObj
                                     type.glComponent,
                                     false,
                                     data.vertexSize(),
-                                    att.offset + layer*type.size);
+                                    att.getOffset() + layer*type.size);
             }
             else disableVertexAttribArray(satt.location);
         }

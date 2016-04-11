@@ -49,17 +49,10 @@ public interface VertexData
      */
     public int numIndices();
     
-    public class Attribute
+    public interface Attribute
     {
-        public final String name;
-        public final AttributeType type;
-        public final int offset;
-        
-        protected Attribute(String name, AttributeType type, int offset)
-        {
-            this.name = name;
-            this.type = type;
-            this.offset = offset;
-        }
+        public String getName();
+        public AttributeType getType();
+        public int getOffset();
     }
 }
