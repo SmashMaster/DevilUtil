@@ -34,11 +34,6 @@ public interface VertexData
     public Attribute getAttribute(String name);
     
     /**
-     * @return The size of each vertex, in bytes.
-     */
-    public int vertexSize();
-    
-    /**
      * @return The number of currently uploaded vertices.
      */
     public int numVertices();
@@ -53,6 +48,7 @@ public interface VertexData
     {
         public String getName();
         public AttributeType getType();
+        public int getStride();
         public int getOffset();
     }
 }

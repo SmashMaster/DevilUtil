@@ -24,10 +24,13 @@ package com.samrj.devil.graphics;
 
 import com.samrj.devil.gl.AttributeType;
 import static com.samrj.devil.gl.AttributeType.*;
-import com.samrj.devil.gl.DGL;
-import com.samrj.devil.gl.ShaderProgram;
 import com.samrj.devil.gl.VAO;
+import com.samrj.devil.gl.VertexData;
 import com.samrj.devil.model.Mesh;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL31;
@@ -37,13 +40,14 @@ import org.lwjgl.opengl.GL31;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class MeshDrawer
+public class MeshDrawer implements VertexData
 {
     private static final int POSITION = 0, NORMAL = 1, TANGENT = 2, UV = 3,
                              COLOR = 4, GROUPS = 5, WEIGHTS = 6;
     
     private final Mesh mesh;
     private final Attribute[] attributes;
+    private final Map<String, Attribute> nameMap;
     private int vbo, ibo;
     
     public MeshDrawer(Mesh mesh)
@@ -111,69 +115,50 @@ public class MeshDrawer
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ibo);
         GL15.nglBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.indexBlock.size, mesh.indexBlock.address, GL15.GL_STATIC_DRAW);
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, prevBinding);
+        
+        nameMap = new HashMap<>();
     }
     
     public void setPositionName(String name)
     {
         attributes[POSITION].name = name;
+        nameMap.put(name, attributes[POSITION]);
     }
     
     public void setNormalName(String name)
     {
         attributes[NORMAL].name = name;
+        nameMap.put(name, attributes[NORMAL]);
     }
     
     public void setTangentName(String name)
     {
         attributes[TANGENT].name = name;
+        nameMap.put(name, attributes[TANGENT]);
     }
     
     public void setUVName(String name)
     {
         attributes[UV].name = name;
+        nameMap.put(name, attributes[UV]);
     }
     
     public void setColorName(String name)
     {
         attributes[COLOR].name = name;
+        nameMap.put(name, attributes[COLOR]);
     }
     
     public void setGroupsName(String name)
     {
         attributes[GROUPS].name = name;
+        nameMap.put(name, attributes[GROUPS]);
     }
     
     public void setWeightsName(String name)
     {
         attributes[WEIGHTS].name = name;
-    }
-    
-    public VAO link(ShaderProgram program)
-    {
-        VAO oldVAO = DGL.currentVAO();
-        
-        VAO vao = DGL.genVAO();
-        DGL.bindVAO(vao);
-        
-        int prevBinding = GL11.glGetInteger(GL15.GL_ARRAY_BUFFER_BINDING);
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
-        vao.bindElementArrayBuffer(ibo);
-        
-        for (int i=0; i<7; i++)
-        {
-            Attribute att = attributes[i];
-            if (!att.enabled || att.name == null) continue;
-            
-            ShaderProgram.Attribute satt = program.getAttribute(att.name);
-            if (satt == null) continue;
-            
-            att.enable(vao, satt.location);
-        }
-        
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, prevBinding);
-        
-        DGL.bindVAO(oldVAO);
-        return vao;
+        nameMap.put(name, attributes[WEIGHTS]);
     }
     
     public void draw()
@@ -194,8 +179,46 @@ public class MeshDrawer
         vbo = -1;
         ibo = -1;
     }
+
+    @Override
+    public int vbo()
+    {
+        return vbo;
+    }
+
+    @Override
+    public int ibo()
+    {
+        return ibo;
+    }
+
+    @Override
+    public Iterable<VertexData.Attribute> attributes()
+    {
+        List<VertexData.Attribute> out = new ArrayList<>(attributes.length);
+        for (Attribute att : attributes) if (att.enabled) out.add(att);
+        return out;
+    }
+
+    @Override
+    public VertexData.Attribute getAttribute(String name)
+    {
+        return nameMap.get(name);
+    }
     
-    private class Attribute
+    @Override
+    public int numVertices()
+    {
+        return mesh.numVertices;
+    }
+
+    @Override
+    public int numIndices()
+    {
+        return mesh.numTriangles*3;
+    }
+    
+    private class Attribute implements VertexData.Attribute
     {
         private String name;
         private final AttributeType type;
@@ -208,11 +231,29 @@ public class MeshDrawer
             this.offset = offset;
             this.enabled = enabled;
         }
-        
-        private void enable(VAO vao, int location)
+
+        @Override
+        public String getName()
         {
-            vao.enableVertexAttribArray(location);
-            vao.vertexAttribPointer(location, type, 0, offset);
+            return name;
+        }
+
+        @Override
+        public AttributeType getType()
+        {
+            return type;
+        }
+
+        @Override
+        public int getStride()
+        {
+            return 0;
+        }
+        
+        @Override
+        public int getOffset()
+        {
+            return offset;
         }
     }
 }

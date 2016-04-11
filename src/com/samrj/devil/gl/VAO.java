@@ -123,11 +123,11 @@ public final class VAO extends DGLObj
                 {
                     int location = satt.location + layer;
                     enableVertexAttribArray(location);
-                    vertexAttribPointer(location, type, data.vertexSize(),
+                    vertexAttribPointer(location, type, att.getStride(),
                                         att.getOffset() + layer*type.size);
                 }
             }
-            else disableVertexAttribArray(satt.location);
+//            else disableVertexAttribArray(satt.location);
         }
         
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, prevBinding);

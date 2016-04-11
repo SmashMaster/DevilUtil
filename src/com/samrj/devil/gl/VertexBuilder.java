@@ -253,8 +253,7 @@ public abstract class VertexBuilder extends DGLObj implements VertexData
         return attMap.get(name);
     }
     
-    @Override
-    public int vertexSize()
+    int vertexSize()
     {
         return vertexSize;
     }
@@ -356,6 +355,12 @@ public abstract class VertexBuilder extends DGLObj implements VertexData
         public AttributeType getType()
         {
             return type;
+        }
+        
+        @Override
+        public int getStride()
+        {
+            return vertexSize;
         }
         
         @Override

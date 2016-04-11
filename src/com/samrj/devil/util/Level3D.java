@@ -126,7 +126,7 @@ public class Level3D implements Geometry
             d.setNormalName("in_normal");
             drawer = d;
             
-            vao = drawer.link(shader);
+            vao = DGL.genVAO(drawer, shader);
             transform = object.transform.toMatrix();
         }
         
