@@ -52,7 +52,7 @@ public class DGLException extends RuntimeException
     
     private static void error(int source, int type, int id, int severity, int length, long message, long userParam)
     {
-        if (type == GL43.GL_DEBUG_TYPE_ERROR)
+        if (source == GL43.GL_DEBUG_SOURCE_API && type == GL43.GL_DEBUG_TYPE_ERROR)
             throw new DGLException(getSeverity(severity) + " severity " +
                     memUTF8(message, length) + " from " + getSource(source));
     }

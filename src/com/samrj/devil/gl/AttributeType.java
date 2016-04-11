@@ -65,6 +65,11 @@ public enum AttributeType
      * The OpenGL enumerator for this attribute's component type.
      */
     public final int glComponent;
+    
+    /**
+     * Whether or not this type is an integer type.
+     */
+    public final boolean isInteger;
 
     private AttributeType(int size, int components, int layers, int glEnum, int glComponent)
     {
@@ -73,5 +78,6 @@ public enum AttributeType
         this.layers = layers;
         this.glEnum = glEnum;
         this.glComponent = glComponent;
+        isInteger = glComponent != GL11.GL_FLOAT;
     }
 }

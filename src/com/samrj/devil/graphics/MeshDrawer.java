@@ -80,19 +80,25 @@ public class MeshDrawer
                 (offset += verts*mesh.uvLayers.length*2*4),
                 mesh.colorLayers.length > 0);
         
+        AttributeType groupsType, weightType;
+        switch (mesh.numGroups)
+        {
+            case 1: groupsType = INT; weightType = FLOAT; break;
+            case 2: groupsType = VEC2I; weightType = VEC2; break;
+            case 3: groupsType = VEC3I; weightType = VEC3; break;
+            case 4: groupsType = VEC4I; weightType = VEC4; break;
+            default: groupsType = null; weightType = null; break;
+        }
+        
         attributes[GROUPS] = new Attribute(
-                VEC4I,
+                groupsType,
                 (offset += verts*mesh.colorLayers.length*3*4),
-                mesh.numGroups > 0,
-                mesh.numGroups,
-                GL11.GL_FLOAT);
+                mesh.numGroups > 0);
         
         attributes[WEIGHTS] = new Attribute(
-                VEC4,
+                weightType,
                 (offset += verts*mesh.numGroups*4),
-                mesh.numGroups > 0,
-                mesh.numGroups,
-                GL11.GL_FLOAT);
+                mesh.numGroups > 0);
         
         vbo = GL15.glGenBuffers();
         int prevBinding = GL11.glGetInteger(GL15.GL_ARRAY_BUFFER_BINDING);
@@ -159,7 +165,7 @@ public class MeshDrawer
             if (!att.enabled || att.name == null) continue;
             
             ShaderProgram.Attribute satt = program.getAttribute(att.name);
-            if (satt == null || satt.type != att.type) continue;
+            if (satt == null) continue;
             
             att.enable(vao, satt.location);
         }
@@ -195,32 +201,18 @@ public class MeshDrawer
         private final AttributeType type;
         private final int offset;
         private final boolean enabled;
-        private final int components;
-        private final int componentType;
         
-        private Attribute(AttributeType type, int offset, boolean enabled, int components, int componentType)
+        private Attribute(AttributeType type, int offset, boolean enabled)
         {
             this.type = type;
             this.offset = offset;
             this.enabled = enabled;
-            this.components = components;
-            this.componentType = componentType;
-        }
-        
-        private Attribute(AttributeType type, int offset, boolean enabled)
-        {
-            this(type, offset, enabled, type.components, type.glComponent);
         }
         
         private void enable(VAO vao, int location)
         {
             vao.enableVertexAttribArray(location);
-            vao.vertexAttribPointer(location,
-                                    components,
-                                    componentType,
-                                    false,
-                                    0,
-                                    offset);
+            vao.vertexAttribPointer(location, type, 0, offset);
         }
     }
 }
