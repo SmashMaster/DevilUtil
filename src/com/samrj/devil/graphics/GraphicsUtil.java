@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL11;
 
 /**
- * Graphics utility class.
+ * Graphics utility class. Mostly for deprecated OpenGL.
  * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2015 Samuel Johnson
