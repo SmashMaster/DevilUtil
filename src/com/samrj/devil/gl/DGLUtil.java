@@ -18,7 +18,7 @@ public class DGLUtil
      * @param posname The shader variable name for vertex positions.
      * @return A new, complete VertexBuffer.
      */
-    public VertexBuffer makeFSQ(String posname)
+    public static VertexBuffer makeFSQ(String posname)
     {
         VertexBuffer out = DGL.genVertexBuffer(4, 0);
         Vec2 pos = out.vec2("in_pos");
