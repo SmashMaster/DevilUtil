@@ -161,16 +161,6 @@ public class MeshDrawer implements VertexData
         nameMap.put(name, attributes[WEIGHTS]);
     }
     
-    public void draw()
-    {
-        GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.numTriangles*3, GL11.GL_UNSIGNED_INT, 0);
-    }
-    
-    public void drawInstanced(int primcount)
-    {
-        GL31.glDrawElementsInstanced(GL11.GL_TRIANGLES, mesh.numTriangles*3, GL11.GL_UNSIGNED_INT, 0, primcount);
-    }
-    
     public void destroy()
     {
         GL15.glDeleteBuffers(vbo);

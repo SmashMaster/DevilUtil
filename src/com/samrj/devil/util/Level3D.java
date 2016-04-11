@@ -24,6 +24,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.lwjgl.opengl.GL11;
 
 /**
  * Class which handles the loading rendering, and collision detection in a
@@ -134,7 +135,7 @@ public class Level3D implements Geometry
         {
             shader.uniformMat4("u_model_matrix", transform);
             DGL.bindVAO(vao);
-            drawer.draw();
+            DGL.draw(drawer, GL11.GL_TRIANGLES);
         }
     }
 }
