@@ -20,7 +20,8 @@ public enum AttributeType
     INT  (4,  1, 1, GL11.GL_INT,        GL11.GL_INT),
     VEC2I(8,  2, 1, GL20.GL_INT_VEC2,   GL11.GL_INT),
     VEC3I(12, 3, 1, GL20.GL_INT_VEC3,   GL11.GL_INT),
-    VEC4I(16, 4, 1, GL20.GL_INT_VEC4,   GL11.GL_INT);
+    VEC4I(16, 4, 1, GL20.GL_INT_VEC4,   GL11.GL_INT),
+    NONE(0, 0, 0, GL11.GL_FALSE, GL11.GL_FALSE);
     
     public static final AttributeType get(int glEnum)
     {
@@ -78,6 +79,6 @@ public enum AttributeType
         this.layers = layers;
         this.glEnum = glEnum;
         this.glComponent = glComponent;
-        isInteger = glComponent != GL11.GL_FLOAT;
+        isInteger = glComponent == GL11.GL_INT;
     }
 }

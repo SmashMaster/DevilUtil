@@ -24,7 +24,6 @@ package com.samrj.devil.graphics;
 
 import com.samrj.devil.gl.AttributeType;
 import static com.samrj.devil.gl.AttributeType.*;
-import com.samrj.devil.gl.VAO;
 import com.samrj.devil.gl.VertexData;
 import com.samrj.devil.model.Mesh;
 import java.util.ArrayList;
@@ -33,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL31;
 
 /**
  * Utility OpenGL wrapper for DevilModel meshes.
@@ -42,47 +40,46 @@ import org.lwjgl.opengl.GL31;
  */
 public class MeshDrawer implements VertexData
 {
-    private static final int POSITION = 0, NORMAL = 1, TANGENT = 2, UV = 3,
-                             COLOR = 4, GROUPS = 5, WEIGHTS = 6;
-    
     private final Mesh mesh;
-    private final Attribute[] attributes;
-    private final Map<String, Attribute> nameMap;
+    
+    private final Attribute position;
+    private final Attribute normal;
+    private final Attribute tangent;
+    private final Attribute uv;
+    private final Map<String, Attribute> colors;
+    private final Attribute groups;
+    private final Attribute weights;
+    
+    private final Map<String, Attribute> attributes;
     private int vbo, ibo;
     
     public MeshDrawer(Mesh mesh)
     {
         this.mesh = mesh;
-        attributes = new Attribute[7];
         
         //Set up attributes.
         int verts = mesh.numVertices;
         int offset = 0;
         
-        attributes[POSITION] = new Attribute(
-                VEC3,
-                (offset += 0),
-                true);
+        position = new Attribute(VEC3, offset, true);
+        offset += verts*VEC3.size;
         
-        attributes[NORMAL] = new Attribute(
-                VEC3,
-                (offset += verts*3*4),
-                mesh.hasNormals);
+        normal = new Attribute(VEC3, offset, mesh.hasNormals);
+        if (mesh.hasNormals) offset += verts*VEC3.size;
         
-        attributes[TANGENT] = new Attribute(
-                VEC3,
-                (offset += mesh.hasNormals ? verts*3*4 : 0),
-                mesh.hasTangents);
+        tangent = new Attribute(VEC3, offset, mesh.hasTangents);
+        if (mesh.hasTangents) offset += verts*VEC3.size;
         
-        attributes[UV] = new Attribute(
-                VEC2,
-                (offset += mesh.hasTangents ? verts*3*4 : 0),
-                mesh.uvLayers.length > 0);
+        uv = new Attribute(VEC2, offset, mesh.uvLayers.length > 0);
+        offset += verts*mesh.uvLayers.length*VEC2.size;
         
-        attributes[COLOR] = new Attribute(
-                VEC3,
-                (offset += verts*mesh.uvLayers.length*2*4),
-                mesh.colorLayers.length > 0);
+        colors = new HashMap<>();
+        for (String colorLayer : mesh.colorLayers)
+        {
+            Attribute color =  new Attribute(VEC3, offset, true);
+            offset += verts*VEC3.size;
+            colors.put(colorLayer, color);
+        }
         
         AttributeType groupsType, weightType;
         switch (mesh.numGroups)
@@ -91,18 +88,13 @@ public class MeshDrawer implements VertexData
             case 2: groupsType = VEC2I; weightType = VEC2; break;
             case 3: groupsType = VEC3I; weightType = VEC3; break;
             case 4: groupsType = VEC4I; weightType = VEC4; break;
-            default: groupsType = null; weightType = null; break;
+            default: groupsType = NONE; weightType = NONE; break;
         }
         
-        attributes[GROUPS] = new Attribute(
-                groupsType,
-                (offset += verts*mesh.colorLayers.length*3*4),
-                mesh.numGroups > 0);
+        groups = new Attribute(groupsType, offset, mesh.numGroups > 0);
+        offset += verts*groupsType.size;
         
-        attributes[WEIGHTS] = new Attribute(
-                weightType,
-                (offset += verts*mesh.numGroups*4),
-                mesh.numGroups > 0);
+        weights = new Attribute(weightType, offset, mesh.numGroups > 0);
         
         vbo = GL15.glGenBuffers();
         int prevBinding = GL11.glGetInteger(GL15.GL_ARRAY_BUFFER_BINDING);
@@ -116,49 +108,58 @@ public class MeshDrawer implements VertexData
         GL15.nglBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.indexBlock.size, mesh.indexBlock.address, GL15.GL_STATIC_DRAW);
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, prevBinding);
         
-        nameMap = new HashMap<>();
+        attributes = new HashMap<>();
+    }
+    
+    private void setName(Attribute att, String name)
+    {
+        att.name = name;
+        attributes.put(name, att);
     }
     
     public void setPositionName(String name)
     {
-        attributes[POSITION].name = name;
-        nameMap.put(name, attributes[POSITION]);
+        setName(position, name);
     }
     
     public void setNormalName(String name)
     {
-        attributes[NORMAL].name = name;
-        nameMap.put(name, attributes[NORMAL]);
+        setName(normal, name);
     }
     
     public void setTangentName(String name)
     {
-        attributes[TANGENT].name = name;
-        nameMap.put(name, attributes[TANGENT]);
+        setName(tangent, name);
     }
     
     public void setUVName(String name)
     {
-        attributes[UV].name = name;
-        nameMap.put(name, attributes[UV]);
+        setName(uv, name);
     }
     
     public void setColorName(String name)
     {
-        attributes[COLOR].name = name;
-        nameMap.put(name, attributes[COLOR]);
+        if (colors.isEmpty()) return;
+        if (colors.size() > 1) throw new IllegalStateException("More then one color layer. Must specify layer name.");
+        Attribute att = colors.values().iterator().next();
+        setName(att, name);
+    }
+    
+    public void setColorName(String layer, String name)
+    {
+        Attribute att = colors.get(layer);
+        if (att == null) return;
+        setName(att, name);
     }
     
     public void setGroupsName(String name)
     {
-        attributes[GROUPS].name = name;
-        nameMap.put(name, attributes[GROUPS]);
+        setName(groups, name);
     }
     
     public void setWeightsName(String name)
     {
-        attributes[WEIGHTS].name = name;
-        nameMap.put(name, attributes[WEIGHTS]);
+        setName(weights, name);
     }
     
     public void destroy()
@@ -185,15 +186,15 @@ public class MeshDrawer implements VertexData
     @Override
     public Iterable<VertexData.Attribute> attributes()
     {
-        List<VertexData.Attribute> out = new ArrayList<>(attributes.length);
-        for (Attribute att : attributes) if (att.enabled) out.add(att);
+        List<VertexData.Attribute> out = new ArrayList<>(attributes.size());
+        for (Attribute att : attributes.values()) if (att.enabled) out.add(att);
         return out;
     }
 
     @Override
     public VertexData.Attribute getAttribute(String name)
     {
-        return nameMap.get(name);
+        return attributes.get(name);
     }
     
     @Override
