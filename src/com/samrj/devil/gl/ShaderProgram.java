@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Set;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryUtil;
 
 /**
@@ -631,6 +632,18 @@ public final class ShaderProgram extends DGLObj
         return true;
     }
     // </editor-fold>
+    
+    /**
+     * Binds the given color output name to the given color attachment.
+     * 
+     * @param name The output variable name to bind.
+     * @param colorNumber The color attachment layer to bind to.
+     */
+    public void bindFragDataLocation(String name, int colorNumber)
+    {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
+        GL30.glBindFragDataLocation(id, colorNumber, name);
+    }
     
     /**
      * 
