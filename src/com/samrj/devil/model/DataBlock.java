@@ -16,9 +16,8 @@ public interface DataBlock
             case 2: return Type.ARMATURE;
             case 3: return Type.CURVE;
             case 4: return Type.LAMP;
-            case 5: return Type.MATERIAL;
-            case 6: return Type.MESH;
-            case 7: return Type.SCENE;
+            case 5: return Type.MESH;
+            case 6: return Type.SCENE;
             default: return null;
         }
     }
@@ -26,8 +25,8 @@ public interface DataBlock
     public enum Type
     {
         LIBRARY(Library.class), ACTION(Action.class), ARMATURE(Armature.class),
-        CURVE(Curve.class), LAMP(Lamp.class), MATERIAL(Material.class),
-        MESH(Mesh.class), OBJECT(ModelObject.class), SCENE(Scene.class);
+        CURVE(Curve.class), LAMP(Lamp.class), MESH(Mesh.class),
+        OBJECT(ModelObject.class), SCENE(Scene.class);
             
         public final Class<? extends DataBlock> type;
         

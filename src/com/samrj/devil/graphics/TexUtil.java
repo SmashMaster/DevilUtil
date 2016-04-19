@@ -153,7 +153,12 @@ public class TexUtil
             case GL30.GL_RG32I: return GL30.GL_RG;
                 
             case GL11.GL_RGB:
+            case GL11.GL_R3_G3_B2:
+            case GL11.GL_RGB4:
+            case GL11.GL_RGB5:
             case GL11.GL_RGB8:
+            case GL11.GL_RGB10:
+            case GL11.GL_RGB12:
             case GL11.GL_RGB16:
             case GL30.GL_RGB16F:
             case GL30.GL_RGB16I:
@@ -161,7 +166,10 @@ public class TexUtil
             case GL30.GL_RGB32I: return GL11.GL_RGB;
                 
             case GL11.GL_RGBA:
+            case GL11.GL_RGBA2:
+            case GL11.GL_RGBA4:
             case GL11.GL_RGBA8:
+            case GL11.GL_RGBA12:
             case GL11.GL_RGBA16:
             case GL30.GL_RGBA16F:
             case GL30.GL_RGBA16I:
