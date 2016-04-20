@@ -90,6 +90,7 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
     public final T bind(int texture)
     {
         if (deleted) throw new IllegalStateException("Cannot bind deleted texture.");
+        if (texture < GL13.GL_TEXTURE0) throw new IllegalArgumentException();
         int old = GL11.glGetInteger(GL13.GL_ACTIVE_TEXTURE);
         GL13.glActiveTexture(texture);
         bind();
