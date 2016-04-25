@@ -53,6 +53,22 @@ public class ModelObject<DATA_TYPE extends DataBlock> implements DataBlock
         action = new DataPointer<>(model, Type.ACTION, in.readInt());
     }
     
+    public void applyParentTransform(Transform result)
+    {
+        ModelObject<?> parentObj = parent.get();
+        if (parentObj != null)
+        {
+            result.mult(parentObj.transform);
+            parentObj.applyParentTransform(result);
+        }
+    }
+    
+    public void getParentedTransform(Transform result)
+    {
+        result.set(transform);
+        applyParentTransform(result);
+    }
+    
     @Override
     public String getName()
     {

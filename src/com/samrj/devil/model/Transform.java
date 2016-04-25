@@ -96,6 +96,15 @@ public class Transform
         scale.lerp(transform.scale, t);
     }
     
+    public void mult(Transform transform)
+    {
+        position.mult(transform.rotation);
+        position.mult(transform.scale);
+        position.add(transform.position);
+        rotation.mult(transform.rotation);
+        scale.mult(transform.scale);
+    }
+    
     public void setProperty(Property property, int index, float value)
     {
         switch (property)

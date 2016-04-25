@@ -14,6 +14,7 @@ public final class DataPointer<T extends DataBlock>
     public final DataBlock.Type type;
     
     private T data;
+    private boolean dirty = true;
     
     DataPointer(Model model, DataBlock.Type type, String name)
     {
@@ -43,8 +44,17 @@ public final class DataPointer<T extends DataBlock>
     
     public T get()
     {   
-        if (data == null) data = name != null ? (T)model.getMap(type).get(name) :
-                                                (T)model.getMap(type).get(index);
+        if (dirty)
+        {
+            Model.ArrayMap<T> array = model.getMap(type);
+            
+            if (name != null) data = array.get(name);
+            else if (index >= 0) data = array.get(index);
+            else data = null;
+            
+            dirty = false;
+        }
+        
         return data;
     }
 }
