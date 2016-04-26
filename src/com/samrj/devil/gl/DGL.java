@@ -764,7 +764,6 @@ public final class DGL
         checkState();
         init = false;
         
-        for (DGLObj obj : objects) obj.delete();
         objects.clear();
         objects = null;
         
@@ -777,6 +776,8 @@ public final class DGL
         
         thread = null;
         capabilities = null;
+        
+        GL.destroy();
     }
     
     private DGL()

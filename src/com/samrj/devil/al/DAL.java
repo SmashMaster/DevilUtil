@@ -28,12 +28,18 @@ import com.samrj.devil.res.Resource;
 import com.samrj.devil.util.IdentitySet;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.Locale;
 import java.util.Set;
 import org.kc7bfi.jflac.FLACDecoder;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL10;
+import org.lwjgl.openal.ALC;
+import org.lwjgl.openal.ALC10;
+import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.openal.ALCapabilities;
+import org.lwjgl.system.MemoryUtil;
 
 /**
  * DevilAL. An object-oriented OpenAL wrapper.
@@ -44,6 +50,7 @@ public class DAL
 {
     //Constant fields
     private static boolean init;
+    private static long device, context;
     private static Thread thread;
     private static ALCapabilities capabilities;
     private static Set<DALObj> objects;
@@ -61,9 +68,19 @@ public class DAL
      */
     public static void init()
     {
-        if (init) throw new IllegalStateException("DGL already initialized.");
+        if (init) throw new IllegalStateException("DAL already initialized.");
         thread = Thread.currentThread();
-        capabilities = AL.getCapabilities();
+        
+        device = ALC10.alcOpenDevice((ByteBuffer)null);
+        if (device == MemoryUtil.NULL)
+            throw new RuntimeException("Failed to create OpenAL context.");
+        
+        ALCCapabilities deviceCaps = ALC.createCapabilities(device);
+        
+        context = ALC10.alcCreateContext(device, (IntBuffer)null);
+        ALC10.alcMakeContextCurrent(context);
+        
+        capabilities = AL.createCapabilities(deviceCaps);
         objects = new IdentitySet<>();
         init = true;
     }
@@ -208,9 +225,14 @@ public class DAL
         checkState();
         init = false;
         
-        for (DALObj obj : objects) obj.delete();
         objects.clear();
         objects = null;
+        
+        ALC10.alcDestroyContext(context);
+        ALC10.alcCloseDevice(device);
+        
+        context = 0;
+        device = 0;
         
         thread = null;
         capabilities = null;
