@@ -14,6 +14,7 @@ import java.io.IOException;
 public class ModelObject<DATA_TYPE extends DataBlock> implements DataBlock
 {
     public final String name;
+    public final String type;
     public final Transform transform;
     public final String[] vertexGroups;
     public final Pose pose;
@@ -26,6 +27,7 @@ public class ModelObject<DATA_TYPE extends DataBlock> implements DataBlock
     ModelObject(Model model, DataInputStream in) throws IOException
     {
         name = IOUtil.readPaddedUTF(in);
+        type = IOUtil.readPaddedUTF(in);
         
         int dataType = in.readInt();
         int dataLibIndex = dataType >= 0 ? in.readInt() : -1;

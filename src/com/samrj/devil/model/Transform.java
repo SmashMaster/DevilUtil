@@ -37,7 +37,7 @@ public class Transform
     public Transform(DataInputStream in) throws IOException
     {
         position = new Vec3(in);
-        rotation = in.readInt() == 0 ? new Quat(in) : new Quat();
+        rotation = new Quat(in);
         scale = new Vec3(in);
     }
     
