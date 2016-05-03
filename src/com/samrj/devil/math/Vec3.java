@@ -500,7 +500,6 @@ public class Vec3 implements Bufferable, Streamable
         result.y = Util.lerp(v0.y, v1.y, t);
         result.z = Util.lerp(v0.z, v1.z, t);
     }
-    // </editor-fold>
     
     /**
      * Linearly moves {@code v} towards the given destination, by specified
@@ -520,6 +519,7 @@ public class Vec3 implements Bufferable, Streamable
         if (d0 <= dist) copy(dest, result);
         else madd(v, dp, dist/d0, result);
     }
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
     /**
      * Returns the given row of a matrix in a new vector.
