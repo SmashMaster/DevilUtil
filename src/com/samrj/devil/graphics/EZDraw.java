@@ -151,8 +151,6 @@ public final class EZDraw
     
     /**
      * Sets the view matrix for subsequent draw commands.
-     * 
-     * @param matrix The view matrix to use.
      */
     public static MatStack getModelViewStack()
     {
