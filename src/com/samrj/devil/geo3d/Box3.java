@@ -92,6 +92,24 @@ public class Box3
         r.max.y = Util.max(b.max.y, b.max.y + dp.y);
         r.max.z = Util.max(b.max.z, b.max.z + dp.z);
     }
+    
+    /**
+     * Offset the position of the first given box by the given vector, and
+     * stores the result in the second box.
+     * 
+     * @param b The box to translate.
+     * @param dp The vector to translate by.
+     * @param r The box in which to store the result.
+     */
+    public static final void translate(Box3 b, Vec3 dp, Box3 r)
+    {
+        r.min.x = b.min.x + dp.x;
+        r.min.y = b.min.y + dp.y;
+        r.min.z = b.min.z + dp.z;
+        r.max.x = b.max.x + dp.x;
+        r.max.y = b.max.y + dp.y;
+        r.max.z = b.max.z + dp.z;
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
     /**
@@ -130,6 +148,21 @@ public class Box3
     {
         Box3 result = new Box3();
         expand(b0, b1, result);
+        return result;
+    }
+    
+    /**
+     * Translates the given box by the given vector and returns the result in
+     * a new box.
+     * 
+     * @param b The box to translate.
+     * @param v The vector to translate by.
+     * @return A new box containing the result.
+     */
+    public static final Box3 translate(Box3 b, Vec3 v)
+    {
+        Box3 result = new Box3();
+        translate(b, v, result);
         return result;
     }
     // </editor-fold>
@@ -217,6 +250,18 @@ public class Box3
     public Box3 sweep(Vec3 v)
     {
         sweep(this, v, this);
+        return this;
+    }
+    
+    /**
+     * Translates this box by the given vector.
+     * 
+     * @param v The vector to translate by.
+     * @return This box.
+     */
+    public Box3 translsate(Vec3 v)
+    {
+        translate(this, v, this);
         return this;
     }
     // </editor-fold>
