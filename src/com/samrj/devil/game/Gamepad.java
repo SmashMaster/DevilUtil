@@ -2,6 +2,8 @@ package com.samrj.devil.game;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
@@ -14,16 +16,11 @@ import org.lwjgl.opengl.GL11;
  */
 public class Gamepad
 {
-    public static Gamepad getFirstPresent(ButtonPressInterface buttonCallback)
-    {
-        for (int i=0; i<16; i++) if (present(i))
-            return new Gamepad(i, buttonCallback);
-        return null;
-    }
-    
     public static Gamepad getFirstPresent()
     {
-        return getFirstPresent(null);
+        for (int i=0; i<16; i++) if (present(i))
+            return new Gamepad(i);
+        return null;
     }
     
     public static boolean present(int id)
@@ -35,9 +32,10 @@ public class Gamepad
     public final String name;
     public final float[] axes;
     public final int[] buttons;
-    private final ButtonPressInterface buttonCallback;
     
-    public Gamepad(int id, ButtonPressInterface buttonCallback)
+    private final List<ButtonPressInterface> buttonCallbacks;
+    
+    public Gamepad(int id)
     {
         if (!present(id)) throw new IllegalStateException("Gamepad " + id + " not present.");
         
@@ -52,12 +50,12 @@ public class Gamepad
         buttons = new int[butBuf.remaining()];
         for (int i=0; i<buttons.length; i++) buttons[i] = butBuf.get();
         
-        this.buttonCallback = buttonCallback;
+        buttonCallbacks = new ArrayList<>();
     }
     
-    public Gamepad(int id)
+    public void addButtonCallback(ButtonPressInterface callback)
     {
-        this(id, null);
+        buttonCallbacks.add(callback);
     }
     
     public void update()
@@ -68,16 +66,17 @@ public class Gamepad
         ByteBuffer butBuf = GLFW.glfwGetJoystickButtons(id);
         for (int i=0; i<buttons.length; i++)
         {
-            int newVal = butBuf.get();
-            if (buttonCallback != null && newVal != buttons[i])
-                buttonCallback.onButton(i, newVal);
-            buttons[i] = newVal;
+            int button = i;
+            int action = butBuf.get();
+            if (action != buttons[i])
+                buttonCallbacks.forEach(callback -> callback.onButton(button, action));
+            buttons[i] = action;
         }
     }
     
     @FunctionalInterface
     public interface ButtonPressInterface
     {
-        void onButton(int button, int action);
+        public void onButton(int button, int action);
     }
 }
