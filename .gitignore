@@ -1,2 +1,13 @@
-bin/
-target/
+#NetBeans project directories
+nbproject/private/
+build/
+dist/
+
+#Java files
+*.class
+*.jar
+*.war
+*.ear
+
+#Error logs
+hs_err_pid*
