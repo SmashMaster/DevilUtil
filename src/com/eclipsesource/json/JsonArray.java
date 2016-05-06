@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Stream;
 
 
 /**
@@ -386,31 +387,22 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
   }
 
   /**
-   * Returns an iterator over the values of this array in document order. The returned iterator
-   * cannot be used to modify this array.
+   * Returns an iterator over the values of this array in document order.
    *
    * @return an iterator over the values of this array
    */
   @Override
   public Iterator<JsonValue> iterator() {
-    final Iterator<JsonValue> iterator = values.iterator();
-    return new Iterator<JsonValue>() {
-
-      @Override
-      public boolean hasNext() {
-        return iterator.hasNext();
-      }
-
-      @Override
-      public JsonValue next() {
-        return iterator.next();
-      }
-
-      @Override
-      public void remove() {
-        throw new UnsupportedOperationException();
-      }
-    };
+    return values.iterator();
+  }
+  
+  /**
+   * Returns a sequential stream with this JSON array as its source.
+   * 
+   * @return a sequential stream over the values in this array
+   */
+  public Stream<JsonValue> stream() {
+    return values.stream();
   }
 
   @Override
