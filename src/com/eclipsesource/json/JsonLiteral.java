@@ -25,58 +25,80 @@ import java.io.IOException;
 
 
 @SuppressWarnings("serial") // use default serial UID
-class JsonLiteral extends JsonValue {
-
-  private final String value;
-  private final boolean isNull;
-  private final boolean isTrue;
-  private final boolean isFalse;
-
-  JsonLiteral(String value) {
-    this.value = value;
-    isNull = "null".equals(value);
-    isTrue = "true".equals(value);
-    isFalse = "false".equals(value);
+final class JsonLiteral extends JsonValue {
+  
+  private enum Type {
+    NULL("null"),
+    TRUE("true"),
+    FALSE("false");
+    
+    private final String value;
+    
+    private Type(String value) {
+      this.value = value;
+    }
   }
+  
+  static JsonLiteral makeNull() {
+    return new JsonLiteral(Type.NULL);
+  }
+  
+  static JsonLiteral makeTrue() {
+    return new JsonLiteral(Type.TRUE);
+  }
+  
+  static JsonLiteral makeFalse() {
+    return new JsonLiteral(Type.FALSE);
+  }
+  
+  static JsonLiteral makeBoolean(boolean value) {
+    return value ? makeTrue() : makeFalse();
+  }
+  
+  private final Type type;
 
+  private JsonLiteral(Type type) {
+    this.type = type;
+  }
+  
   @Override
   void write(JsonWriter writer) throws IOException {
-    writer.writeLiteral(value);
+    writer.writeLiteral(type.value);
   }
 
   @Override
   public String toString() {
-    return value;
+    return type.value;
   }
 
   @Override
   public int hashCode() {
-    return value.hashCode();
+    return type.value.hashCode();
   }
 
   @Override
   public boolean isNull() {
-    return isNull;
+    return type == Type.NULL;
   }
 
   @Override
   public boolean isTrue() {
-    return isTrue;
+    return type == Type.TRUE;
   }
 
   @Override
   public boolean isFalse() {
-    return isFalse;
+    return type == Type.FALSE;
   }
 
   @Override
   public boolean isBoolean() {
-    return isTrue || isFalse;
+    return isTrue() || isFalse();
   }
 
   @Override
   public boolean asBoolean() {
-    return isNull ? super.asBoolean() : isTrue;
+    return isNull() ? super.asBoolean() : isTrue();
   }
 
   @Override
@@ -91,7 +113,7 @@ class JsonLiteral extends JsonValue {
       return false;
     }
     JsonLiteral other = (JsonLiteral)object;
-    return value.equals(other.value);
+    return type.equals(other.type);
   }
 
 }

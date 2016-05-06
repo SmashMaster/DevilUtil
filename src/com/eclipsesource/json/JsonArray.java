@@ -60,7 +60,7 @@ import java.util.stream.Stream;
  * </p>
  */
 @SuppressWarnings("serial") // use default serial UID
-public class JsonArray extends JsonValue implements Iterable<JsonValue> {
+public final class JsonArray extends JsonValue implements Iterable<JsonValue> {
 
   private final List<JsonValue> values;
 

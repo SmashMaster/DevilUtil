@@ -62,8 +62,32 @@ import java.io.Writer;
 @SuppressWarnings("serial") // use default serial UID
 public abstract class JsonValue implements Serializable {
     
+  private Location location;
+  
   JsonValue() {
     // prevent subclasses outside of this package
+  }
+  
+  void setLocation(Location location)
+  {
+    if (location == null) {
+      throw new NullPointerException("location is null");
+    }
+    if (this.location != null) {
+      throw new IllegalStateException("already has location");
+    }
+    this.location = location;
+  }
+  
+  /**
+   * Returns the location in the JSON string or file where this value was
+   * created, or null if it was not read from a file, or this value type cannot
+   * track locations.
+   * 
+   * @return the location where this value was created
+   */
+  public final Location getLocation() {
+    return location;
   }
 
   /**
@@ -140,6 +164,10 @@ public abstract class JsonValue implements Serializable {
   public boolean isNull() {
     return false;
   }
+  
+  private String exString() {
+    return toString() + " @ " + (location != null ? location : "unknown");
+  }
 
   /**
    * Returns this JSON value as {@link JsonObject}, assuming that this value represents a JSON
@@ -150,7 +178,7 @@ public abstract class JsonValue implements Serializable {
    *           if this value is not a JSON object
    */
   public JsonObject asObject() {
-    throw new UnsupportedOperationException("Not an object: " + toString());
+    throw new UnsupportedOperationException("Not an object: " + exString());
   }
 
   /**
@@ -162,7 +190,7 @@ public abstract class JsonValue implements Serializable {
    *           if this value is not a JSON array
    */
   public JsonArray asArray() {
-    throw new UnsupportedOperationException("Not an array: " + toString());
+    throw new UnsupportedOperationException("Not an array: " + exString());
   }
 
   /**
@@ -181,7 +209,7 @@ public abstract class JsonValue implements Serializable {
    *           if this JSON number can not be interpreted as <code>int</code> value
    */
   public int asInt() {
-    throw new UnsupportedOperationException("Not a number: " + toString());
+    throw new UnsupportedOperationException("Not a number: " + exString());
   }
 
   /**
@@ -200,7 +228,7 @@ public abstract class JsonValue implements Serializable {
    *           if this JSON number can not be interpreted as <code>long</code> value
    */
   public long asLong() {
-    throw new UnsupportedOperationException("Not a number: " + toString());
+    throw new UnsupportedOperationException("Not a number: " + exString());
   }
 
   /**
@@ -216,7 +244,7 @@ public abstract class JsonValue implements Serializable {
    *           if this value is not a JSON number
    */
   public float asFloat() {
-    throw new UnsupportedOperationException("Not a number: " + toString());
+    throw new UnsupportedOperationException("Not a number: " + exString());
   }
 
   /**
@@ -232,7 +260,7 @@ public abstract class JsonValue implements Serializable {
    *           if this value is not a JSON number
    */
   public double asDouble() {
-    throw new UnsupportedOperationException("Not a number: " + toString());
+    throw new UnsupportedOperationException("Not a number: " + exString());
   }
 
   /**
@@ -244,7 +272,7 @@ public abstract class JsonValue implements Serializable {
    *           if this value is not a JSON string
    */
   public String asString() {
-    throw new UnsupportedOperationException("Not a string: " + toString());
+    throw new UnsupportedOperationException("Not a string: " + exString());
   }
 
   /**
@@ -256,7 +284,7 @@ public abstract class JsonValue implements Serializable {
    *           if this value is neither <code>true</code> or <code>false</code>
    */
   public boolean asBoolean() {
-    throw new UnsupportedOperationException("Not a boolean: " + toString());
+    throw new UnsupportedOperationException("Not a boolean: " + exString());
   }
 
   /**

@@ -25,7 +25,7 @@ package com.eclipsesource.json;
 /**
  * An immutable object that represents a location in the parsed text.
  */
-public class Location {
+public final class Location {
 
   /**
    * The absolute character index, starting at 0.

@@ -23,11 +23,11 @@ package com.eclipsesource.json;
 
 import com.eclipsesource.json.JsonObject.Member;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 
 /**
@@ -68,7 +68,7 @@ import java.util.List;
  * </p>
  */
 @SuppressWarnings("serial") // use default serial UID
-public class JsonObject extends JsonValue implements Iterable<Member> {
+public final class JsonObject extends JsonValue implements Iterable<Member> {
 
   private final List<String> names;
   private final List<JsonValue> values;
@@ -517,6 +517,28 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
     int index = indexOf(name);
     return index != -1 ? values.get(index) : null;
   }
+  
+  /**
+   * Returns the value of the member with the specified name in this object, or
+   * throws a NoSuchElementException if it does not exist.
+   * 
+   * @param name the name of the member whose value is to be returned
+   * @return the value of the last member with the specified name
+   */
+  public JsonValue require(String name) {
+    if (name == null) {
+      throw new NullPointerException("name is null");
+    }
+    JsonValue value = get(name);
+    if (value == null)
+    {
+      Location location = getLocation();
+      String exStr = "No member '" + name + "' found in object @ " +
+          (location != null ? location : "unknown");
+      throw new NoSuchElementException(exStr);
+    }
+    return value;
+  }
 
   /**
    * Returns the <code>int</code> value of the member with the specified name in this object. If
@@ -749,14 +771,6 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
       return index;
     }
     return names.lastIndexOf(name);
-  }
-
-  private synchronized void readObject(ObjectInputStream inputStream)
-      throws IOException, ClassNotFoundException
-  {
-    inputStream.defaultReadObject();
-    table = new HashIndexTable();
-    updateHashIndex();
   }
 
   private void updateHashIndex() {

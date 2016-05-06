@@ -58,21 +58,6 @@ public final class Json {
   }
 
   /**
-   * Represents the JSON literal <code>null</code>.
-   */
-  public static final JsonValue NULL = new JsonLiteral("null");
-
-  /**
-   * Represents the JSON literal <code>true</code>.
-   */
-  public static final JsonValue TRUE = new JsonLiteral("true");
-
-  /**
-   * Represents the JSON literal <code>false</code>.
-   */
-  public static final JsonValue FALSE = new JsonLiteral("false");
-
-  /**
    * Returns a JsonValue instance that represents the given <code>int</code> value.
    *
    * @param value
@@ -130,7 +115,7 @@ public final class Json {
    * @return a JSON value that represents the given string
    */
   public static JsonValue value(String string) {
-    return string == null ? NULL : new JsonString(string);
+    return string == null ? JsonLiteral.makeNull() : new JsonString(string);
   }
 
   /**
@@ -141,7 +126,7 @@ public final class Json {
    * @return a JSON value that represents the given value
    */
   public static JsonValue value(boolean value) {
-    return value ? TRUE : FALSE;
+    return JsonLiteral.makeBoolean(value);
   }
 
   /**
