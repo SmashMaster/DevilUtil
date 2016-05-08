@@ -7,6 +7,8 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -18,6 +20,8 @@ public class Action implements DataBlock
     public final String name;
     public final FCurve[] fcurves;
     public final float minX, maxX;
+    
+    private final Marker[] markers;
     private final Map<String, Marker> markerMap;
     
     Action(Model model, DataInputStream in) throws IOException
@@ -33,7 +37,7 @@ public class Action implements DataBlock
         }
         minX = min; maxX = max;
         
-        Marker[] markers = IOUtil.arrayFromStream(in, Marker.class, Marker::new);
+        markers = IOUtil.arrayFromStream(in, Marker.class, Marker::new);
         markerMap = new HashMap<>(markers.length);
         for (Marker marker : markers) markerMap.put(marker.name, marker);
     }
@@ -68,6 +72,17 @@ public class Action implements DataBlock
     public Marker getMarker(String name)
     {
         return markerMap.get(name);
+    }
+    
+    public Stream<Marker> passMarkers(float start, float end)
+    {
+        if (end == start) return Stream.of();
+        else if (end > start) return Stream.of(markers)
+                .filter(m -> m.frame > start && m.frame <= end)
+                .sorted((a, b) -> Util.compare(a.frame, b.frame));
+        else return Stream.of(markers)
+                .filter(m -> m.frame >= start && m.frame < end)
+                .sorted((a, b) -> Util.compare(b.frame, a.frame));
     }
     
     @Override
