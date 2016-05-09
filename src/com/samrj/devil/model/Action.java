@@ -81,7 +81,7 @@ public class Action implements DataBlock
                 .filter(m -> m.frame > start && m.frame <= end)
                 .sorted((a, b) -> Util.compare(a.frame, b.frame));
         else return Stream.of(markers)
-                .filter(m -> m.frame >= start && m.frame < end)
+                .filter(m -> m.frame < start && m.frame >= end)
                 .sorted((a, b) -> Util.compare(b.frame, a.frame));
     }
     

@@ -200,12 +200,12 @@ public class Util
      */
     public static final float envelope(float x, float start, float fadeIn, float fadeOut, float end)
     {
-        if (x >= end || x <= start) return 0.0f;
+        if (x < start || x > end) return 0.0f;
         
         if (x <= end - fadeOut)
         {
-            if (x < start + fadeIn) return (x - start)/fadeIn;
-            else return 1.0f;
+            if (x >= start + fadeIn) return 1.0f;
+            else return (x - start)/fadeIn;
         }
         else return (end - x)/fadeOut;
     }
