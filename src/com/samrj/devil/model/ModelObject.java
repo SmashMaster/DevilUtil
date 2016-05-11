@@ -13,6 +13,11 @@ import java.io.IOException;
  */
 public class ModelObject<DATA_TYPE extends DataBlock> implements DataBlock
 {
+    public enum EmptyType
+    {
+        AXES, CUBE, SPHERE;
+    }
+    
     public final String name;
     public final String type;
     public final Transform transform;
@@ -23,6 +28,7 @@ public class ModelObject<DATA_TYPE extends DataBlock> implements DataBlock
     public final DataPointer<ModelObject<?>> parent;
     public final String parentBoneName;
     public final DataPointer<Action> action;
+    public final EmptyType emptyType;
     
     ModelObject(Model model, DataInputStream in) throws IOException
     {
@@ -53,6 +59,9 @@ public class ModelObject<DATA_TYPE extends DataBlock> implements DataBlock
         }
         
         action = new DataPointer<>(model, Type.ACTION, in.readInt());
+        
+        int emptyTypeID = in.readInt();
+        emptyType = emptyTypeID >= 0 ? EmptyType.values()[emptyTypeID] : null;
     }
     
     public void applyParentTransform(Transform result)
