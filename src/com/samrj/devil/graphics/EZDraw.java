@@ -5,7 +5,6 @@ import com.samrj.devil.geo3d.OBox3;
 import com.samrj.devil.gl.DGL;
 import com.samrj.devil.gl.Shader;
 import com.samrj.devil.gl.ShaderProgram;
-import com.samrj.devil.gl.VAO;
 import com.samrj.devil.gl.VertexStream;
 import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Mat4;
@@ -63,7 +62,6 @@ public final class EZDraw
     private static VertexStream stream;
     private static Vec3 pos;
     private static Vec4 color;
-    private static VAO vao;
     private static int drawMode;
     private static boolean initialized;
     
@@ -101,8 +99,6 @@ public final class EZDraw
         color = stream.vec4("in_color");
         color.set(1.0f);
         stream.begin();
-        
-        vao = DGL.genVAO(stream, shader);
         
         drawMode = -1;
         initialized = true;
@@ -339,18 +335,15 @@ public final class EZDraw
         ensureDrawing();
         
         ShaderProgram oldShader = DGL.currentProgram();
-        VAO oldVAO = DGL.currentVAO();
         
         stream.upload();
         DGL.useProgram(shader);
         shader.uniformMat4("u_projection_matrix", projMat);
         shader.uniformMat4("u_model_view_matrix", stack.mat);
-        DGL.bindVAO(vao);
         DGL.draw(stream, drawMode);
         drawMode = -1;
         
         DGL.useProgram(oldShader);
-        DGL.bindVAO(oldVAO);
     }
     
     /**
@@ -361,14 +354,13 @@ public final class EZDraw
         if (!initialized) return;
         initialized = false;
         
-        DGL.delete(vao, stream, shader);
+        DGL.delete(stream, shader);
         shader = null;
         projMat = null;
         stack = null;
         stream = null;
         pos = null;
         color = null;
-        vao = null;
         drawMode = -1;
     }
     

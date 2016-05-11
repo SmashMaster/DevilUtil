@@ -26,7 +26,6 @@ import com.samrj.devil.gl.DGL;
 import com.samrj.devil.gl.Image;
 import com.samrj.devil.gl.ShaderProgram;
 import com.samrj.devil.gl.Texture2D;
-import com.samrj.devil.gl.VAO;
 import com.samrj.devil.gl.VertexStream;
 import com.samrj.devil.io.LittleEndianInputStream;
 import com.samrj.devil.math.Util;
@@ -70,7 +69,6 @@ public class AtlasFont
     private final Vec2 pos, coord;
     
     private ShaderProgram shader;
-    private VAO vao;
     
     public AtlasFont(String directory, String fontFile) throws IOException
     {
@@ -176,17 +174,8 @@ public class AtlasFont
         return lineHeight;
     }
     
-    public void setShader(ShaderProgram shader)
-    {
-        this.shader = shader;
-        if (vao != null) DGL.delete(vao);
-        vao = DGL.genVAO(stream, shader);
-    }
-    
     public void draw(String text, Vec2 pos, Vec2 align)
     {
-        if (shader == null) throw new IllegalStateException("No shader chosen.");
-        
         pos = new Vec2(pos.x, pos.y - lineHeight + baseHeight);
         align = new Vec2(align.x - 1.0f, -align.y - 1.0f).mult(0.5f);
         align.x *= getWidth(text);
@@ -217,8 +206,6 @@ public class AtlasFont
         stream.upload();
         
         texture.bind();
-        DGL.useProgram(shader);
-        DGL.bindVAO(vao);
         DGL.draw(stream, GL11.GL_QUADS);
     }
     
@@ -235,7 +222,6 @@ public class AtlasFont
     public void delete()
     {
         DGL.delete(stream, texture);
-        if (vao != null) DGL.delete(vao);
     }
     
     private class Char

@@ -55,7 +55,6 @@ public final class DGL
     
     //State fields
     private static ShaderProgram boundProgram;
-    private static VAO boundVAO;
     private static FBO readFBO, drawFBO;
     
     static void checkState()
@@ -75,6 +74,7 @@ public final class DGL
         thread = Thread.currentThread();
         capabilities = GL.getCapabilities();
         objects = new IdentitySet<>();
+        VAO.init();
         DGLException.init();
         init = true;
     }
@@ -187,61 +187,6 @@ public final class DGL
     public static ShaderProgram currentProgram()
     {
         return boundProgram;
-    }
-    // </editor-fold>
-    // <editor-fold defaultstate="collapsed" desc="VAO methods">
-    /**
-     * @return A newly created vertex array object.
-     */
-    public static VAO genVAO()
-    {
-        return gen(new VAO());
-    }
-    
-    /**
-     * Creates a new vertex array and then links the given vertex data and
-     * shader program with it. The created array may be used to render the given
-     * data with the given shader.
-     * 
-     * @param data The vertex data to link.
-     * @param program The shader program to link.
-     * @return A newly created and linked vertex array object.
-     */
-    public static VAO genVAO(VertexData data, ShaderProgram program)
-    {
-        VAO oldVAO = currentVAO();
-        VAO vao = genVAO();
-        bindVAO(vao);
-        vao.link(data, program);
-        bindVAO(oldVAO);
-        return vao;
-    }
-    
-    /**
-     * Binds the given vertex array object, unbinding any previously bound VAO.
-     * 
-     * @param vao The vertex array to bind.
-     * @return The given vertex array, which is now bound.
-     */
-    public static VAO bindVAO(VAO vao)
-    {
-        if (boundVAO != vao)
-        {
-            if (boundVAO != null) boundVAO.unbind();
-            if (vao != null) vao.bind();
-
-            boundVAO = vao;
-        }
-        
-        return vao;
-    }
-    
-    /**
-     * @return The currently bound vertex array, or null if none is bound.
-     */
-    public static VAO currentVAO()
-    {
-        return boundVAO;
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Vertex data methods">
@@ -699,8 +644,8 @@ public final class DGL
     // </editor-fold>
     
     /**
-     * Draws the given vertex data using the given primitive mode. A compatible
-     * VAO and shader should both be bound.
+     * Draws the given vertex data using the given primitive mode. A shader must
+     * be bound.
      * 
      * @param <T> A type of vertex data.
      * @param data The vertex data to render.
@@ -714,8 +659,12 @@ public final class DGL
         int verts = data.numVertices();
         int inds = data.numIndices();
         
-        if (inds < 0) GL11.glDrawArrays(mode, 0, verts);
-        else GL11.glDrawElements(mode, inds, GL11.GL_UNSIGNED_INT, 0);
+        VAO.bindFor(data, boundProgram, () ->
+        {
+            if (inds < 0) GL11.glDrawArrays(mode, 0, verts);
+            else GL11.glDrawElements(mode, inds, GL11.GL_UNSIGNED_INT, 0);
+        });
+        
         return data;
     }
     
@@ -737,8 +686,12 @@ public final class DGL
         int verts = data.numVertices();
         int inds = data.numIndices();
         
-        if (inds < 0) GL31.glDrawArraysInstanced(mode, 0, verts, primcount);
-        else GL31.glDrawElementsInstanced(mode, inds, GL11.GL_UNSIGNED_INT, 0, primcount);
+        VAO.bindFor(data, boundProgram, () ->
+        {
+            if (inds < 0) GL31.glDrawArraysInstanced(mode, 0, verts, primcount);
+            else GL31.glDrawElementsInstanced(mode, inds, GL11.GL_UNSIGNED_INT, 0, primcount);
+        });
+        
         return data;
     }
     
@@ -753,6 +706,7 @@ public final class DGL
         {
             object.delete();
             DGL.objects.remove(object);
+            VAO.delete(object);
         }
     }
     
@@ -763,12 +717,10 @@ public final class DGL
     {
         checkState();
         init = false;
-        
-        objects.clear();
         objects = null;
+        VAO.terminate();
         
         boundProgram = null;
-        boundVAO = null;
         readFBO = null;
         drawFBO = null;
         
