@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 
 /**
@@ -538,6 +539,18 @@ public final class JsonObject extends JsonValue implements Iterable<Member> {
       throw new NoSuchElementException(exStr);
     }
     return value;
+  }
+  
+  /**
+   * Returns the value of the member with the specified name, wrapped in an
+   * Optional object.
+   * 
+   * @param name the name of the member whose value is to be returned
+   * @return an Optional object containing the value with the specified name
+   */
+  public Optional<JsonValue> optional(String name)
+  {
+    return Optional.ofNullable(get(name));
   }
 
   /**
