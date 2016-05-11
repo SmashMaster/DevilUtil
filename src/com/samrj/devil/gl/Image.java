@@ -123,7 +123,7 @@ public final class Image extends DGLObj
      */
     public Image sample(Sampler s)
     {
-        for (int y=0; y<height; y++)
+        for (int y=height-1; y>=0; y--)
             for (int x=0; x<width; x++)
                 for (int b=0; b<bands; b++) s.sample(x, y, b);
         return this;
@@ -149,43 +149,39 @@ public final class Image extends DGLObj
         Sampler s;
         switch (type)
         {
-            case BYTE: s = (int x, int y, int b) ->
-                {
-                    buffer.put((byte)raster.getSample(x, y, b));
-                };
-                break;
-            case CHAR: s = (int x, int y, int b) ->
-                {
-                    buffer.putChar((char)raster.getSample(x, y, b));
-                };
-                break;
-            case SHORT: s = (int x, int y, int b) ->
-                {
-                    buffer.putShort((short)raster.getSample(x, y, b));
-                };
-                break;
-            case INT: s = (int x, int y, int b) ->
-                {
-                    buffer.putInt(raster.getSample(x, y, b));
-                };
-                break;
-            case FLOAT: s = (int x, int y, int b) ->
-                {
-                    buffer.putFloat(raster.getSampleFloat(x, y, b));
-                };
-                break;
-            default: assert(false); throw new Error();
+            case BYTE: s = (x, y, b) -> buffer.put((byte)raster.getSample(x, y, b)); break;
+            case CHAR: s = (x, y, b) -> buffer.putChar((char)raster.getSample(x, y, b)); break;
+            case SHORT: s = (x, y, b) -> buffer.putShort((short)raster.getSample(x, y, b)); break;
+            case INT: s = (x, y, b) -> buffer.putInt(raster.getSample(x, y, b)); break;
+            case FLOAT: s = (x, y, b) -> buffer.putFloat(raster.getSampleFloat(x, y, b)); break;
+            default: throw new IllegalArgumentException();
         }
         
-        /**
-         * Buffers upside down because Raster origin is top-left and OpenGL
-         * origin is bottom-left.
-         */
-        for (int y=height-1; y>=0; y--)
-            for (int x=0; x<width; x++)
-                for (int b=0; b<bands; b++) s.sample(x, y, b);
+        return sample(s).rewind();
+    }
+    
+    /**
+     * Writes data into this image based on the given function.
+     * 
+     * @param shader The function to use.
+     * @return This image.
+     */
+    public Image shade(Shader shader)
+    {
+        if (deleted) throw new IllegalStateException("Image buffer deleted.");
         
-        return rewind();
+        Sampler s;
+        switch (type)
+        {
+            case BYTE: s = (x, y, b) -> buffer.put((byte)shader.shade(x, y, b)); break;
+            case CHAR: s = (x, y, b) -> buffer.putChar((char)shader.shade(x, y, b)); break;
+            case SHORT: s = (x, y, b) -> buffer.putShort((short)shader.shade(x, y, b)); break;
+            case INT: s = (x, y, b) -> buffer.putInt((int)shader.shade(x, y, b)); break;
+            case FLOAT: s = (x, y, b) -> buffer.putFloat((float)shader.shade(x, y, b)); break;
+            default: throw new IllegalArgumentException();
+        }
+        
+        return sample(s).rewind();
     }
     
     /**
@@ -229,5 +225,14 @@ public final class Image extends DGLObj
     public static interface Sampler
     {
         void sample(int x, int y, int b);
+    }
+    
+    /**
+     * Functional interface for any per-pixel-per-channel write operation.
+     */
+    @FunctionalInterface
+    public static interface Shader
+    {
+        double shade(int x, int y, int b);
     }
 }
