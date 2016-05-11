@@ -24,7 +24,6 @@ package com.samrj.devil.display;
 
 import com.samrj.devil.io.Memory;
 import com.samrj.devil.math.Vec2i;
-import java.nio.ByteBuffer;
 import org.lwjgl.glfw.GLFW;
 
 /**

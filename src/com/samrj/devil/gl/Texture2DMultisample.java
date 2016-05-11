@@ -1,8 +1,6 @@
 package com.samrj.devil.gl;
 
-import com.samrj.devil.math.Util;
 import org.lwjgl.opengl.GL32;
-import org.lwjgl.opengl.GL30;
 
 /**
  * OpenGL multisampled 2D texture class.

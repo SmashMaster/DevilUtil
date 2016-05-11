@@ -9,19 +9,26 @@ import org.lwjgl.glfw.GLFW;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Mouse
+public final class Mouse
 {
     private final long window;
-    private boolean posDirty;
     private final boolean[] states;
+    private final CursorCallback cursorCallback;
+    private final ButtonCallback buttonCallback;
+    private final ScrollCallback scrollCallback;
+    
+    private boolean posDirty = true;
     private float x, y;
     private float dx, dy;
     
-    public Mouse(long window)
+    public Mouse(long window, CursorCallback cursorCallback,
+            ButtonCallback buttonCallback, ScrollCallback scrollCallback)
     {
         this.window = window;
         states = new boolean[GLFW.GLFW_MOUSE_BUTTON_LAST + 1];
-        posDirty = true;
+        this.cursorCallback = cursorCallback;
+        this.buttonCallback = buttonCallback;
+        this.scrollCallback = scrollCallback;
     }
     
     public final void cursorPos(float x, float y)
@@ -41,11 +48,7 @@ public class Mouse
         this.x = x;
         this.y = y;
         
-        onMoved(x, y, dx, dy);
-    }
-    
-    public void onMoved(float x, float y, float dx, float dy)
-    {
+        cursorCallback.accept(x, y, dx, dy);
     }
     
     public final void button(int button, int action, int mods)
@@ -56,20 +59,12 @@ public class Mouse
             case GLFW.GLFW_RELEASE: states[button] = false; break;
         }
         
-        onButton(button, action, mods);
-    }
-    
-    public void onButton(int button, int action, int mods)
-    {
+        buttonCallback.accept(button, action, mods);
     }
     
     public final void scroll(float dx, float dy)
     {
-        onScroll(dx, dy);
-    }
-    
-    public void onScroll(float dx, float dy)
-    {
+        scrollCallback.accept(dx, dy);
     }
     
     public final float getX()
@@ -111,5 +106,23 @@ public class Mouse
     public boolean isGrabbed()
     {
         return GLFW.glfwGetInputMode(window, GLFW.GLFW_CURSOR) == GLFW.GLFW_CURSOR_DISABLED;
+    }
+    
+    @FunctionalInterface
+    public interface CursorCallback
+    {
+        public void accept(float x, float y, float dx, float dy);
+    }
+    
+    @FunctionalInterface
+    public interface ButtonCallback
+    {
+        public void accept(int button, int action, int mods);
+    }
+    
+    @FunctionalInterface
+    public interface ScrollCallback
+    {
+        public void accept(float dx, float dy);
     }
 }

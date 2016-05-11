@@ -1,7 +1,6 @@
 package com.samrj.devil.graphics;
 
 import com.samrj.devil.geo2d.AAB2;
-import com.samrj.devil.graphics.GraphicsUtil;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Vec2;

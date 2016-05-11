@@ -37,9 +37,9 @@ import com.samrj.devil.math.Vec2i;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
-import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
 import org.lwjgl.opengl.OpenGLException;
 
@@ -225,35 +225,9 @@ public abstract class Game
         // </editor-fold>
         // <editor-fold defaultstate="collapsed" desc="Initialize Input">
         {
-            mouse = new Mouse(window)
-            {
-                @Override
-                public void onMoved(float x, float y, float dx, float dy)
-                {
-                    Game.this.onMouseMoved(x, y, dx, dy);
-                }
-                
-                @Override
-                public void onButton(int button, int action, int mods)
-                {
-                    Game.this.onMouseButton(button, action, mods);
-                }
-                
-                @Override
-                public void onScroll(float dx, float dy)
-                {
-                    Game.this.onMouseScroll(dx, dy);
-                }
-            };
+            mouse = new Mouse(window, this::onMouseMoved, this::onMouseButton, this::onMouseScroll);
             mouse.setGrabbed(false);
-            keyboard = new Keyboard()
-            {
-                @Override
-                public void onKey(int key, int action, int mods)
-                {
-                    Game.this.onKey(key, action, mods);
-                }
-            };
+            keyboard = new Keyboard(this::onKey);
             eventBuffer = new EventBuffer(window, mouse, keyboard);
         }
         // </editor-fold>

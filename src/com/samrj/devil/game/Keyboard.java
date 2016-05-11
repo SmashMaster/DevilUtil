@@ -10,13 +10,15 @@ import org.lwjgl.glfw.GLFW;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Keyboard
+public final class Keyboard
 {
     private final BitSet states;
+    private final KeyCallback keyCallback;
     
-    public Keyboard()
+    public Keyboard(KeyCallback keyCallback)
     {
         states = new BitSet(GLFW.GLFW_KEY_LAST + 1);
+        this.keyCallback = keyCallback;
     }
     
     public final void key(int key, int action, int mods)
@@ -27,16 +29,18 @@ public class Keyboard
             case GLFW.GLFW_RELEASE: states.set(key, false); break;
         }
         
-        onKey(key, action, mods);
-    }
-    
-    public void onKey(int key, int action, int mods)
-    {
+        keyCallback.accept(key, action, mods);
     }
     
     public final boolean isKeyDown(int key)
     {
         if (key < 0 || key > GLFW.GLFW_KEY_LAST) throw new IllegalArgumentException();
         return states.get(key);
+    }
+    
+    @FunctionalInterface
+    public interface KeyCallback
+    {
+        public void accept(int key, int action, int mods);
     }
 }

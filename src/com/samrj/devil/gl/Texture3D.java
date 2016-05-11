@@ -1,9 +1,7 @@
 package com.samrj.devil.gl;
 
-import com.samrj.devil.math.Util;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
-import org.lwjgl.opengl.GL30;
 
 /**
  * 3D texture class.

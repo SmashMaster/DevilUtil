@@ -10,7 +10,6 @@ import org.lwjgl.opengl.GLCapabilities;
 import org.lwjgl.opengl.GLDebugMessageAMDCallback;
 import org.lwjgl.opengl.GLDebugMessageARBCallback;
 import org.lwjgl.opengl.GLDebugMessageCallback;
-import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.opengl.KHRDebug;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.system.libffi.Closure;

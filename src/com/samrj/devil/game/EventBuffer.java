@@ -18,7 +18,6 @@ import org.lwjgl.glfw.GLFWScrollCallback;
  */
 public final class EventBuffer
 {
-    private final long window;
     private final Queue<Runnable> eventQueue;
     
     private final GLFWCursorPosCallback cursorPosCallback;
@@ -32,7 +31,6 @@ public final class EventBuffer
     
     public EventBuffer(long window, Mouse mouse, Keyboard keyboard)
     {
-        this.window = window;
         eventQueue = new ConcurrentLinkedQueue<>();
             
         cursorPosCallback = GLFWCursorPosCallback.create(this::cursorPosCallback);
@@ -62,25 +60,21 @@ public final class EventBuffer
     
     private void cursorPosCallback(long window, double xpos, double ypos)
     {
-        assert(this.window == window);
-        eventQueue.offer(() -> {mouse.cursorPos((float)xpos, (float)(windowHeight - ypos));});
+        eventQueue.add(() -> mouse.cursorPos((float)xpos, (float)(windowHeight - ypos)));
     }
     
     private void mouseButtonCallback(long window, int button, int action, int mods)
     {
-        assert(this.window == window);
-        eventQueue.offer(() -> {mouse.button(button, action, mods);});
+        eventQueue.add(() -> mouse.button(button, action, mods));
     }
     
     private void mouseScrollCallback(long window, double xoffset, double yoffset)
     {
-        assert(this.window == window);
-        eventQueue.offer(() -> {mouse.scroll((float)xoffset, (float)yoffset);});
+        eventQueue.add(() -> mouse.scroll((float)xoffset, (float)yoffset));
     }
     
     private void keyCallback(long window, int key, int scancode, int action, int mods)
     {
-        assert(this.window == window);
-        eventQueue.offer(() -> {keyboard.key(key, action, mods);});
+        eventQueue.add(() -> keyboard.key(key, action, mods));
     }
 }
