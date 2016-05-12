@@ -171,4 +171,26 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         if (format == -1) throw new IllegalArgumentException("Illegal image format.");
         return subimage(image, format);
     }
+    
+    /**
+     * Downloads the OpenGL data for this texture into the given image.
+     */
+    public T download(Image image, int format)
+    {
+        int dataFormat = TexUtil.getBaseFormat(format);
+        int primType = TexUtil.getGLPrim(image.type);
+        int oldID = tempBind();
+        GL11.nglGetTexImage(target, 0, dataFormat, primType, image.address());
+        tempUnbind(oldID);
+        return getThis();
+    }
+    
+    /**
+     * Downloads the OpenGL data for this texture into the given image.
+     */
+    public T download(Image image)
+    {
+        int format = TexUtil.getFormat(image);
+        return download(image, format);
+    }
 }

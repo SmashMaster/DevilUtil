@@ -26,6 +26,7 @@ import com.samrj.devil.io.Memory;
 import com.samrj.devil.math.Util.PrimType;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 import java.nio.ByteBuffer;
 
 /**
@@ -178,6 +179,35 @@ public final class Image extends DGLObj
             case SHORT: s = (x, y, b) -> buffer.putShort((short)shader.shade(x, y, b)); break;
             case INT: s = (x, y, b) -> buffer.putInt((int)shader.shade(x, y, b)); break;
             case FLOAT: s = (x, y, b) -> buffer.putFloat((float)shader.shade(x, y, b)); break;
+            default: throw new IllegalArgumentException();
+        }
+        
+        return sample(s).rewind();
+    }
+    
+    /**
+     * Writes data from this image into the given writable raster.
+     * 
+     * @param raster A writable raster.
+     * @return This image.
+     */
+    public Image write(WritableRaster raster)
+    {
+        if (deleted) throw new IllegalStateException("Image buffer deleted.");
+        if (raster.getWidth() != width || raster.getHeight() != height)
+            throw new IllegalArgumentException("Raster size must equal image buffer size.");
+        if (raster.getNumBands() < bands)
+            throw new IllegalArgumentException("Not enough bands supplied.");
+        if (getType(raster) != type) throw new IllegalArgumentException("Illegal raster format supplied.");
+        
+        Sampler s;
+        switch (type)
+        {
+            case BYTE: s = (x, y, b) -> raster.setSample(x, y, b, buffer.get()); break;
+            case CHAR: s = (x, y, b) -> raster.setSample(x, y, b, buffer.getChar()); break;
+            case SHORT: s = (x, y, b) -> raster.setSample(x, y, b, buffer.getShort()); break;
+            case INT: s = (x, y, b) -> raster.setSample(x, y, b, buffer.getInt()); break;
+            case FLOAT: s = (x, y, b) -> raster.setSample(x, y, b, buffer.getFloat()); break;
             default: throw new IllegalArgumentException();
         }
         
