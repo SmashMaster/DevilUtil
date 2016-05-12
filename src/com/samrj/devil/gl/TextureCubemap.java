@@ -15,6 +15,11 @@ public final class TextureCubemap extends Texture<TextureCubemap>
     {
         super(GL13.GL_TEXTURE_CUBE_MAP, GL13.GL_TEXTURE_BINDING_CUBE_MAP);
         size = 1;
+        
+        int oldID = tempBind();
+        parami(GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+        parami(GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+        tempUnbind(oldID);
     }
     
     @Override
