@@ -508,13 +508,23 @@ public final class DGL
     }
     
     /**
-     * Generates a new OpenGL name for a mulisampled 2D texture.
+     * Generates a new OpenGL name for a multisampled 2D texture.
      * 
      * @return A new multisampled 2D texture object.
      */
     public static Texture2DMultisample genTex2DMultisample()
     {
         return gen(new Texture2DMultisample());
+    }
+    
+    /**
+     * Generates a new OpenGL name for a cubemap texture.
+     * 
+     * @return A new cubemap texture object.
+     */
+    public static TextureCubemap genTextureCubemap()
+    {
+        return gen(new TextureCubemap());
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="RBO methods">

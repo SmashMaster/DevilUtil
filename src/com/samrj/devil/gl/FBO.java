@@ -24,6 +24,7 @@ package com.samrj.devil.gl;
 
 import com.samrj.devil.io.Memory;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
@@ -116,6 +117,22 @@ public final class FBO extends DGLObj
         ensureBound();
         if (layer < 0 || layer >= texture.getDepth()) throw new ArrayIndexOutOfBoundsException();
         GL30.glFramebufferTextureLayer(GL30.GL_FRAMEBUFFER, attachment, texture.id, 0, layer);
+    }
+    
+    /**
+     * Attaches a face of the given cubemap texture to this frame buffer. This
+     * frame buffer must be bound.
+     * 
+     * @param texture The 2D texture array to attach.
+     * @param face The face of the given cubemap to attach.
+     * @param attachment The attachment type.
+     */
+    public void textureCubemap(TextureCubemap texture, int face, int attachment)
+    {
+        ensureBound();
+        if (face < 0 || face >= 6) throw new ArrayIndexOutOfBoundsException();
+        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, attachment,
+                GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, texture.id, 0);
     }
     
     public void texture2DMultisample(Texture2DMultisample texture, int attachment)

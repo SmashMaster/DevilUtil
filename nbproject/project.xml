@@ -14,9 +14,11 @@
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
             <word>Bezier</word>
             <word>compositing</word>
+            <word>cubemap</word>
             <word>gamepad</word>
             <word>keyframe</word>
             <word>keyframe's</word>
+            <word>multisampled</word>
             <word>shaders</word>
         </spellchecker-wordlist>
     </configuration>
