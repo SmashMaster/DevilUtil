@@ -29,6 +29,7 @@ public class Model
     public final ArrayMap<Armature> armatures;
     public final ArrayMap<Curve> curves;
     public final ArrayMap<Lamp> lamps;
+    public final ArrayMap<Material> materials;
     public final ArrayMap<Mesh> meshes;
     public final ArrayMap<ModelObject> objects;
     public final ArrayMap<Scene> scenes;
@@ -47,7 +48,7 @@ public class Model
                 throw new IOException("Illegal file format specified.");
             versionMajor = in.readShort();
             versionMinor = in.readShort();
-            if (versionMajor != 0 || versionMinor != 16)
+            if (versionMajor != 0 || versionMinor != 17)
                 throw new IOException("Unable to load DVM version " + versionMajor + "." + versionMinor);
             
             libraries = new ArrayMap<>(in, 1112276993, Library.class, Library::new);
@@ -55,9 +56,10 @@ public class Model
             armatures = new ArrayMap<>(in, 1112276995, Armature.class, Armature::new);
             curves    = new ArrayMap<>(in, 1112276996, Curve.class, Curve::new);
             lamps     = new ArrayMap<>(in, 1112276997, Lamp.class, Lamp::new);
-            meshes    = new ArrayMap<>(in, 1112276998, Mesh.class, Mesh::new);
-            objects   = new ArrayMap<>(in, 1112276999, ModelObject.class, ModelObject::new);
-            scenes    = new ArrayMap<>(in, 1112277000, Scene.class, Scene::new);
+            materials = new ArrayMap<>(in, 1112276998, Material.class, Material::new);
+            meshes    = new ArrayMap<>(in, 1112276999, Mesh.class, Mesh::new);
+            objects   = new ArrayMap<>(in, 1112277000, ModelObject.class, ModelObject::new);
+            scenes    = new ArrayMap<>(in, 1112277001, Scene.class, Scene::new);
         }
     }
     

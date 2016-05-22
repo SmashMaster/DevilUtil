@@ -29,8 +29,6 @@ public class Mesh implements DataBlock
     public final Memory indexBlock;
     public final ByteBuffer indexData;
     
-    public final int[] materials;
-    
     Mesh(Model model, DataInputStream in) throws IOException
     {
         name = IOUtil.readPaddedUTF(in);
@@ -41,53 +39,39 @@ public class Mesh implements DataBlock
         boolean hasGroups = (flags & 4) != 0;
         boolean hasMaterials = (flags & 8) != 0;
         
-        uvLayers = IOUtil.arrayFromStream(in, String.class, stream -> IOUtil.readPaddedUTF(stream));
-        colorLayers = IOUtil.arrayFromStream(in, String.class, stream -> IOUtil.readPaddedUTF(stream));
+        uvLayers = IOUtil.arrayFromStream(in, String.class, IOUtil::readPaddedUTF);
+        colorLayers = IOUtil.arrayFromStream(in, String.class, IOUtil::readPaddedUTF);
         
-        if (hasGroups) numGroups = in.readInt();
-        else
-        {
-            numGroups = 0;
-            in.skip(4);
-        }
+        numGroups = in.readInt();
         
         //The order and length of vertex data is defined by io_mesh_dvm.
-        int floatsPerVertex = 3; //Positions
-        if (hasNormals) floatsPerVertex += 3; //Normals
-        if (hasTangents) floatsPerVertex += 3; //Tangents
-        floatsPerVertex += 2*uvLayers.length; //UVs
-        floatsPerVertex += 3*colorLayers.length; //Colors
+        int intsPerVertex = 3; //Positions
+        if (hasNormals) intsPerVertex += 3; //Normals
+        intsPerVertex += uvLayers.length*2; //UVs
+        if (hasTangents) intsPerVertex += 3; //Tangents
+        intsPerVertex += colorLayers.length*3; //Colors
         if (hasGroups)
         {
-            floatsPerVertex += numGroups; //Group indices
-            floatsPerVertex += numGroups; //Group weights
+            intsPerVertex += numGroups; //Group indices
+            intsPerVertex += numGroups; //Group weights
         }
+        if (hasMaterials) intsPerVertex += 1; //Material indices
         
         numVertices = in.readInt();
-        int vertexDataLength = numVertices*floatsPerVertex;
-        vertexBlock = new Memory(vertexDataLength*4);
+        int vertexInts = numVertices*intsPerVertex;
+        vertexBlock = new Memory(vertexInts*4);
         vertexData = vertexBlock.buffer;
         
-        for (int i=0; i<vertexDataLength; i++)
-            vertexData.putFloat(in.readFloat());
+        for (int i=0; i<vertexInts; i++) vertexData.putInt(in.readInt());
         vertexData.rewind();
         
         numTriangles = in.readInt();
-        int triangleIndexDataLength = numTriangles*3;
-        indexBlock = new Memory(triangleIndexDataLength*4);
+        int triangleIndexInts = numTriangles*3;
+        indexBlock = new Memory(triangleIndexInts*4);
         indexData = indexBlock.buffer;
         
-        for (int i=0; i<triangleIndexDataLength; i++)
-            indexData.putInt(in.readInt());
+        for (int i=0; i<triangleIndexInts; i++) indexData.putInt(in.readInt());
         indexData.rewind();
-        
-        if (hasMaterials)
-        {
-            materials = new int[numTriangles];
-            for (int i=0; i<numTriangles; i++)
-                materials[i] = in.readInt();
-        }
-        else materials = null;
     }
     
     final void destroy()

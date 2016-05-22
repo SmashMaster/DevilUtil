@@ -68,7 +68,6 @@ public final class ActorDriver
     private final Ellipsoid shape = new Ellipsoid();
     private final Vec3 displacement = new Vec3();
     private Vec3 ground = new Vec3(0.0f, 1.0f, 0.0f);
-    private int groundMaterial;
     private boolean applyGravity;
     
     /**
@@ -154,14 +153,6 @@ public final class ActorDriver
     }
     
     /**
-     * @return The material index of the ground last walked on.
-     */
-    public int getGroundMaterial()
-    {
-        return groundMaterial;
-    }
-    
-    /**
      * Returns the position of this driver's feet.
      */
     public Vec3 getFeetPos()
@@ -237,8 +228,6 @@ public final class ActorDriver
                 float groundDist = (sweep.time*2.0f - 1.0f)*stepHeight;
                 pos.y -= groundDist*(1.0f - (float)Math.pow(0.5f, dt*groundFloatDecay));
                 ground = sweep.normal;
-                Object object = sweep.object;
-                if (object instanceof GeoMesh.Face) groundMaterial = ((GeoMesh.Face)object).material;
                 applyGravity = (sweep.time - 0.5f)*2.0f > groundThreshold;
             }
         }
@@ -250,12 +239,7 @@ public final class ActorDriver
             Geo3DUtil.restrain(vel, isect.normal);
 
             if (!isValidGround(isect.normal)) return;
-            if (!onGround() || isect.normal.y > ground.y)
-            {
-                ground = isect.normal;
-                Object object = isect.object;
-                if (object instanceof GeoMesh.Face) groundMaterial = ((GeoMesh.Face)object).material;
-            }
+            if (!onGround() || isect.normal.y > ground.y) ground = isect.normal;
         });
         
         boolean endOnGround = onGround();
