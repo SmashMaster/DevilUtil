@@ -119,7 +119,7 @@ public class Model
             array = (T[])Array.newInstance(type, in.readInt());
             for (int i=0; i<array.length; i++) array[i] = constructor.construct(Model.this, in);
             map = new HashMap<>(array.length);
-            for (T data : array) map.put(data.getName(), data);
+            for (T data : array) map.put(data.name, data);
         }
         
         public boolean contains(String name)

@@ -13,12 +13,11 @@ import java.nio.ByteBuffer;
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Mesh implements DataBlock
+public class Mesh extends DataBlock
 {
-    public final String name;
-    
     public final boolean hasNormals, hasTangents;
     public final int numGroups;
+    public final boolean hasMaterials;
     
     public final String[] uvLayers, colorLayers;
     public final int numVertices;
@@ -31,13 +30,13 @@ public class Mesh implements DataBlock
     
     Mesh(Model model, DataInputStream in) throws IOException
     {
-        name = IOUtil.readPaddedUTF(in);
+        super(model, in);
         
         int flags = in.readInt();
         hasNormals = (flags & 1) != 0;
         hasTangents = (flags & 2) != 0;
         boolean hasGroups = (flags & 4) != 0;
-        boolean hasMaterials = (flags & 8) != 0;
+        hasMaterials = (flags & 8) != 0;
         
         uvLayers = IOUtil.arrayFromStream(in, String.class, IOUtil::readPaddedUTF);
         colorLayers = IOUtil.arrayFromStream(in, String.class, IOUtil::readPaddedUTF);
@@ -78,11 +77,5 @@ public class Mesh implements DataBlock
     {
         vertexBlock.free();
         indexBlock.free();
-    }
-    
-    @Override
-    public String getName()
-    {
-        return name;
     }
 }

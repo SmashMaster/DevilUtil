@@ -14,9 +14,8 @@ import java.util.stream.Stream;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Action implements DataBlock
+public final class Action extends DataBlock
 {
-    public final String name;
     public final FCurve[] fcurves;
     public final float minX, maxX;
     
@@ -25,7 +24,7 @@ public class Action implements DataBlock
     
     Action(Model model, DataInputStream in) throws IOException
     {
-        name = IOUtil.readPaddedUTF(in);
+        super(model, in);
         fcurves = IOUtil.arrayFromStream(in, FCurve.class, FCurve::new);
         
         float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY;
@@ -82,12 +81,6 @@ public class Action implements DataBlock
         else return Stream.of(markers)
                 .filter(m -> m.frame < start && m.frame >= end)
                 .sorted((a, b) -> Util.compare(b.frame, a.frame));
-    }
-    
-    @Override
-    public String getName()
-    {
-        return name;
     }
     
     public class Marker

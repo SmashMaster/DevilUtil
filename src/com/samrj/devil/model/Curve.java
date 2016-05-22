@@ -10,21 +10,14 @@ import java.io.IOException;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Curve implements DataBlock
+public class Curve extends DataBlock
 {
-    public final String name;
     public final Spline[] splines;
     
     Curve(Model model, DataInputStream in) throws IOException
     {
-        name = IOUtil.readPaddedUTF(in);
+        super(model, in);
         splines = IOUtil.arrayFromStream(in, Spline.class, Spline::new);
-    }
-    
-    @Override
-    public String getName()
-    {
-        return name;
     }
     
     public static class Spline

@@ -16,15 +16,14 @@ import java.util.Map;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Armature implements DataBlock
+public class Armature extends DataBlock
 {
-    public final String name;
     public final Bone[] bones;
     private final Map<String, Bone> nameMap;
     
     Armature(Model model, DataInputStream in) throws IOException
     {
-        name = IOUtil.readPaddedUTF(in);
+        super(model, in);
         bones = IOUtil.arrayFromStream(in, Bone.class, Bone::new);
         for (Bone bone : bones) bone.populate(bones);
         
@@ -35,12 +34,6 @@ public class Armature implements DataBlock
     public Bone getBone(String name)
     {
         return nameMap.get(name);
-    }
-    
-    @Override
-    public String getName()
-    {
-        return name;
     }
     
     public class Bone

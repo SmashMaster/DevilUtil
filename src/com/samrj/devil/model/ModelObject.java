@@ -11,14 +11,13 @@ import java.io.IOException;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class ModelObject<DATA_TYPE extends DataBlock> implements DataBlock
+public class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
 {
     public enum EmptyType
     {
         AXES, CUBE, SPHERE;
     }
     
-    public final String name;
     public final String type;
     public final Transform transform;
     public final String[] vertexGroups;
@@ -32,7 +31,8 @@ public class ModelObject<DATA_TYPE extends DataBlock> implements DataBlock
     
     ModelObject(Model model, DataInputStream in) throws IOException
     {
-        name = IOUtil.readPaddedUTF(in);
+        super(model, in);
+        
         type = IOUtil.readPaddedUTF(in);
         
         int dataType = in.readInt();
@@ -78,11 +78,5 @@ public class ModelObject<DATA_TYPE extends DataBlock> implements DataBlock
     {
         result.set(transform);
         applyParentTransform(result);
-    }
-    
-    @Override
-    public String getName()
-    {
-        return name;
     }
 }

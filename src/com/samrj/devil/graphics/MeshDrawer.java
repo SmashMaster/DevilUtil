@@ -49,6 +49,7 @@ public class MeshDrawer implements VertexData
     private final Map<String, Attribute> colors;
     private final Attribute groups;
     private final Attribute weights;
+    private final Attribute material;
     
     private final Map<String, Attribute> attributes;
     private int vbo, ibo;
@@ -84,17 +85,22 @@ public class MeshDrawer implements VertexData
         AttributeType groupsType, weightType;
         switch (mesh.numGroups)
         {
+            case 0: groupsType = NONE; weightType = NONE; break;
             case 1: groupsType = INT; weightType = FLOAT; break;
             case 2: groupsType = VEC2I; weightType = VEC2; break;
             case 3: groupsType = VEC3I; weightType = VEC3; break;
             case 4: groupsType = VEC4I; weightType = VEC4; break;
-            default: groupsType = NONE; weightType = NONE; break;
+            default: throw new IllegalArgumentException("Vertex group count over four.");
         }
         
         groups = new Attribute(groupsType, offset, mesh.numGroups > 0);
         offset += verts*groupsType.size;
         
         weights = new Attribute(weightType, offset, mesh.numGroups > 0);
+        offset += verts*weightType.size;
+        
+        material = new Attribute(INT, offset, mesh.hasMaterials);
+        offset += verts*INT.size;
         
         vbo = GL15.glGenBuffers();
         int prevBinding = GL11.glGetInteger(GL15.GL_ARRAY_BUFFER_BINDING);
@@ -160,6 +166,11 @@ public class MeshDrawer implements VertexData
     public void setWeightsName(String name)
     {
         setName(weights, name);
+    }
+    
+    public void setMaterialName(String name)
+    {
+        setName(material, name);
     }
     
     public void destroy()

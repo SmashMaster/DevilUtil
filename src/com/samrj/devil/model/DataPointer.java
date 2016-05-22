@@ -8,10 +8,11 @@ package com.samrj.devil.model;
  */
 public final class DataPointer<T extends DataBlock>
 {
+    public final DataBlock.Type type;
+    
     private final Model model;
     private final String name;
     private final int index;
-    public final DataBlock.Type type;
     
     private T data;
     private boolean dirty = true;

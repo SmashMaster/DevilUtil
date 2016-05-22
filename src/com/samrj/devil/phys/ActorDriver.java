@@ -2,7 +2,6 @@ package com.samrj.devil.phys;
 
 import com.samrj.devil.geo3d.Ellipsoid;
 import com.samrj.devil.geo3d.Geo3DUtil;
-import com.samrj.devil.geo3d.GeoMesh;
 import com.samrj.devil.geo3d.Geometry;
 import com.samrj.devil.geo3d.SweepResult;
 import com.samrj.devil.math.Util;
