@@ -78,11 +78,29 @@ public final class Camera3DController
     }
     
     /**
+     * Sets the pitch of this camera.
+     */
+    public void setPitch(float pitch)
+    {
+        this.pitch = Util.clamp(pitch, -Util.PId2, Util.PId2);
+        update();
+    }
+    
+    /**
      * Returns the yaw of this camera.
      */
     public float getYaw()
     {
         return yaw;
+    }
+    
+    /**
+     * Sets the yaw of this camera.
+     */
+    public void setYaw(float yaw)
+    {
+        this.yaw = Util.reduceAngle(yaw);
+        update();
     }
     
     /**
