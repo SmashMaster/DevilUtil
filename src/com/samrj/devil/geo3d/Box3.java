@@ -1,5 +1,6 @@
 package com.samrj.devil.geo3d;
 
+import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 
@@ -40,6 +41,30 @@ public class Box3
     }
     
     /**
+     * Sets the given box to the smallest one which can contain the given
+     * oriented box.
+     * 
+     * @param b An oriented box to contain.
+     * @param r The axis-aligned box in which to store the result.
+     */
+    public static final void contain(OBox3 b, Box3 r)
+    {
+        Mat3 m = Mat3.rotation(b.rot);
+        m.mult(b.sca);
+        
+        float wx = Math.abs(m.a) + Math.abs(m.b) + Math.abs(m.c);
+        float wy = Math.abs(m.d) + Math.abs(m.e) + Math.abs(m.f);
+        float wz = Math.abs(m.g) + Math.abs(m.h) + Math.abs(m.i);
+        
+        r.min.x = b.pos.x - wx;
+        r.min.y = b.pos.y - wy;
+        r.min.z = b.pos.z - wz;
+        r.max.x = b.pos.x + wx;
+        r.max.y = b.pos.y + wy;
+        r.max.z = b.pos.z + wz;
+    }
+    
+    /**
      * Sets {@code r} to the smallest box that can contain the box {@code b} and
      * vector {@code v}.
      * 
@@ -73,6 +98,19 @@ public class Box3
         r.max.x = Util.max(b0.max.x, b1.max.x);
         r.max.y = Util.max(b0.max.y, b1.max.y);
         r.max.z = Util.max(b0.max.z, b1.max.z);
+    }
+    
+    /**
+     * Sets {@code r} to the smallest box that can contain both boxes {@code b0}
+     * and {@code b1}.
+     * 
+     * @param b0 A box to expand.
+     * @param b1 An oriented box to expand by.
+     * @param r The box in which to store the result.
+     */
+    public static final void expand(Box3 b0, OBox3 b1, Box3 r)
+    {
+        expand(b0, contain(b1), r);
     }
     
     /**
@@ -124,6 +162,20 @@ public class Box3
     }
     
     /**
+     * Returns the smallest axis-aligned box that can contain the given oriented
+     * box.
+     * 
+     * @param b An oriented box to contain.
+     * @return A new box containing the result.
+     */
+    public static final Box3 contain(OBox3 b)
+    {
+        Box3 result = new Box3();
+        contain(b, result);
+        return result;
+    }
+    
+    /**
      * Returns the smallest box that can contain the given box and vector.
      * 
      * @param b A box to expand.
@@ -145,6 +197,20 @@ public class Box3
      * @return A new box containing the result.
      */
     public static final Box3 expand(Box3 b0, Box3 b1)
+    {
+        Box3 result = new Box3();
+        expand(b0, b1, result);
+        return result;
+    }
+    
+    /**
+     * Returns the smallest box that can contain both given boxes.
+     * 
+     * @param b0 The first box to contain.
+     * @param b1 A second, oriented box to contain.
+     * @return A new box containing the result.
+     */
+    public static final Box3 expand(Box3 b0, OBox3 b1)
     {
         Box3 result = new Box3();
         expand(b0, b1, result);
@@ -205,6 +271,17 @@ public class Box3
         Vec3.copy(box.max, this.max);
     }
     
+    /**
+     * Returns whether or not this is touching the given box.
+     * 
+     * @param box A box.
+     * @return Whether or not this is touching the given box.
+     */
+    public boolean touching(Box3 box)
+    {
+        return touching(this, box);
+    }
+    
     // <editor-fold defaultstate="collapsed" desc="Instance mutator methods">
     /**
      * Sets this to the empty box and returns this.
@@ -214,6 +291,12 @@ public class Box3
     public Box3 setEmpty()
     {
         empty(this);
+        return this;
+    }
+    
+    public Box3 setContain(OBox3 b)
+    {
+        contain(b, this);
         return this;
     }
     
@@ -236,6 +319,18 @@ public class Box3
      * @return This box.
      */
     public Box3 expand(Box3 b)
+    {
+        expand(this, b, this);
+        return this;
+    }
+    
+    /**
+     * Expands this by the given oriented box.
+     * 
+     * @param b An oriented box to expand by.
+     * @return This box.
+     */
+    public Box3 expand(OBox3 b)
     {
         expand(this, b, this);
         return this;

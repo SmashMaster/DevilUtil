@@ -27,6 +27,7 @@ import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
+import com.samrj.devil.math.Vec4;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -63,19 +64,19 @@ public class Camera3D
         return array;
     }
     
-    public final Vec3 pos;
-    public final Quat dir;
+    public final Vec3 pos = new Vec3();
+    public final Quat dir = Quat.identity();
     public final float zNear, zFar;
+    public final float fov;
     public final float hSlope, vSlope;
     public final Mat4 projMat, viewMat;
     public final Vec3 right, up, forward;
     
     public Camera3D(float zNear, float zFar, float fov, float aspectRatio)
     {
-        pos = new Vec3();
-        dir = Quat.identity();
         this.zNear = zNear;
         this.zFar = zFar;
+        this.fov = fov;
         float tanFov = (float)Math.tan(fov*0.5f);
         
         if (aspectRatio <= 1.0f) //Width is greater or equal to height.
@@ -96,9 +97,35 @@ public class Camera3D
         forward = new Vec3(0.0f, 0.0f, -1.0f);
     }
     
+    /**
+     * Returns whether this camera frustum's width is smaller than its height.
+     */
+    public boolean isSkinny()
+    {
+        return hSlope < vSlope;
+    }
+    
     public void pointAt(Vec3 p)
     {
         dir.setRotation(new Vec3(0.0f, 0.0f, -1.0f), Vec3.sub(p, pos));
+    }
+    
+    /**
+     * Projects the given vector to this camera's clip space
+     */
+    public void project(Vec3 v, Vec3 result)
+    {
+        Vec4 h = new Vec4(v, 1.0f);
+        h.mult(viewMat);
+        h.mult(projMat);
+        result.set(h.x, h.y, h.z).div(h.w);
+    }
+    
+    public Vec3 project(Vec3 v)
+    {
+        Vec3 out = new Vec3();
+        project(v, out);
+        return out;
     }
     
     /**

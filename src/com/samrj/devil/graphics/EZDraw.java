@@ -1,5 +1,6 @@
 package com.samrj.devil.graphics;
 
+import com.samrj.devil.geo3d.Box3;
 import com.samrj.devil.geo3d.Ellipsoid;
 import com.samrj.devil.geo3d.OBox3;
 import com.samrj.devil.gl.DGL;
@@ -316,6 +317,17 @@ public final class EZDraw
         end();
     }
     
+    public static void box(Box3 box)
+    {
+        Vec3 pos = Vec3.add(box.min, box.max).mult(0.5f);
+        Vec3 sca = Vec3.sub(box.max, box.min).mult(0.5f);
+        stack.push();
+        stack.mat.translate(pos);
+        stack.mat.mult(sca);
+        box();
+        stack.pop();
+    }
+    
     public static void oBox(OBox3 box)
     {
         stack.push();
@@ -323,6 +335,28 @@ public final class EZDraw
         stack.mat.rotate(box.rot);
         stack.mat.mult(box.sca);
         box();
+        stack.pop();
+    }
+    
+    public static void circle(int segments)
+    {
+        float dt = 8.0f/segments;
+        
+        begin(GL11.GL_LINE_LOOP);
+        for (float t=0.0f; t<8.0f; t+=dt)
+        {
+            Vec2 dir = Util.squareDir(t).normalize();
+            vertex(dir.x, dir.y, 0.0f);
+        }
+        end();
+    }
+    
+    public static void circle(Vec2 pos, float radius, int segments)
+    {
+        stack.push();
+        stack.mat.translate(new Vec3(pos, 0.0f));
+        stack.mat.mult(new Vec3(radius, radius, 1.0f));
+        circle(segments);
         stack.pop();
     }
     
