@@ -3,32 +3,39 @@ package com.samrj.devil.util;
 import java.util.*;
 
 /**
+ * Deprecated: Use Collections.newSetFromMap(new IdentityHashMap<>()) instead.
+ * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2014 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
+@Deprecated
 public class IdentitySet<T> extends AbstractSet<T>
 {
     private static final int DEFAULT_CAPACITY = 16;
     
     private final IdentityHashMap<T, T> map;
 
+    @Deprecated
     public IdentitySet(int expectedMaxSize)
     {
         map = new IdentityHashMap<>(expectedMaxSize);
     }
     
+    @Deprecated
     public IdentitySet(Collection<? extends T> set)
     {
         this(set.size());
         addAll(set);
     }
     
+    @Deprecated
     public IdentitySet(T... array)
     {
         this(Arrays.asList(array));
     }
     
+    @Deprecated
     public IdentitySet()
     {
         this(DEFAULT_CAPACITY);
