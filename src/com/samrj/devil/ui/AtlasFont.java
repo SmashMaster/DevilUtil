@@ -179,9 +179,6 @@ public class AtlasFont
         align.y *= baseHeight-lineHeight;
         pos.add(align);
         
-        pos.x = Math.round(pos.x);
-        pos.y = Math.round(pos.y);
-        
         float x = 0.0f;
         for (int i=0; i<text.length(); i++)
         {
