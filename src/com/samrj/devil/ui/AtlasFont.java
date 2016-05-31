@@ -24,7 +24,6 @@ package com.samrj.devil.ui;
 
 import com.samrj.devil.gl.DGL;
 import com.samrj.devil.gl.Image;
-import com.samrj.devil.gl.ShaderProgram;
 import com.samrj.devil.gl.Texture2D;
 import com.samrj.devil.gl.VertexStream;
 import com.samrj.devil.io.LittleEndianInputStream;
@@ -67,8 +66,6 @@ public class AtlasFont
     
     private final VertexStream stream;
     private final Vec2 pos, coord;
-    
-    private ShaderProgram shader;
     
     public AtlasFont(String directory, String fontFile) throws IOException
     {
