@@ -7,11 +7,13 @@ import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Utility methods for data munging.
@@ -78,6 +80,16 @@ public final class IOUtil
             T e0 = list.get(i0);
             for (int i1=i0+1; i1<len; i1++)
                 func.accept(e0, list.get(i1));
+        }
+    }
+    
+    public static <T> void filter(Collection<T> collection, Predicate<T> predicate)
+    {
+        Iterator<T> it = collection.iterator();
+        while (it.hasNext())
+        {
+            T value = it.next();
+            if (!predicate.test(value)) it.remove();
         }
     }
     
