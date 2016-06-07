@@ -11,15 +11,20 @@ import java.io.IOException;
  */
 public class Lamp extends DataBlock
 {
+    public enum Type
+    {
+        POINT, SUN;
+    }
+    
     public final Vec3 color;
+    public final Type type;
     public final float radius;
-    public final int type;
     
     Lamp(Model model, DataInputStream in) throws IOException
     {
         super(model, in);
         color = new Vec3(in);
-        radius = in.readFloat();
-        type = in.readInt();
+        type = Type.values()[in.readInt()];
+        radius = type == Type.POINT ? in.readFloat() : -1.0f;
     }
 }

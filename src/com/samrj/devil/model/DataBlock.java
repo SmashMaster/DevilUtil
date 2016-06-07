@@ -29,8 +29,8 @@ public abstract class DataBlock
     public enum Type
     {
         LIBRARY(Library.class), ACTION(Action.class), ARMATURE(Armature.class),
-        CURVE(Curve.class), LAMP(Lamp.class), MESH(Mesh.class),
-        OBJECT(ModelObject.class), SCENE(Scene.class);
+        CURVE(Curve.class), LAMP(Lamp.class), MESH(Mesh.class), SCENE(Scene.class),
+        OBJECT(ModelObject.class);
             
         public final Class<? extends DataBlock> type;
         
