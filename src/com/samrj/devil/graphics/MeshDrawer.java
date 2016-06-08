@@ -24,6 +24,7 @@ package com.samrj.devil.graphics;
 
 import com.samrj.devil.gl.AttributeType;
 import static com.samrj.devil.gl.AttributeType.*;
+import com.samrj.devil.gl.Profiler;
 import com.samrj.devil.gl.VertexData;
 import com.samrj.devil.model.Mesh;
 import java.util.ArrayList;
@@ -115,6 +116,9 @@ public class MeshDrawer implements VertexData
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, prevBinding);
         
         attributes = new HashMap<>();
+        
+        Profiler.addUsedVRAM(mesh.vertexBlock.size*8L);
+        Profiler.addUsedVRAM(mesh.indexBlock.size*8L);
     }
     
     private void setName(Attribute att, String name)
@@ -175,6 +179,9 @@ public class MeshDrawer implements VertexData
     
     public void destroy()
     {
+        Profiler.removeUsedVRAM(mesh.vertexBlock.size*8L);
+        Profiler.removeUsedVRAM(mesh.indexBlock.size*8L);
+        
         GL15.glDeleteBuffers(vbo);
         GL15.glDeleteBuffers(ibo);
         

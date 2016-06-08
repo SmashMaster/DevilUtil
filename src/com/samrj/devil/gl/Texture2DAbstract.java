@@ -85,6 +85,9 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         GL11.nglTexImage2D(target, 0, format, width, height, 0,
                 baseFormat, glPrimType, MemoryUtil.NULL);
         tempUnbind(oldID);
+        
+        setVRAMUsage(TexUtil.getBits(format)*width*height);
+        
         return getThis();
     }
     
@@ -113,6 +116,9 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         GL11.nglTexImage2D(target, 0, format, width, height, 0,
                 dataFormat, primType, image.address());
         tempUnbind(oldID);
+        
+        setVRAMUsage(TexUtil.getBits(format)*width*height);
+        
         return getThis();
     }
     

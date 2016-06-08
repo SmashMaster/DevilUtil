@@ -45,6 +45,7 @@ public final class VertexBuffer extends VertexBuilder
     
     //Fields for 'complete' state
     private int vbo, ibo;
+    private long vramUsage;
     
     VertexBuffer(int maxVertices, int maxIndices)
     {
@@ -115,6 +116,7 @@ public final class VertexBuffer extends VertexBuilder
         GL15.nglBufferData(GL15.GL_ARRAY_BUFFER, numVertices*vertexSize(), vertexBlock.address, GL15.GL_STATIC_DRAW);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, prevBinding);
         
+        vramUsage += vertexBlock.size*8L;
         vertexBlock.free();
         vertexBlock = null;
         vertexBuffer = null;
@@ -130,12 +132,15 @@ public final class VertexBuffer extends VertexBuilder
                 GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, prevBinding);
             }
             
+            vramUsage += indexBlock.size*8L;
             indexBlock.free();
             indexBlock = null;
             indexBuffer = null;
         }
         
         state = State.COMPLETE;
+        
+        Profiler.addUsedVRAM(vramUsage);
     }
     
     @Override
@@ -187,5 +192,7 @@ public final class VertexBuffer extends VertexBuilder
         }
         
         state = State.DELETED;
+        
+        Profiler.removeUsedVRAM(vramUsage);
     }
 }

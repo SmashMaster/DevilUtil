@@ -325,6 +325,80 @@ public class TexUtil
     }
     
     /**
+     * @param format an OpenGL texture format.
+     * @return Approximately how many bits are stored per texel for the given format.
+     */
+    public static long getBits(int format)
+    {
+        switch (format)
+        {
+            //Forward-compatible formats.
+            case GL11.GL_DEPTH_COMPONENT: return 24;
+            case GL14.GL_DEPTH_COMPONENT16: return 16;
+            case GL14.GL_DEPTH_COMPONENT24: return 24;
+            case GL14.GL_DEPTH_COMPONENT32:
+            case GL30.GL_DEPTH_COMPONENT32F: return 32;
+            case GL11.GL_RED:
+            case GL30.GL_R8: return 8;
+            case GL30.GL_R16:
+            case GL30.GL_R16F:
+            case GL30.GL_R16I: return 16;
+            case GL30.GL_R32F:
+            case GL30.GL_R32I: return 32;
+            case GL30.GL_DEPTH_STENCIL: return 8;
+            case GL30.GL_DEPTH24_STENCIL8: return 32;
+            case GL30.GL_DEPTH32F_STENCIL8: return 40;
+                
+            case GL30.GL_RG:
+            case GL30.GL_RG8: return 16;
+            case GL30.GL_RG16:
+            case GL30.GL_RG16F:
+            case GL30.GL_RG16I: return 32;
+            case GL30.GL_RG32F:
+            case GL30.GL_RG32I: return 64;
+                
+            case GL11.GL_RGB: return 24;
+            case GL11.GL_R3_G3_B2: return 8;
+            case GL11.GL_RGB4: return 12;
+            case GL11.GL_RGB5: return 15;
+            case GL11.GL_RGB8: return 24;
+            case GL11.GL_RGB10: return 30;
+            case GL11.GL_RGB12: return 36;
+            case GL11.GL_RGB16:
+            case GL30.GL_RGB16F:
+            case GL30.GL_RGB16I: return 48;
+            case GL30.GL_RGB32F:
+            case GL30.GL_RGB32I: return 96;
+                
+            case GL11.GL_RGBA: return 32;
+            case GL11.GL_RGBA2: return 8;
+            case GL11.GL_RGBA4: return 16;
+            case GL11.GL_RGBA8: return 32;
+            case GL11.GL_RGBA12: return 48;
+            case GL11.GL_RGBA16:
+            case GL30.GL_RGBA16F:
+            case GL30.GL_RGBA16I: return 64;
+            case GL30.GL_RGBA32F:
+            case GL30.GL_RGBA32I: return 128;
+                
+            //Deprecated formats.
+            case GL11.GL_LUMINANCE:
+            case GL11.GL_LUMINANCE8: return 8;
+            case GL11.GL_LUMINANCE16: return 16;
+                
+            case GL11.GL_ALPHA:
+            case GL11.GL_ALPHA8: return 8;
+            case GL11.GL_ALPHA16: return 16;
+                
+            case GL11.GL_LUMINANCE_ALPHA:
+            case GL11.GL_LUMINANCE8_ALPHA8: return 16;
+            case GL11.GL_LUMINANCE16_ALPHA16: return 32;
+                
+            default: return -1;
+        }
+    }
+    
+    /**
      * Returns the OpenGL enumerator for the given primitive type. Bytes are
      * always assumed to be unsigned. Returns -1 for primitive types which don't
      * have a corresponding OpenGL enum.

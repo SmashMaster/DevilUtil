@@ -1,5 +1,6 @@
 package com.samrj.devil.gl;
 
+import com.samrj.devil.graphics.TexUtil;
 import org.lwjgl.opengl.GL32;
 
 /**
@@ -63,6 +64,9 @@ public class Texture2DMultisample extends Texture<Texture2DMultisample>
         int oldID = tempBind();
         GL32.glTexImage2DMultisample(target, samples, format, width, height, fixedSampleLocations);
         tempUnbind(oldID);
+        
+        setVRAMUsage(TexUtil.getBits(format)*width*height*samples);
+        
         return getThis();
     }
 }

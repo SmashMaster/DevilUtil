@@ -36,6 +36,8 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
 {
     public final int id, target, binding;
     private boolean deleted;
+    private boolean hasMipmaps;
+    private long vramUsage;
     
     Texture(int target, int binding)
     {
@@ -66,6 +68,15 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
     {
         if (oldID == id) return;
         GL11.glBindTexture(target, oldID);
+    }
+    
+    final void setVRAMUsage(long bits)
+    {
+        if (bits < 0) throw new IllegalArgumentException();
+        if (deleted) return;
+        if (hasMipmaps) bits *= 2;
+        Profiler.addUsedVRAM(bits - vramUsage);
+        vramUsage = bits;
     }
     
     /**
@@ -113,6 +124,7 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
     @Override
     final void delete()
     {
+        Profiler.removeUsedVRAM(vramUsage);
         GL11.glDeleteTextures(id);
         deleted = true;
     }
@@ -156,6 +168,8 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
     {
         int oldID = tempBind();
         GL30.glGenerateMipmap(target);
+        if (!hasMipmaps) setVRAMUsage(vramUsage*2);
+        hasMipmaps = true;
         tempUnbind(oldID);
         return getThis();
     }

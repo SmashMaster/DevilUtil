@@ -87,6 +87,9 @@ public final class VertexStream extends VertexBuilder
         }
         
         state = State.READY;
+        
+        Profiler.addUsedVRAM(vboSize*8L);
+        Profiler.addUsedVRAM(eboSize*8L);
     }
     
     /**
@@ -204,5 +207,8 @@ public final class VertexStream extends VertexBuilder
         }
         
         state = State.DELETED;
+        
+        Profiler.removeUsedVRAM(vboSize*8L);
+        Profiler.removeUsedVRAM(eboSize*8L);
     }
 }

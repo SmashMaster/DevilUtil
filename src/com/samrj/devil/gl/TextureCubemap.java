@@ -52,6 +52,9 @@ public final class TextureCubemap extends Texture<TextureCubemap>
         for (int i=0; i<6; i++) GL11.nglTexImage2D(GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                 0, format, size, size, 0, baseFormat, glPrimType, MemoryUtil.NULL);
         tempUnbind(oldID);
+        
+        setVRAMUsage(TexUtil.getBits(format)*size*size*6);
+        
         return this;
     }
     
@@ -82,6 +85,9 @@ public final class TextureCubemap extends Texture<TextureCubemap>
         for (int i=0; i<6; i++) GL11.nglTexImage2D(GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                 0, format, size, size, 0, dataFormat, glPrimType, images[i].address());
         tempUnbind(oldID);
+        
+        setVRAMUsage(TexUtil.getBits(format)*size*size*6);
+        
         return getThis();
     }
 }

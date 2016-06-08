@@ -1,5 +1,6 @@
 package com.samrj.devil.gl;
 
+import com.samrj.devil.graphics.TexUtil;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
@@ -14,6 +15,7 @@ public final class RBO extends DGLObj
 {
     public final int id;
     private boolean deleted;
+    private long vramUsage;
     
     RBO()
     {
@@ -67,11 +69,17 @@ public final class RBO extends DGLObj
         int oldID = tempBind();
         GL30.glRenderbufferStorage(GL30.GL_RENDERBUFFER, format, width, height);
         tempUnbind(oldID);
+        
+        long newVRAM = TexUtil.getBits(format)*width*height;
+        Profiler.addUsedVRAM(newVRAM - vramUsage);
+        vramUsage = newVRAM;
     }
 
     @Override
     void delete()
     {
+        Profiler.removeUsedVRAM(vramUsage);
+        vramUsage = 0;
         GL30.glDeleteRenderbuffers(id);
         deleted = true;
     }

@@ -75,6 +75,9 @@ abstract class Texture3DAbstract<T extends Texture3DAbstract<T>> extends Texture
         GL12.nglTexImage3D(target, 0, format, width, height, depth, 0,
                 baseFormat, glPrimType, MemoryUtil.NULL);
         tempUnbind(oldID);
+        
+        setVRAMUsage(TexUtil.getBits(format)*width*height*depth);
+        
         return getThis();
     }
     
