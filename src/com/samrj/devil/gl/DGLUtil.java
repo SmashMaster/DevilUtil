@@ -1,5 +1,6 @@
 package com.samrj.devil.gl;
 
+import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Vec2;
 
 /**
@@ -31,6 +32,22 @@ public class DGLUtil
         out.end();
         
         return out;
+    }
+    
+    private static final float SQR2 = (float)(Math.sqrt(2.0)/2.0);
+    
+    public static void getCubemapFaceDir(int face, Quat result)
+    {
+        switch(face)
+        {
+            case 0: result.set(SQR2,  0.0f,  SQR2, 0.0f); return;
+            case 1: result.set(SQR2,  0.0f, -SQR2, 0.0f); return;
+            case 2: result.set(SQR2,  SQR2,  0.0f, 0.0f); return;
+            case 3: result.set(SQR2, -SQR2,  0.0f, 0.0f); return;
+            case 4: result.set(1.0f,  0.0f,  0.0f, 0.0f); return;
+            case 5: result.set(0.0f,  0.0f,  1.0f, 0.0f); return;
+            default: throw new ArrayIndexOutOfBoundsException();
+        }
     }
     
     private DGLUtil()
