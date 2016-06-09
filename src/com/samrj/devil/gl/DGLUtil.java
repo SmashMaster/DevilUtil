@@ -1,7 +1,10 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.math.Quat;
+import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
+import com.samrj.devil.math.Vec3;
+import org.lwjgl.opengl.GL13;
 
 /**
  * A 'collection' of useful DevilGL utilities.
@@ -36,16 +39,23 @@ public class DGLUtil
     
     private static final float SQR2 = (float)(Math.sqrt(2.0)/2.0);
     
+    /**
+     * Returns the rotation a camera must have in order to render the given face
+     * of a cubemap properly.
+     * 
+     * @param face The face index of a cubemap.
+     * @param result A quaternion in which to store the result.
+     */
     public static void getCubemapFaceDir(int face, Quat result)
     {
         switch(face)
         {
-            case 0: result.set(SQR2,  0.0f,  SQR2, 0.0f); return;
-            case 1: result.set(SQR2,  0.0f, -SQR2, 0.0f); return;
-            case 2: result.set(SQR2,  SQR2,  0.0f, 0.0f); return;
-            case 3: result.set(SQR2, -SQR2,  0.0f, 0.0f); return;
-            case 4: result.set(1.0f,  0.0f,  0.0f, 0.0f); return;
-            case 5: result.set(0.0f,  0.0f,  1.0f, 0.0f); return;
+            case 0: result.set(0.0f,  SQR2,  0.0f, -SQR2); return; //+X
+            case 1: result.set(0.0f,  SQR2,  0.0f,  SQR2); return; //-X
+            case 2: result.set(SQR2, -SQR2,  0.0f,  0.0f); return; //+Y
+            case 3: result.set(SQR2,  SQR2,  0.0f,  0.0f); return; //-Y
+            case 4: result.set(0.0f,  1.0f,  0.0f,  0.0f); return; //+Z
+            case 5: result.set(0.0f,  0.0f,  0.0f,  1.0f); return; //-Z
             default: throw new ArrayIndexOutOfBoundsException();
         }
     }
