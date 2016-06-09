@@ -1,10 +1,7 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.math.Quat;
-import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
-import com.samrj.devil.math.Vec3;
-import org.lwjgl.opengl.GL13;
 
 /**
  * A 'collection' of useful DevilGL utilities.
