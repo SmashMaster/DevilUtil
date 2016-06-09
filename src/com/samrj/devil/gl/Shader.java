@@ -1,5 +1,6 @@
 package com.samrj.devil.gl;
 
+import com.samrj.devil.io.MemStack;
 import com.samrj.devil.io.Memory;
 import com.samrj.devil.res.Resource;
 import java.io.IOException;
@@ -54,18 +55,17 @@ public final class Shader extends DGLObj
         ByteBuffer sourceBuffer = sourceBlock.buffer;
         for (int i=0; i<sourceLength; i++) sourceBuffer.put((byte)in.read());
 
-        //Pointer to memory
-        Memory pointerBlock = Memory.wrapl(sourceBlock.address);
+        //Pointer to pointer to memory
+        long pointer = MemStack.wrapl(sourceBlock.address);
 
-        //Length to memory
-        Memory lengthBlock = Memory.wrapi(sourceLength);
+        //Pointer to length of memory
+        long length = MemStack.wrapi(sourceLength);
 
         //Load shader source
-        GL20.nglShaderSource(id, 1, pointerBlock.address, lengthBlock.address);
+        GL20.nglShaderSource(id, 1, pointer, length);
 
         //Free allocated memory
-        lengthBlock.free();
-        pointerBlock.free();
+        MemStack.pop(2);
         sourceBlock.free();
         
         //Compile

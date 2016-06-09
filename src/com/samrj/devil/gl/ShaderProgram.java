@@ -22,7 +22,7 @@
 
 package com.samrj.devil.gl;
 
-import com.samrj.devil.io.Memory;
+import com.samrj.devil.io.MemStack;
 import com.samrj.devil.math.Mat2;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
@@ -157,26 +157,27 @@ public final class ShaderProgram extends DGLObj
         int numAttributes = GL20.glGetProgrami(id, GL20.GL_ACTIVE_ATTRIBUTES);
         ArrayList<Attribute> attList = new ArrayList<>(numAttributes);
         attMap = new HashMap<>(numAttributes);
-        Memory mem = new Memory(4 + 4 + 4 + 32);
-        ByteBuffer buffer = mem.buffer;
+        
+        int attBytes = 4 + 4 + 4 + 32;
+        long address = MemStack.push(attBytes);
+        ByteBuffer buffer = MemoryUtil.memByteBuffer(address, attBytes);
         for (int index=0; index<numAttributes; index++)
         {
-            long ptr = mem.address;
-            long namePtr = ptr + 12;
-            GL20.nglGetActiveAttrib(id, index, 31, ptr, ptr + 4, ptr + 8, namePtr);
+            long nameAddress = address + 12;
+            GL20.nglGetActiveAttrib(id, index, 31, address, address + 4, address + 8, nameAddress);
 
             buffer.rewind();
             buffer.getInt();
             int size = buffer.getInt();
             int type = buffer.getInt();
-            String name = MemoryUtil.memDecodeASCII(namePtr);
-            int location = GL20.nglGetAttribLocation(id, namePtr);
+            String name = MemoryUtil.memDecodeASCII(nameAddress);
+            int location = GL20.nglGetAttribLocation(id, nameAddress);
 
             Attribute att = new Attribute(name, type, size, location);
             attList.add(att);
             attMap.put(name, att);
         }
-        mem.free();
+        MemStack.pop();
         attributes = Collections.unmodifiableList(attList);
         
         state = State.LINKED;
@@ -268,9 +269,9 @@ public final class ShaderProgram extends DGLObj
         int loc = GL20.glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        Memory mem = Memory.wrapi(array);
-        GL20.nglUniform1iv(loc, array.length, mem.address);
-        mem.free();
+        long address = MemStack.wrapi(array);
+        GL20.nglUniform1iv(loc, array.length, address);
+        MemStack.pop();
         return true;
     }
     
@@ -305,9 +306,9 @@ public final class ShaderProgram extends DGLObj
         int loc = GL20.glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        Memory mem = Memory.wrapf(array);
-        GL20.nglUniform1fv(loc, array.length, mem.address);
-        mem.free();
+        long address = MemStack.wrapf(array);
+        GL20.nglUniform1fv(loc, array.length, address);
+        MemStack.pop();
         return true;
     }
     
@@ -341,9 +342,9 @@ public final class ShaderProgram extends DGLObj
         int loc = GL20.glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        Memory mem = Memory.wrapf(array);
-        GL20.nglUniform2fv(loc, array.length/2, mem.address);
-        mem.free();
+        long address = MemStack.wrapf(array);
+        GL20.nglUniform2fv(loc, array.length/2, address);
+        MemStack.pop();
         return true;
     }
     
@@ -373,9 +374,9 @@ public final class ShaderProgram extends DGLObj
         int loc = GL20.glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        Memory mem = Memory.wrapv(array);
-        GL20.nglUniform2fv(loc, array.length, mem.address);
-        mem.free();
+        long address = MemStack.wrapv(array);
+        GL20.nglUniform2fv(loc, array.length, address);
+        MemStack.pop();
         return true;
     }
     
@@ -409,9 +410,9 @@ public final class ShaderProgram extends DGLObj
         int loc = GL20.glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        Memory mem = Memory.wrapf(array);
-        GL20.nglUniform3fv(loc, array.length/3, mem.address);
-        mem.free();
+        long address = MemStack.wrapf(array);
+        GL20.nglUniform3fv(loc, array.length/3, address);
+        MemStack.pop();
         return true;
     }
     
@@ -441,9 +442,9 @@ public final class ShaderProgram extends DGLObj
         int loc = GL20.glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        Memory mem = Memory.wrapv(array);
-        GL20.nglUniform3fv(loc, array.length, mem.address);
-        mem.free();
+        long address = MemStack.wrapv(array);
+        GL20.nglUniform3fv(loc, array.length, address);
+        MemStack.pop();
         return true;
     }
     
@@ -477,9 +478,9 @@ public final class ShaderProgram extends DGLObj
         int loc = GL20.glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        Memory mem = Memory.wrapf(array);
-        GL20.nglUniform4fv(loc, array.length/4, mem.address);
-        mem.free();
+        long address = MemStack.wrapf(array);
+        GL20.nglUniform4fv(loc, array.length/4, address);
+        MemStack.pop();
         return true;
     }
     
@@ -509,9 +510,9 @@ public final class ShaderProgram extends DGLObj
         int loc = GL20.glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        Memory mem = Memory.wrapv(array);
-        GL20.nglUniform4fv(loc, array.length, mem.address);
-        mem.free();
+        long address = MemStack.wrapv(array);
+        GL20.nglUniform4fv(loc, array.length, address);
+        MemStack.pop();
         return true;
     }
     
@@ -528,9 +529,9 @@ public final class ShaderProgram extends DGLObj
         int loc = GL20.glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        Memory mem = Memory.wrap(matrix);
-        GL20.nglUniformMatrix2fv(loc, 1, false, mem.address);
-        mem.free();
+        long address = MemStack.wrap(matrix);
+        GL20.nglUniformMatrix2fv(loc, 1, false, address);
+        MemStack.pop();
         return true;
     }
     
@@ -548,9 +549,9 @@ public final class ShaderProgram extends DGLObj
         int loc = GL20.glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        Memory mem = Memory.wrapv(array);
-        GL20.nglUniformMatrix2fv(loc, array.length, false, mem.address);
-        mem.free();
+        long address = MemStack.wrapv(array);
+        GL20.nglUniformMatrix2fv(loc, array.length, false, address);
+        MemStack.pop();
         return true;
     }
     
@@ -567,9 +568,9 @@ public final class ShaderProgram extends DGLObj
         int loc = GL20.glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        Memory mem = Memory.wrap(matrix);
-        GL20.nglUniformMatrix3fv(loc, 1, false, mem.address);
-        mem.free();
+        long address = MemStack.wrap(matrix);
+        GL20.nglUniformMatrix3fv(loc, 1, false, address);
+        MemStack.pop();
         return true;
     }
     
@@ -587,9 +588,9 @@ public final class ShaderProgram extends DGLObj
         int loc = GL20.glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        Memory mem = Memory.wrapv(array);
-        GL20.nglUniformMatrix3fv(loc, array.length, false, mem.address);
-        mem.free();
+        long address = MemStack.wrapv(array);
+        GL20.nglUniformMatrix3fv(loc, array.length, false, address);
+        MemStack.pop();
         return true;
     }
     
@@ -606,9 +607,9 @@ public final class ShaderProgram extends DGLObj
         int loc = GL20.glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        Memory mem = Memory.wrap(matrix);
-        GL20.nglUniformMatrix4fv(loc, 1, false, mem.address);
-        mem.free();
+        long address = MemStack.wrap(matrix);
+        GL20.nglUniformMatrix4fv(loc, 1, false, address);
+        MemStack.pop();
         return true;
     }
     
@@ -626,9 +627,9 @@ public final class ShaderProgram extends DGLObj
         int loc = GL20.glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        Memory mem = Memory.wrapv(array);
-        GL20.nglUniformMatrix4fv(loc, array.length, false, mem.address);
-        mem.free();
+        long address = MemStack.wrapv(array);
+        GL20.nglUniformMatrix4fv(loc, array.length, false, address);
+        MemStack.pop();
         return true;
     }
     // </editor-fold>

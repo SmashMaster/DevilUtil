@@ -1,13 +1,12 @@
 package com.samrj.devil.graphics;
 
-import com.samrj.devil.io.Memory;
+import com.samrj.devil.io.MemStack;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.Vec4;
-import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -38,47 +37,44 @@ public final class GraphicsUtil
         drawCircle(pos, radius, segments, GL11.GL_TRIANGLE_FAN);
     }
     
-    private static Memory allocMat3as4(Mat3 m)
+    private static long mat3As4(Mat3 m)
     {
-        Memory block = new Memory(16*4);
-        ByteBuffer b = block.buffer;
-        b.putFloat(m.a);  b.putFloat(m.d);  b.putFloat(m.g);  b.putFloat(0.0f);
-        b.putFloat(m.b);  b.putFloat(m.e);  b.putFloat(m.h);  b.putFloat(0.0f);
-        b.putFloat(m.c);  b.putFloat(m.f);  b.putFloat(m.i);  b.putFloat(0.0f);
-        b.putFloat(0.0f); b.putFloat(0.0f); b.putFloat(0.0f); b.putFloat(1.0f);
-        return block;
+        return MemStack.wrapf(m.a,  m.d,  m.g,  0.0f,
+                              m.b,  m.e,  m.h,  0.0f,
+                              m.c,  m.f,  m.i,  0.0f,
+                              0.0f, 0.0f, 0.0f, 1.0f);
     }
     
     public static void glLoadMatrix(Mat3 m, int mode)
     {
-        Memory b = allocMat3as4(m);
+        long address = mat3As4(m);
         GL11.glMatrixMode(mode);
-        GL11.nglLoadMatrixf(b.address);
-        b.free();
+        GL11.nglLoadMatrixf(address);
+        MemStack.pop();
     }
     
     public static void glMultMatrix(Mat3 m, int mode)
     {
-        Memory b = allocMat3as4(m);
+        long address = mat3As4(m);
         GL11.glMatrixMode(mode);
-        GL11.nglMultMatrixf(b.address);
-        b.free();
+        GL11.nglMultMatrixf(address);
+        MemStack.pop();
     }
     
     public static void glLoadMatrix(Mat4 m, int mode)
     {
-        Memory b = Memory.wrap(m);
+        long address = MemStack.wrap(m);
         GL11.glMatrixMode(mode);
-        GL11.nglLoadMatrixf(b.address);
-        b.free();
+        GL11.nglLoadMatrixf(address);
+        MemStack.pop();
     }
     
     public static void glMultMatrix(Mat4 m, int mode)
     {
-        Memory b = Memory.wrap(m);
+        long address = MemStack.wrap(m);
         GL11.glMatrixMode(mode);
-        GL11.nglMultMatrixf(b.address);
-        b.free();
+        GL11.nglMultMatrixf(address);
+        MemStack.pop();
     }
     
     public static void glVertex(Vec2 v)

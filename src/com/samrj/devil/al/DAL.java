@@ -22,7 +22,7 @@
 
 package com.samrj.devil.al;
 
-import com.samrj.devil.io.Memory;
+import com.samrj.devil.io.MemStack;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.res.Resource;
 import com.samrj.devil.util.IdentitySet;
@@ -112,9 +112,9 @@ public class DAL
     
     public static void setListenDir(Vec3 look, Vec3 up)
     {
-        Memory m = Memory.wrapv(look, up);
-        AL10.nalListenerfv(AL10.AL_ORIENTATION, m.address);
-        m.free();
+        long address = MemStack.wrapv(look, up);
+        AL10.nalListenerfv(AL10.AL_ORIENTATION, address);
+        MemStack.pop();
     }
     
     public static SoundBuffer decodeFlac(InputStream in) throws IOException
