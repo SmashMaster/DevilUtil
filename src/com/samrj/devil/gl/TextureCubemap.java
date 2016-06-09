@@ -4,6 +4,7 @@ import com.samrj.devil.graphics.TexUtil;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Util.PrimType;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.system.MemoryUtil;
 
@@ -17,6 +18,9 @@ public final class TextureCubemap extends Texture<TextureCubemap>
         size = 1;
         
         int oldID = tempBind();
+        parami(GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+        parami(GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+        parami(GL12.GL_TEXTURE_WRAP_R, GL12.GL_CLAMP_TO_EDGE);
         parami(GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         parami(GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
         tempUnbind(oldID);
