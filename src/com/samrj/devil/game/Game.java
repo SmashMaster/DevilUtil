@@ -369,7 +369,6 @@ public abstract class Game
 
                 render();
                 
-                GL11.glFinish();
                 if (sync != null) sync.sync();
                 GLFW.glfwSwapBuffers(window);
             }
