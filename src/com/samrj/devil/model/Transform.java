@@ -96,6 +96,14 @@ public class Transform
         scale.lerp(transform.scale, t);
     }
     
+    public void lerp(Transform transform, float t)
+    {
+        position.lerp(transform.position, t);
+        rotation.lerp(transform.rotation, t);
+        rotation.normalize();
+        scale.lerp(transform.scale, t);
+    }
+    
     public void mult(Transform transform)
     {
         position.mult(transform.rotation);

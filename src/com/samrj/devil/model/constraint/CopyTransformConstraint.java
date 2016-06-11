@@ -61,6 +61,6 @@ public class CopyTransformConstraint implements ArmatureSolver.Constraint
         t.rotation.setRotation(basis);
         
         target.finalTransform.set(target.poseTransform);
-        target.finalTransform.mix(t, influence);
+        target.finalTransform.lerp(t, influence);
     }
 }
