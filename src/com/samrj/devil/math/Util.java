@@ -27,7 +27,7 @@ package com.samrj.devil.math;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Util
+public final class Util
 {
     /**
      * Primitive type enum, to help make buffering code more readable.
@@ -81,7 +81,7 @@ public class Util
      * @param type A primitive type enum.
      * @return The size, in bytes, of the given primitive type.
      */
-    public static final int sizeof(PrimType type)
+    public static int sizeof(PrimType type)
     {
         return type.size;
     }
@@ -123,7 +123,7 @@ public class Util
      * @param f A finite float.
      * @return The first integer that is larger than f.
      */
-    public static final int ceil(float f)
+    public static int ceil(float f)
     {
         int i = (int)f;
         if (i < f) i++;
@@ -137,7 +137,7 @@ public class Util
      * @param f A finite float.
      * @return The first integer that is smaller than f.
      */
-    public static final int floor(float f)
+    public static int floor(float f)
     {
         int i = (int)f;
         if (i > f) i--;
@@ -153,7 +153,7 @@ public class Util
      * @param t The scalar interpolant.
      * @return The interpolated value.
      */
-    public static final float lerp(float f0, float f1, float t)
+    public static float lerp(float f0, float f1, float t)
     {
         return (f1 - f0)*t + f0;
     }
@@ -167,7 +167,7 @@ public class Util
      * @param x The value to clamp.
      * @return The clamped value.
      */
-    public static final float clamp(float x, float min, float max)
+    public static float clamp(float x, float min, float max)
     {
         if (x < min) return min;
         if (x > max) return max;
@@ -181,9 +181,39 @@ public class Util
      * @param x The value to saturate.
      * @return The saturated value.
      */
-    public static final float saturate(float x)
+    public static float saturate(float x)
     {
         return clamp(x, 0.0f, 1.0f);
+    }
+    
+    /**
+     * Returns a value between 0 and 1, linearly interpolated when'
+     * edge1 > x > edge0.
+     * 
+     * @param edge0 The value of the lower edge.
+     * @param edge1 The value of the upper edge.
+     * @param x The source value for interpolation.
+     * @return The interpolated value.
+     */
+    public static float linstep(float edge0, float edge1, float x)
+    {
+        return saturate((x - edge0)/(edge1 - edge0));
+    }
+    
+    /**
+     * Performs smooth Hermite interpolation between 0 and 1 when
+     * edge1 > x > edge0. This is useful in cases where a threshold function
+     * with a smooth transition is desired. Results undefined if edge0 >= edge1.
+     * 
+     * @param edge0 The value of the lower edge of the Hermite function.
+     * @param edge1 The value of the upper edge of the Hermite function. 
+     * @param x The source value for interpolation. 
+     * @return The interpolated value.
+     */
+    public static float smoothstep(float edge0, float edge1, float x)
+    {
+        float t = linstep(edge0, edge1, x);
+        return t*t*(3.0f - 2.0f*t);
     }
     
     /**
@@ -198,7 +228,7 @@ public class Util
      * @param end The time at which to finish fading out.
      * @return The envelope of the given value.
      */
-    public static final float envelope(float x, float start, float fadeIn, float fadeOut, float end)
+    public static float envelope(float x, float start, float fadeIn, float fadeOut, float end)
     {
         if (x < start || x > end) return 0.0f;
         
@@ -220,7 +250,7 @@ public class Util
      * @param distance
      * @return 
      */
-    public static final float move(float x, float target, float distance)
+    public static float move(float x, float target, float distance)
     {
         float diff = target - x;
         if (Math.abs(diff) <= distance) return target;
@@ -235,7 +265,7 @@ public class Util
      * @param x1 Any float.
      * @return The smaller of the two given values.
      */
-    public static final float min(float x0, float x1)
+    public static float min(float x0, float x1)
     {
         return x0 <= x1 ? x0 : x1;
     }
@@ -248,7 +278,7 @@ public class Util
      * @return -1.0, 0.0, or 1.0 as the given float is negative, zero, or
      *         positive, respectively.
      */
-    public static final float signum(float f)
+    public static float signum(float f)
     {
         if (f == 0.0f) return 0.0f;
         return f < 0.0f ? -1.0f : 1.0f;
@@ -262,7 +292,7 @@ public class Util
      * @param x1 Any float.
      * @return The greater of the two given values.
      */
-    public static final float max(float x0, float x1)
+    public static float max(float x0, float x1)
     {
         return x0 >= x1 ? x0 : x1;
     }
@@ -274,7 +304,7 @@ public class Util
      * @param values An array of floats.
      * @return The index of the largest value in the given array. 
      */
-    public static final int maxdex(float... values)
+    public static int maxdex(float... values)
     {
         int index = 0;
         float max = values[0];
@@ -301,7 +331,7 @@ public class Util
      * @param max The maximum output value, exclusive.
      * @return The value, looped to within the given range.
      */
-    public static final float loop(float x, float min, float max)
+    public static float loop(float x, float min, float max)
     {
         if (x >= min && x < max) return x;
         
@@ -316,7 +346,7 @@ public class Util
      * @param max The maximum output value, exclusive.
      * @return The looped value.
      */
-    public static final float loop(float x, float max)
+    public static float loop(float x, float max)
     {
         if (x >= 0.0f && x < max) return x;
         
@@ -332,7 +362,7 @@ public class Util
      * @param max The maximum output value, exclusive.
      * @return The value, looped to within the given range.
      */
-    public static final int loop(int x, int min, int max)
+    public static int loop(int x, int min, int max)
     {
         if (x >= min && x < max) return x;
         
@@ -347,7 +377,7 @@ public class Util
      * @param max The maximum output value, exclusive.
      * @return The looped value.
      */
-    public static final int loop(int x, int max)
+    public static int loop(int x, int max)
     {
         if (x >= 0 && x < max) return x;
         
@@ -369,7 +399,7 @@ public class Util
      * @return A negative integer, zero, or a positive integer as the first
      *         float is less than, equal to, or greater than the second.
      */
-    public static final int compare(float f0, float f1, float tolerance)
+    public static int compare(float f0, float f1, float tolerance)
     {
         float d = f0 - f1;
         if (Math.abs(d) <= tolerance) return 0;
@@ -388,7 +418,7 @@ public class Util
      * @return A negative integer, zero, or a positive integer as the first
      *         float is less than, equal to, or greater than the second.
      */
-    public static final int compare(float f0, float f1)
+    public static int compare(float f0, float f1)
     {
         return f0 == f1 ? 0 : (f0 < f1 ? -1 : 1);
     }
@@ -407,7 +437,7 @@ public class Util
      * @param n The value to ease towards.
      * @return The adjusted value.
      */
-    public static final float nonzero(float x, float m, float n)
+    public static float nonzero(float x, float m, float n)
     {
         if (x >= m) return x;
 
@@ -427,7 +457,7 @@ public class Util
      * @param exp The exponent, which affects the sharpness of the curve.
      * @return The attenuated value.
      */
-    public static final float attenuate(float x, float exp)
+    public static float attenuate(float x, float exp)
     {
         if (exp == 1.0f) return clamp(1.0f - x, 0.0f, 1.0f);
         return 1.0f - (float)Math.pow(clamp(x, 0.0f, 1.0f), exp);
@@ -468,7 +498,7 @@ public class Util
      * @param angle The angle to reduce.
      * @return The given angle, reduced to within -pi and pi.
      */
-    public static final float reduceAngle(float angle)
+    public static float reduceAngle(float angle)
     {
         return loop(angle, -PI, PI);
     }
@@ -479,7 +509,7 @@ public class Util
      * @param a An angle in degrees.
      * @return The given angle in radians.
      */
-    public static final float toRadians(float a)
+    public static float toRadians(float a)
     {
         return a*TO_RADIANS;
     }
@@ -490,7 +520,7 @@ public class Util
      * @param a An angle in radians.
      * @return The given angle in degrees.
      */
-    public static final float toDegrees(float a)
+    public static float toDegrees(float a)
     {
         return a*TO_DEGREES;
     }
@@ -503,7 +533,7 @@ public class Util
      * @param b The ending angle.
      * @return The smallest difference between the two given angles.
      */
-    public static final float angleDiff(float a, float b)
+    public static float angleDiff(float a, float b)
     {
         return reduceAngle(b - a);
     }
@@ -517,7 +547,7 @@ public class Util
      * @param distance The amount to move.
      * @return The moved angle.
      */
-    public static final float moveAngle(float angle, float target, float distance)
+    public static float moveAngle(float angle, float target, float distance)
     {
         float diff = angleDiff(angle, target);
         if (Math.abs(diff) <= distance) return target;
@@ -530,7 +560,7 @@ public class Util
      * @param a The square angle to reduce.
      * @return  The reduced square angle.
      */
-    public static final float reduceSquareAngle(float a)
+    public static float reduceSquareAngle(float a)
     {
         return Util.loop(a, 8.0f);
     }
@@ -542,7 +572,7 @@ public class Util
      * @param a A square angle.
      * @return The y coordinate corresponding with the given angle.
      */
-    public static final float squareSin(float a)
+    public static float squareSin(float a)
     {
         a = reduceSquareAngle(a);
         
@@ -560,7 +590,7 @@ public class Util
      * @param a A square angle.
      * @return The x coordinate corresponding with the given angle.
      */
-    public static final float squareCos(float a)
+    public static float squareCos(float a)
     {
         a = reduceSquareAngle(a);
         
@@ -578,7 +608,7 @@ public class Util
      * @param a A square angle.
      * @return The position corresponding with the given angle.
      */
-    public static final Vec2 squareDir(float a)
+    public static Vec2 squareDir(float a)
     {
         return new Vec2(squareCos(a), squareSin(a));
     }
@@ -590,7 +620,7 @@ public class Util
      * @param x The x coordinate of the given direction.
      * @return The square angle corresponding with the given direction.
      */
-    public static final float squareAtan2(float y, float x)
+    public static float squareAtan2(float y, float x)
     {
         float squareLength = Math.max(Math.abs(x), Math.abs(y));
         y /= squareLength; x /= squareLength;
@@ -616,7 +646,7 @@ public class Util
      * @param  f a floating point number.
      * @return {@code true} if {@code f} is subnormal; {@code false} otherwise.
      */
-    public static final boolean isSubnormal(float f)
+    public static boolean isSubnormal(float f)
     {
         return Math.abs(f) < Float.MIN_NORMAL;
     }
@@ -631,7 +661,7 @@ public class Util
      * @return {@code true} if the magnitude of {@code f} is less than
      *         {@code threshold}; {@code false} otherwise.
      */
-    public static final boolean isZero(float f, float threshold)
+    public static boolean isZero(float f, float threshold)
     {
         if (threshold <= 0f) return f == 0f;
         return Math.abs(f) < threshold;
@@ -648,7 +678,7 @@ public class Util
      * @return the epsilon of {@code f} if it is finite; Float.NaN if it is NaN;
      *         or Float.POSITIVE_INFINITY if it is infinite.
      */
-    public static final float getEpsilon(float f)
+    public static float getEpsilon(float f)
     {
         if (Float.isNaN(f)) return Float.NaN;
         if (Float.isInfinite(f)) return Float.POSITIVE_INFINITY;
@@ -673,7 +703,7 @@ public class Util
      *         {@code false} otherwise.
      * @see    com.samrj.devil.math.Util#getEpsilon(float)
      */
-    public static final boolean epsEqual(float a, float b, int tolerance)
+    public static boolean epsEqual(float a, float b, int tolerance)
     {
         if (a == b) return true;
         if (tolerance <= 0) return false;
@@ -695,7 +725,7 @@ public class Util
      * @param x Any float.
      * @return False if the value is infinite or NaN, true otherwise.
      */
-    public static final boolean isFinite(float x)
+    public static boolean isFinite(float x)
     {
         return !(Float.isInfinite(x) || Float.isNaN(x));
     }
@@ -704,7 +734,7 @@ public class Util
      * Returns a random positive float, greater than or equal to {@code 0.0} and
      * less than {@code 1.0}.
      */
-    public static final float random()
+    public static float random()
     {
         return (float)Math.random();
     }
@@ -717,7 +747,7 @@ public class Util
      * @param threshold The radius of the dead-zone around the origin.
      * @return The given vector.
      */
-    public static final Vec3 deadZone(Vec3 v, float threshold)
+    public static Vec3 deadZone(Vec3 v, float threshold)
     {
         float length = v.length();
         if (length < threshold) v.set();
@@ -726,7 +756,7 @@ public class Util
         return v;
     }
     
-    public static final Vec2 deadZone(Vec2 v, float threshold)
+    public static Vec2 deadZone(Vec2 v, float threshold)
     {
         float length = v.length();
         if (length < threshold) v.set();

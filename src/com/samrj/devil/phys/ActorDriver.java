@@ -6,6 +6,7 @@ import com.samrj.devil.geo3d.Geometry;
 import com.samrj.devil.geo3d.SweepResult;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
+import com.samrj.devil.util.FloatConsumer;
 
 /**
  * Basic class handling collision and movement of a character in a 3D space.
@@ -62,7 +63,8 @@ public final class ActorDriver
     public float jumpSpeed = 4.0f;
     
     //Settable callback functions for jumping, falling, and landing.
-    public Runnable jumpCallback, fallCallback, landCallback;
+    public Runnable jumpCallback, fallCallback;
+    public FloatConsumer landCallback;
     
     private final Ellipsoid shape = new Ellipsoid();
     private final Vec3 displacement = new Vec3();
@@ -170,6 +172,7 @@ public final class ActorDriver
     {
         boolean startOnGround = onGround();
         Vec3 avgVel = new Vec3(vel);
+        float vertVel = vel.y;
         
         boolean wantToMove = !moveDir.isZero(0.0f);
         Vec3 adjMoveDir = new Vec3(moveDir);
@@ -245,7 +248,7 @@ public final class ActorDriver
 
         //Check for landing
         if (landCallback != null && !startOnGround && endOnGround)
-            landCallback.run();
+            landCallback.accept(vel.y - vertVel);
 
         //Check for falling
         if (fallCallback != null && startOnGround && !endOnGround)
