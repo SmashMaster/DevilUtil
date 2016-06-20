@@ -55,17 +55,27 @@ public class Transform
         scale = new Vec3(transform.scale);
     }
     
-    public void apply(Mat4 matrix)
+    public Mat4 apply(Mat4 matrix)
     {
         matrix.translate(position);
         matrix.rotate(rotation);
         matrix.mult(scale);
+        return matrix;
     }
     
-    public void apply(Mat3 matrix)
+    public Mat3 apply(Mat3 matrix)
     {
         matrix.rotate(rotation);
         matrix.mult(scale);
+        return matrix;
+    }
+    
+    public Vec3 apply(Vec3 vector)
+    {
+        vector.mult(scale);
+        vector.mult(rotation);
+        vector.add(position);
+        return vector;
     }
     
     public Mat4 toMatrix()

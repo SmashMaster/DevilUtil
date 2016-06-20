@@ -79,4 +79,11 @@ public class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
         result.set(transform);
         applyParentTransform(result);
     }
+    
+    public Transform getParentedTransform()
+    {
+        Transform out = new Transform();
+        getParentedTransform(out);
+        return out;
+    }
 }
