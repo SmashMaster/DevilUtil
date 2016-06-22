@@ -166,6 +166,11 @@ public class AtlasFont
         return out;
     }
     
+    public float getBaseHeight()
+    {
+        return baseHeight;
+    }
+    
     public float getHeight()
     {
         return lineHeight;
