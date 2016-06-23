@@ -28,6 +28,11 @@ public class Mesh extends DataBlock
     public final Memory indexBlock;
     public final ByteBuffer indexData;
     
+    public final int positionOffset, normalOffset, uvOffset, tangentOffset;
+    public final int[] colorOffsets;
+    public final int groupIndexOffset, groupWeightOffset;
+    public final int materialOffset;
+    
     Mesh(Model model, DataInputStream in) throws IOException
     {
         super(model, in);
@@ -42,26 +47,50 @@ public class Mesh extends DataBlock
         colorLayers = IOUtil.arrayFromStream(in, String.class, IOUtil::readPaddedUTF);
         
         numGroups = in.readInt();
+        numVertices = in.readInt();
         
         //The order and length of vertex data is defined by io_mesh_dvm.
-        int intsPerVertex = 3; //Positions
-        if (hasNormals) intsPerVertex += 3; //Normals
-        intsPerVertex += uvLayers.length*2; //UVs
-        if (hasTangents) intsPerVertex += 3; //Tangents
-        intsPerVertex += colorLayers.length*3; //Colors
-        if (hasGroups)
-        {
-            intsPerVertex += numGroups; //Group indices
-            intsPerVertex += numGroups; //Group weights
-        }
-        if (hasMaterials) intsPerVertex += 1; //Material indices
         
-        numVertices = in.readInt();
-        int vertexInts = numVertices*intsPerVertex;
-        vertexBlock = new Memory(vertexInts*4);
+        //Positions
+        positionOffset = 0;
+        int intOffset = numVertices*3;
+        
+        //Normals
+        normalOffset = intOffset*4;
+        if (hasNormals) intOffset += numVertices*3;
+        
+        //UVs
+        uvOffset = intOffset*4;
+        intOffset += numVertices*uvLayers.length*2;
+        
+        //Tangents
+        tangentOffset = intOffset*4;
+        if (hasTangents) intOffset += numVertices*3; 
+        
+        //Colors
+        colorOffsets = new int[colorLayers.length];
+        for (int i=0; i<colorLayers.length; i++)
+        {
+            colorOffsets[i] = intOffset*4;
+            intOffset += numVertices*3;
+        }
+        
+        //Group indices
+        groupIndexOffset = intOffset*4;
+        if (hasGroups) intOffset += numVertices*numGroups;
+        
+        //Group weights
+        groupWeightOffset = intOffset*4;
+        if (hasGroups) intOffset += numVertices*numGroups;
+        
+        //Material indices
+        materialOffset = intOffset*4;
+        if (hasMaterials) intOffset += numVertices;
+        
+        vertexBlock = new Memory(intOffset*4);
         vertexData = vertexBlock.buffer;
         
-        for (int i=0; i<vertexInts; i++) vertexData.putInt(in.readInt());
+        for (int i=0; i<intOffset; i++) vertexData.putInt(in.readInt());
         vertexData.rewind();
         
         numTriangles = in.readInt();

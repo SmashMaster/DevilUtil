@@ -58,7 +58,7 @@ public class GeoMesh<VERT extends Vertex> implements Geometry
         ByteBuffer vBuffer = mesh.vertexData;
         for (int i=0; i<first.getNumAttributes(); i++)
         {
-            vBuffer.position(verts.size()*first.getAttributeOffset(i));
+            vBuffer.position(verts.size()*first.getAttributeOffset(mesh, i));
             for (VERT vert : verts) vert.read(vBuffer, i);
         }
         
@@ -248,13 +248,13 @@ public class GeoMesh<VERT extends Vertex> implements Geometry
         }
         
         /**
-         * Returns, in bytes per vertex, the offset of the given attribute.
+         * Returns the buffer offset of the given attribute in bytes.
          */
-        public int getAttributeOffset(int attributeIndex)
+        public int getAttributeOffset(Mesh mesh, int attributeIndex)
         {
             switch (attributeIndex)
             {
-                case POSITION: return 0;
+                case POSITION: return mesh.positionOffset;
                 default: throw new IllegalArgumentException();
             }
         }

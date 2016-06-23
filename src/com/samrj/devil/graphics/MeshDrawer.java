@@ -45,8 +45,8 @@ public class MeshDrawer implements VertexData
     
     private final Attribute position;
     private final Attribute normal;
-    private final Attribute tangent;
     private final Attribute uv;
+    private final Attribute tangent;
     private final Map<String, Attribute> colors;
     private final Attribute groups;
     private final Attribute weights;
@@ -60,27 +60,15 @@ public class MeshDrawer implements VertexData
         this.mesh = mesh;
         
         //Set up attributes.
-        int verts = mesh.numVertices;
-        int offset = 0;
-        
-        position = new Attribute(VEC3, offset, true);
-        offset += verts*VEC3.size;
-        
-        normal = new Attribute(VEC3, offset, mesh.hasNormals);
-        if (mesh.hasNormals) offset += verts*VEC3.size;
-        
-        tangent = new Attribute(VEC3, offset, mesh.hasTangents);
-        if (mesh.hasTangents) offset += verts*VEC3.size;
-        
-        uv = new Attribute(VEC2, offset, mesh.uvLayers.length > 0);
-        offset += verts*mesh.uvLayers.length*VEC2.size;
-        
+        position = new Attribute(VEC3, mesh.positionOffset, true);
+        normal = new Attribute(VEC3, mesh.normalOffset, mesh.hasNormals);
+        uv = new Attribute(VEC2, mesh.uvOffset, mesh.uvLayers.length > 0);
+        tangent = new Attribute(VEC3, mesh.tangentOffset, mesh.hasTangents);
         colors = new HashMap<>();
-        for (String colorLayer : mesh.colorLayers)
+        for (int i=0; i<mesh.colorLayers.length; i++)
         {
-            Attribute color =  new Attribute(VEC3, offset, true);
-            offset += verts*VEC3.size;
-            colors.put(colorLayer, color);
+            Attribute color =  new Attribute(VEC3, mesh.colorOffsets[i], true);
+            colors.put(mesh.colorLayers[i], color);
         }
         
         AttributeType groupsType, weightType;
@@ -94,14 +82,9 @@ public class MeshDrawer implements VertexData
             default: throw new IllegalArgumentException("Vertex group count over four.");
         }
         
-        groups = new Attribute(groupsType, offset, mesh.numGroups > 0);
-        offset += verts*groupsType.size;
-        
-        weights = new Attribute(weightType, offset, mesh.numGroups > 0);
-        offset += verts*weightType.size;
-        
-        material = new Attribute(INT, offset, mesh.hasMaterials);
-        offset += verts*INT.size;
+        groups = new Attribute(groupsType, mesh.groupIndexOffset, mesh.numGroups > 0);
+        weights = new Attribute(weightType, mesh.groupWeightOffset, mesh.numGroups > 0);
+        material = new Attribute(INT, mesh.materialOffset, mesh.hasMaterials);
         
         vbo = GL15.glGenBuffers();
         int prevBinding = GL11.glGetInteger(GL15.GL_ARRAY_BUFFER_BINDING);
