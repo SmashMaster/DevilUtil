@@ -35,9 +35,9 @@ public class IsectResult
     /**
      * The object that was intersected.
      */
-    public final Object object;
+    public final GeomObject object;
     
-    IsectResult(Object object)
+    IsectResult(GeomObject object)
     {
         this.object = object;
     }

@@ -196,8 +196,8 @@ public class Geo3DUtil
      */
     public static RaycastResult raycast(Vec3 p0, Vec3 dp, Face f)
     {
-        Vec3 ab = Vec3.sub(f.b, f.a);
-        Vec3 ac = Vec3.sub(f.c, f.a);
+        Vec3 ab = Vec3.sub(f.b.p, f.a.p);
+        Vec3 ac = Vec3.sub(f.c.p, f.a.p);
 
         Vec3 n = Vec3.cross(ab, ac);
         float d = dp.dot(n);
@@ -210,7 +210,7 @@ public class Geo3DUtil
         }
         
         float ood = 1.0f/d;
-        Vec3 ap = Vec3.sub(p0, f.a);
+        Vec3 ap = Vec3.sub(p0, f.a.p);
         float t = ap.dot(n)*ood;
         if (t < 0.0f || t > 1.0f) return null; //Behind or too far.
         
@@ -226,8 +226,8 @@ public class Geo3DUtil
         
         RaycastResult out = new RaycastResult(f);
         out.time = t;
-        Vec3.mult(f.a, u, out.point);
-        out.point.madd(f.b, v).madd(f.c, w);
+        Vec3.mult(f.a.p, u, out.point);
+        out.point.madd(f.b.p, v).madd(f.c.p, w);
         Vec3.normalize(n, out.normal);
         return out;
     }

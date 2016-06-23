@@ -34,9 +34,9 @@ public class SweepResult
     /**
      * The object that was intersected.
      */
-    public final Object object;
+    public final GeomObject object;
     
-    SweepResult(Object object)
+    SweepResult(GeomObject object)
     {
         this.object = object;
     }

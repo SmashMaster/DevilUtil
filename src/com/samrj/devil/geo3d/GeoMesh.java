@@ -22,6 +22,7 @@
 
 package com.samrj.devil.geo3d;
 
+import com.samrj.devil.geo3d.GeoMesh.Vertex;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.model.Mesh;
@@ -32,16 +33,70 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
  * "Polygon soup" set of unoptimized triangles.
  * 
  * @author Samuel Johnson (SmashMaster)
+ * @param <VERT> The type of vertex this mesh contains.
  */
-public class GeoMesh implements Geometry
+public class GeoMesh<VERT extends Vertex> implements Geometry
 {
-    private static void replace(List<Edge> edges, List<Face> faces, Vec3 ov, Vec3 nv)
+    public final List<VERT> verts;
+    public final List<Edge> edges;
+    public final List<Face> faces;
+    public final Box3 bounds;
+    
+    public GeoMesh(Mesh mesh, Function<Vec3, VERT> constructor, Mat4 transform)
+    {
+        ByteBuffer vBuffer = mesh.vertexData;
+        vBuffer.rewind();
+        verts = new ArrayList<>(mesh.numVertices);
+        Vec3 p = new Vec3();
+        for (int i=0; i<mesh.numVertices; i++)
+        {
+            p.read(vBuffer);
+            p.mult(transform);
+            verts.add(constructor.apply(p));
+        }
+        vBuffer.rewind();
+        
+        ByteBuffer iBuffer = mesh.indexData;
+        iBuffer.rewind();
+        faces = new ArrayList<>(mesh.numTriangles);
+        edges = new ArrayList<>(mesh.numTriangles*3);
+        for (int i=0; i<mesh.numTriangles; i++)
+        {
+            Face f = new Face(verts.get(iBuffer.getInt()),
+                              verts.get(iBuffer.getInt()),
+                              verts.get(iBuffer.getInt()));
+            
+            faces.add(f);
+            edges.add(new Edge(f.a, f.b));
+            edges.add(new Edge(f.b, f.c));
+            edges.add(new Edge(f.c, f.a));
+        }
+        iBuffer.rewind();
+        
+        optimize(0.0f);
+        
+        bounds = Box3.empty();
+        for (Vertex vert : verts) bounds.expand(vert.p);
+    }
+    
+    public GeoMesh(Mesh mesh, Function<Vec3, VERT> constructor)
+    {
+        this(mesh, constructor, Mat4.identity());
+    }
+    
+    public GeoMesh(ModelObject<Mesh> object, Function<Vec3, VERT> constructor)
+    {
+        this(object.data.get(), constructor, object.transform.toMatrix());
+    }
+    
+    private void replace(List<Edge> edges, List<Face> faces, VERT ov, VERT nv)
     {
         for (Edge edge : edges)
         {
@@ -57,63 +112,6 @@ public class GeoMesh implements Geometry
         }
     }
     
-    private static Edge findEdge(List<Edge> edges, Vec3 a, Vec3 b)
-    {
-        for (Edge edge : edges) if (edge.equals(a, b)) return edge;
-        return null;
-    }
-    
-    public final List<Vec3> verts;
-    public final List<Edge> edges;
-    public final List<Face> faces;
-    public final Box3 bounds;
-    
-    public GeoMesh(Mesh mesh, Mat4 transform)
-    {
-        ByteBuffer vBuffer = mesh.vertexData;
-        vBuffer.rewind();
-        verts = new ArrayList<>(mesh.numVertices);
-        for (int i=0; i<mesh.numVertices; i++)
-        {
-            Vec3 p = new Vec3();
-            p.read(vBuffer);
-            verts.add(p.mult(transform));
-        }
-        vBuffer.rewind();
-        
-        ByteBuffer iBuffer = mesh.indexData;
-        iBuffer.rewind();
-        faces = new ArrayList<>(mesh.numTriangles);
-        edges = new ArrayList<>(mesh.numTriangles*3);
-        for (int i=0; i<mesh.numTriangles; i++)
-        {
-            Face f = new Face(verts.get(iBuffer.getInt()),
-                              verts.get(iBuffer.getInt()),
-                              verts.get(iBuffer.getInt()));
-            
-            faces.add(f);
-            edges.add(f.ab);
-            edges.add(f.bc);
-            edges.add(f.ca);
-        }
-        iBuffer.rewind();
-        
-        optimize(0.0f);
-        
-        bounds = Box3.empty();
-        for (Vec3 vert : verts) bounds.expand(vert);
-    }
-    
-    public GeoMesh(Mesh mesh)
-    {
-        this(mesh, Mat4.identity());
-    }
-    
-    public GeoMesh(ModelObject<Mesh> object)
-    {
-        this(object.data.get(), object.transform.toMatrix());
-    }
-    
     /**
      * Optimizes this geometry, removing degenerate vertices, edges, and
      * triangles. Also calculates adjacency.
@@ -125,22 +123,22 @@ public class GeoMesh implements Geometry
         {//Weld vertices
             vertWeldDist *= vertWeldDist;
             
-            Deque<Vec3> unchecked = new LinkedList<>();
+            Deque<VERT> unchecked = new LinkedList<>();
             unchecked.addAll(verts);
             verts.clear();
 
             while (!unchecked.isEmpty())
             {
-                Vec3 vertex = unchecked.pop();
+                VERT vertex = unchecked.pop();
                 float sum = 0.0f;
 
-                Iterator<Vec3> it = unchecked.iterator();
+                Iterator<VERT> it = unchecked.iterator();
                 while (it.hasNext())
                 {
-                    Vec3 v = it.next();
-                    if (v.squareDist(vertex) <= vertWeldDist)
+                    VERT v = it.next();
+                    if (v.p.squareDist(vertex.p) <= vertWeldDist && v.canWeld(vertex))
                     {
-                        vertex.mult(sum).add(v).div(++sum);
+                        vertex.p.mult(sum).add(v.p).div(++sum);
                         it.remove();
                         replace(edges, faces, v, vertex);
                     }
@@ -166,7 +164,7 @@ public class GeoMesh implements Geometry
             while (it.hasNext())
             {
                 Face f = it.next();
-                if (Geo3DUtil.area(f.a, f.b, f.c) < 0.0001f) it.remove();
+                if (Geo3DUtil.area(f.a.p, f.b.p, f.c.p) < 0.0001f) it.remove();
             }
         }
         
@@ -188,13 +186,6 @@ public class GeoMesh implements Geometry
 
                 edges.add(edge);
             }
-        }
-        
-        for (Face face : faces) //Compute adjacency
-        {
-            face.ab = findEdge(edges, face.a, face.b);
-            face.bc = findEdge(edges, face.b, face.c);
-            face.ca = findEdge(edges, face.c, face.a);
         }
         
         /**
@@ -235,16 +226,37 @@ public class GeoMesh implements Geometry
                     .filter(e -> e != null);
     }
     
-    public class Edge
+    public static class Vertex<SELF_TYPE extends Vertex> implements GeomObject
     {
-        public Vec3 a, b;
+        public final Vec3 p = new Vec3();
         
-        private Edge(Vec3 a, Vec3 b)
+        public Vertex(Vec3 p)
+        {
+            Vec3.copy(p, this.p);
+        }
+        
+        public boolean canWeld(SELF_TYPE vert)
+        {
+            return true;
+        }
+
+        @Override
+        public final Type getType()
+        {
+            return Type.VERTEX;
+        }
+    }
+    
+    public final class Edge implements GeomObject
+    {
+        public VERT a, b;
+        
+        private Edge(VERT a, VERT b)
         {
             this.a = a; this.b = b;
         }
         
-        public boolean equals(Vec3 a, Vec3 b)
+        public boolean equals(VERT a, VERT b)
         {
             return (this.a == a && this.b == b) ||
                    (this.a == b && this.b == a);
@@ -254,19 +266,27 @@ public class GeoMesh implements Geometry
         {
             return equals(edge.a, edge.b);
         }
+        
+        @Override
+        public final Type getType()
+        {
+            return Type.EDGE;
+        }
     }
     
-    public class Face
+    public final class Face implements GeomObject
     {
-        public Vec3 a, b, c;
-        public Edge ab, bc, ca;
+        public VERT a, b, c;
         
-        private Face(Vec3 a, Vec3 b, Vec3 c)
+        private Face(VERT a, VERT b, VERT c)
         {
             this.a = a; this.b = b; this.c = c;
-            ab = new Edge(a, b);
-            bc = new Edge(b, c);
-            ca = new Edge(c, a);
+        }
+        
+        @Override
+        public final Type getType()
+        {
+            return Type.FACE;
         }
     }
 }
