@@ -184,16 +184,16 @@ public class AtlasFont
         align.y *= baseHeight-lineHeight;
         pos.add(align);
         
-        float x = 0.0f;
+        int x = 0;
         for (int i=0; i<text.length(); i++)
         {
             Char c = getChar(text.charAt(i));
             if (c == null) continue;
             
-            float lf = pos.x + x + c.xOffset;
-            float rt = lf + c.width;
-            float bt = pos.y + c.yOffset;
-            float tp = bt + c.height;
+            int lf = Math.round(pos.x) + x + c.xOffset;
+            int rt = lf + c.width;
+            int bt = Math.round(pos.y) + c.yOffset;
+            int tp = bt + c.height;
             
             coord.set(c.tx0, c.ty0); this.pos.set(lf, bt); stream.vertex();
             coord.set(c.tx0, c.ty1); this.pos.set(lf, tp); stream.vertex();
@@ -226,11 +226,11 @@ public class AtlasFont
     private class Char
     {
         private final int id;
-        private final float width, height;
+        private final int width, height;
         private final float tx0, tx1, ty0, ty1;
-        private final float xOffset;
-        private final float yOffset;
-        private final float xAdvance;
+        private final int xOffset;
+        private final int yOffset;
+        private final int xAdvance;
         
         private Char(LittleEndianInputStream in, float texWidth, float texHeight) throws IOException
         {
