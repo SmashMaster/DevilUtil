@@ -33,7 +33,7 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
@@ -49,19 +49,20 @@ public class GeoMesh<VERT extends Vertex> implements Geometry
     public final List<Face> faces;
     public final Box3 bounds;
     
-    public GeoMesh(Mesh mesh, Function<Vec3, VERT> constructor, Mat4 transform)
+    public GeoMesh(Mesh mesh, Supplier<VERT> constructor, Mat4 transform)
     {
-        ByteBuffer vBuffer = mesh.vertexData;
-        vBuffer.rewind();
         verts = new ArrayList<>(mesh.numVertices);
-        Vec3 p = new Vec3();
-        for (int i=0; i<mesh.numVertices; i++)
+        for (int i=0; i<mesh.numVertices; i++) verts.add(constructor.get());
+        
+        VERT first = verts.get(0);
+        ByteBuffer vBuffer = mesh.vertexData;
+        for (int i=0; i<first.getNumAttributes(); i++)
         {
-            p.read(vBuffer);
-            p.mult(transform);
-            verts.add(constructor.apply(p));
+            vBuffer.position(verts.size()*first.getAttributeOffset(i));
+            for (VERT vert : verts) vert.read(vBuffer, i);
         }
-        vBuffer.rewind();
+        
+        for (VERT vert : verts) vert.p.mult(transform);
         
         ByteBuffer iBuffer = mesh.indexData;
         iBuffer.rewind();
@@ -86,12 +87,12 @@ public class GeoMesh<VERT extends Vertex> implements Geometry
         for (Vertex vert : verts) bounds.expand(vert.p);
     }
     
-    public GeoMesh(Mesh mesh, Function<Vec3, VERT> constructor)
+    public GeoMesh(Mesh mesh, Supplier<VERT> constructor)
     {
         this(mesh, constructor, Mat4.identity());
     }
     
-    public GeoMesh(ModelObject<Mesh> object, Function<Vec3, VERT> constructor)
+    public GeoMesh(ModelObject<Mesh> object, Supplier<VERT> constructor)
     {
         this(object.data.get(), constructor, object.transform.toMatrix());
     }
@@ -228,16 +229,43 @@ public class GeoMesh<VERT extends Vertex> implements Geometry
     
     public static class Vertex<SELF_TYPE extends Vertex> implements GeomObject
     {
+        public final int POSITION = 0;
+        
         public final Vec3 p = new Vec3();
         
-        public Vertex(Vec3 p)
+        public Vertex()
         {
-            Vec3.copy(p, this.p);
         }
         
         public boolean canWeld(SELF_TYPE vert)
         {
             return true;
+        }
+        
+        public int getNumAttributes()
+        {
+            return 1;
+        }
+        
+        /**
+         * Returns, in bytes per vertex, the offset of the given attribute.
+         */
+        public int getAttributeOffset(int attributeIndex)
+        {
+            switch (attributeIndex)
+            {
+                case POSITION: return 0;
+                default: throw new IllegalArgumentException();
+            }
+        }
+        
+        public void read(ByteBuffer data, int attributeIndex)
+        {
+            switch (attributeIndex)
+            {
+                case POSITION: p.read(data); break;
+                default: throw new IllegalArgumentException();
+            }
         }
 
         @Override
