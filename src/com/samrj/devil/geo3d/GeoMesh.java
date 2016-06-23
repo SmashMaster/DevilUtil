@@ -58,7 +58,7 @@ public class GeoMesh<VERT extends Vertex> implements Geometry
         ByteBuffer vBuffer = mesh.vertexData;
         for (int i=0; i<first.getNumAttributes(); i++)
         {
-            vBuffer.position(verts.size()*first.getAttributeOffset(mesh, i));
+            vBuffer.position(first.getAttributeOffset(mesh, i));
             for (VERT vert : verts) vert.read(vBuffer, i);
         }
         
