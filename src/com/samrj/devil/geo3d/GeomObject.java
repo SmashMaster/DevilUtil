@@ -4,7 +4,7 @@ public interface GeomObject
 {
     public enum Type
     {
-        VERTEX, EDGE, FACE;
+        VERTEX, EDGE, FACE, VIRTUAL;
     }
     
     public Type getType();

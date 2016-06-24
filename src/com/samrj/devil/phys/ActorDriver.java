@@ -2,6 +2,7 @@ package com.samrj.devil.phys;
 
 import com.samrj.devil.geo3d.Ellipsoid;
 import com.samrj.devil.geo3d.Geo3DUtil;
+import com.samrj.devil.geo3d.GeomObject;
 import com.samrj.devil.geo3d.Geometry;
 import com.samrj.devil.geo3d.SweepResult;
 import com.samrj.devil.math.Util;
@@ -17,6 +18,8 @@ import com.samrj.devil.util.FloatConsumer;
  */
 public final class ActorDriver
 {
+    public static final GeomObject VIRTUAL_GROUND = () -> GeomObject.Type.VIRTUAL;
+    
     public final Vec3 pos, vel = new Vec3();
     
     /**
@@ -68,7 +71,8 @@ public final class ActorDriver
     
     private final Ellipsoid shape = new Ellipsoid();
     private final Vec3 displacement = new Vec3();
-    private Vec3 ground = new Vec3(0.0f, 1.0f, 0.0f);
+    private final Vec3 groundNormal = new Vec3(0.0f, 1.0f, 0.0f);
+    private GeomObject groundObject;
     private boolean applyGravity;
     
     /**
@@ -118,22 +122,22 @@ public final class ActorDriver
     }
     
     /**
-     * Makes the actor jump. May only jump when standing on something.
-     */
-    public void jump()
-    {
-        if (ground == null) return;
-        vel.y = jumpSpeed;
-        ground = null;
-        if (jumpCallback != null) jumpCallback.run();
-    }
-    
-    /**
      * @return Whether or not the player is currently on walkable ground.
      */
     public boolean onGround()
     {
-        return ground != null;
+        return groundObject != null;
+    }
+    
+    /**
+     * Makes the actor jump. May only jump when standing on something.
+     */
+    public void jump()
+    {
+        if (!onGround()) return;
+        vel.y = jumpSpeed;
+        groundObject = null;
+        if (jumpCallback != null) jumpCallback.run();
     }
     
     /**
@@ -141,16 +145,25 @@ public final class ActorDriver
      */
     public void setFlatGround()
     {
-        ground = new Vec3(0.0f, 1.0f, 0.0f);
+        groundObject = VIRTUAL_GROUND;
+        groundNormal.set(0.0f, 1.0f, 0.0f);
+    }
+    
+    /**
+     * Returns whatever geometry object this actor is currently standing on.
+     */
+    public GeomObject getGroundObject()
+    {
+        return groundObject;
     }
     
     /**
      * Returns a new vector containing the current ground normal, or null if not
      * on ground.
      */
-    public Vec3 getGround()
+    public Vec3 getGroundNormal()
     {
-        return ground != null ? new Vec3(ground) : null;
+        return onGround() ? new Vec3(groundNormal) : null;
     }
     
     /**
@@ -181,14 +194,14 @@ public final class ActorDriver
         {
             if (wantToMove)
             {
-                adjMoveDir.y = -ground.dot(adjMoveDir)*adjMoveDir.length()/ground.y;
+                adjMoveDir.y = -groundNormal.dot(adjMoveDir)*adjMoveDir.length()/groundNormal.y;
                 float moveSpeed = adjMoveDir.length();
                 if (moveSpeed > 1.0f) adjMoveDir.div(moveSpeed);
                 adjMoveDir.mult(maxSpeed);
             }
 
             //Lock to ground
-            Geo3DUtil.restrain(vel, Vec3.negate(ground));
+            Geo3DUtil.restrain(vel, Vec3.negate(groundNormal));
             applyAcc(adjMoveDir, acceleration*dt);
         }
         else //Falling
@@ -215,7 +228,7 @@ public final class ActorDriver
         //Find the ground
         if (geom != null && startOnGround)
         {
-            ground = null;
+            groundObject = null;
             float oldY = pos.y;
             pos.y += stepHeight;
             Vec3 step = new Vec3(0.0f, -2.0f*stepHeight, 0.0f);
@@ -229,7 +242,8 @@ public final class ActorDriver
             {
                 float groundDist = (sweep.time*2.0f - 1.0f)*stepHeight;
                 pos.y -= groundDist*(1.0f - (float)Math.pow(0.5f, dt*groundFloatDecay));
-                ground = sweep.normal;
+                groundObject = sweep.object;
+                groundNormal.set(sweep.normal);
                 applyGravity = (sweep.time - 0.5f)*2.0f > groundThreshold;
             }
         }
@@ -241,7 +255,11 @@ public final class ActorDriver
             Geo3DUtil.restrain(vel, isect.normal);
 
             if (!isValidGround(isect.normal)) return;
-            if (!onGround() || isect.normal.y > ground.y) ground = isect.normal;
+            if (!onGround() || isect.normal.y > groundNormal.y)
+            {
+                groundObject = isect.object;
+                groundNormal.set(isect.normal);
+            }
         });
         
         boolean endOnGround = onGround();
