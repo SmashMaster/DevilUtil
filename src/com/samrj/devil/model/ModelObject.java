@@ -1,6 +1,7 @@
 package com.samrj.devil.model;
 
 import com.samrj.devil.io.IOUtil;
+import com.samrj.devil.math.Mat4;
 import com.samrj.devil.model.constraint.IKConstraint.IKDefinition;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -8,7 +9,7 @@ import java.io.IOException;
 /**
  * @author Samuel Johnson (SmashMaster)
  * @param <DATA_TYPE> The type of datablock this ModelObject encapsulates.
- * @copyright 2015 Samuel Johnson
+ * @copyright 2016 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
@@ -26,6 +27,7 @@ public class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
     public final DataPointer<DATA_TYPE> data;
     public final DataPointer<ModelObject<?>> parent;
     public final String parentBoneName;
+    public final Mat4 parentMatrix;
     public final DataPointer<Action> action;
     public final EmptyType emptyType;
     
@@ -43,6 +45,7 @@ public class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
         int parentIndex = in.readInt();
         parent = new DataPointer<>(model, Type.OBJECT, parentIndex);
         parentBoneName = parentIndex >= 0 ? IOUtil.readPaddedUTF(in) : null;
+        parentMatrix = parentIndex >= 0 ? new Mat4(in) : null;
         
         transform = new Transform(in);
         vertexGroups = IOUtil.arrayFromStream(in, String.class, (s) -> IOUtil.readPaddedUTF(s));

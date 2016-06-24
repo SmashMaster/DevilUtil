@@ -16,7 +16,7 @@ import java.util.NoSuchElementException;
  * .DVM file loader. Corresponds with the Blender python exporter.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2016 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class Model
@@ -48,7 +48,7 @@ public class Model
                 throw new IOException("Illegal file format specified.");
             versionMajor = in.readShort();
             versionMinor = in.readShort();
-            if (versionMajor != 0 || versionMinor != 18)
+            if (versionMajor != 0 || versionMinor != 19)
                 throw new IOException("Unable to load DVM version " + versionMajor + "." + versionMinor);
             
             libraries = new ArrayMap<>(in, 1112276993, Library.class, Library::new);
