@@ -334,6 +334,7 @@ public final class Util
     public static float loop(float x, float min, float max)
     {
         if (x >= min && x < max) return x;
+        if (min >= max) return min;
         
         float t = (x - min)%(max - min);
         return t < 0.0f ? t + max : t + min;

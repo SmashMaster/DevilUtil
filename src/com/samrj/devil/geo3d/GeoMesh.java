@@ -47,9 +47,9 @@ public class GeoMesh<VERT extends Vertex> implements Geometry
     public final List<VERT> verts;
     public final List<Edge> edges;
     public final List<Face> faces;
-    public final Box3 bounds;
+    public final Box3 bounds = new Box3();
     
-    public GeoMesh(Mesh mesh, Supplier<VERT> constructor, Mat4 transform)
+    public GeoMesh(Mesh mesh, Supplier<VERT> constructor)
     {
         verts = new ArrayList<>(mesh.numVertices);
         for (int i=0; i<mesh.numVertices; i++) verts.add(constructor.get());
@@ -61,8 +61,6 @@ public class GeoMesh<VERT extends Vertex> implements Geometry
             vBuffer.position(first.getAttributeOffset(mesh, i));
             for (VERT vert : verts) vert.read(vBuffer, i);
         }
-        
-        for (VERT vert : verts) vert.p.mult(transform);
         
         ByteBuffer iBuffer = mesh.indexData;
         iBuffer.rewind();
@@ -81,20 +79,7 @@ public class GeoMesh<VERT extends Vertex> implements Geometry
         }
         iBuffer.rewind();
         
-        optimize(0.0f);
-        
-        bounds = Box3.empty();
-        for (Vertex vert : verts) bounds.expand(vert.p);
-    }
-    
-    public GeoMesh(Mesh mesh, Supplier<VERT> constructor)
-    {
-        this(mesh, constructor, Mat4.identity());
-    }
-    
-    public GeoMesh(ModelObject<Mesh> object, Supplier<VERT> constructor)
-    {
-        this(object.data.get(), constructor, object.transform.toMatrix());
+        updateBounds();
     }
     
     private void replace(List<Edge> edges, List<Face> faces, VERT ov, VERT nv)
@@ -200,6 +185,12 @@ public class GeoMesh<VERT extends Vertex> implements Geometry
          */
     }
     
+    public final void updateBounds()
+    {
+        bounds.setEmpty();
+        for (Vertex vert : verts) bounds.expand(vert.p);
+    }
+    
     @Override
     public Stream<RaycastResult> raycastUnsorted(Vec3 p0, Vec3 dp)
     {
@@ -229,7 +220,7 @@ public class GeoMesh<VERT extends Vertex> implements Geometry
     
     public static class Vertex<SELF_TYPE extends Vertex> implements GeomObject
     {
-        public final int POSITION = 0;
+        public static final int POSITION = 0;
         
         public final Vec3 p = new Vec3();
         
