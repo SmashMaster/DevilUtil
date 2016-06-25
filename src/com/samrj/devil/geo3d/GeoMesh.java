@@ -23,10 +23,8 @@
 package com.samrj.devil.geo3d;
 
 import com.samrj.devil.geo3d.GeoMesh.Vertex;
-import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.model.Mesh;
-import com.samrj.devil.model.ModelObject;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Deque;

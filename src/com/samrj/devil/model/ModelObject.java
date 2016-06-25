@@ -5,6 +5,9 @@ import com.samrj.devil.math.Mat4;
 import com.samrj.devil.model.constraint.IKConstraint.IKDefinition;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -19,7 +22,7 @@ public class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
         AXES, CUBE, SPHERE;
     }
     
-    public final String type;
+    public final Map<String, String> arguments;
     public final Transform transform;
     public final String[] vertexGroups;
     public final Pose pose;
@@ -35,7 +38,10 @@ public class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
     {
         super(model, in);
         
-        type = IOUtil.readPaddedUTF(in);
+        int numArguments = in.readInt();
+        Map<String, String> argMap = new HashMap<>();
+        for (int i=0; i<numArguments; i++) argMap.put(IOUtil.readPaddedUTF(in), IOUtil.readPaddedUTF(in));
+        arguments = Collections.unmodifiableMap(argMap);
         
         int dataType = in.readInt();
         int dataLibIndex = dataType >= 0 ? in.readInt() : -1;
