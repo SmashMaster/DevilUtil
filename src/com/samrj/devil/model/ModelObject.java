@@ -7,6 +7,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,7 +16,7 @@ import java.util.Map;
  * @copyright 2016 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
+public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
 {
     public enum EmptyType
     {
@@ -24,9 +25,9 @@ public class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
     
     public final Map<String, String> arguments;
     public final Transform transform;
-    public final String[] vertexGroups;
+    public final List<String> vertexGroups;
     public final Pose pose;
-    public final IKDefinition[] ikConstraints;
+    public final List<IKDefinition> ikConstraints;
     public final DataPointer<DATA_TYPE> data;
     public final DataPointer<ModelObject<?>> parent;
     public final String parentBoneName;
@@ -54,17 +55,17 @@ public class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
         parentBoneName = (parentIndex >= 0 && in.readInt() != 0) ? IOUtil.readPaddedUTF(in) : null;
         
         transform = new Transform(in);
-        vertexGroups = IOUtil.arrayFromStream(in, String.class, (s) -> IOUtil.readPaddedUTF(s));
+        vertexGroups = IOUtil.listFromStream(in, IOUtil::readPaddedUTF);
         boolean hasPose = in.readInt() != 0;
         if (hasPose)
         {
             pose = new Pose(in);
-            ikConstraints = IOUtil.arrayFromStream(in, IKDefinition.class, IKDefinition::new);
+            ikConstraints = IOUtil.listFromStream(in, IKDefinition::new);
         }
         else
         {
             pose = null;
-            ikConstraints = new IKDefinition[0];
+            ikConstraints = Collections.emptyList();
         }
         
         action = new DataPointer<>(model, Type.ACTION, in.readInt());

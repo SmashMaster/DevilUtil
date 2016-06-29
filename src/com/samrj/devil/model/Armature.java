@@ -16,7 +16,7 @@ import java.util.Map;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Armature extends DataBlock
+public final class Armature extends DataBlock
 {
     public final Bone[] bones;
     private final Map<String, Bone> nameMap;

@@ -6,38 +6,41 @@ import java.io.IOException;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2016 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public abstract class DataBlock
 {
-    public static Type getType(int id)
+    public enum Type
     {
-        switch (id)
+        LIBRARY (1112276993, Library::new),
+        ACTION  (1112276994, Action::new),
+        ARMATURE(1112276995, Armature::new),
+        CURVE   (1112276996, Curve::new),
+        LAMP    (1112276997, Lamp::new),
+        MATERIAL(1112276998, Material::new),
+        MESH    (1112276999, Mesh::new),
+        OBJECT  (1112277000, ModelObject::new),
+        SCENE   (1112277001, Scene::new);
+        
+        private final int magic;
+        private final ModelConstructor<? extends DataBlock> constructor;
+        
+        private Type(int magic, ModelConstructor<? extends DataBlock> constructor)
         {
-            case 0: return Type.LIBRARY;
-            case 1: return Type.ACTION;
-            case 2: return Type.ARMATURE;
-            case 3: return Type.CURVE;
-            case 4: return Type.LAMP;
-            case 5: return Type.MESH;
-            case 6: return Type.SCENE;
-            default: return null;
+            this.magic = magic;
+            this.constructor = constructor;
+        }
+        
+        ArrayMap<?> makeArrayMap(Model model, DataInputStream in) throws IOException
+        {
+            return new ArrayMap<>(model, in, magic, constructor);
         }
     }
     
-    public enum Type
+    public static Type getType(int index)
     {
-        LIBRARY(Library.class), ACTION(Action.class), ARMATURE(Armature.class),
-        CURVE(Curve.class), LAMP(Lamp.class), MESH(Mesh.class), SCENE(Scene.class),
-        OBJECT(ModelObject.class);
-            
-        public final Class<? extends DataBlock> type;
-        
-        private Type(Class<? extends DataBlock> type)
-        {
-            this.type = type;
-        }
+        return index >= 0 ? Type.values()[index] : null;
     }
     
     public final Model model;
@@ -47,5 +50,9 @@ public abstract class DataBlock
     {
         this.model = model;
         name = IOUtil.readPaddedUTF(in);
+    }
+    
+    void destroy()
+    {
     }
 }

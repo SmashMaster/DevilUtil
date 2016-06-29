@@ -9,7 +9,7 @@ import java.io.IOException;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Scene extends DataBlock
+public final class Scene extends DataBlock
 {
     public final Vec3 backgroundColor;
     public final DataPointer<ModelObject<?>>[] objects;

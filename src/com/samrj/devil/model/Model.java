@@ -1,16 +1,13 @@
 package com.samrj.devil.model;
 
 import com.samrj.devil.io.IOUtil;
+import com.samrj.devil.model.DataBlock.Type;
 import com.samrj.devil.res.Resource;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.EnumMap;
 
 /**
  * .DVM file loader. Corresponds with the Blender python exporter.
@@ -19,11 +16,13 @@ import java.util.NoSuchElementException;
  * @copyright 2016 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Model
+public final class Model
 {
     private static final byte[] MAGIC = IOUtil.hexToBytes("9F0A446576696C4D6F64656C");
     
-    public final int versionMajor, versionMinor;
+    private final int versionMajor, versionMinor;
+    private final EnumMap<DataBlock.Type, ArrayMap<?>> arraymaps = new EnumMap<>(DataBlock.Type.class);
+    
     public final ArrayMap<Library> libraries;
     public final ArrayMap<Action> actions;
     public final ArrayMap<Armature> armatures;
@@ -48,35 +47,27 @@ public class Model
                 throw new IOException("Illegal file format specified.");
             versionMajor = in.readShort();
             versionMinor = in.readShort();
-            if (versionMajor != 0 || versionMinor != 21)
+            if (versionMajor != 0 || versionMinor != 22)
                 throw new IOException("Unable to load DVM version " + versionMajor + "." + versionMinor);
             
-            libraries = new ArrayMap<>(in, 1112276993, Library.class, Library::new);
-            actions   = new ArrayMap<>(in, 1112276994, Action.class, Action::new);
-            armatures = new ArrayMap<>(in, 1112276995, Armature.class, Armature::new);
-            curves    = new ArrayMap<>(in, 1112276996, Curve.class, Curve::new);
-            lamps     = new ArrayMap<>(in, 1112276997, Lamp.class, Lamp::new);
-            materials = new ArrayMap<>(in, 1112276998, Material.class, Material::new);
-            meshes    = new ArrayMap<>(in, 1112276999, Mesh.class, Mesh::new);
-            objects   = new ArrayMap<>(in, 1112277000, ModelObject.class, ModelObject::new);
-            scenes    = new ArrayMap<>(in, 1112277001, Scene.class, Scene::new);
+            for (Type type : Type.values())
+                arraymaps.put(type, type.makeArrayMap(this, in));
+            
+            libraries = get(Type.LIBRARY);
+            actions = get(Type.ACTION);
+            armatures = get(Type.ARMATURE);
+            curves = get(Type.CURVE);
+            lamps = get(Type.LAMP);
+            materials = get(Type.MATERIAL);
+            meshes = get(Type.MESH);
+            objects = get(Type.OBJECT);
+            scenes = get(Type.SCENE);
         }
     }
     
-    public <T extends DataBlock> ArrayMap<T> getMap(DataBlock.Type dataType)
+    public <T extends DataBlock> ArrayMap<T> get(DataBlock.Type dataType)
     {
-        switch (dataType)
-        {
-            case LIBRARY:  return (ArrayMap<T>)libraries;
-            case ACTION:   return (ArrayMap<T>)actions;
-            case ARMATURE: return (ArrayMap<T>)armatures;
-            case CURVE:    return (ArrayMap<T>)curves;
-            case LAMP:     return (ArrayMap<T>)lamps;
-            case MESH:     return (ArrayMap<T>)meshes;
-            case OBJECT:   return (ArrayMap<T>)objects;
-            case SCENE:    return (ArrayMap<T>)scenes;
-            default: throw new IllegalArgumentException();
-        }
+        return (ArrayMap<T>)arraymaps.get(dataType);
     }
     
     /**
@@ -85,75 +76,7 @@ public class Model
     public void destroy()
     {
         if (destroyed) throw new IllegalStateException("Already destroyed.");
-        
-        for (Mesh mesh : meshes) mesh.destroy();
-        
-        libraries.clear();
-        actions.clear();
-        armatures.clear();
-        curves.clear();
-        lamps.clear();
-        meshes.clear();
-        objects.clear();
-        scenes.clear();
-        
+        arraymaps.forEach((t, m) -> m.destroy());
         destroyed = true;
-    }
-    
-    @FunctionalInterface
-    interface ModelConstructor<T>
-    {
-        T construct(Model model, DataInputStream in) throws IOException;
-    }
-    
-    public final class ArrayMap<T extends DataBlock> implements Iterable<T>
-    {
-        private T[] array;
-        private Map<String, T> map;
-        
-        private ArrayMap(DataInputStream in, int id, Class<T> type, ModelConstructor<T> constructor) throws IOException
-        {
-            int rID = in.readInt();
-            if (rID != id) throw new IOException("Expected " + type + " id " + id + ", read " + rID);
-            in.skip(4);
-            array = (T[])Array.newInstance(type, in.readInt());
-            for (int i=0; i<array.length; i++) array[i] = constructor.construct(Model.this, in);
-            map = new HashMap<>(array.length);
-            for (T data : array) map.put(data.name, data);
-        }
-        
-        public boolean contains(String name)
-        {
-            return map.containsKey(name);
-        }
-
-        public T get(String name)
-        {
-            T out = map.get(name);
-            if (out == null) throw new NoSuchElementException(name);
-            return out;
-        }
-        
-        public T get(int i)
-        {
-            return array[i];
-        }
-        
-        public int size()
-        {
-            return array.length;
-        }
-        
-        @Override
-        public Iterator<T> iterator()
-        {
-            return new IOUtil.ArrayIterator<>(array);
-        }
-        
-        private void clear()
-        {
-            array = null;
-            map = null;
-        }
     }
 }

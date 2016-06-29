@@ -9,7 +9,7 @@ import java.io.IOException;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Lamp extends DataBlock
+public final class Lamp extends DataBlock
 {
     public enum Type
     {

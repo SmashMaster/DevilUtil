@@ -4,7 +4,7 @@ import com.samrj.devil.math.Vec3;
 import java.io.DataInputStream;
 import java.io.IOException;
 
-public class Material extends DataBlock
+public final class Material extends DataBlock
 {
     public final Vec3 diffuseColor, specularColor;
     public final float specularHardness;

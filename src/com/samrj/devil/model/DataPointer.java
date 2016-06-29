@@ -52,7 +52,7 @@ public final class DataPointer<T extends DataBlock>
     {   
         if (dirty)
         {
-            Model.ArrayMap<T> array = model.getMap(type);
+            ArrayMap<T> array = model.get(type);
             
             if (name != null) data = array.get(name);
             else if (index >= 0) data = array.get(index);

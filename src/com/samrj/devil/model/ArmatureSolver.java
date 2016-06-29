@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2016 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
 
 package com.samrj.devil.model;
 
+import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Vec3;
@@ -29,9 +30,10 @@ import com.samrj.devil.math.topo.DAG;
 import com.samrj.devil.model.Armature.Bone;
 import com.samrj.devil.model.Pose.PoseBone;
 import com.samrj.devil.model.constraint.IKConstraint;
-import com.samrj.devil.util.IdentitySet;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -49,8 +51,8 @@ public final class ArmatureSolver
     private final Map<String, BoneSolver> nameMap;
     
     private final List<Constraint> constraints;
-    private final IKConstraint[] ikConstraints;
-    private final IdentitySet<BoneSolver> nonconstrained;
+    private final List<IKConstraint> ikConstraints;
+    private final Set<BoneSolver> nonconstrained;
     private List<Constraint> solveOrder;
     
     /**
@@ -68,11 +70,9 @@ public final class ArmatureSolver
         nameMap = new HashMap<>(bones.length);
         for (BoneSolver bone : bones) nameMap.put(bone.bone.name, bone);
         
-        ikConstraints = new IKConstraint[object.ikConstraints.length];
-        for (int i=0; i<ikConstraints.length; i++)
-            ikConstraints[i] = new IKConstraint(object.ikConstraints[i], this);
+        ikConstraints = IOUtil.mapList(object.ikConstraints, ikDef -> new IKConstraint(ikDef, this));
         constraints = new LinkedList<>();
-        nonconstrained = new IdentitySet<>();
+        nonconstrained = Collections.newSetFromMap(new IdentityHashMap<>());
         sortSolvables();
     }
     

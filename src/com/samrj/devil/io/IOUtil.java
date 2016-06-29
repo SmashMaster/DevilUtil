@@ -8,6 +8,7 @@ import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -19,7 +20,7 @@ import java.util.function.Predicate;
  * Utility methods for data munging.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2016 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class IOUtil
@@ -51,6 +52,14 @@ public final class IOUtil
         T[] out = (T[])Array.newInstance(type, in.readInt());
         for (int i=0; i<out.length; i++) out[i] = constructor.construct(in);
         return out;
+    }
+    
+    public static <T> List<T> listFromStream(DataInputStream in, StreamConstructor<T> constructor) throws IOException
+    {
+        int size = in.readInt();
+        List<T> out = new ArrayList<>(size);
+        for (int i=0; i<size; i++) out.add(constructor.construct(in));
+        return Collections.unmodifiableList(out);
     }
     
     public static InputStream stringStream(String string)

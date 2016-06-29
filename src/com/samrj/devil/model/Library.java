@@ -8,7 +8,7 @@ import java.io.IOException;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Library extends DataBlock
+public final class Library extends DataBlock
 {
     Library(Model model, DataInputStream in) throws IOException
     {

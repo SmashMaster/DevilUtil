@@ -10,7 +10,7 @@ import java.io.IOException;
  * @copyright 2015 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Curve extends DataBlock
+public final class Curve extends DataBlock
 {
     public final Spline[] splines;
     
