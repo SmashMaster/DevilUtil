@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -72,6 +73,16 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
         
         int emptyTypeID = in.readInt();
         emptyType = emptyTypeID >= 0 ? EmptyType.values()[emptyTypeID] : null;
+    }
+    
+    public <T extends DataBlock> ModelObject<T> asType(Class<T> typeClass)
+    {
+        return typeClass.isInstance(data.get()) ? (ModelObject<T>)this : null;
+    }
+    
+    public <T extends DataBlock> Optional<ModelObject<T>> optionalType(Class<T> typeClass)
+    {
+        return Optional.ofNullable(asType(typeClass));
     }
     
     public void applyParentTransform(Transform result)

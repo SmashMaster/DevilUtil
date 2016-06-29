@@ -57,6 +57,8 @@ public final class IOUtil
     public static <T> List<T> listFromStream(DataInputStream in, StreamConstructor<T> constructor) throws IOException
     {
         int size = in.readInt();
+        if (size == 0) return Collections.emptyList();
+        
         List<T> out = new ArrayList<>(size);
         for (int i=0; i<size; i++) out.add(constructor.construct(in));
         return Collections.unmodifiableList(out);
