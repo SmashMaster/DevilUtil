@@ -30,51 +30,51 @@ public class Transform
         }
     }
     
-    public final Vec3 position;
-    public final Quat rotation;
-    public final Vec3 scale;
+    public final Vec3 pos;
+    public final Quat rot;
+    public final Vec3 sca;
     
     public Transform(DataInputStream in) throws IOException
     {
-        position = new Vec3(in);
-        rotation = new Quat(in);
-        scale = new Vec3(in);
+        pos = new Vec3(in);
+        rot = new Quat(in);
+        sca = new Vec3(in);
     }
     
     public Transform()
     {
-        position = new Vec3();
-        rotation = Quat.identity();
-        scale = new Vec3(1.0f);
+        pos = new Vec3();
+        rot = Quat.identity();
+        sca = new Vec3(1.0f);
     }
     
     public Transform(Transform transform)
     {
-        position = new Vec3(transform.position);
-        rotation = new Quat(transform.rotation);
-        scale = new Vec3(transform.scale);
+        pos = new Vec3(transform.pos);
+        rot = new Quat(transform.rot);
+        sca = new Vec3(transform.sca);
     }
     
     public Mat4 apply(Mat4 matrix)
     {
-        matrix.translate(position);
-        matrix.rotate(rotation);
-        matrix.mult(scale);
+        matrix.translate(pos);
+        matrix.rotate(rot);
+        matrix.mult(sca);
         return matrix;
     }
     
     public Mat3 apply(Mat3 matrix)
     {
-        matrix.rotate(rotation);
-        matrix.mult(scale);
+        matrix.rotate(rot);
+        matrix.mult(sca);
         return matrix;
     }
     
     public Vec3 apply(Vec3 vector)
     {
-        vector.mult(scale);
-        vector.mult(rotation);
-        vector.add(position);
+        vector.mult(sca);
+        vector.mult(rot);
+        vector.add(pos);
         return vector;
     }
     
@@ -87,55 +87,55 @@ public class Transform
     
     public void setIdentity()
     {
-        position.set();
-        rotation.setIdentity();
-        scale.set(1.0f);
+        pos.set();
+        rot.setIdentity();
+        sca.set(1.0f);
     }
     
     public void set(Transform transform)
     {
-        position.set(transform.position);
-        rotation.set(transform.rotation);
-        scale.set(transform.scale);
+        pos.set(transform.pos);
+        rot.set(transform.rot);
+        sca.set(transform.sca);
     }
     
     public void mix(Transform transform, float t)
     {
-        position.lerp(transform.position, t);
-        rotation.slerp(transform.rotation, t);
-        scale.lerp(transform.scale, t);
+        pos.lerp(transform.pos, t);
+        rot.slerp(transform.rot, t);
+        sca.lerp(transform.sca, t);
     }
     
     public void lerp(Transform transform, float t)
     {
-        position.lerp(transform.position, t);
-        rotation.lerp(transform.rotation, t);
-        rotation.normalize();
-        scale.lerp(transform.scale, t);
+        pos.lerp(transform.pos, t);
+        rot.lerp(transform.rot, t);
+        rot.normalize();
+        sca.lerp(transform.sca, t);
     }
     
     public void mult(Transform transform)
     {
-        position.mult(transform.rotation);
-        position.mult(transform.scale);
-        position.add(transform.position);
-        rotation.mult(transform.rotation);
-        scale.mult(transform.scale);
+        pos.mult(transform.rot);
+        pos.mult(transform.sca);
+        pos.add(transform.pos);
+        rot.mult(transform.rot);
+        sca.mult(transform.sca);
     }
     
     public void setProperty(Property property, int index, float value)
     {
         switch (property)
         {
-            case POSITION: position.setComponent(index, value); return;
-            case ROTATION: rotation.setComponent(index, value); return;
-            case SCALE: scale.setComponent(index, value);
+            case POSITION: pos.setComponent(index, value); return;
+            case ROTATION: rot.setComponent(index, value); return;
+            case SCALE: sca.setComponent(index, value);
         }
     }
     
     @Override
     public String toString()
     {
-        return "{ " + position + " " + rotation + " " + scale + " }";
+        return "{ " + pos + " " + rot + " " + sca + " }";
     }
 }

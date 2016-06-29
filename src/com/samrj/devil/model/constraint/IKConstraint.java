@@ -83,8 +83,8 @@ public class IKConstraint implements ArmatureSolver.Constraint
         start.finalTransform.setIdentity();
         end.finalTransform.setIdentity();
         
-        Quat rot1 = start.finalTransform.rotation;
-        Quat rot2 = end.finalTransform.rotation;
+        Quat rot1 = start.finalTransform.rot;
+        Quat rot2 = end.finalTransform.rot;
         Vec3 headPos = start.getHeadPos();
         
         //Create basis vectors for bone orientation.

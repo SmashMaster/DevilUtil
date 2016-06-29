@@ -158,7 +158,7 @@ public final class ArmatureSolver
         for (BoneSolver bone : nonconstrained)
         {
             bone.finalTransform.set(bone.poseTransform);
-            bone.finalTransform.rotation.normalize();
+            bone.finalTransform.rot.normalize();
         }
         
         for (Constraint s : solveOrder) s.solve();
@@ -215,7 +215,7 @@ public final class ArmatureSolver
         
         public Vec3 getHeadPos()
         {
-            Vec3 out = new Vec3(finalTransform.position);
+            Vec3 out = new Vec3(finalTransform.pos);
             out.mult(bone.matrix);
             out.add(bone.head);
             if (parent != null) out.mult(parent.skinMatrix);
@@ -247,7 +247,7 @@ public final class ArmatureSolver
             finalTransform.apply(rotMatrix);
             rotMatrix.mult(bone.invMat);
 
-            if (!finalTransform.scale.isZero(0.0f)) Mat3.invert(rotMatrix, invRotMat);
+            if (!finalTransform.sca.isZero(0.0f)) Mat3.invert(rotMatrix, invRotMat);
         }
     }
 }

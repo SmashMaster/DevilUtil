@@ -58,7 +58,7 @@ public final class Action extends DataBlock
     public Pose evaluate(Pose pose, float time)
     {
         for (FCurve fcurve : fcurves) fcurve.apply(pose, time);
-        for (PoseBone bone : pose.getBones()) bone.transform.rotation.normalize();
+        for (PoseBone bone : pose.getBones()) bone.transform.rot.normalize();
         return pose;
     }
     

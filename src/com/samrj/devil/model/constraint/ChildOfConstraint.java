@@ -43,15 +43,15 @@ public class ChildOfConstraint implements ArmatureSolver.Constraint
     @Override
     public void solve()
     {
-        child.finalTransform.position.set(child.poseTransform.position);
+        child.finalTransform.pos.set(child.poseTransform.pos);
         
         Mat3 basis = Mat3.identity();
         basis.mult(child.bone.invMat);
         basis.mult(parent.rotMatrix);
         basis.mult(parent.bone.matrix); //is this where it should be? everything else is I think.
         basis.mult(child.bone.matrix);
-        basis.rotate(Quat.normalize(child.poseTransform.rotation));
+        basis.rotate(Quat.normalize(child.poseTransform.rot));
         
-        child.finalTransform.rotation.setRotation(basis);
+        child.finalTransform.rot.setRotation(basis);
     }
 }

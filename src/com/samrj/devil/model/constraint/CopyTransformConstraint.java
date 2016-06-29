@@ -47,10 +47,10 @@ public class CopyTransformConstraint implements ArmatureSolver.Constraint
         
         Transform t = new Transform();
         
-        t.position.set(source.getHeadPos()); //object
-        t.position.sub(head);
-        if (parent != null) t.position.mult(parent.invRotMat);
-        t.position.mult(target.bone.invMat);
+        t.pos.set(source.getHeadPos()); //object
+        t.pos.sub(head);
+        if (parent != null) t.pos.mult(parent.invRotMat);
+        t.pos.mult(target.bone.invMat);
         
         Mat3 basis = Mat3.identity();
         basis.mult(target.bone.invMat);
@@ -58,7 +58,7 @@ public class CopyTransformConstraint implements ArmatureSolver.Constraint
         basis.mult(source.rotMatrix);
         basis.mult(source.bone.matrix); //is this where it should be?
         basis.mult(target.bone.matrix);
-        t.rotation.setRotation(basis);
+        t.rot.setRotation(basis);
         
         target.finalTransform.set(target.poseTransform);
         target.finalTransform.lerp(t, influence);
