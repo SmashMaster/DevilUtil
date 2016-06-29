@@ -48,7 +48,7 @@ public class Model
                 throw new IOException("Illegal file format specified.");
             versionMajor = in.readShort();
             versionMinor = in.readShort();
-            if (versionMajor != 0 || versionMinor != 20)
+            if (versionMajor != 0 || versionMinor != 21)
                 throw new IOException("Unable to load DVM version " + versionMajor + "." + versionMinor);
             
             libraries = new ArrayMap<>(in, 1112276993, Library.class, Library::new);

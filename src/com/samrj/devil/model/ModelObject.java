@@ -50,8 +50,8 @@ public class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
         data = new DataPointer(model, dataType, dataIndex);
         int parentIndex = in.readInt();
         parent = new DataPointer<>(model, Type.OBJECT, parentIndex);
-        parentBoneName = parentIndex >= 0 ? IOUtil.readPaddedUTF(in) : null;
         parentMatrix = parentIndex >= 0 ? new Mat4(in) : null;
+        parentBoneName = (parentIndex >= 0 && in.readInt() != 0) ? IOUtil.readPaddedUTF(in) : null;
         
         transform = new Transform(in);
         vertexGroups = IOUtil.arrayFromStream(in, String.class, (s) -> IOUtil.readPaddedUTF(s));
