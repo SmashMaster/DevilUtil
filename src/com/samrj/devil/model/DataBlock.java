@@ -24,9 +24,9 @@ public abstract class DataBlock
         SCENE   (1112277001, Scene::new);
         
         private final int magic;
-        private final ModelConstructor<? extends DataBlock> constructor;
+        private final ModelConstructor<?> constructor;
         
-        private Type(int magic, ModelConstructor<? extends DataBlock> constructor)
+        private Type(int magic, ModelConstructor<?> constructor)
         {
             this.magic = magic;
             this.constructor = constructor;
