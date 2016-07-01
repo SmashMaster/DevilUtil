@@ -25,11 +25,12 @@ package com.samrj.devil.gl;
 import com.samrj.devil.graphics.TexUtil;
 import com.samrj.devil.math.Util.PrimType;
 import com.samrj.devil.res.Resource;
-import com.samrj.devil.util.IdentitySet;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Set;
 import javax.imageio.ImageIO;
 import org.lwjgl.opengl.GL;
@@ -73,7 +74,7 @@ public final class DGL
         if (init) throw new IllegalStateException("DGL already initialized.");
         thread = Thread.currentThread();
         capabilities = GL.getCapabilities();
-        objects = new IdentitySet<>();
+        objects = Collections.newSetFromMap(new IdentityHashMap<>());
         VAO.init();
         DGLException.init();
         init = true;
@@ -269,6 +270,60 @@ public final class DGL
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Texture methods">
+    /**
+     * Generates a new OpenGL name for a 1D texture.
+     * 
+     * @return A new 1D texture object.
+     */
+    public static Texture1D genTex1D()
+    {
+        return gen(new Texture1D());
+    }
+    
+    /**
+     * Creates a new OpenGL 1D texture using the given image.
+     * 
+     * @param image The image to load as a texture.
+     * @return A new 2D texture object.
+     */
+    public static Texture1D loadTex1D(Image image)
+    {
+        return genTex1D().image(image);
+    }
+    
+    /**
+     * Creates a new OpenGL 1D texture using the given raster. Allocates memory
+     * to use as an image buffer, uploads the image, and then deallocates the
+     * memory.
+     * 
+     * @param raster The raster to load as a texture.
+     * @return A new 1D texture object.
+     */
+    public static Texture1D loadTex1D(Raster raster)
+    {
+        Image image = loadImage(raster);
+        Texture1D texture = loadTex1D(image);
+        delete(image);
+        return texture;
+    }
+    
+    /**
+     * Creates a new openGL 1D texture using the image found at the given path.
+     * Allocates memory to use as an image buffer, uploads the image, and then
+     * deallocates the memory.
+     * 
+     * @param path The classpath or file path to an image.
+     * @return A new 1D texture object.
+     * @throws IOException If an io exception occurred.
+     */
+    public static Texture1D loadTex1D(String path) throws IOException
+    {
+        Image image = loadImage(path);
+        Texture1D texture = loadTex1D(image);
+        delete(image);
+        return texture;
+    }
+    
     /**
      * Generates a new OpenGL name for a 2D texture.
      * 
