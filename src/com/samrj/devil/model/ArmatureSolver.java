@@ -22,6 +22,7 @@
 
 package com.samrj.devil.model;
 
+import com.samrj.devil.math.Transform;
 import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
@@ -188,8 +189,8 @@ public final class ArmatureSolver
         private BoneSolver(Bone bone)
         {
             this.bone = bone;
-            poseTransform = new Transform();
-            finalTransform = new Transform();
+            poseTransform = Transform.identity();
+            finalTransform = Transform.identity();
             skinMatrix = new Mat4();
             rotMatrix = new Mat3();
             invRotMat = new Mat3();
@@ -237,17 +238,17 @@ public final class ArmatureSolver
             skinMatrix.translate(bone.head);
             if (parent != null && !bone.inheritRotation) skinMatrix.mult(new Mat4(parent.invRotMat));
             skinMatrix.mult(new Mat4(bone.matrix));
-            finalTransform.apply(skinMatrix);
+            skinMatrix.mult(finalTransform);
             skinMatrix.mult(new Mat4(bone.invMat));
             skinMatrix.translate(Vec3.negate(bone.head));
 
             rotMatrix.setIdentity();
             if (parent != null && bone.inheritRotation) rotMatrix.mult(parent.rotMatrix);
             rotMatrix.mult(bone.matrix);
-            finalTransform.apply(rotMatrix);
+            rotMatrix.mult(finalTransform);
             rotMatrix.mult(bone.invMat);
 
-            if (!finalTransform.sca.isZero(0.0f)) Mat3.invert(rotMatrix, invRotMat);
+            if (Mat3.determinant(rotMatrix) != 0.0f) Mat3.invert(rotMatrix, invRotMat);
         }
     }
 }

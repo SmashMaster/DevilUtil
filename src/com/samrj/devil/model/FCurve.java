@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2016 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
 
 package com.samrj.devil.model;
 
+import com.samrj.devil.math.Transform;
 import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Vec2;
 import java.io.DataInputStream;
@@ -198,7 +199,7 @@ public class FCurve
     FCurve(DataInputStream in) throws IOException
     {
         boolean hasBone = in.readShort() != 0;
-        property = Transform.propFromID(in.readShort());
+        property = Transform.Property.values()[in.readShort()];
         boneName = hasBone ? IOUtil.readPaddedUTF(in) : null;
         propertyIndex = in.readInt();
         keyframes = IOUtil.arrayFromStream(in, Keyframe.class, Keyframe::new);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2016 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ import java.nio.ByteBuffer;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Mat4 implements Bufferable, Streamable 
+public class Mat4 implements Bufferable, Streamable
 {
     private static final float SQRT_2 = (float)Math.sqrt(2.0);
     
@@ -93,6 +93,20 @@ public class Mat4 implements Bufferable, Streamable
         r.e = s.e; r.f = s.f; r.g = s.g; r.h = s.h;
         r.i = s.i; r.j = s.j; r.k = s.k; r.l = s.l;
         r.m = s.m; r.n = s.n; r.o = s.o; r.p = s.p;
+    }
+    
+    /**
+     * Sets the given matrix to the transformation matrix equal to the given
+     * transform.
+     * 
+     * @param t The transform to convert.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void transform(Transform t, Mat4 r)
+    {
+        translation(t.pos, r);
+        rotate(r, t.rot, r);
+        mult(r, t.sca, r);
     }
     
     /**
@@ -443,6 +457,21 @@ public class Mat4 implements Bufferable, Streamable
     }
     
     /**
+     * Multiplies the given matrix by the given transform, and stores the result
+     * in {@code r}.
+     * 
+     * @param m The left-hand matrix to multiply.
+     * @param t The right-hand transform to multiply by.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void mult(Mat4 m, Transform t, Mat4 r)
+    {
+        translate(m, t.pos, r);
+        rotate(r, t.rot, r);
+        mult(r, t.sca, r);
+    }
+    
+    /**
      * Multiplies the given matrix by the given vector.
      * 
      * @param x The matrix to multiply.
@@ -565,6 +594,19 @@ public class Mat4 implements Bufferable, Streamable
     public static final Mat4 identity()
     {
         return scaling(1.0f);
+    }
+    
+    /**
+     * Returns a new 4x4 transformation matrix equal to the given transform.
+     * 
+     * @param transform The transform to convert.
+     * @return A new matrix containing the result.
+     */
+    public static final Mat4 transform(Transform transform)
+    {
+        Mat4 m = new Mat4();
+        transform(transform, m);
+        return m;
     }
     
     /**
@@ -765,6 +807,20 @@ public class Mat4 implements Bufferable, Streamable
     {
         Mat4 result = new Mat4();
         mult(m0, m1, result);
+        return result;
+    }
+    
+    /**
+     * Multiplies {@code m} by {@code t} and returns the result as a new matrix.
+     * 
+     * @param m The left-hand matrix to multiply.
+     * @param t The right-hand transform to multiply by.
+     * @return A new matrix containing the result.
+     */
+    public static final Mat4 mult(Mat4 m, Transform t)
+    {
+        Mat4 result = new Mat4();
+        mult(m, t, result);
         return result;
     }
     
@@ -1165,6 +1221,18 @@ public class Mat4 implements Bufferable, Streamable
     }
     
     /**
+     * Sets this to the transformation matrix equal to the given transform.
+     * 
+     * @param transform The transform to convert.
+     * @return This matrix. 
+     */
+    public Mat4 setTransform(Transform transform)
+    {
+        transform(transform, this);
+        return this;
+    }
+    
+    /**
      * Sets this to a symmetric frustum projection matrix with the given
      * dimensions. The coordinate system of the frustum is right-handed, with
      * +Z being backwards--towards the camera. +X is right and +Y is up.
@@ -1378,6 +1446,18 @@ public class Mat4 implements Bufferable, Streamable
     public Mat4 mult(Mat4 mat)
     {
         mult(this, mat, this);
+        return this;
+    }
+    
+    /**
+     * Multiplies this matrix by the given transform.
+     * 
+     * @param transform The transform to multiply by.
+     * @return This matrix.
+     */
+    public Mat4 mult(Transform transform)
+    {
+        mult(this, transform, this);
         return this;
     }
     

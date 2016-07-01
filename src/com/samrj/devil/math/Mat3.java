@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2016 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -89,6 +89,19 @@ public class Mat3 implements Bufferable, Streamable
         r.a = s.a; r.b = s.b; r.c = s.c;
         r.d = s.e; r.e = s.f; r.f = s.g;
         r.g = s.i; r.h = s.j; r.i = s.k;
+    }
+    
+    /**
+     * Sets the given matrix to the transformation matrix equal to the given
+     * transform.
+     * 
+     * @param t The transform to convert.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void transform(Transform t, Mat3 r)
+    {
+        rotation(t.rot, r);
+        mult(r, t.sca, r);
     }
     
     /**
@@ -327,6 +340,20 @@ public class Mat3 implements Bufferable, Streamable
     }
     
     /**
+     * Multiplies the given matrix by the given transform, and store the result
+     * in {@code r}.
+     * 
+     * @param m The left-hand matrix to multiply.
+     * @param t The right-hand transform to multiply by.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void mult(Mat3 m, Transform t, Mat3 r)
+    {
+        rotate(m, t.rot, r);
+        mult(r, t.sca, r);
+    }
+    
+    /**
      * Multiplies the given matrix by the given vector.
      * 
      * @param m The matrix to multiply.
@@ -431,6 +458,19 @@ public class Mat3 implements Bufferable, Streamable
     public static final Mat3 identity()
     {
         return scaling(1.0f);
+    }
+    
+    /**
+     * Returns a new 3x3 transformation matrix equal to the given transform.
+     * 
+     * @param transform The transform to convert.
+     * @return A new matrix containing the result.
+     */
+    public static final Mat3 transform(Transform transform)
+    {
+        Mat3 m = new Mat3();
+        transform(transform, m);
+        return m;
     }
     
     /**
@@ -561,6 +601,20 @@ public class Mat3 implements Bufferable, Streamable
     {
         Mat3 result = new Mat3();
         mult(m0, m1, result);
+        return result;
+    }
+    
+    /**
+     * Multiplies {@code m} by {@code t} and returns the result as a new matrix.
+     * 
+     * @param m The left-hand matrix to multiply.
+     * @param t The right-hand transform to multiply by.
+     * @return A new matrix containing the result.
+     */
+    public static final Mat3 mult(Mat3 m, Transform t)
+    {
+        Mat3 result = new Mat3();
+        mult(m, t, result);
         return result;
     }
     
@@ -918,6 +972,18 @@ public class Mat3 implements Bufferable, Streamable
     }
     
     /**
+     * Sets this to the transformation matrix equal to the given transform.
+     * 
+     * @param transform The transform to convert.
+     * @return This matrix. 
+     */
+    public Mat3 setTransform(Transform transform)
+    {
+        transform(transform, this);
+        return this;
+    }
+    
+    /**
      * Sets this to a symmetric orthographic projection matrix with the given
      * dimensions.
      * 
@@ -1068,6 +1134,18 @@ public class Mat3 implements Bufferable, Streamable
     public Mat3 mult(Mat3 mat)
     {
         mult(this, mat, this);
+        return this;
+    }
+    
+    /**
+     * Multiplies this matrix by the given transform.
+     * 
+     * @param transform The transform to multiply by.
+     * @return This matrix.
+     */
+    public Mat3 mult(Transform transform)
+    {
+        mult(this, transform, this);
         return this;
     }
     

@@ -5,12 +5,12 @@ import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.topo.DAG;
 import com.samrj.devil.model.ArmatureSolver;
 import com.samrj.devil.model.ArmatureSolver.BoneSolver;
-import com.samrj.devil.model.Transform;
+import com.samrj.devil.math.Transform;
 import java.util.Set;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2016 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class CopyTransformConstraint implements ArmatureSolver.Constraint
@@ -45,7 +45,7 @@ public class CopyTransformConstraint implements ArmatureSolver.Constraint
         Vec3 head = new Vec3(target.bone.head);
         if (parent != null) head.mult(parent.skinMatrix);
         
-        Transform t = new Transform();
+        Transform t = Transform.identity();
         
         t.pos.set(source.getHeadPos()); //object
         t.pos.sub(head);
@@ -61,6 +61,6 @@ public class CopyTransformConstraint implements ArmatureSolver.Constraint
         t.rot.setRotation(basis);
         
         target.finalTransform.set(target.poseTransform);
-        target.finalTransform.mix(t, influence);
+        target.finalTransform.lerp(t, influence);
     }
 }

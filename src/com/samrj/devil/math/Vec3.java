@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2016 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -348,6 +348,20 @@ public class Vec3 implements Bufferable, Streamable
     }
     
     /**
+     * Multiplies {@code v} by {@code t} and stores the result in {@code result}.
+     * 
+     * @param v The vector to multiply.
+     * @param t A transform to multiply by.
+     * @param result The vector in which to store the result.
+     */
+    public static final void mult(Vec3 v, Transform t, Vec3 result)
+    {
+        Vec3.mult(v, t.sca, result);
+        Vec3.mult(result, t.rot, result);
+        Vec3.add(result, t.pos, result);
+    }
+    
+    /**
      * Rotates the given vector by the given quaternion, and stores the result
      * in {@code result}.
      * 
@@ -647,6 +661,20 @@ public class Vec3 implements Bufferable, Streamable
     {
         Vec3 result = new Vec3();
         mult(v, m, result);
+        return result;
+    }
+    
+    /**
+     * Multiplies {@code v} by {@code t} and returns the result in a new vector.
+     * 
+     * @param v The vector to multiply.
+     * @param t The transform to multiply by.
+     * @return A new vector containing the result.
+     */
+    public static final Vec3 mult(Vec3 v, Transform t)
+    {
+        Vec3 result = new Vec3();
+        mult(v, t, result);
         return result;
     }
     
@@ -1158,6 +1186,18 @@ public class Vec3 implements Bufferable, Streamable
     public Vec3 mult(Mat4 m)
     {
         mult(this, m, this);
+        return this;
+    }
+    
+    /**
+     * Multiplies this by the given transform.
+     * 
+     * @param t The transform to multiply this by.
+     * @return This vector.
+     */
+    public Vec3 mult(Transform t)
+    {
+        mult(this, t, this);
         return this;
     }
     

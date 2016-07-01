@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2016 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -777,6 +777,17 @@ public class Quat implements Bufferable, Streamable
     public Quat set(float w, float x, float y, float z)
     {
         this.w = w; this.x = x; this.y = y; this.z = z;
+        return this;
+    }
+    
+    /**
+     * Sets this to the zero quaternion.
+     * 
+     * @return This quaternion.
+     */
+    public Quat set()
+    {
+        x = 0.0f; y = 0.0f; z = 0.0f;
         return this;
     }
     

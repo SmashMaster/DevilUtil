@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2016 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,9 @@
 
 package com.samrj.devil.model;
 
+import com.samrj.devil.math.Transform;
 import com.samrj.devil.io.IOUtil;
-import com.samrj.devil.model.Transform.Property;
+import com.samrj.devil.math.Transform.Property;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Collection;
@@ -179,7 +180,7 @@ public class Pose
         {
             PoseBone target = bones.get(source.name);
             if (target == null) bones.put(source.name, target = new PoseBone(source.name));
-            target.transform.mix(source.transform, blend);
+            target.transform.lerp(source.transform, blend);
         }
         return this;
     }
@@ -207,7 +208,7 @@ public class Pose
         private PoseBone(String name)
         {
             this.name = name;
-            transform = new Transform();
+            transform = Transform.identity();
         }
         
         /**
@@ -245,7 +246,7 @@ public class Pose
          */
         public PoseBone mix(PoseBone bone, float blend)
         {
-            transform.mix(bone.transform, blend);
+            transform.lerp(bone.transform, blend);
             return this;
         }
     }

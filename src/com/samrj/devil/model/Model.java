@@ -47,7 +47,7 @@ public final class Model
                 throw new IOException("Illegal file format specified.");
             versionMajor = in.readShort();
             versionMinor = in.readShort();
-            if (versionMajor != 0 || versionMinor != 22)
+            if (versionMajor != 0 || versionMinor != 23)
                 throw new IOException("Unable to load DVM version " + versionMajor + "." + versionMinor);
             
             for (Type type : Type.values())
