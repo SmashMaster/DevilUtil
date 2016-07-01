@@ -22,8 +22,8 @@
 
 package com.samrj.devil.model;
 
-import com.samrj.devil.math.Transform;
 import com.samrj.devil.io.IOUtil;
+import com.samrj.devil.math.Transform;
 import com.samrj.devil.math.Transform.Property;
 import java.io.DataInputStream;
 import java.io.IOException;

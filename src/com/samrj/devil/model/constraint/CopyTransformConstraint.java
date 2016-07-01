@@ -1,11 +1,11 @@
 package com.samrj.devil.model.constraint;
 
 import com.samrj.devil.math.Mat3;
+import com.samrj.devil.math.Transform;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.topo.DAG;
 import com.samrj.devil.model.ArmatureSolver;
 import com.samrj.devil.model.ArmatureSolver.BoneSolver;
-import com.samrj.devil.math.Transform;
 import java.util.Set;
 
 /**
