@@ -356,9 +356,9 @@ public class Vec3 implements Bufferable, Streamable
      */
     public static final void mult(Vec3 v, Transform t, Vec3 result)
     {
-        Vec3.mult(v, t.sca, result);
-        Vec3.mult(result, t.rot, result);
-        Vec3.add(result, t.pos, result);
+        mult(v, t.sca, result);
+        mult(result, t.rot, result);
+        add(result, t.pos, result);
     }
     
     /**
@@ -371,14 +371,11 @@ public class Vec3 implements Bufferable, Streamable
      */
     public static final void mult(Vec3 v, Quat q, Vec3 result)
     {
-        //t = 2 * cross(q.xyz, v)
-        //v' = v + q.w * t + cross(q.xyz, t)
-        
         Vec3 temp1 = new Vec3(q.x, q.y, q.z);
         Vec3 temp2 = cross(temp1, v);
         mult(temp2, 2.0f, temp2);
         
-        copy(v, result); //v
+        copy(v, result);
         cross(temp1, temp2, temp1);
         add(result, temp1, result);
         mult(temp2, q.w, temp2);

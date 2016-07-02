@@ -80,6 +80,28 @@ public class Transform implements Bufferable, Streamable
     }
     
     /**
+     * Decomposes the given matrix into a transform. Will not have valid results
+     * for matrices that have any shearing or projection.
+     * 
+     * @param matrix The matrix to decompose.
+     * @param r The transform in which to store the result.
+     */
+    public static final void decompose(Mat4 matrix, Transform r)
+    {
+        Vec3 colx = new Vec3(matrix.a, matrix.b, matrix.c);
+        Vec3 coly = new Vec3(matrix.e, matrix.f, matrix.g);
+        Vec3 colz = new Vec3(matrix.i, matrix.j, matrix.k);
+        Vec3 sca = new Vec3(colx.length(), coly.length(), colz.length());
+        Mat3 rotMat = new Mat3(matrix.a/sca.x, matrix.b/sca.y, matrix.c/sca.z,
+                               matrix.e/sca.x, matrix.f/sca.y, matrix.g/sca.z,
+                               matrix.i/sca.x, matrix.j/sca.y, matrix.k/sca.z);
+        
+        r.sca.set(sca);
+        r.rot.setRotation(rotMat);
+        r.pos.set(matrix.d, matrix.h, matrix.l);
+    }
+    
+    /**
      * Performs a transform composition on {@code t0} and {@code t1}, and stores
      * the result in {@code r}. 
      * 
@@ -94,6 +116,20 @@ public class Transform implements Bufferable, Streamable
         Vec3.add(temp, t1.pos, r.pos);
         Quat.mult(t0.rot, t1.rot, r.rot);
         Vec3.mult(t0.sca, t1.sca, r.sca);
+    }
+    
+    /**
+     * Multiplies the given transform by the given matrix, and stores the result
+     * in {@code r}. This is expensive, and will not be valid for matrices that
+     * have any shearing or projection.
+     * 
+     * @param t The left-hand transform to multiply.
+     * @param m The right-hand matrix to multiply by.
+     * @param r The transform in which to store the result.
+     */
+    public static final void mult(Transform t, Mat4 m, Transform r)
+    {
+        mult(t, decompose(m), r);
     }
     
     /**
@@ -126,6 +162,20 @@ public class Transform implements Bufferable, Streamable
     }
     
     /**
+     * Returns a transform representation of the given matrix. Will not have
+     * valid results for matrices that have any shearing or projection.
+     * 
+     * @param matrix The matrix to decompose.
+     * @return A new transform.
+     */
+    public static final Transform decompose(Mat4 matrix)
+    {
+        Transform result = new Transform();
+        decompose(matrix, result);
+        return result;
+    }
+    
+    /**
      * Composes the two given transforms, and returns the result in a new
      * transform.
      * 
@@ -137,6 +187,22 @@ public class Transform implements Bufferable, Streamable
     {
         Transform result = new Transform();
         mult(t0, t1, result);
+        return result;
+    }
+    
+    /**
+     * Multiplies the given transform by the given matrix, and returns the
+     * result in a new transform. This is expensive, and will not be valid for
+     * matrices that have any shearing or projection.
+     * 
+     * @param t The left-hand transform to multiply.
+     * @param m The right-hand matrix to multiply by.
+     * @return A new transform.
+     */
+    public static final Transform mult(Transform t, Mat4 m)
+    {
+        Transform result = new Transform();
+        mult(t, m, result);
         return result;
     }
     
@@ -264,6 +330,19 @@ public class Transform implements Bufferable, Streamable
     }
     
     /**
+     * Sets this to the decomposition of the given matrix. Will not be valid if
+     * the matrix has any shearing or projection.
+     * 
+     * @param matrix The matrix to decompose.
+     * @return This transform.
+     */
+    public Transform setDecomposition(Mat4 matrix)
+    {
+        decompose(matrix, this);
+        return this;
+    }
+    
+    /**
      * Multiplies this by the given transform.
      * 
      * @param transform The transform to multiply by.
@@ -272,6 +351,19 @@ public class Transform implements Bufferable, Streamable
     public Transform mult(Transform transform)
     {
         mult(this, transform, this);
+        return this;
+    }
+    
+    /**
+     * Multiplies this by the given matrix. This is expensive, and will not be
+     * valid for matrices that have any shearing or projection.
+     * 
+     * @param matrix The matrix to multiply by.
+     * @return This transform.
+     */
+    public Transform mult(Mat4 matrix)
+    {
+        mult(this, matrix, this);
         return this;
     }
     
