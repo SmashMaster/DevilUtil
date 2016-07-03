@@ -1,7 +1,6 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.graphics.TexUtil;
-import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Util.PrimType;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -47,14 +46,12 @@ public final class TextureCubemap extends Texture<TextureCubemap>
         int baseFormat = TexUtil.getBaseFormat(format);
         if (baseFormat == -1) throw new IllegalArgumentException("Illegal image format.");
         
-        Util.PrimType primType = TexUtil.getPrimType(format);
-        int glPrimType = primType != null ? TexUtil.getGLPrim(primType) : GL11.GL_UNSIGNED_BYTE;
-        
+        int primType = TexUtil.getPrimitiveType(format);
         this.size = size;
         
         int oldID = tempBind();
         for (int i=0; i<6; i++) GL11.nglTexImage2D(GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-                0, format, size, size, 0, baseFormat, glPrimType, MemoryUtil.NULL);
+                0, format, size, size, 0, baseFormat, primType, MemoryUtil.NULL);
         tempUnbind(oldID);
         
         setVRAMUsage(TexUtil.getBits(format)*size*size*6);
@@ -75,19 +72,19 @@ public final class TextureCubemap extends Texture<TextureCubemap>
         if (images.length != 6) throw new IllegalArgumentException();
         
         size = images[0].width;
-        PrimType primType = images[0].type;
-        int glPrimType = TexUtil.getGLPrim(primType);
+        PrimType type = images[0].type;
+        int primType = TexUtil.getPrimitiveType(format);
         int dataFormat = TexUtil.getBaseFormat(format);
         int bands = TexUtil.getBands(dataFormat);
         
         for (Image image : images)
             if (image.width != size || image.height != size ||
-                    image.bands != bands || image.type != primType)
+                    image.bands != bands || image.type != type)
                 throw new IllegalArgumentException();
         
         int oldID = tempBind();
         for (int i=0; i<6; i++) GL11.nglTexImage2D(GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-                0, format, size, size, 0, dataFormat, glPrimType, images[i].address());
+                0, format, size, size, 0, dataFormat, primType, images[i].address());
         tempUnbind(oldID);
         
         setVRAMUsage(TexUtil.getBits(format)*size*size*6);

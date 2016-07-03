@@ -23,7 +23,6 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.graphics.TexUtil;
-import com.samrj.devil.math.Util.PrimType;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryUtil;
 
@@ -78,12 +77,11 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         
         this.width = width;
         this.height = height;
-        PrimType primType = TexUtil.getPrimType(format);
-        int glPrimType = primType != null ? TexUtil.getGLPrim(primType) : GL11.GL_UNSIGNED_BYTE;
+        int primType = TexUtil.getPrimitiveType(format);
         
         int oldID = tempBind();
         GL11.nglTexImage2D(target, 0, format, width, height, 0,
-                baseFormat, glPrimType, MemoryUtil.NULL);
+                baseFormat, primType, MemoryUtil.NULL);
         tempUnbind(oldID);
         
         setVRAMUsage(TexUtil.getBits(format)*width*height);
@@ -110,7 +108,7 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         
         width = image.width;
         height = image.height;
-        int primType = TexUtil.getGLPrim(image.type);
+        int primType = TexUtil.getPrimitiveType(format);
         
         int oldID = tempBind();
         GL11.nglTexImage2D(target, 0, format, width, height, 0,
@@ -156,7 +154,7 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         if (image.width != width || image.height != height)
             throw new IllegalArgumentException("Incompatible image dimensions.");
         
-        int primType = TexUtil.getGLPrim(image.type);
+        int primType = TexUtil.getPrimitiveType(format);
         int oldID = tempBind();
         GL11.nglTexSubImage2D(target, 0, 0, 0, width, height,
                 dataFormat, primType, image.address());
@@ -184,7 +182,7 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
     public T download(Image image, int format)
     {
         int dataFormat = TexUtil.getBaseFormat(format);
-        int primType = TexUtil.getGLPrim(image.type);
+        int primType = TexUtil.getPrimitiveType(format);
         int oldID = tempBind();
         GL11.nglGetTexImage(target, 0, dataFormat, primType, image.address());
         tempUnbind(oldID);

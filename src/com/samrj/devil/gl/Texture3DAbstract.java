@@ -1,8 +1,6 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.graphics.TexUtil;
-import com.samrj.devil.math.Util;
-import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.system.MemoryUtil;
 
@@ -65,15 +63,14 @@ abstract class Texture3DAbstract<T extends Texture3DAbstract<T>> extends Texture
         int baseFormat = TexUtil.getBaseFormat(format);
         if (baseFormat == -1) throw new IllegalArgumentException("Illegal image format.");
         
-        Util.PrimType primType = TexUtil.getPrimType(format);
-        int glPrimType = primType != null ? TexUtil.getGLPrim(primType) : GL11.GL_UNSIGNED_BYTE;
+        int primType = TexUtil.getPrimitiveType(format);
         
         this.width = width;
         this.height = height;
         this.depth = depth;
         int oldID = tempBind();
         GL12.nglTexImage3D(target, 0, format, width, height, depth, 0,
-                baseFormat, glPrimType, MemoryUtil.NULL);
+                baseFormat, primType, MemoryUtil.NULL);
         tempUnbind(oldID);
         
         setVRAMUsage(TexUtil.getBits(format)*width*height*depth);
@@ -104,7 +101,7 @@ abstract class Texture3DAbstract<T extends Texture3DAbstract<T>> extends Texture
         if (image.width != width || image.height != height)
             throw new IllegalArgumentException("Incompatible image dimensions.");
         
-        int primType = TexUtil.getGLPrim(image.type);
+        int primType = TexUtil.getPrimitiveType(format);
         int oldID = tempBind();
         GL12.nglTexSubImage3D(target, 0, 0, 0, depth, width, height, 1,
                 dataFormat, primType, image.address());

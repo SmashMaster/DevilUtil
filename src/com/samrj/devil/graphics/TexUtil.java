@@ -23,7 +23,6 @@
 package com.samrj.devil.graphics;
 
 import com.samrj.devil.gl.Image;
-import com.samrj.devil.math.Util.PrimType;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL14;
 import org.lwjgl.opengl.GL30;
@@ -280,20 +279,23 @@ public class TexUtil
     }
     
     /**
+     * Returns the OpenGL enumerator for the given primitive type.
+     * 
      * @param format an OpenGL texture format.
      * @return the primitive data type associated with the given OpenGL format.
      */
-    public static PrimType getPrimType(int format)
+    public static int getPrimitiveType(int format)
     {
         switch (format)
         {
+            default:
             case GL11.GL_LUMINANCE8:
             case GL11.GL_ALPHA8:
             case GL11.GL_LUMINANCE8_ALPHA8:
             case GL30.GL_R8:
             case GL30.GL_RG8:
             case GL11.GL_RGB8:
-            case GL11.GL_RGBA8: return PrimType.BYTE;
+            case GL11.GL_RGBA8: return GL11.GL_UNSIGNED_BYTE;
             
             case GL11.GL_LUMINANCE16:
             case GL11.GL_ALPHA16:
@@ -302,25 +304,25 @@ public class TexUtil
             case GL30.GL_R16:
             case GL30.GL_RG16:
             case GL11.GL_RGB16:
-            case GL11.GL_RGBA16: return PrimType.CHAR;
+            case GL11.GL_RGBA16: return GL11.GL_UNSIGNED_SHORT;
             
             case GL30.GL_R16I:
             case GL30.GL_RG16I:
             case GL30.GL_RGB16I:
-            case GL30.GL_RGBA16I: return PrimType.SHORT;
+            case GL30.GL_RGBA16I: return GL11.GL_SHORT;
             
             case GL30.GL_DEPTH_COMPONENT32F:
             case GL30.GL_R32F:
             case GL30.GL_RG32F:
             case GL30.GL_RGB32F:
-            case GL30.GL_RGBA32F: return PrimType.FLOAT;
+            case GL30.GL_RGBA32F: return GL11.GL_FLOAT;
             
             case GL30.GL_R32I:
             case GL30.GL_RG32I:
             case GL30.GL_RGB32I:
-            case GL30.GL_RGBA32I: return PrimType.INT;
-                
-            default: return null;
+            case GL30.GL_RGBA32I: return GL11.GL_INT;
+            
+            case GL30.GL_DEPTH24_STENCIL8: return GL30.GL_UNSIGNED_INT_24_8;
         }
     }
     
@@ -394,27 +396,6 @@ public class TexUtil
             case GL11.GL_LUMINANCE8_ALPHA8: return 16;
             case GL11.GL_LUMINANCE16_ALPHA16: return 32;
                 
-            default: return -1;
-        }
-    }
-    
-    /**
-     * Returns the OpenGL enumerator for the given primitive type. Bytes are
-     * always assumed to be unsigned. Returns -1 for primitive types which don't
-     * have a corresponding OpenGL enum.
-     * 
-     * @param type A primitive type.
-     * @return The OpenGL enum for the given type.
-     */
-    public static int getGLPrim(PrimType type)
-    {
-        switch (type)
-        {
-            case BYTE: return GL11.GL_UNSIGNED_BYTE;
-            case CHAR: return GL11.GL_UNSIGNED_SHORT;
-            case SHORT: return GL11.GL_SHORT;
-            case INT: return GL11.GL_INT;
-            case FLOAT: return GL11.GL_FLOAT;
             default: return -1;
         }
     }
