@@ -10,6 +10,7 @@ import com.samrj.devil.model.ModelObject;
 import java.nio.ByteBuffer;
 import java.util.List;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.system.MemoryUtil;
 
 /**
  * Class that performs mesh deformation for armatures.
@@ -20,17 +21,21 @@ import org.lwjgl.opengl.GL20;
  */
 public class MeshSkinner
 {
-    private final int numGroups;
+    public final int numGroups;
+    
     private final List<BoneSolver> bones;
-    private final Memory matrixBlock;
-    private final ByteBuffer matrixData;
+    private final Memory matBlock;
+    private final ByteBuffer matData;
+    
+    private Memory prevMatBlock;
+    private ByteBuffer prevMatData;
     
     public MeshSkinner(ModelObject<Mesh> object, ArmatureSolver solver)
     {
         numGroups = object.data.get().numGroups;
         bones = IOUtil.mapList(object.vertexGroups, solver::getBone);
-        matrixBlock = new Memory(bones.size()*16*4);
-        matrixData = matrixBlock.buffer;
+        matBlock = new Memory(bones.size()*16*4);
+        matData = matBlock.buffer;
     }
     
     /**
@@ -39,8 +44,11 @@ public class MeshSkinner
      */
     public void update()
     {
-        matrixData.rewind();
-        bones.forEach(bone -> bone.skinMatrix.write(matrixData));
+        if (prevMatricesEnabled())
+            MemoryUtil.memCopy(matBlock.address, prevMatBlock.address, matBlock.size);
+        
+        matData.rewind();
+        bones.forEach(bone -> bone.skinMatrix.write(matData));
     }
     
     /**
@@ -48,13 +56,39 @@ public class MeshSkinner
      * 
      * @param shader The shader program to load into.
      * @param arrayName The name of the matrix array variable to set.
-     * @param countName The name of the group count variable to set.
      */
-    public void glUniform(ShaderProgram shader, String arrayName, String countName)
+    public void uniformMats(ShaderProgram shader, String arrayName)
     {
-        int boneLoc = shader.getUniformLocation(arrayName);
-        GL20.nglUniformMatrix4fv(boneLoc, bones.size(), false, matrixBlock.address);
-        shader.uniform1i(countName, numGroups);
+        int loc = shader.getUniformLocation(arrayName);
+        GL20.nglUniformMatrix4fv(loc, bones.size(), false, matBlock.address);
+    }
+    
+    /**
+     * Returns whether space has been allocated for previous bone matrices.
+     */
+    public boolean prevMatricesEnabled()
+    {
+        return prevMatBlock != null;
+    }
+    
+    /**
+     * Allocates space the previous bone matrices. Useful for velocity-buffer
+     * motion blur.
+     */
+    public void enablePrevMatrices()
+    {
+        if (prevMatricesEnabled()) throw new IllegalStateException();
+        
+        prevMatBlock = new Memory(matBlock.size);
+        prevMatData = prevMatBlock.buffer;
+    }
+    
+    public void uniformPrevMats(ShaderProgram shader, String arrayName)
+    {
+        if (!prevMatricesEnabled()) throw new IllegalStateException();
+        
+        int loc = shader.getUniformLocation(arrayName);
+        GL20.nglUniformMatrix4fv(loc, bones.size(), false, prevMatBlock.address);
     }
     
     /**
@@ -62,6 +96,7 @@ public class MeshSkinner
      */
     public final void destroy()
     {
-        matrixBlock.free();
+        matBlock.free();
+        if (prevMatricesEnabled()) prevMatBlock.free();
     }
 }
