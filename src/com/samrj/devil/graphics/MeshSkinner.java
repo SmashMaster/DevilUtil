@@ -28,7 +28,7 @@ public class MeshSkinner
     private final ByteBuffer matData;
     
     private Memory prevMatBlock;
-    private ByteBuffer prevMatData;
+    private boolean onFirstFrame = true;
     
     public MeshSkinner(ModelObject<Mesh> object, ArmatureSolver solver)
     {
@@ -49,6 +49,12 @@ public class MeshSkinner
         
         matData.rewind();
         bones.forEach(bone -> bone.skinMatrix.write(matData));
+        
+        if (onFirstFrame && prevMatricesEnabled())
+        {
+            MemoryUtil.memCopy(matBlock.address, prevMatBlock.address, matBlock.size);
+            onFirstFrame = false;
+        }
     }
     
     /**
@@ -80,7 +86,6 @@ public class MeshSkinner
         if (prevMatricesEnabled()) throw new IllegalStateException();
         
         prevMatBlock = new Memory(matBlock.size);
-        prevMatData = prevMatBlock.buffer;
     }
     
     public void uniformPrevMats(ShaderProgram shader, String arrayName)
