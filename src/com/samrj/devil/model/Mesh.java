@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
  * DevilModel mesh.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2014 Samuel Johnson
+ * @copyright 2016 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Mesh extends DataBlock
@@ -100,6 +100,17 @@ public final class Mesh extends DataBlock
         
         for (int i=0; i<triangleIndexInts; i++) indexData.putInt(in.readInt());
         indexData.rewind();
+    }
+    
+    /**
+     * Returns the first material found in this mesh. This mesh may have other
+     * materials.
+     */
+    public Material getMaterial()
+    {
+        if (!hasMaterials) return null;
+        int index = vertexData.get(materialOffset);
+        return model.materials.get(index);
     }
     
     @Override
