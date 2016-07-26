@@ -27,10 +27,13 @@ import com.samrj.devil.math.Vec3;
 import com.samrj.devil.model.Mesh;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -40,7 +43,7 @@ import java.util.stream.Stream;
  * @author Samuel Johnson (SmashMaster)
  * @param <VERT> The type of vertex this mesh contains.
  */
-public class GeoMesh<VERT extends Vertex> implements Geometry
+public class GeoMesh<VERT extends Vertex<VERT>> implements Geometry
 {
     public final List<VERT> verts;
     public final List<Edge> edges;
@@ -52,36 +55,53 @@ public class GeoMesh<VERT extends Vertex> implements Geometry
         verts = new ArrayList<>(mesh.numVertices);
         for (int i=0; i<mesh.numVertices; i++) verts.add(constructor.get());
         
-        VERT first = verts.get(0);
+        Vertex first = verts.get(0);
         ByteBuffer vBuffer = mesh.vertexData;
+        
         for (int i=0; i<first.getNumAttributes(); i++)
         {
             vBuffer.position(first.getAttributeOffset(mesh, i));
-            for (VERT vert : verts) vert.read(vBuffer, i);
+            for (Vertex vert : verts) vert.read(vBuffer, i);
         }
         
         ByteBuffer iBuffer = mesh.indexData;
         iBuffer.rewind();
         faces = new ArrayList<>(mesh.numTriangles);
         edges = new ArrayList<>(mesh.numTriangles*3);
+        
         for (int i=0; i<mesh.numTriangles; i++)
         {
-            Face f = new Face(verts.get(iBuffer.getInt()),
-                              verts.get(iBuffer.getInt()),
-                              verts.get(iBuffer.getInt()));
+            Vertex a = verts.get(iBuffer.getInt());
+            Vertex b = verts.get(iBuffer.getInt());
+            Vertex c = verts.get(iBuffer.getInt());
             
+            Face f = new Face(a, b, c);
+            f.ab = new Edge(a, b);
+            f.bc = new Edge(b, c);
+            f.ca = new Edge(c, a);
+            
+            a.faces.add(f);
+            b.faces.add(f);
+            c.faces.add(f);
+            
+            f.ab.faces.add(f);
+            f.bc.faces.add(f);
+            f.ca.faces.add(f);
+            
+            edges.add(f.ab);
+            edges.add(f.bc);
+            edges.add(f.ca);
             faces.add(f);
-            edges.add(new Edge(f.a, f.b));
-            edges.add(new Edge(f.b, f.c));
-            edges.add(new Edge(f.c, f.a));
         }
         iBuffer.rewind();
         
         updateBounds();
     }
     
-    private void replace(List<Edge> edges, List<Face> faces, VERT ov, VERT nv)
+    private void replace(List<Edge> edges, List<Face> faces, Vertex ov, Vertex nv)
     {
+        nv.faces.addAll(ov.faces);
+        
         for (Edge edge : edges)
         {
             if (edge.a == ov) edge.a = nv;
@@ -97,8 +117,8 @@ public class GeoMesh<VERT extends Vertex> implements Geometry
     }
     
     /**
-     * Optimizes this geometry, removing degenerate vertices, edges, and
-     * triangles. Also calculates adjacency.
+     * Optimizes this geometry, removing degenerate vertices, edges, and faces.
+     * Also calculates adjacency.
      * 
      * @param vertWeldDist The distance in which to weld nearby vertices.
      */
@@ -122,8 +142,8 @@ public class GeoMesh<VERT extends Vertex> implements Geometry
                     VERT v = it.next();
                     if (v.p.squareDist(vertex.p) <= vertWeldDist && v.canWeld(vertex))
                     {
-                        vertex.p.mult(sum).add(v.p).div(++sum);
                         it.remove();
+                        vertex.p.mult(sum).add(v.p).div(++sum);
                         replace(edges, faces, v, vertex);
                     }
                 }
@@ -148,7 +168,7 @@ public class GeoMesh<VERT extends Vertex> implements Geometry
             while (it.hasNext())
             {
                 Face f = it.next();
-                if (Geo3DUtil.area(f.a.p, f.b.p, f.c.p) < 0.0001f) it.remove();
+                if (f.a == f.b || f.b == f.c || f.c == f.a) it.remove();
             }
         }
         
@@ -165,22 +185,16 @@ public class GeoMesh<VERT extends Vertex> implements Geometry
                 while (it.hasNext())
                 {
                     Edge e = it.next();
-                    if (edge.equals(e)) it.remove();
+                    if (edge.equals(e))
+                    {
+                        it.remove();
+                        edge.faces.addAll(e.faces);
+                    }
                 }
 
                 edges.add(edge);
             }
         }
-        
-        /**
-         * Could also remove the following cases.
-         * -Vertices contained by edges.
-         * -Vertices contained by faces.
-         * -Edges contained by edges.
-         * -Edges contained by faces.
-         * -Faces with zero surface area. (All vertices collinear)
-         * -Faces contained by faces.
-         */
     }
     
     public final void updateBounds()
@@ -221,6 +235,7 @@ public class GeoMesh<VERT extends Vertex> implements Geometry
         public static final int POSITION = 0;
         
         public final Vec3 p = new Vec3();
+        public final Set<Face> faces = Collections.newSetFromMap(new IdentityHashMap<>(3));
         
         public Vertex()
         {
@@ -262,26 +277,28 @@ public class GeoMesh<VERT extends Vertex> implements Geometry
         {
             return Type.VERTEX;
         }
+
+        @Override
+        public Stream<Face> getFaces()
+        {
+            return faces.stream();
+        }
     }
     
-    public final class Edge implements GeomObject
+    public static final class Edge implements GeomObject
     {
-        public VERT a, b;
+        public Vertex a, b;
+        public final Set<Face> faces = Collections.newSetFromMap(new IdentityHashMap<>(2));
         
-        private Edge(VERT a, VERT b)
+        private Edge(Vertex a, Vertex b)
         {
             this.a = a; this.b = b;
         }
         
-        public boolean equals(VERT a, VERT b)
-        {
-            return (this.a == a && this.b == b) ||
-                   (this.a == b && this.b == a);
-        }
-
         public boolean equals(Edge edge)
         {
-            return equals(edge.a, edge.b);
+            return (this.a == edge.a && this.b == edge.b) ||
+                   (this.a == edge.b && this.b == edge.a);
         }
         
         @Override
@@ -289,13 +306,20 @@ public class GeoMesh<VERT extends Vertex> implements Geometry
         {
             return Type.EDGE;
         }
+
+        @Override
+        public Stream<Face> getFaces()
+        {
+            return faces.stream();
+        }
     }
     
-    public final class Face implements GeomObject
+    public static final class Face implements GeomObject
     {
-        public VERT a, b, c;
+        public Vertex a, b, c;
+        public Edge ab, bc, ca;
         
-        private Face(VERT a, VERT b, VERT c)
+        private Face(Vertex a, Vertex b, Vertex c)
         {
             this.a = a; this.b = b; this.c = c;
         }
@@ -304,6 +328,17 @@ public class GeoMesh<VERT extends Vertex> implements Geometry
         public final Type getType()
         {
             return Type.FACE;
+        }
+
+        @Override
+        public Stream<Face> getFaces()
+        {
+            return Stream.of(this);
+        }
+        
+        public Vec3 getNormal()
+        {
+            return Vec3.sub(c.p, a.p).cross(Vec3.sub(b.p, a.p)).normalize();
         }
     }
 }

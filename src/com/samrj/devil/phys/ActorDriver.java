@@ -2,12 +2,14 @@ package com.samrj.devil.phys;
 
 import com.samrj.devil.geo3d.Ellipsoid;
 import com.samrj.devil.geo3d.Geo3DUtil;
+import com.samrj.devil.geo3d.GeoMesh.Face;
 import com.samrj.devil.geo3d.GeomObject;
 import com.samrj.devil.geo3d.Geometry;
 import com.samrj.devil.geo3d.SweepResult;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.util.FloatConsumer;
+import java.util.stream.Stream;
 
 /**
  * Basic class handling collision and movement of a character in a 3D space.
@@ -18,7 +20,20 @@ import com.samrj.devil.util.FloatConsumer;
  */
 public final class ActorDriver
 {
-    public static final GeomObject VIRTUAL_GROUND = () -> GeomObject.Type.VIRTUAL;
+    public static final GeomObject VIRTUAL_GROUND = new GeomObject()
+    {
+        @Override
+        public GeomObject.Type getType()
+        {
+            return GeomObject.Type.VIRTUAL;
+        }
+
+        @Override
+        public Stream<Face> getFaces()
+        {
+            return Stream.empty();
+        }
+    };
     
     public final Vec3 pos, vel = new Vec3();
     
@@ -34,9 +49,8 @@ public final class ActorDriver
     //The downward acceleration that this driver will experience at all times.
     public float gravity = 9.80665f;
     
-    //The distance this driver can step over otherwise unwalkable surfaces,
-    //like stairs.
-    public float stepHeight = 0.25f;
+    //The distance this driver can climb over steep surfaces like stairs.
+    public float climbHeight = 0.25f;
     
     //The maximum y-component of the normal vector for walkable ground.
     //Determines the steepness of hills this driver can walk up. Use
@@ -176,6 +190,16 @@ public final class ActorDriver
         return out;
     }
     
+    private void getNormal(GeomObject obj, Vec3 result)
+    {
+        obj.getFaces()
+                .map(Face::getNormal)
+                .peek(n -> {if (n.y < 0.0f) n.negate();})
+                .reduce((a, b) -> a.y > b.y ? a : b)
+                .filter(n -> n.y > result.y)
+                .ifPresent(result::set);
+    }
+    
     /**
      * Steps the player's simulation forward by the given time-step.
      * 
@@ -224,45 +248,56 @@ public final class ActorDriver
         pos.add(displacement);
         
         applyGravity = true;
+        groundObject = null;
         
         //Find the ground
         if (geom != null && startOnGround)
         {
-            groundObject = null;
             float oldY = pos.y;
-            pos.y += stepHeight;
-            Vec3 step = new Vec3(0.0f, -2.0f*stepHeight, 0.0f);
+            pos.y += climbHeight;
+            
+            Vec3 step = new Vec3(0.0f, -2.0f*climbHeight, 0.0f);
             SweepResult sweep = geom.sweepUnsorted(shape, step)
                     .filter(e -> isValidGround(e.normal))
                     .reduce((a, b) -> a.time < b.time ? a : b)
                     .orElse(null);
 
             pos.y = oldY;
+            
             if (sweep != null)
             {
-                float groundDist = (sweep.time*2.0f - 1.0f)*stepHeight;
+                float groundDist = (sweep.time*2.0f - 1.0f)*climbHeight;
                 pos.y -= groundDist*(1.0f - (float)Math.pow(0.5f, dt*groundFloatDecay));
+                applyGravity = (sweep.time - 0.5f)*2.0f > groundThreshold;
+                
                 groundObject = sweep.object;
                 groundNormal.set(sweep.normal);
-                applyGravity = (sweep.time - 0.5f)*2.0f > groundThreshold;
             }
         }
+        
+        Vec3 nudge = new Vec3();
+        int[] collisions = {0};
 
         //Clip against the level
         if (geom != null) geom.intersectUnsorted(shape).forEach(isect ->
         {
-            pos.add(Vec3.sub(isect.point, isect.surface));
-            Geo3DUtil.restrain(vel, isect.normal);
-
-            if (!isValidGround(isect.normal)) return;
-            if (!onGround() || isect.normal.y > groundNormal.y)
+            nudge.add(Vec3.sub(isect.point, isect.surface));
+            collisions[0]++;
+            
+            float height = isect.point.y - pos.y + shape.radii.y;
+            if (height > climbHeight) Geo3DUtil.restrain(vel, isect.normal);
+            else getNormal(isect.object, isect.normal);
+            
+            if (isValidGround(isect.normal) && (!onGround() || isect.normal.y > groundNormal.y))
             {
                 groundObject = isect.object;
                 groundNormal.set(isect.normal);
             }
         });
         
+        if (collisions[0] > 0) pos.add(nudge.div(collisions[0]));
         boolean endOnGround = onGround();
+        if (endOnGround) Geo3DUtil.restrain(vel, groundNormal);
 
         //Check for landing
         if (landCallback != null && !startOnGround && endOnGround)

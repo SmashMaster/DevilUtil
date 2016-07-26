@@ -56,7 +56,6 @@ public class Source extends DALObj
     
     public void play()
     {
-        AL10.alSourcei(id, AL10.AL_LOOPING, id);
         AL10.alSourcePlay(id);
     }
     

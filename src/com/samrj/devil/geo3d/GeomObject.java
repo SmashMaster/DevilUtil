@@ -1,5 +1,8 @@
 package com.samrj.devil.geo3d;
 
+import com.samrj.devil.geo3d.GeoMesh.Face;
+import java.util.stream.Stream;
+
 public interface GeomObject
 {
     public enum Type
@@ -8,4 +11,5 @@ public interface GeomObject
     }
     
     public Type getType();
+    public Stream<Face> getFaces();
 }
