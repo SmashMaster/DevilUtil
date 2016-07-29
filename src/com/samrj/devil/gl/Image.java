@@ -24,6 +24,7 @@ package com.samrj.devil.gl;
 
 import com.samrj.devil.io.Memory;
 import com.samrj.devil.math.Util.PrimType;
+import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
@@ -198,7 +199,7 @@ public final class Image extends DGLObj
             throw new IllegalArgumentException("Raster size must equal image buffer size.");
         if (raster.getNumBands() < bands)
             throw new IllegalArgumentException("Not enough bands supplied.");
-        if (getType(raster) != type) throw new IllegalArgumentException("Illegal raster format supplied.");
+//        if (getType(raster) != type) throw new IllegalArgumentException("Illegal raster format supplied.");
         
         Sampler s;
         switch (type)
@@ -212,6 +213,24 @@ public final class Image extends DGLObj
         }
         
         return sample(s).rewind();
+    }
+    
+    /**
+     * Creates a new buffered image for this image data. This image data must be
+     * in a byte format, and have 3 or 4 bands.
+     * 
+     * @return A new BufferedImage.
+     */
+    public BufferedImage toBufferedImage()
+    {
+        if (deleted) throw new IllegalStateException("Image buffer deleted.");
+        if (type != PrimType.BYTE) throw new IllegalStateException("Image buffer must be in byte format.");
+        if (bands != 3 && bands != 4) throw new IllegalStateException("Image must have 4 or fewer bands.");
+        
+        int biType = bands == 3 ? BufferedImage.TYPE_INT_RGB : BufferedImage.TYPE_INT_ARGB;
+        BufferedImage out = new BufferedImage(width, height, biType);
+        write(out.getRaster());
+        return out;
     }
     
     /**

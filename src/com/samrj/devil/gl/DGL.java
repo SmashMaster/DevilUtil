@@ -23,6 +23,7 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.graphics.TexUtil;
+import com.samrj.devil.io.MemStack;
 import com.samrj.devil.math.Util.PrimType;
 import com.samrj.devil.res.Resource;
 import java.awt.image.BufferedImage;
@@ -39,6 +40,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GLCapabilities;
+import org.lwjgl.system.MemoryUtil;
 
 /**
  * DevilGL. A state-based, object-oriented, forward compatible OpenGL wrapper;
@@ -267,6 +269,33 @@ public final class DGL
         if (bImage == null) throw new IOException("Cannot read image from " + path);
         
         return loadImage(bImage.getRaster());
+    }
+    
+    /**
+     * Creates a new image from the current read framebuffer and viewport.
+     * Useful for taking screenshots.
+     * 
+     * @return A newly allocated image.
+     */
+    public static Image screenshotImage()
+    {
+        int x, y, w, h;
+        {
+            long xAddr = MemStack.push(4);
+            long yAddr = MemStack.push(4);
+            long wAddr = MemStack.push(4);
+            long hAddr = MemStack.push(4);
+            GL11.nglGetIntegerv(GL11.GL_VIEWPORT, xAddr);
+            x = MemoryUtil.memGetInt(xAddr);
+            y = MemoryUtil.memGetInt(yAddr);
+            w = MemoryUtil.memGetInt(wAddr);
+            h = MemoryUtil.memGetInt(hAddr);
+            MemStack.pop(4);
+        }
+        
+        Image out = genImage(w, h, 3, PrimType.BYTE);
+        GL11.nglReadPixels(x, y, w, h, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, out.address());
+        return out;
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Texture methods">
