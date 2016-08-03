@@ -22,9 +22,11 @@
 
 package com.samrj.devil.gl;
 
+import com.samrj.devil.io.MemStack;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL33;
 
 /**
  * Abstract OpenGL texture class.
@@ -144,6 +146,15 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
         return getThis();
     }
     
+//    public final T paramiv(int param, int... values)
+//    {
+//        if (!isBound()) throw new IllegalStateException("Texture must be bound.");
+//        long address = MemStack.wrapi(values);
+//        GL11.nglTexParameteriv(target, param, address);
+//        MemStack.pop();
+//        return getThis();
+//    }
+    
     /**
      * Sets the given parameter to the given float for this texture. The texture
      * must be bound.
@@ -156,6 +167,24 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
     {
         if (!isBound()) throw new IllegalStateException("Texture must be bound.");
         GL11.glTexParameterf(target, param, value);
+        return getThis();
+    }
+    
+//    public final T paramfv(int param, float... values)
+//    {
+//        if (!isBound()) throw new IllegalStateException("Texture must be bound.");
+//        long address = MemStack.wrapf(values);
+//        GL11.nglTexParameterfv(target, param, address);
+//        MemStack.pop();
+//        return getThis();
+//    }
+    
+    public final T swizzle(int r, int g, int b, int a)
+    {
+        if (!isBound()) throw new IllegalStateException("Texture must be bound.");
+        long address = MemStack.wrapi(r, g, b, a);
+        GL11.nglTexParameteriv(target, GL33.GL_TEXTURE_SWIZZLE_RGBA, address);
+        MemStack.pop();
         return getThis();
     }
     
