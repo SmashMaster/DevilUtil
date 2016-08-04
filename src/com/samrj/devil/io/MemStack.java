@@ -1,5 +1,6 @@
 package com.samrj.devil.io;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
 /**
@@ -85,6 +86,22 @@ public final class MemStack
         long address = push(size);
         for (Bufferable obj : array) obj.write(BUF);
         return address;
+    }
+    
+    public static long wrap(String string)
+    {
+        try
+        {
+            byte[] bytes = string.getBytes("UTF-8");
+            long address = push(bytes.length + 1);
+            BUF.put(bytes);
+            BUF.put((byte)0);
+            return address;
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
     
     public static void pop()

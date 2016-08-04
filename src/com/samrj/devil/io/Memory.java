@@ -22,6 +22,7 @@
 
 package com.samrj.devil.io;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import static org.lwjgl.system.MemoryUtil.*;
 
@@ -152,6 +153,30 @@ public final class Memory
         Memory mem = new Memory(size);
         for (Bufferable obj : array) obj.write(mem.buffer);
         return mem;
+    }
+    
+    /**
+     * Encodes the given string as null-terminated UTF-8 and writes it to a
+     * newly allocated block of memory.
+     * 
+     * @param string A string to write.
+     * @return A newly allocated block of memory containing the given string.
+     */
+    public static Memory wrap(String string)
+    {
+        try
+        {
+            byte[] bytes = string.getBytes("UTF-8");
+            Memory mem = new Memory(bytes.length + 1);
+            ByteBuffer buffer = mem.buffer;
+            buffer.put(bytes);
+            buffer.put((byte)0);
+            return mem;
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
     
     public final int size;

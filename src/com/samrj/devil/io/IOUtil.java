@@ -4,7 +4,9 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,6 +17,7 @@ import java.util.NoSuchElementException;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import org.lwjgl.system.Pointer;
 
 /**
  * Utility methods for data munging.
@@ -101,6 +104,74 @@ public final class IOUtil
         {
             T value = it.next();
             if (!predicate.test(value)) it.remove();
+        }
+    }
+    
+    public static String unbufferUTF(ByteBuffer buffer)
+    {
+        try
+        {
+            int start = buffer.position();
+            while (buffer.get() != 0);
+            int length = buffer.position() - start - 1;
+            byte[] bytes = new byte[length];
+            buffer.get(bytes, start, length);
+            return new String(bytes, "UTF-8");
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public static void bufferUTF(String string, ByteBuffer buffer)
+    {
+        try
+        {
+            byte[] bytes = string.getBytes("UTF-8");
+            buffer.put(bytes);
+            buffer.put((byte)0);
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public static int getUTFSize(String string)
+    {
+        int count = 0;
+        for (int i = 0, len = string.length(); i < len; i++)
+        {
+            char c = string.charAt(i);
+            if (c <= 0x7F) count++;
+            else if (c <= 0x7FF) count += 2;
+            else if (Character.isHighSurrogate(c))
+            {
+                count += 4;
+                i++;
+            } else count += 3;
+        }
+        return count;
+    }
+    
+    public static long unbufferPointer(ByteBuffer buffer)
+    {
+        switch (Pointer.POINTER_SIZE)
+        {
+            case 4: return buffer.getInt();
+            case 8: return buffer.getLong();
+            default: throw new Error("Unknown pointer size on this platform.");
+        }
+    }
+    
+    public static void bufferPointer(long address, ByteBuffer buffer)
+    {
+        switch (Pointer.POINTER_SIZE)
+        {
+            case 4: buffer.putInt((int)address); return;
+            case 8: buffer.putLong(address); return;
+            default: throw new Error("Unknown pointer size on this platform.");
         }
     }
     
