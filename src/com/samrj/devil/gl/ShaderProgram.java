@@ -29,20 +29,17 @@ import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.Vec4;
+import com.samrj.devil.util.IdentitySet;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL31;
-import org.lwjgl.opengl.GL43;
 import org.lwjgl.system.MemoryUtil;
 
 /**
@@ -73,7 +70,7 @@ public final class ShaderProgram extends DGLObj
         if (!DGL.getCapabilities().OpenGL20)
             throw new UnsupportedOperationException("Shader programs unsupported in OpenGL < 2.0");
         id = GL20.glCreateProgram();
-        shaders = Collections.newSetFromMap(new IdentityHashMap<>());
+        shaders = new IdentitySet<>();
         state = State.NEW;
     }
     
@@ -636,14 +633,6 @@ public final class ShaderProgram extends DGLObj
         return true;
     }
     // </editor-fold>
-    
-    public void bindStorageBufferObject(String name, int binding, SSBO buffer)
-    {
-        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int index = GL43.glGetProgramResourceIndex(id, GL43.GL_SHADER_STORAGE_BLOCK, name);
-        GL43.glShaderStorageBlockBinding(id, index, binding);
-        GL30.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, binding, buffer != null ? buffer.id : 0);
-    }
     
     /**
      * Binds the given color output name to the given color attachment.

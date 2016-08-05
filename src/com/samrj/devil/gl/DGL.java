@@ -736,15 +736,6 @@ public final class DGL
         return readFBO == drawFBO ? readFBO : null;
     }
     // </editor-fold>
-    // <editor-fold defaultstate="collapsed" desc="SSBO methods">
-    /**
-     * @return A newly created frame buffer.
-     */
-    public static SSBO genSSBO()
-    {
-        return gen(new SSBO());
-    }
-    // </editor-fold>
     
     /**
      * Draws the given vertex data using the given primitive mode. A shader must
