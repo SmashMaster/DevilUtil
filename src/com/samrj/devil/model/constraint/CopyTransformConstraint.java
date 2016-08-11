@@ -20,6 +20,9 @@ public class CopyTransformConstraint implements ArmatureSolver.Constraint
     
     public CopyTransformConstraint(BoneSolver source, BoneSolver target)
     {
+        if (source == null || target == null) throw new NullPointerException();
+        if (source.getArmature() != target.getArmature()) throw new IllegalArgumentException();
+        
         this.source = source;
         parent = target.getParent();
         this.target = target;

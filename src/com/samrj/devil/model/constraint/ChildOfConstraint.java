@@ -21,6 +21,9 @@ public class ChildOfConstraint implements ArmatureSolver.Constraint
     
     public ChildOfConstraint(BoneSolver parent, BoneSolver child)
     {
+        if (parent == null || child == null) throw new NullPointerException();
+        if (parent.getArmature() != child.getArmature()) throw new IllegalArgumentException();
+        
         this.parent = parent;
         realParent = child.getParent();
         this.child = child;

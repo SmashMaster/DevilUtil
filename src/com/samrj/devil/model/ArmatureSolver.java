@@ -250,5 +250,10 @@ public final class ArmatureSolver
 
             if (Mat3.determinant(rotMatrix) != 0.0f) Mat3.invert(rotMatrix, invRotMat);
         }
+        
+        public ArmatureSolver getArmature()
+        {
+            return ArmatureSolver.this;
+        }
     }
 }
