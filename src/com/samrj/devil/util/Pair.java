@@ -6,7 +6,7 @@ import java.util.Objects;
  * Generic pair class.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2016 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class Pair<A, B>
@@ -35,6 +35,12 @@ public class Pair<A, B>
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         Pair<?, ?> other = (Pair<?, ?>)obj;
-        return Objects.equals(a, other.a) && Objects.equals(this.b, other.b);
+        return Objects.equals(a, other.a) && Objects.equals(b, other.b);
+    }
+    
+    @Override
+    public String toString()
+    {
+        return "{" + a + ", " + b + "}";
     }
 }
