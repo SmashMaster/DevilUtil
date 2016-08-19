@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
  * Basic 2D integer vector class.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2016 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class Vec2i implements Bufferable
@@ -26,6 +26,24 @@ public class Vec2i implements Bufferable
     public Vec2i(Vec2i v)
     {
         x = v.x; y = v.y;
+    }
+    
+    public Vec2i set()
+    {
+        x = 0; y = 0;
+        return this;
+    }
+    
+    public Vec2i set(int x, int y)
+    {
+        this.x = x; this.y = y;
+        return this;
+    }
+    
+    public Vec2i set(Vec2i v)
+    {
+        x = v.x; y = v.y;
+        return this;
     }
     
     @Override

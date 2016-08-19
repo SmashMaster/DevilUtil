@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2016 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,16 +22,10 @@
 
 package com.samrj.devil.game;
 
-import com.samrj.devil.config.CfgBoolean;
-import com.samrj.devil.config.CfgInteger;
-import com.samrj.devil.config.CfgResolution;
-import com.samrj.devil.config.Configuration;
 import com.samrj.devil.display.DisplayException;
 import com.samrj.devil.display.GLFWUtil;
 import com.samrj.devil.display.HintSet;
-import com.samrj.devil.game.step.StepDynamicSplit;
 import com.samrj.devil.game.step.TimeStepper;
-import com.samrj.devil.game.sync.SleepHybrid;
 import com.samrj.devil.game.sync.Sync;
 import com.samrj.devil.math.Vec2i;
 import org.lwjgl.glfw.GLFW;
@@ -53,17 +47,6 @@ public abstract class Game
     private static boolean errorCallInit;
     private static boolean initialized;
     private static Thread mainThread;
-    
-    private static Configuration defaultConfig()
-    {
-        Configuration config = new Configuration();
-        config.addField("fullscreen", new CfgBoolean(false));
-        config.addField("borderless", new CfgBoolean(false));
-        config.addField("res", new CfgResolution(1280, 720));
-        config.addField("vsync", new CfgBoolean(false));
-        config.addField("fps", new CfgInteger(60));
-        return config;
-    }
     
     private static void ensureMainThread()
     {
@@ -124,7 +107,6 @@ public abstract class Game
     private long lastFrameTime;
     private long frameStart;
     
-    public final Configuration config;
     public final long monitor, window;
     public final GLCapabilities capabilities;
     public final Sync sync;
@@ -140,59 +122,39 @@ public abstract class Game
     /**
      * Creates a new game object. Initializes the window with the given config.
      * 
-     * The configuration must have the following fields:
-     * 
-     * fullscreen (boolean)
-     * borderless (boolean)
-     * res (resolution)
-     * vsync (boolean)
-     * fps (integer)
-     * msaa (integer)
-     * 
-     * It may have other fields as well, but they will not affect window
-     * creation.
-     * 
      * @param title The title of the window.
      * @param hints The window hints to use.
      * @param config The configuration to use.
      * @throws OpenGLException If there is an OpenGL error.
      */
-    public Game(String title, HintSet hints, Configuration config)
+    public Game(String title, HintSet hints, GameConfig config)
     {
         if (title == null || config == null) throw new NullPointerException();
         if (!initialized) throw new IllegalStateException("Game.init() not called.");
         ensureMainThread();
-        this.config = config;
-        
-        boolean fullscreen = config.getBoolean("fullscreen");
-        boolean borderless = config.getBoolean("borderless");
-        CfgResolution res = config.getField("res");
-        boolean vsync = config.getBoolean("vsync");
-        int fps = config.getInt("fps");
-        int msaa = config.hasField("msaa", CfgInteger.class) ? config.getInt("msaa") : 0;
         
         // <editor-fold defaultstate="collapsed" desc="Initialize Window">
         {
             GLFW.glfwDefaultWindowHints();
             GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GL11.GL_FALSE);
             GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GL11.GL_FALSE);
-            GLFW.glfwWindowHint(GLFW.GLFW_DECORATED, borderless ? GL11.GL_FALSE : GL11.GL_TRUE);
+            GLFW.glfwWindowHint(GLFW.GLFW_DECORATED, config.borderless ? GL11.GL_FALSE : GL11.GL_TRUE);
             GLFW.glfwWindowHint(GLFW.GLFW_FLOATING, GL11.GL_FALSE);
             GLFW.glfwWindowHint(GLFW.GLFW_STENCIL_BITS, 0);
-            if (msaa > 0) GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, msaa);
+            if (config.msaa > 0) GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, config.msaa);
             if (hints != null) hints.glfw();
             
             GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_DEBUG_CONTEXT, GL11.GL_TRUE);
 
-            monitor = fullscreen ? GLFW.glfwGetPrimaryMonitor() : 0;
-            window = GLFW.glfwCreateWindow(res.width, res.height, title, monitor, 0);
+            monitor = config.fullscreen ? GLFW.glfwGetPrimaryMonitor() : 0;
+            window = GLFW.glfwCreateWindow(config.resolution.x, config.resolution.y, title, monitor, 0);
             
             GLFW.glfwMakeContextCurrent(window);
-            GLFW.glfwSwapInterval(vsync ? 1 : 0);
+            GLFW.glfwSwapInterval(config.vsync ? 1 : 0);
             GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
         }
         
-        if (!fullscreen) //Center window
+        if (!config.fullscreen) //Center window
         {
             Vec2i windowSize = GLFWUtil.getWindowSize(window);
             GLFWVidMode mode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
@@ -204,15 +166,15 @@ public abstract class Game
         // <editor-fold defaultstate="collapsed" desc="Initialize OpenGL Context">
         {
             capabilities = GL.createCapabilities();
-            GL11.glViewport(0, 0, res.width, res.height);
+            GL11.glViewport(0, 0, config.resolution.x, config.resolution.y);
             GL11.glDisable(GL13.GL_MULTISAMPLE);
         }
         // </editor-fold>
         // <editor-fold defaultstate="collapsed" desc="Initialize Sync">
         {
-            if (!vsync && fps > 0)
+            if (!config.vsync && config.fps > 0)
             {
-                sync = new Sync(fps, new SleepHybrid());
+                sync = new Sync(config.fps, config.sleeper);
                 frameTime = sync.getFrameTime();
             }
             else
@@ -231,7 +193,7 @@ public abstract class Game
             eventBuffer = new EventBuffer(window, mouse, keyboard);
         }
         // </editor-fold>
-        stepper = new StepDynamicSplit(1.0f/480.0f, 1.0f/120.0f);
+        stepper = config.stepper;
     }
     
     /**
@@ -240,7 +202,7 @@ public abstract class Game
      * @param title The title of the window.
      * @param config The configuration to use.
      */
-    public Game(String title, Configuration config)
+    public Game(String title, GameConfig config)
     {
         this(title, null, config);
     }
@@ -253,7 +215,7 @@ public abstract class Game
      */
     public Game()
     {
-        this("Game", defaultConfig());
+        this("Game", new GameConfig());
     }
     
     /**
@@ -265,6 +227,11 @@ public abstract class Game
     {
         ensureMainThread();
         GLFW.glfwSetWindowTitle(window, title);
+    }
+    
+    public final Vec2i getResolution()
+    {
+        return GLFWUtil.getWindowSize(window);
     }
     
     // <editor-fold defaultstate="collapsed" desc="Overridable Methods">

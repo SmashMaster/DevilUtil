@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2016 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@ import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Vec2;
+import com.samrj.devil.math.Vec2i;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.Vec4;
 import org.lwjgl.opengl.GL11;
@@ -95,6 +96,11 @@ public class Camera3D
         right = new Vec3(1.0f, 0.0f, 0.0f);
         up = new Vec3(0.0f, 1.0f, 0.0f);
         forward = new Vec3(0.0f, 0.0f, -1.0f);
+    }
+    
+    public Camera3D(float zNear, float zFar, float fov, Vec2i resolution)
+    {
+        this(zNear, zFar, fov, resolution.y/(float)resolution.x);
     }
     
     /**
