@@ -530,6 +530,25 @@ public class Vec3 implements Bufferable, Streamable
         if (d0 <= dist) copy(dest, result);
         else madd(v, dp, dist/d0, result);
     }
+    
+    /**
+     * Rotates {@code v} around the given axis, by the given angle, and stores
+     * the result in {@code result}. Assumes the given axis is normalized.
+     * 
+     * @param v The vector to rotate.
+     * @param axis The unit axis vector to rotate around.
+     * @param angle The angle to rotate by, in radians.
+     * @param result The vector in which to store the result.
+     */
+    public static final void rotate(Vec3 v, Vec3 axis, float angle, Vec3 result)
+    {
+        float cos = (float)Math.cos(angle);
+        float sin = (float)Math.sin(angle);
+        
+        Vec3 temp = mult(v, cos);
+        madd(temp, cross(axis, v), sin, temp);
+        madd(temp, axis, dot(axis, v)*(1.0f - cos), result);
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
     /**
@@ -836,6 +855,22 @@ public class Vec3 implements Bufferable, Streamable
     {
         Vec3 result = new Vec3();
         move(v, dest, dist, result);
+        return result;
+    }
+    
+    /**
+     * Rotates {@code v} around the given axis, by the given angle, and returns
+     * the result in a new vector. Assumes the given axis is normalized.
+     * 
+     * @param v The vector to rotate.
+     * @param axis The unit axis vector to rotate around.
+     * @param angle The angle to rotate by, in radians.
+     * @return A new vector containing the result.
+     */
+    public static final Vec3 rotate(Vec3 v, Vec3 axis, float angle)
+    {
+        Vec3 result = new Vec3();
+        rotate(v, axis, angle, result);
         return result;
     }
     // </editor-fold>
@@ -1332,6 +1367,20 @@ public class Vec3 implements Bufferable, Streamable
     public Vec3 move(Vec3 dest, float dist)
     {
         move(this, dest, dist, this);
+        return this;
+    }
+    
+    /**
+     * Rotates this vector around the given axis, by the given angle. Assumes
+     * the given axis is normalized.
+     * 
+     * @param axis The unit axis vector to rotate around.
+     * @param angle The angle to rotate by, in radians.
+     * @return This vector.
+     */
+    public Vec3 rotate(Vec3 axis, float angle)
+    {
+        rotate(this, axis, angle, this);
         return this;
     }
     // </editor-fold>

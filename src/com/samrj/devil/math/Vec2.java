@@ -446,6 +446,24 @@ public class Vec2 implements Bufferable, Streamable
         if (d0 <= dist) copy(dest, result);
         else madd(v, dp, dist/d0, result);
     }
+    
+    /**
+     * Rotates {@code v} around the origin by the given angle, and stores the
+     * result in {@code result}.
+     * 
+     * @param v The vector to rotate.
+     * @param angle The angle to rotate by.
+     * @param result The vector in which to store the result.
+     */
+    public static final void rotate(Vec2 v, float angle, Vec2 result)
+    {
+        float cos = (float)Math.cos(angle);
+        float sin = (float)Math.sin(angle);
+        float x = v.x*cos - v.y*sin;
+        float y = v.x*sin - v.y*cos;
+        result.x = x;
+        result.y = y;
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
     /**
@@ -708,6 +726,21 @@ public class Vec2 implements Bufferable, Streamable
     {
         Vec2 result = new Vec2();
         move(v, dest, dist, result);
+        return result;
+    }
+    
+    /**
+     * Rotates {@code v} around the origin by the given angle, and stores the
+     * result in {@code result}.
+     * 
+     * @param v The vector to rotate.
+     * @param angle The angle to rotate by.
+     * @return A new vector containing the result.
+     */
+    public static final Vec2 rotate(Vec2 v, float angle)
+    {
+        Vec2 result = new Vec2();
+        rotate(v, angle, result);
         return result;
     }
     // </editor-fold>
@@ -1160,6 +1193,18 @@ public class Vec2 implements Bufferable, Streamable
     public Vec2 move(Vec2 dest, float dist)
     {
         move(this, dest, dist, this);
+        return this;
+    }
+    
+    /**
+     * Rotates this vector around the origin by the given angle.
+     * 
+     * @param angle The angle to rotate by.
+     * @return This vector.
+     */
+    public Vec2 rotate(float angle)
+    {
+        rotate(this, angle, this);
         return this;
     }
     // </editor-fold>
