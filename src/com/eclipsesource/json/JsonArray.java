@@ -409,13 +409,12 @@ public final class JsonArray extends JsonValue implements Iterable<JsonValue> {
   void write(JsonWriter writer) throws IOException {
     writer.writeArrayOpen();
     Iterator<JsonValue> iterator = iterator();
-    boolean first = true;
-    while (iterator.hasNext()) {
-      if (!first) {
-        writer.writeArraySeparator();
-      }
+    if (iterator.hasNext()) {
       iterator.next().write(writer);
-      first = false;
+      while (iterator.hasNext()) {
+        writer.writeArraySeparator();
+        iterator.next().write(writer);
+      }
     }
     writer.writeArrayClose();
   }
@@ -435,6 +434,19 @@ public final class JsonArray extends JsonValue implements Iterable<JsonValue> {
     return values.hashCode();
   }
 
+
+  /**
+   * Indicates whether a given object is "equal to" this JsonArray. An object is considered equal
+   * if it is also a <code>JsonArray</code> and both arrays contain the same list of values.
+   * <p>
+   * If two JsonArrays are equal, they will also produce the same JSON output.
+   * </p>
+   *
+   * @param object
+   *          the object to be compared with this JsonArray
+   * @return <tt>true</tt> if the specified object is equal to this JsonArray, <code>false</code>
+   *         otherwise
+   */
   @Override
   public boolean equals(Object object) {
     if (this == object) {
