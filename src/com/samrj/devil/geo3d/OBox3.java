@@ -93,6 +93,21 @@ public class OBox3
         
         return true;
     }
+    
+    /**
+     * Returns whether the given box contains the given vertex.
+     * 
+     * @param b The box to test.
+     * @param v The vertex to test.
+     * @return Whether the given box contains the given vertex.
+     */
+    public static boolean contains(OBox3 b, Vec3 v)
+    {
+        Vec3 lv = toLocal(b, v);
+        return lv.x >= -1.0f && lv.x <= 1.0f &&
+               lv.y >= -1.0f && lv.y <= 1.0f &&
+               lv.z >= -1.0f && lv.z <= 1.0f;
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static mutator methods">
     /**
@@ -236,6 +251,11 @@ public class OBox3
     public boolean touching(OBox3 b)
     {
         return touching(this, b);
+    }
+    
+    public boolean contains(Vec3 v)
+    {
+        return contains(this, v);
     }
     
     public Vec3 toLocal(Vec3 v)
