@@ -2,6 +2,7 @@ package com.samrj.devil.gl;
 
 import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Vec2;
+import com.samrj.devil.math.Vec3;
 
 /**
  * A 'collection' of useful DevilGL utilities.
@@ -12,6 +13,8 @@ import com.samrj.devil.math.Vec2;
  */
 public class DGLUtil
 {
+    private static final float SQR2 = (float)(Math.sqrt(2.0)/2.0);
+    
     /**
      * Creates a new VertexBuffer containing a single full-screen quad. Useful
      * for rendering full-screen effects such as bloom, blur, tonemapping, etc.
@@ -22,7 +25,7 @@ public class DGLUtil
     public static VertexBuffer makeFSQ(String posname)
     {
         VertexBuffer out = DGL.genVertexBuffer(4, 0);
-        Vec2 pos = out.vec2("in_pos");
+        Vec2 pos = out.vec2(posname);
         
         out.begin();
         pos.set(-1.0f, -1.0f); out.vertex();
@@ -34,7 +37,59 @@ public class DGLUtil
         return out;
     }
     
-    private static final float SQR2 = (float)(Math.sqrt(2.0)/2.0);
+    /**
+     * Creates a new VertexBuffer containing a single cube, 2 units wide,
+     * aligned to the axes, centered at the origin.
+     * 
+     * @param posname The shader variable name for vertex positions.
+     * @return A new, complete VertexBuffer.
+     */
+    public static VertexBuffer makeCube(String posname)
+    {
+        VertexBuffer out = DGL.genVertexBuffer(36, 0);
+        Vec3 pos = out.vec3(posname);
+        
+        out.begin();
+        pos.set(-1.0f, -1.0f, -1.0f); out.vertex();
+        pos.set(-1.0f, -1.0f,  1.0f); out.vertex();
+        pos.set(-1.0f,  1.0f,  1.0f); out.vertex();
+        pos.set( 1.0f,  1.0f, -1.0f); out.vertex();
+        pos.set(-1.0f, -1.0f, -1.0f); out.vertex();
+        pos.set(-1.0f,  1.0f, -1.0f); out.vertex();
+        pos.set( 1.0f, -1.0f,  1.0f); out.vertex();
+        pos.set(-1.0f, -1.0f, -1.0f); out.vertex();
+        pos.set( 1.0f, -1.0f, -1.0f); out.vertex();
+        pos.set( 1.0f,  1.0f, -1.0f); out.vertex();
+        pos.set( 1.0f, -1.0f, -1.0f); out.vertex();
+        pos.set(-1.0f, -1.0f, -1.0f); out.vertex();
+        pos.set(-1.0f, -1.0f, -1.0f); out.vertex();
+        pos.set(-1.0f,  1.0f,  1.0f); out.vertex();
+        pos.set(-1.0f,  1.0f, -1.0f); out.vertex();
+        pos.set( 1.0f, -1.0f,  1.0f); out.vertex();
+        pos.set(-1.0f, -1.0f,  1.0f); out.vertex();
+        pos.set(-1.0f, -1.0f, -1.0f); out.vertex();
+        pos.set(-1.0f,  1.0f,  1.0f); out.vertex();
+        pos.set(-1.0f, -1.0f,  1.0f); out.vertex();
+        pos.set( 1.0f, -1.0f,  1.0f); out.vertex();
+        pos.set( 1.0f,  1.0f,  1.0f); out.vertex();
+        pos.set( 1.0f, -1.0f, -1.0f); out.vertex();
+        pos.set( 1.0f,  1.0f, -1.0f); out.vertex();
+        pos.set( 1.0f, -1.0f, -1.0f); out.vertex();
+        pos.set( 1.0f,  1.0f,  1.0f); out.vertex();
+        pos.set( 1.0f, -1.0f,  1.0f); out.vertex();
+        pos.set( 1.0f,  1.0f,  1.0f); out.vertex();
+        pos.set( 1.0f,  1.0f, -1.0f); out.vertex();
+        pos.set(-1.0f,  1.0f, -1.0f); out.vertex();
+        pos.set( 1.0f,  1.0f,  1.0f); out.vertex();
+        pos.set(-1.0f,  1.0f, -1.0f); out.vertex();
+        pos.set(-1.0f,  1.0f,  1.0f); out.vertex();
+        pos.set( 1.0f,  1.0f,  1.0f); out.vertex();
+        pos.set(-1.0f,  1.0f,  1.0f); out.vertex();
+        pos.set( 1.0f, -1.0f,  1.0f); out.vertex();
+        out.end();
+        
+        return out;
+    }
     
     /**
      * Returns the rotation a camera must have in order to render the given face
