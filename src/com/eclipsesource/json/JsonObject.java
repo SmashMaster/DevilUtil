@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
 
 /**
@@ -665,6 +666,18 @@ public final class JsonObject extends JsonValue implements Iterable<Member> {
     JsonValue value = get(name);
     return value != null ? value.asString() : defaultValue;
   }
+  
+  /**
+   * Returns whether or not any member with the specified name exists in this
+   * object.
+   * 
+   * @param name
+   *          the name of the member whose value is to be returned
+   * @return whether this object contains any member with the given name
+   */
+  public boolean contains(String name) {
+    return table.get(name) != -1;
+  }
 
   /**
    * Returns the number of members (name/value pairs) in this object.
@@ -725,6 +738,20 @@ public final class JsonObject extends JsonValue implements Iterable<Member> {
       }
 
     };
+  }
+  
+  /**
+   * Performs the given operation on each member (name/value pair) in this
+   * object, in document order.
+   * 
+   * @param consumer the operation to perform
+   */
+  public void forEachMember(BiConsumer<String, JsonValue> consumer) {
+    final Iterator<String> namesIterator = names.iterator();
+    final Iterator<JsonValue> valuesIterator = values.iterator();
+    while (namesIterator.hasNext()) {
+      consumer.accept(namesIterator.next(), valuesIterator.next());
+    }
   }
 
   @Override
