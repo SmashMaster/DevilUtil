@@ -5,7 +5,6 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL11;
 
 /**
  * Simple gamepad class.
@@ -14,20 +13,8 @@ import org.lwjgl.opengl.GL11;
  * @copyright 2016 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Gamepad
+public final class Gamepad
 {
-    public static Gamepad getFirstPresent()
-    {
-        for (int i=0; i<16; i++) if (present(i))
-            return new Gamepad(i);
-        return null;
-    }
-    
-    public static boolean present(int id)
-    {
-        return GLFW.glfwJoystickPresent(id) == GL11.GL_TRUE;
-    }
-    
     public final int id;
     public final String name;
     public final float[] axes;
@@ -35,10 +22,8 @@ public class Gamepad
     
     private final List<ButtonPressInterface> buttonCallbacks;
     
-    public Gamepad(int id)
+    Gamepad(int id)
     {
-        if (!present(id)) throw new IllegalStateException("Gamepad " + id + " not present.");
-        
         this.id = id;
         name = GLFW.glfwGetJoystickName(id);
         
@@ -58,7 +43,7 @@ public class Gamepad
         buttonCallbacks.add(callback);
     }
     
-    public void update()
+    void update()
     {
         FloatBuffer axesBuf = GLFW.glfwGetJoystickAxes(id);
         for (int i=0; i<axes.length; i++) axes[i] = axesBuf.get();
@@ -72,6 +57,11 @@ public class Gamepad
                 buttonCallbacks.forEach(callback -> callback.onButton(button, action));
             buttons[i] = action;
         }
+    }
+    
+    void disconnect()
+    {
+        
     }
     
     @FunctionalInterface

@@ -11,16 +11,16 @@ import org.lwjgl.opengl.GLDebugMessageAMDCallback;
 import org.lwjgl.opengl.GLDebugMessageARBCallback;
 import org.lwjgl.opengl.GLDebugMessageCallback;
 import org.lwjgl.opengl.KHRDebug;
+import org.lwjgl.system.Callback;
 import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.system.libffi.Closure;
 
 public class DGLException extends RuntimeException
 {
-    private static Closure closure;
+    private static Callback callback;
     
     private static String memUTF8(long address, int length)
     {
-        return MemoryUtil.memDecodeUTF8(MemoryUtil.memByteBuffer(address, length));
+        return MemoryUtil.memUTF8(MemoryUtil.memByteBuffer(address, length));
     }
     
     private static String getSeverity(int severity)
@@ -62,7 +62,7 @@ public class DGLException extends RuntimeException
             throw new DGLException(memUTF8(message, length));
     }
     
-    private static Closure setupCallback()
+    private static Callback setupCallback()
     {
         GLCapabilities caps = GL.getCapabilities();
 
@@ -103,15 +103,15 @@ public class DGLException extends RuntimeException
     
     static void init()
     {
-        if (closure != null) throw new IllegalStateException("Already initialized.");
-        closure = setupCallback();
+        if (callback != null) throw new IllegalStateException("Already initialized.");
+        callback = setupCallback();
     }
     
     static void terminate()
     {
-        if (closure == null) throw new IllegalStateException("Already terminated.");
-        closure.free();
-        closure = null;
+        if (callback == null) throw new IllegalStateException("Already terminated.");
+        callback.free();
+        callback = null;
     }
     
     private DGLException(String message)

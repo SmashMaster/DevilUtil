@@ -170,7 +170,7 @@ public final class ShaderProgram extends DGLObj
             buffer.getInt();
             int size = buffer.getInt();
             int type = buffer.getInt();
-            String name = MemoryUtil.memDecodeASCII(nameAddress);
+            String name = MemoryUtil.memASCII(nameAddress);
             int location = GL20.nglGetAttribLocation(id, nameAddress);
 
             Attribute att = new Attribute(name, type, size, location);

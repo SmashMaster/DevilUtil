@@ -35,7 +35,6 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GLCapabilities;
-import org.lwjgl.opengl.OpenGLException;
 
 /**
  * Utility game class.
@@ -71,6 +70,7 @@ public abstract class Game
         }
         
         GLFW.glfwInit();
+        Gamepads.init();
         mainThread = Thread.currentThread();
         initialized = true;
     }
@@ -125,7 +125,6 @@ public abstract class Game
      * @param title The title of the window.
      * @param hints The window hints to use.
      * @param config The configuration to use.
-     * @throws OpenGLException If there is an OpenGL error.
      */
     public Game(String title, HintSet hints, GameConfig config)
     {
@@ -326,7 +325,7 @@ public abstract class Game
                 //Input
                 GLFW.glfwPollEvents();
                 eventBuffer.flushEvents();
-                if (GLFW.glfwWindowShouldClose(window) == GL11.GL_TRUE) stop();
+                if (GLFW.glfwWindowShouldClose(window)) stop();
                 
                 //Step
                 lastFrameTime = frameStart - lastFrameStart;

@@ -31,7 +31,7 @@ public class DisplayException extends RuntimeException
     
     public static final void glfwThrow(int error, long description)
     {
-        throw new DisplayException(getName(error) + ": " + MemoryUtil.memDecodeUTF8(description));
+        throw new DisplayException(getName(error) + ": " + MemoryUtil.memUTF8(description));
     }
     
     private DisplayException(String message)
