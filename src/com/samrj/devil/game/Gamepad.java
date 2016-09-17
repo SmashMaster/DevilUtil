@@ -20,6 +20,8 @@ public final class Gamepad
     public final float[] axes;
     public final int[] buttons;
     
+    private boolean isDisconnected;
+    
     private final List<ButtonPressInterface> buttonCallbacks;
     
     Gamepad(int id)
@@ -40,11 +42,19 @@ public final class Gamepad
     
     public void addButtonCallback(ButtonPressInterface callback)
     {
+        if (callback == null) throw new NullPointerException();
         buttonCallbacks.add(callback);
+    }
+    
+    public boolean isDisconnected()
+    {
+        return isDisconnected;
     }
     
     void update()
     {
+        if (isDisconnected) return;
+        
         FloatBuffer axesBuf = GLFW.glfwGetJoystickAxes(id);
         for (int i=0; i<axes.length; i++) axes[i] = axesBuf.get();
         
@@ -61,7 +71,7 @@ public final class Gamepad
     
     void disconnect()
     {
-        
+        isDisconnected = true;
     }
     
     @FunctionalInterface

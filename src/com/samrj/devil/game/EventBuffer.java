@@ -4,10 +4,6 @@ import com.samrj.devil.display.GLFWUtil;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWCursorPosCallback;
-import org.lwjgl.glfw.GLFWKeyCallback;
-import org.lwjgl.glfw.GLFWMouseButtonCallback;
-import org.lwjgl.glfw.GLFWScrollCallback;
 
 /**
  * GLFW event buffer class.
@@ -20,11 +16,6 @@ public final class EventBuffer
 {
     private final Queue<Runnable> eventQueue;
     
-    private final GLFWCursorPosCallback cursorPosCallback;
-    private final GLFWMouseButtonCallback mouseButtonCallback;
-    private final GLFWScrollCallback scrollCallback;
-    private final GLFWKeyCallback keyCallback;
-    
     private final Mouse mouse;
     private final Keyboard keyboard;
     private final int windowHeight;
@@ -32,16 +23,11 @@ public final class EventBuffer
     public EventBuffer(long window, Mouse mouse, Keyboard keyboard)
     {
         eventQueue = new ConcurrentLinkedQueue<>();
-            
-        cursorPosCallback = GLFWCursorPosCallback.create(this::cursorPosCallback);
-        mouseButtonCallback = GLFWMouseButtonCallback.create(this::mouseButtonCallback);
-        scrollCallback = GLFWScrollCallback.create(this::mouseScrollCallback);
-        keyCallback = GLFWKeyCallback.create(this::keyCallback);
         
-        GLFW.glfwSetCursorPosCallback(window, cursorPosCallback);
-        GLFW.glfwSetMouseButtonCallback(window, mouseButtonCallback);
-        GLFW.glfwSetScrollCallback(window, scrollCallback);
-        GLFW.glfwSetKeyCallback(window, keyCallback);
+        GLFW.glfwSetCursorPosCallback(window, this::onCursorPos);
+        GLFW.glfwSetMouseButtonCallback(window, this::onMouseButton);
+        GLFW.glfwSetScrollCallback(window, this::onMouseScroll);
+        GLFW.glfwSetKeyCallback(window, this::onKey);
         
         this.mouse = mouse;
         this.keyboard = keyboard;
@@ -58,22 +44,22 @@ public final class EventBuffer
         eventQueue.clear();
     }
     
-    private void cursorPosCallback(long window, double xpos, double ypos)
+    private void onCursorPos(long window, double xpos, double ypos)
     {
         eventQueue.add(() -> mouse.cursorPos((float)xpos, (float)(windowHeight - ypos)));
     }
     
-    private void mouseButtonCallback(long window, int button, int action, int mods)
+    private void onMouseButton(long window, int button, int action, int mods)
     {
         eventQueue.add(() -> mouse.button(button, action, mods));
     }
     
-    private void mouseScrollCallback(long window, double xoffset, double yoffset)
+    private void onMouseScroll(long window, double xoffset, double yoffset)
     {
         eventQueue.add(() -> mouse.scroll((float)xoffset, (float)yoffset));
     }
     
-    private void keyCallback(long window, int key, int scancode, int action, int mods)
+    private void onKey(long window, int key, int scancode, int action, int mods)
     {
         eventQueue.add(() -> keyboard.key(key, action, mods));
     }

@@ -29,7 +29,6 @@ import com.samrj.devil.game.step.TimeStepper;
 import com.samrj.devil.game.sync.Sync;
 import com.samrj.devil.math.Vec2i;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
@@ -64,8 +63,7 @@ public abstract class Game
         
         if (!errorCallInit)
         {
-            GLFWErrorCallback errorCallback = GLFWErrorCallback.create(DisplayException::glfwThrow);
-            GLFW.glfwSetErrorCallback(errorCallback);
+            GLFW.glfwSetErrorCallback(DisplayException::glfwThrow);
             errorCallInit = true;
         }
         
@@ -209,8 +207,6 @@ public abstract class Game
     /**
      * Creates a new game window with the default title "Game" and the default
      * configuration. The default config creates a decorated window at 1280p.
-     * 
-     * @throws OpenGLException If there is an OpenGL error.
      */
     public Game()
     {
@@ -325,6 +321,7 @@ public abstract class Game
                 //Input
                 GLFW.glfwPollEvents();
                 eventBuffer.flushEvents();
+                Gamepads.update();
                 if (GLFW.glfwWindowShouldClose(window)) stop();
                 
                 //Step
