@@ -13,28 +13,27 @@ public abstract class DataBlock
 {
     public enum Type
     {
-        LIBRARY (1112276993, Library::new),
-        ACTION  (1112276994, Action::new),
-        ARMATURE(1112276995, Armature::new),
-        CURVE   (1112276996, Curve::new),
-        LAMP    (1112276997, Lamp::new),
-        MATERIAL(1112276998, Material::new),
-        MESH    (1112276999, Mesh::new),
-        OBJECT  (1112277000, ModelObject::new),
-        SCENE   (1112277001, Scene::new);
+        LIBRARY (Library::new),
+        ACTION  (Action::new),
+        ARMATURE(Armature::new),
+        CURVE   (Curve::new),
+        LAMP    (Lamp::new),
+        MATERIAL(Material::new),
+        MESH    (Mesh::new),
+        OBJECT  (ModelObject::new),
+        SCENE   (Scene::new),
+        TEXTURE (Texture::new);
         
-        private final int magic;
         private final ModelConstructor<?> constructor;
         
-        private Type(int magic, ModelConstructor<?> constructor)
+        private Type(ModelConstructor<?> constructor)
         {
-            this.magic = magic;
             this.constructor = constructor;
         }
         
         ArrayMap<?> makeArrayMap(Model model, DataInputStream in) throws IOException
         {
-            return new ArrayMap<>(model, in, magic, constructor);
+            return new ArrayMap<>(model, in, constructor);
         }
     }
     

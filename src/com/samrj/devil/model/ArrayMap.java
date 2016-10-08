@@ -16,12 +16,9 @@ public final class ArrayMap<T extends DataBlock> implements Iterable<T>
     private final List<T> list;
     private final Map<String, T> map;
 
-    ArrayMap(Model model, DataInputStream in, int magic, ModelConstructor<T> constructor) throws IOException
+    ArrayMap(Model model, DataInputStream in, ModelConstructor<T> constructor) throws IOException
     {
-        int rID = in.readInt();
-        if (rID != magic) throw new IOException("Expected id " + magic + ", read " + rID);
         in.skip(4);
-        
         int size = in.readInt();
         list = new ArrayList<>(size);
         map = new HashMap<>(size);

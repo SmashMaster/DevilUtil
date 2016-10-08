@@ -19,8 +19,8 @@ import java.util.EnumMap;
 public final class Model
 {
     private static final byte[] MAGIC = IOUtil.hexToBytes("9F0A446576696C4D6F64656C");
+    private static final int VERSION_MAJOR = 0, VERSION_MINOR = 24;
     
-    private final int versionMajor, versionMinor;
     private final EnumMap<DataBlock.Type, ArrayMap<?>> arraymaps = new EnumMap<>(DataBlock.Type.class);
     
     public final ArrayMap<Library> libraries;
@@ -32,6 +32,7 @@ public final class Model
     public final ArrayMap<Mesh> meshes;
     public final ArrayMap<ModelObject> objects;
     public final ArrayMap<Scene> scenes;
+    public final ArrayMap<Texture> textures;
     
     private boolean destroyed;
     
@@ -45,9 +46,9 @@ public final class Model
             in.read(header);
             if (!Arrays.equals(header, MAGIC))
                 throw new IOException("Illegal file format specified.");
-            versionMajor = in.readShort();
-            versionMinor = in.readShort();
-            if (versionMajor != 0 || versionMinor != 23)
+            int versionMajor = in.readShort();
+            int versionMinor = in.readShort();
+            if (versionMajor != VERSION_MAJOR || versionMinor != VERSION_MINOR)
                 throw new IOException("Unable to load DVM version " + versionMajor + "." + versionMinor);
             
             for (Type type : Type.values())
@@ -62,6 +63,7 @@ public final class Model
             meshes = get(Type.MESH);
             objects = get(Type.OBJECT);
             scenes = get(Type.SCENE);
+            textures = get(Type.TEXTURE);
         }
     }
     
