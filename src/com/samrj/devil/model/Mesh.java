@@ -5,6 +5,11 @@ import com.samrj.devil.io.Memory;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * DevilModel mesh.
@@ -32,6 +37,8 @@ public final class Mesh extends DataBlock
     public final int[] colorOffsets;
     public final int groupIndexOffset, groupWeightOffset;
     public final int materialOffset;
+    
+    public final List<DataPointer<Material>> materials;
     
     Mesh(Model model, DataInputStream in) throws IOException
     {
@@ -91,7 +98,6 @@ public final class Mesh extends DataBlock
         vertexData = vertexBlock.buffer;
         
         for (int i=0; i<intOffset; i++) vertexData.putInt(in.readInt());
-        vertexData.rewind();
         
         numTriangles = in.readInt();
         int triangleIndexInts = numTriangles*3;
@@ -100,17 +106,33 @@ public final class Mesh extends DataBlock
         
         for (int i=0; i<triangleIndexInts; i++) indexData.putInt(in.readInt());
         indexData.rewind();
+        
+        if (hasMaterials)
+        {
+            Set<Integer> matIndices = new HashSet<>();
+            List<DataPointer<Material>> matList = new ArrayList<>();
+            vertexData.position(materialOffset);
+            for (int i=0; i<numVertices; i++)
+            {
+                int matIndex = vertexData.getInt();
+                if (matIndex < 0) continue;
+                if (matIndices.add(matIndex))
+                    matList.add(new DataPointer(model, Type.MATERIAL, matIndex));
+            }
+            materials = Collections.unmodifiableList(matList);
+        }
+        else materials = Collections.EMPTY_LIST;
+        vertexData.rewind();
     }
     
     /**
-     * Returns the first material found in this mesh. This mesh may have other
-     * materials.
+     * Returns the first material found in this mesh, or null if this mesh has
+     * no materials. This mesh may have more than one material.
      */
     public Material getMaterial()
     {
-        if (!hasMaterials) return null;
-        int index = vertexData.get(materialOffset);
-        return model.materials.get(index);
+        if (materials.isEmpty()) return null;
+        else return materials.get(0).get();
     }
     
     @Override
