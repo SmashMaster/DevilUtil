@@ -31,7 +31,6 @@ import com.samrj.devil.math.topo.DAG;
 import com.samrj.devil.model.Armature.Bone;
 import com.samrj.devil.model.Pose.PoseBone;
 import com.samrj.devil.model.constraint.IKConstraint;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -48,7 +47,7 @@ import java.util.stream.Stream;
  */
 public final class ArmatureSolver
 {
-    private final BoneSolver[] bones;
+    private final List<BoneSolver> bones;
     private final Map<String, BoneSolver> nameMap;
     
     private final List<Constraint> constraints;
@@ -65,11 +64,10 @@ public final class ArmatureSolver
     {
         Armature armature = object.data.get();
         
-        bones = new BoneSolver[armature.bones.length];
-        for (int i=0; i<bones.length; i++) bones[i] = new BoneSolver(armature.bones[i]);
-        for (BoneSolver bone : bones) bone.populate();
-        nameMap = new HashMap<>(bones.length);
-        for (BoneSolver bone : bones) nameMap.put(bone.bone.name, bone);
+        bones = IOUtil.mapList(armature.bones, BoneSolver::new);
+        bones.forEach(BoneSolver::populate);
+        nameMap = new HashMap<>(bones.size());
+        bones.forEach(bone -> nameMap.put(bone.bone.name, bone));
         
         ikConstraints = IOUtil.mapList(object.ikConstraints, ikDef -> new IKConstraint(ikDef, this));
         constraints = new LinkedList<>();
@@ -79,7 +77,7 @@ public final class ArmatureSolver
     
     public int getNumBones()
     {
-        return bones.length;
+        return bones.size();
     }
     
     /**
@@ -95,7 +93,7 @@ public final class ArmatureSolver
      */
     public Stream<BoneSolver> stream()
     {
-        return Arrays.stream(bones);
+        return bones.stream();
     }
     
     /**
@@ -126,7 +124,7 @@ public final class ArmatureSolver
     public void sortSolvables()
     {
         nonconstrained.clear();
-        nonconstrained.addAll(Arrays.asList(bones));
+        nonconstrained.addAll(bones);
         for (IKConstraint ik : ikConstraints) ik.removeSolved(nonconstrained);
         for (Constraint s : constraints) s.removeSolved(nonconstrained);
         
@@ -198,7 +196,7 @@ public final class ArmatureSolver
         
         private void populate()
         {
-            if (bone.parentIndex >= 0) parent = bones[bone.parentIndex];
+            if (bone.parentIndex >= 0) parent = bones.get(bone.parentIndex);
         }
         
         public BoneSolver getParent()

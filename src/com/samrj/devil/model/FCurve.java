@@ -192,8 +192,9 @@ public class FCurve
     public final String boneName;
     public final Transform.Property property;
     public final int propertyIndex;
-    public final Keyframe[] keyframes;
+    public final List<Keyframe> keyframes;
     public final float minX, maxX;
+    
     private final TreeMap<Float, Integer> keyInds;
     
     FCurve(DataInputStream in) throws IOException
@@ -202,33 +203,33 @@ public class FCurve
         property = Transform.Property.values()[in.readShort()];
         boneName = hasBone ? IOUtil.readPaddedUTF(in) : null;
         propertyIndex = in.readInt();
-        keyframes = IOUtil.arrayFromStream(in, Keyframe.class, Keyframe::new);
+        keyframes = IOUtil.listFromStream(in, Keyframe::new);
         
         float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY;
         keyInds = new TreeMap<>();
-        for (int i=0; i<keyframes.length; i++)
+        for (int i=0; i<keyframes.size(); i++)
         {
-            float x = keyframes[i].co.x;
+            float x = keyframes.get(i).co.x;
             if (x < min) min = x;
             if (x > max) max = x;
             keyInds.put(x, i);
         }
         minX = min; maxX = max;
         
-        for (int i=0; i<keyframes.length - 1; i++)
-            validate(keyframes[i], keyframes[i + 1]);
+        for (int i=0; i<keyframes.size() - 1; i++)
+            validate(keyframes.get(i), keyframes.get(i + 1));
     }
     
     public float evaluate(float time)
     {
         Entry<Float, Integer> e0 = keyInds.floorEntry(time);
-        if (e0 == null) return keyframes[0].co.y; //Before first
+        if (e0 == null) return keyframes.get(0).co.y; //Before first
         
         int i0 = e0.getValue();
-        Keyframe k0 = keyframes[i0];
-        if (i0 == keyframes.length - 1) return k0.co.y; //After last
+        Keyframe k0 = keyframes.get(i0);
+        if (i0 == keyframes.size() - 1) return k0.co.y; //After last
         
-        Keyframe k1 = keyframes[i0 + 1];
+        Keyframe k1 = keyframes.get(i0 + 1);
         return evaluate(k0, k1, time);
     }
     
@@ -249,7 +250,7 @@ public class FCurve
                 case 0: interpolation = Interpolation.CONSTANT; break;
                 case 1: interpolation = Interpolation.LINEAR; break;
                 case 2: interpolation = Interpolation.BEZIER; break;
-                default: interpolation = Interpolation.LINEAR;
+                default: interpolation = Interpolation.LINEAR; break;
             }
             
             co = new Vec2(in);

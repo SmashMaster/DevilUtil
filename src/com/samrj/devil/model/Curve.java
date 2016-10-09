@@ -4,6 +4,7 @@ import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Vec3;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -12,23 +13,23 @@ import java.io.IOException;
  */
 public final class Curve extends DataBlock
 {
-    public final Spline[] splines;
+    public final List<Spline> splines;
     
     Curve(Model model, DataInputStream in) throws IOException
     {
         super(model, in);
-        splines = IOUtil.arrayFromStream(in, Spline.class, Spline::new);
+        splines = IOUtil.listFromStream(in, Spline::new);
     }
     
     public static class Spline
     {
         public final boolean cyclic;
-        public final SplinePoint[] points;
+        public final List<SplinePoint> points;
         
         Spline(DataInputStream in) throws IOException
         {
             cyclic = in.readInt() != 0;
-            points = IOUtil.arrayFromStream(in, SplinePoint.class, SplinePoint::new);
+            points = IOUtil.listFromStream(in, SplinePoint::new);
         }
     }
     

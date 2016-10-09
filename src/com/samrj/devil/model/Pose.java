@@ -43,6 +43,7 @@ import java.util.Map.Entry;
 public class Pose
 {
     private final Map<String, PoseBone> bones;
+    private final Collection<PoseBone> bCollection;
     
     Pose(DataInputStream in) throws IOException
     {
@@ -53,6 +54,8 @@ public class Pose
             PoseBone bone = new PoseBone(in);
             bones.put(bone.name, bone);
         }
+        
+        bCollection = Collections.unmodifiableCollection(bones.values());
     }
     
     /**
@@ -65,6 +68,7 @@ public class Pose
         bones = new HashMap<>(pose.bones.size());
         for (PoseBone bone : pose.bones.values())
             bones.put(bone.name, new PoseBone(bone));
+        bCollection = Collections.unmodifiableCollection(bones.values());
     }
     
     /**
@@ -73,6 +77,7 @@ public class Pose
     public Pose()
     {
         bones = new HashMap<>();
+        bCollection = Collections.unmodifiableCollection(bones.values());
     }
     
     /**
@@ -88,7 +93,7 @@ public class Pose
      */
     public Collection<PoseBone> getBones()
     {
-        return Collections.unmodifiableCollection(bones.values());
+        return bCollection;
     }
     
     /**

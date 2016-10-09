@@ -6,6 +6,7 @@ import com.samrj.devil.model.Pose.PoseBone;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -16,27 +17,27 @@ import java.util.stream.Stream;
  */
 public final class Action extends DataBlock
 {
-    public final FCurve[] fcurves;
+    public final List<FCurve> fcurves;
     public final float minX, maxX;
     
-    private final Marker[] markers;
+    private final List<Marker> markers;
     private final Map<String, Marker> markerMap;
     
     Action(Model model, DataInputStream in) throws IOException
     {
         super(model, in);
-        fcurves = IOUtil.arrayFromStream(in, FCurve.class, FCurve::new);
+        fcurves = IOUtil.listFromStream(in, FCurve::new);
         
         float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY;
-        for (int i=0; i<fcurves.length; i++)
+        for (FCurve fcurve : fcurves)
         {
-            if (fcurves[i].minX < min) min = fcurves[i].minX;
-            if (fcurves[i].maxX > max) max = fcurves[i].maxX;
+            if (fcurve.minX < min) min = fcurve.minX;
+            if (fcurve.maxX > max) max = fcurve.maxX;
         }
         minX = min; maxX = max;
         
-        markers = IOUtil.arrayFromStream(in, Marker.class, Marker::new);
-        markerMap = new HashMap<>(markers.length);
+        markers = IOUtil.listFromStream(in, Marker::new);
+        markerMap = new HashMap<>(markers.size());
         for (Marker marker : markers) markerMap.put(marker.name, marker);
     }
     
@@ -75,10 +76,10 @@ public final class Action extends DataBlock
     public Stream<Marker> passMarkers(float start, float end)
     {
         if (end == start) return Stream.of();
-        else if (end > start) return Stream.of(markers)
+        else if (end > start) return markers.stream()
                 .filter(m -> m.frame > start && m.frame <= end)
                 .sorted((a, b) -> Util.compare(a.frame, b.frame));
-        else return Stream.of(markers)
+        else return markers.stream()
                 .filter(m -> m.frame < start && m.frame >= end)
                 .sorted((a, b) -> Util.compare(b.frame, a.frame));
     }

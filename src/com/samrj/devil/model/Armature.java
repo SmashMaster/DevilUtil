@@ -6,6 +6,7 @@ import com.samrj.devil.math.Vec3;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,17 +19,17 @@ import java.util.Map;
  */
 public final class Armature extends DataBlock
 {
-    public final Bone[] bones;
+    public final List<Bone> bones;
     private final Map<String, Bone> nameMap;
     
     Armature(Model model, DataInputStream in) throws IOException
     {
         super(model, in);
-        bones = IOUtil.arrayFromStream(in, Bone.class, Bone::new);
-        for (Bone bone : bones) bone.populate(bones);
+        bones = IOUtil.listFromStream(in, Bone::new);
+        bones.forEach(bone -> bone.populate(bones));
         
-        nameMap = new HashMap<>(bones.length);
-        for (Bone bone : bones) nameMap.put(bone.name, bone);
+        nameMap = new HashMap<>(bones.size());
+        bones.forEach(bone -> nameMap.put(bone.name, bone));
     }
     
     public Bone getBone(String name)
@@ -59,9 +60,9 @@ public final class Armature extends DataBlock
             invMat = Mat3.invert(matrix);
         }
 
-        void populate(Bone[] bones)
+        void populate(List<Bone> bones)
         {
-            if (parentIndex >= 0) parent = bones[parentIndex];
+            if (parentIndex >= 0) parent = bones.get(parentIndex);
         }
 
         public Bone getParent()

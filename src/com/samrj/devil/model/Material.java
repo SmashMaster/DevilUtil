@@ -3,6 +3,9 @@ package com.samrj.devil.model;
 import com.samrj.devil.math.Vec3;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public final class Material extends DataBlock
 {
@@ -11,7 +14,7 @@ public final class Material extends DataBlock
     public final float specularIOR;
     public final float emit;
     
-    public final TextureSlot[] textures;
+    public final List<TextureSlot> textures;
     
     Material(Model model, DataInputStream in) throws IOException
     {
@@ -23,8 +26,9 @@ public final class Material extends DataBlock
         specularIOR = in.readFloat();
         emit = in.readFloat();
         
-        textures = new TextureSlot[in.readInt()];
-        for (int i=0; i<textures.length; i++)
-            textures[i] = new TextureSlot(model, in);
+        int numTextures = in.readInt();
+        ArrayList<TextureSlot> texes = new ArrayList<>(numTextures);
+        for (int i=0; i<numTextures; i++) texes.add(new TextureSlot(model, in));
+        textures = Collections.unmodifiableList(texes);
     }
 }
