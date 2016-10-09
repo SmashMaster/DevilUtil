@@ -13,9 +13,9 @@ public class Texture extends DataBlock
 {
     public final String filepath;
     
-    Texture(Model model, DataInputStream in) throws IOException
+    Texture(Model model, int modelIndex, DataInputStream in) throws IOException
     {
-        super(model, in);
+        super(model, modelIndex, in);
         
         if (in.readInt() != 0) filepath = IOUtil.readPaddedUTF(in);
         else filepath = null;

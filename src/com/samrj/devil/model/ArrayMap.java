@@ -25,7 +25,7 @@ public final class ArrayMap<T extends DataBlock> implements Iterable<T>
         
         for (int i=0; i<size; i++)
         {
-            T data = constructor.construct(model, in);
+            T data = constructor.construct(model, i, in);
             list.add(data);
             map.put(data.name, data);
         }

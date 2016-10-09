@@ -20,9 +20,9 @@ public final class Lamp extends DataBlock
     public final Type type;
     public final float radius;
     
-    Lamp(Model model, DataInputStream in) throws IOException
+    Lamp(Model model, int modelIndex, DataInputStream in) throws IOException
     {
-        super(model, in);
+        super(model, modelIndex, in);
         color = new Vec3(in);
         type = Type.values()[in.readInt()];
         radius = type == Type.POINT ? in.readFloat() : -1.0f;

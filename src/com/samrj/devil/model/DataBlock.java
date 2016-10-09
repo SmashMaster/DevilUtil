@@ -43,11 +43,13 @@ public abstract class DataBlock
     }
     
     public final Model model;
+    public final int modelIndex;
     public final String name;
     
-    DataBlock(Model model, DataInputStream in) throws IOException
+    DataBlock(Model model, int modelIndex, DataInputStream in) throws IOException
     {
         this.model = model;
+        this.modelIndex = modelIndex;
         name = IOUtil.readPaddedUTF(in);
     }
     

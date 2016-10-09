@@ -17,9 +17,9 @@ public final class Scene extends DataBlock
     public final Vec3 backgroundColor;
     public final List<DataPointer<ModelObject<?>>> objects;
     
-    Scene(Model model, DataInputStream in) throws IOException
+    Scene(Model model, int modelIndex, DataInputStream in) throws IOException
     {
-        super(model, in);
+        super(model, modelIndex, in);
         backgroundColor = new Vec3(in);
         int numObjects = in.readInt();
         ArrayList<DataPointer<ModelObject<?>>> list = new ArrayList<>(numObjects);

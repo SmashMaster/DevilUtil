@@ -23,9 +23,9 @@ public final class Action extends DataBlock
     private final List<Marker> markers;
     private final Map<String, Marker> markerMap;
     
-    Action(Model model, DataInputStream in) throws IOException
+    Action(Model model, int modelIndex, DataInputStream in) throws IOException
     {
-        super(model, in);
+        super(model, modelIndex, in);
         fcurves = IOUtil.listFromStream(in, FCurve::new);
         
         float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY;

@@ -16,9 +16,9 @@ public final class Material extends DataBlock
     
     public final List<TextureSlot> textures;
     
-    Material(Model model, DataInputStream in) throws IOException
+    Material(Model model, int modelIndex, DataInputStream in) throws IOException
     {
-        super(model, in);
+        super(model, modelIndex, in);
         
         diffuseColor = new Vec3(in);
         specularColor = new Vec3(in);
@@ -30,5 +30,23 @@ public final class Material extends DataBlock
         ArrayList<TextureSlot> texes = new ArrayList<>(numTextures);
         for (int i=0; i<numTextures; i++) texes.add(new TextureSlot(model, in));
         textures = Collections.unmodifiableList(texes);
+    }
+    
+    public class TextureSlot
+    {
+        public final DataPointer<Texture> texture;
+        public final float diffuseFactor;
+        public final float emitFactor;
+        public final float specularFactor;
+        public final float normalFactor;
+
+        TextureSlot(Model model, DataInputStream in) throws IOException
+        {
+            texture = new DataPointer(model, Type.TEXTURE, in.readInt());
+            diffuseFactor = in.readFloat();
+            emitFactor = in.readFloat();
+            specularFactor = in.readFloat();
+            normalFactor = in.readFloat();
+        }
     }
 }

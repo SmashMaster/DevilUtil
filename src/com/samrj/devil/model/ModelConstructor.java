@@ -6,5 +6,5 @@ import java.io.IOException;
 @FunctionalInterface
 interface ModelConstructor<T extends DataBlock>
 {
-    T construct(Model model, DataInputStream in) throws IOException;
+    T construct(Model model, int modelIndex, DataInputStream in) throws IOException;
 }

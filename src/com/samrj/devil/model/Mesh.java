@@ -40,9 +40,9 @@ public final class Mesh extends DataBlock
     
     public final List<DataPointer<Material>> materials;
     
-    Mesh(Model model, DataInputStream in) throws IOException
+    Mesh(Model model, int modelIndex, DataInputStream in) throws IOException
     {
-        super(model, in);
+        super(model, modelIndex, in);
         
         int flags = in.readInt();
         hasNormals = (flags & 1) != 0;

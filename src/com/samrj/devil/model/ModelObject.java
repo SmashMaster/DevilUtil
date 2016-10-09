@@ -37,9 +37,9 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
     public final DataPointer<Action> action;
     public final EmptyType emptyType;
     
-    ModelObject(Model model, DataInputStream in) throws IOException
+    ModelObject(Model model, int modelIndex, DataInputStream in) throws IOException
     {
-        super(model, in);
+        super(model, modelIndex, in);
         
         int numArguments = in.readInt();
         Map<String, String> argMap = new HashMap<>();

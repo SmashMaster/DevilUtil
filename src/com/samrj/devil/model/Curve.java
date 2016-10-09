@@ -15,9 +15,9 @@ public final class Curve extends DataBlock
 {
     public final List<Spline> splines;
     
-    Curve(Model model, DataInputStream in) throws IOException
+    Curve(Model model, int modelIndex, DataInputStream in) throws IOException
     {
-        super(model, in);
+        super(model, modelIndex, in);
         splines = IOUtil.listFromStream(in, Spline::new);
     }
     

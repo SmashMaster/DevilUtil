@@ -10,8 +10,8 @@ import java.io.IOException;
  */
 public final class Library extends DataBlock
 {
-    Library(Model model, DataInputStream in) throws IOException
+    Library(Model model, int modelIndex, DataInputStream in) throws IOException
     {
-        super(model, in);
+        super(model, modelIndex, in);
     }
 }

@@ -22,9 +22,9 @@ public final class Armature extends DataBlock
     public final List<Bone> bones;
     private final Map<String, Bone> nameMap;
     
-    Armature(Model model, DataInputStream in) throws IOException
+    Armature(Model model, int modelIndex, DataInputStream in) throws IOException
     {
-        super(model, in);
+        super(model, modelIndex, in);
         bones = IOUtil.listFromStream(in, Bone::new);
         bones.forEach(bone -> bone.populate(bones));
         
