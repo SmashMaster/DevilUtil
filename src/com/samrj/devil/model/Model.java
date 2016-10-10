@@ -23,6 +23,8 @@ public final class Model
     
     private final EnumMap<DataBlock.Type, ArrayMap<?>> arraymaps = new EnumMap<>(DataBlock.Type.class);
     
+    public final String path;
+    
     public final ArrayMap<Library> libraries;
     public final ArrayMap<Action> actions;
     public final ArrayMap<Armature> armatures;
@@ -38,6 +40,8 @@ public final class Model
     
     public Model(String path) throws IOException
     {
+        this.path = path;
+        
         try  (BufferedInputStream inputStream = new BufferedInputStream(Resource.open(path)))
         {
             DataInputStream in = new DataInputStream(inputStream);

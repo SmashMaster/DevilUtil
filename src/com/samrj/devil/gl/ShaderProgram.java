@@ -275,6 +275,18 @@ public final class ShaderProgram extends DGLObj
         return true;
     }
     
+    public boolean uniform1b(String name, boolean b)
+    {
+        return uniform1i(name, b ? 1 : 0);
+    }
+    
+    public boolean uniform1bv(String name, boolean... array)
+    {
+        int[] ints = new int[array.length];
+        for (int i=0; i<array.length; i++) ints[i] = array[i] ? 1 : 0;
+        return uniform1iv(name, ints);
+    }
+    
     /**
      * Specifies the value of a uniform variable for this program. Program must
      * be in use. Returns true if and only if the uniform exists and is active.
