@@ -53,27 +53,44 @@ public class GeoMesh<VERT extends Vertex<VERT>> implements Geometry
     public GeoMesh(Mesh mesh, Supplier<VERT> constructor)
     {
         verts = new ArrayList<>(mesh.numVertices);
-        for (int i=0; i<mesh.numVertices; i++) verts.add(constructor.get());
+        faces = new ArrayList<>(mesh.numTriangles);
+        edges = new ArrayList<>(mesh.numTriangles*3);
+        insert(mesh, constructor);
+        updateBounds();
+    }
+    
+    public GeoMesh()
+    {
+        verts = new ArrayList<>();
+        edges = new ArrayList<>();
+        faces = new ArrayList<>();
+        updateBounds();
+    }
+    
+    public final void insert(Mesh mesh, Supplier<VERT> constructor)
+    {
+        List<VERT> tempVerts = new ArrayList<>(mesh.numVertices);
+        for (int i=0; i<mesh.numVertices; i++) tempVerts.add(constructor.get());
         
-        Vertex first = verts.get(0);
+        Vertex first = tempVerts.get(0);
         ByteBuffer vBuffer = mesh.vertexData;
         
         for (int i=0; i<first.getNumAttributes(); i++)
         {
             vBuffer.position(first.getAttributeOffset(mesh, i));
-            for (Vertex vert : verts) vert.read(vBuffer, i);
+            for (Vertex vert : tempVerts) vert.read(vBuffer, i);
         }
         
         ByteBuffer iBuffer = mesh.indexData;
         iBuffer.rewind();
-        faces = new ArrayList<>(mesh.numTriangles);
-        edges = new ArrayList<>(mesh.numTriangles*3);
+        List<Face> tempFaces = new ArrayList<>(mesh.numTriangles);
+        List<Edge> tempEdges = new ArrayList<>(mesh.numTriangles*3);
         
         for (int i=0; i<mesh.numTriangles; i++)
         {
-            Vertex a = verts.get(iBuffer.getInt());
-            Vertex b = verts.get(iBuffer.getInt());
-            Vertex c = verts.get(iBuffer.getInt());
+            Vertex a = tempVerts.get(iBuffer.getInt());
+            Vertex b = tempVerts.get(iBuffer.getInt());
+            Vertex c = tempVerts.get(iBuffer.getInt());
             
             Face f = new Face(a, b, c);
             f.ab = new Edge(a, b);
@@ -88,23 +105,16 @@ public class GeoMesh<VERT extends Vertex<VERT>> implements Geometry
             f.bc.faces.add(f);
             f.ca.faces.add(f);
             
-            edges.add(f.ab);
-            edges.add(f.bc);
-            edges.add(f.ca);
-            faces.add(f);
+            tempEdges.add(f.ab);
+            tempEdges.add(f.bc);
+            tempEdges.add(f.ca);
+            tempFaces.add(f);
         }
         iBuffer.rewind();
         
-        updateBounds();
-    }
-    
-    public GeoMesh()
-    {
-        verts = new ArrayList<>();
-        edges = new ArrayList<>();
-        faces = new ArrayList<>();
-        
-        updateBounds();
+        verts.addAll(tempVerts);
+        faces.addAll(tempFaces);
+        edges.addAll(tempEdges);
     }
     
     private void replace(List<Edge> edges, List<Face> faces, Vertex ov, Vertex nv)
