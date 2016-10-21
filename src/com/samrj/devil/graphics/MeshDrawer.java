@@ -45,7 +45,7 @@ public class MeshDrawer implements VertexData
     
     private final Attribute position;
     private final Attribute normal;
-    private final Attribute uv;
+    private final Map<String, Attribute> uvs;
     private final Attribute tangent;
     private final Map<String, Attribute> colors;
     private final Attribute groups;
@@ -62,7 +62,12 @@ public class MeshDrawer implements VertexData
         //Set up attributes.
         position = new Attribute(VEC3, mesh.positionOffset, true);
         normal = new Attribute(VEC3, mesh.normalOffset, mesh.hasNormals);
-        uv = new Attribute(VEC2, mesh.uvOffset, mesh.uvLayers.length > 0);
+        uvs = new HashMap<>();
+        for (int i=0; i<mesh.uvLayers.length; i++)
+        {
+            Attribute color =  new Attribute(VEC2, mesh.uvOffsets[i], true);
+            uvs.put(mesh.uvLayers[i], color);
+        }
         tangent = new Attribute(VEC3, mesh.tangentOffset, mesh.hasTangents);
         colors = new HashMap<>();
         for (int i=0; i<mesh.colorLayers.length; i++)
@@ -127,13 +132,23 @@ public class MeshDrawer implements VertexData
     
     public void setUVName(String name)
     {
-        setName(uv, name);
+        if (uvs.isEmpty()) return;
+        if (uvs.size() > 1) throw new IllegalStateException("More than one UV layer. Must specify layer name.");
+        Attribute att = uvs.values().iterator().next();
+        setName(att, name);
+    }
+    
+    public void setUVName(String layer, String name)
+    {
+        Attribute att = uvs.get(layer);
+        if (att == null) return;
+        setName(att, name);
     }
     
     public void setColorName(String name)
     {
         if (colors.isEmpty()) return;
-        if (colors.size() > 1) throw new IllegalStateException("More then one color layer. Must specify layer name.");
+        if (colors.size() > 1) throw new IllegalStateException("More than one color layer. Must specify layer name.");
         Attribute att = colors.values().iterator().next();
         setName(att, name);
     }

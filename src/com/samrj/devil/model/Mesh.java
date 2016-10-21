@@ -33,7 +33,9 @@ public final class Mesh extends DataBlock
     public final Memory indexBlock;
     public final ByteBuffer indexData;
     
-    public final int positionOffset, normalOffset, uvOffset, tangentOffset;
+    public final int positionOffset, normalOffset;
+    public final int[] uvOffsets;
+    public final int tangentOffset;
     public final int[] colorOffsets;
     public final int groupIndexOffset, groupWeightOffset;
     public final int materialOffset;
@@ -67,8 +69,12 @@ public final class Mesh extends DataBlock
         if (hasNormals) intOffset += numVertices*3;
         
         //UVs
-        uvOffset = intOffset*4;
-        intOffset += numVertices*uvLayers.length*2;
+        uvOffsets = new int[uvLayers.length];
+        for (int i=0; i<uvLayers.length; i++)
+        {
+            uvOffsets[i] = intOffset*4;
+            intOffset += numVertices*2;
+        }
         
         //Tangents
         tangentOffset = intOffset*4;

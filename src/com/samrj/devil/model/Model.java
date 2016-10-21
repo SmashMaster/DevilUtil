@@ -42,7 +42,7 @@ public final class Model
     {
         this.path = path;
         
-        try  (BufferedInputStream inputStream = new BufferedInputStream(Resource.open(path)))
+        try (BufferedInputStream inputStream = new BufferedInputStream(Resource.open(path)))
         {
             DataInputStream in = new DataInputStream(inputStream);
             
@@ -68,6 +68,14 @@ public final class Model
             objects = get(Type.OBJECT);
             scenes = get(Type.SCENE);
             textures = get(Type.TEXTURE);
+        }
+        catch (IOException e)
+        {
+            throw new IOException("in " + path, e);
+        }
+        catch (RuntimeException e)
+        {
+            throw new RuntimeException("in " + path, e);
         }
     }
     
