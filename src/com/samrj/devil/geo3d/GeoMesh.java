@@ -98,6 +98,15 @@ public class GeoMesh<VERT extends Vertex<VERT>> implements Geometry
         updateBounds();
     }
     
+    public GeoMesh()
+    {
+        verts = new ArrayList<>();
+        edges = new ArrayList<>();
+        faces = new ArrayList<>();
+        
+        updateBounds();
+    }
+    
     private void replace(List<Edge> edges, List<Face> faces, Vertex ov, Vertex nv)
     {
         nv.faces.addAll(ov.faces);
