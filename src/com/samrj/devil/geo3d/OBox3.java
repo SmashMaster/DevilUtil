@@ -2,6 +2,7 @@ package com.samrj.devil.geo3d;
 
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Quat;
+import com.samrj.devil.math.Transform;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 
@@ -27,14 +28,14 @@ public class OBox3
     public static boolean touching(OBox3 b0, OBox3 b1)
     {
         Vec3 temp = new Vec3(), temp2 = new Vec3();
-        Mat3 rotMat0 = Mat3.rotation(b0.rot);
-        Mat3 rotMat1 = Mat3.rotation(b1.rot);
+        Mat3 rotMat0 = Mat3.rotation(b0.transform.rot);
+        Mat3 rotMat1 = Mat3.rotation(b1.transform.rot);
         
         Mat3 m = new Mat3();
         for (int i=0; i<3; i++) for (int j=0; j<3; j++)
             m.setEntry(i, j, temp.setAsColumn(rotMat0, i).dot(temp2.setAsColumn(rotMat1, j)));
         
-        Vec3 t = Vec3.sub(b1.pos, b0.pos).mult(rotMat0.transpose());
+        Vec3 t = Vec3.sub(b1.transform.pos, b0.transform.pos).mult(rotMat0.transpose());
         
         Mat3 absM = new Mat3();
         for (int i=0; i<3; i++) for (int j=0; j<3; j++)
@@ -43,52 +44,52 @@ public class OBox3
         float r0, r1;
         for (int i=0; i<3; i++)
         {
-            r0 = b0.sca.getComponent(i);
-            r1 = b1.sca.dot(temp.setAsRow(absM, i));
+            r0 = b0.transform.sca.getComponent(i);
+            r1 = b1.transform.sca.dot(temp.setAsRow(absM, i));
             if (Math.abs(t.getComponent(i)) > r0 + r1) return false;
         }
         
         for (int i=0; i<3; i++)
         {
-            r0 = b0.sca.dot(temp.setAsColumn(absM, i));
-            r1 = b1.sca.getComponent(i);
+            r0 = b0.transform.sca.dot(temp.setAsColumn(absM, i));
+            r1 = b1.transform.sca.getComponent(i);
             if (Math.abs(t.dot(temp.setAsColumn(m, i))) > r0 + r1) return false;
         }
         
-        r0 = b0.sca.y*absM.g + b0.sca.z*absM.d;
-        r1 = b1.sca.y*absM.c + b1.sca.z*absM.b;
+        r0 = b0.transform.sca.y*absM.g + b0.transform.sca.z*absM.d;
+        r1 = b1.transform.sca.y*absM.c + b1.transform.sca.z*absM.b;
         if (Math.abs(t.z*m.d - t.y*m.g) > r0 + r1) return false;
         
-        r0 = b0.sca.y*absM.h + b0.sca.z*absM.e;
-        r1 = b1.sca.x*absM.c + b1.sca.z*absM.a;
+        r0 = b0.transform.sca.y*absM.h + b0.transform.sca.z*absM.e;
+        r1 = b1.transform.sca.x*absM.c + b1.transform.sca.z*absM.a;
         if (Math.abs(t.z*m.e - t.y*m.h) > r0 + r1) return false;
         
-        r0 = b0.sca.y*absM.i + b0.sca.z*absM.f;
-        r1 = b1.sca.x*absM.b + b1.sca.y*absM.a;
+        r0 = b0.transform.sca.y*absM.i + b0.transform.sca.z*absM.f;
+        r1 = b1.transform.sca.x*absM.b + b1.transform.sca.y*absM.a;
         if (Math.abs(t.z*m.f - t.y*m.i) > r0 + r1) return false;
         
-        r0 = b0.sca.x*absM.g + b0.sca.z*absM.a;
-        r1 = b1.sca.y*absM.f + b1.sca.z*absM.e;
+        r0 = b0.transform.sca.x*absM.g + b0.transform.sca.z*absM.a;
+        r1 = b1.transform.sca.y*absM.f + b1.transform.sca.z*absM.e;
         if (Math.abs(t.x*m.g - t.z*m.a) > r0 + r1) return false;
         
-        r0 = b0.sca.x*absM.h + b0.sca.z*absM.b;
-        r1 = b1.sca.x*absM.f + b1.sca.z*absM.d;
+        r0 = b0.transform.sca.x*absM.h + b0.transform.sca.z*absM.b;
+        r1 = b1.transform.sca.x*absM.f + b1.transform.sca.z*absM.d;
         if (Math.abs(t.x*m.h - t.z*m.b) > r0 + r1) return false;
         
-        r0 = b0.sca.x*absM.i + b0.sca.z*absM.c;
-        r1 = b1.sca.x*absM.e + b1.sca.y*absM.d;
+        r0 = b0.transform.sca.x*absM.i + b0.transform.sca.z*absM.c;
+        r1 = b1.transform.sca.x*absM.e + b1.transform.sca.y*absM.d;
         if (Math.abs(t.x*m.i - t.z*m.c) > r0 + r1) return false;
         
-        r0 = b0.sca.x*absM.d + b0.sca.y*absM.a;
-        r1 = b1.sca.y*absM.i + b1.sca.z*absM.h;
+        r0 = b0.transform.sca.x*absM.d + b0.transform.sca.y*absM.a;
+        r1 = b1.transform.sca.y*absM.i + b1.transform.sca.z*absM.h;
         if (Math.abs(t.y*m.a - t.x*m.d) > r0 + r1) return false;
         
-        r0 = b0.sca.x*absM.e + b0.sca.y*absM.b;
-        r1 = b1.sca.x*absM.i + b1.sca.z*absM.g;
+        r0 = b0.transform.sca.x*absM.e + b0.transform.sca.y*absM.b;
+        r1 = b1.transform.sca.x*absM.i + b1.transform.sca.z*absM.g;
         if (Math.abs(t.y*m.b - t.x*m.e) > r0 + r1) return false;
         
-        r0 = b0.sca.x*absM.f + b0.sca.y*absM.c;
-        r1 = b1.sca.x*absM.h + b1.sca.y*absM.g;
+        r0 = b0.transform.sca.x*absM.f + b0.transform.sca.y*absM.c;
+        r1 = b1.transform.sca.x*absM.h + b1.transform.sca.y*absM.g;
         if (Math.abs(t.y*m.c - t.x*m.f) > r0 + r1) return false;
         
         return true;
@@ -118,9 +119,7 @@ public class OBox3
      */
     public static void copy(OBox3 source, OBox3 target)
     {
-        Vec3.copy(source.pos, target.pos);
-        Quat.copy(source.rot, target.rot);
-        Vec3.copy(source.sca, target.sca);
+        Transform.copy(source.transform, target.transform);
     }
     
     /**
@@ -134,9 +133,7 @@ public class OBox3
      */
     public static void lerp(OBox3 b0, OBox3 b1, float t, OBox3 result)
     {
-        Vec3.lerp(b0.pos, b1.pos, t, result.pos);
-        Quat.slerp(b0.rot, b1.rot, t, result.rot);
-        Vec3.lerp(b0.sca, b1.sca, t, result.sca);
+        Transform.lerp(b0.transform, b1.transform, t, result.transform);
     }
     
     /**
@@ -149,9 +146,9 @@ public class OBox3
      */
     public static void toLocal(OBox3 b, Vec3 v, Vec3 result)
     {
-        Vec3.sub(v, b.pos, result);
-        Vec3.mult(result, Quat.invert(b.rot), result);
-        Vec3.div(result, b.sca, result);
+        Vec3.sub(v, b.transform.pos, result);
+        Vec3.mult(result, Quat.invert(b.transform.rot), result);
+        Vec3.div(result, b.transform.sca, result);
     }
     
     /**
@@ -164,9 +161,9 @@ public class OBox3
      */
     public static void toGlobal(OBox3 b, Vec3 v, Vec3 result)
     {
-        Vec3.mult(v, b.sca, result);
-        Vec3.mult(result, b.rot, result);
-        Vec3.add(result, b.pos, result);
+        Vec3.mult(v, b.transform.sca, result);
+        Vec3.mult(result, b.transform.rot, result);
+        Vec3.add(result, b.transform.pos, result);
     }
     
     /**
@@ -226,19 +223,20 @@ public class OBox3
     }
     // </editor-fold>
     
-    public final Vec3 pos = new Vec3();
-    public final Quat rot = new Quat();
-    public final Vec3 sca = new Vec3();
+    public final Transform transform = new Transform();
     
     public OBox3()
     {
     }
     
+    public OBox3(Transform transform)
+    {
+        Transform.copy(transform, this.transform);
+    }
+    
     public OBox3(OBox3 b)
     {
-        Vec3.copy(b.pos, pos);
-        Quat.copy(b.rot, rot);
-        Vec3.copy(b.sca, sca);
+        Transform.copy(b.transform, transform);
     }
     
     // <editor-fold defaultstate="collapsed" desc="Instance accessor methods">

@@ -49,19 +49,19 @@ public class Box3
      */
     public static final void contain(OBox3 b, Box3 r)
     {
-        Mat3 m = Mat3.rotation(b.rot);
-        m.mult(b.sca);
+        Mat3 m = Mat3.rotation(b.transform.rot);
+        m.mult(b.transform.sca);
         
         float wx = Math.abs(m.a) + Math.abs(m.b) + Math.abs(m.c);
         float wy = Math.abs(m.d) + Math.abs(m.e) + Math.abs(m.f);
         float wz = Math.abs(m.g) + Math.abs(m.h) + Math.abs(m.i);
         
-        r.min.x = b.pos.x - wx;
-        r.min.y = b.pos.y - wy;
-        r.min.z = b.pos.z - wz;
-        r.max.x = b.pos.x + wx;
-        r.max.y = b.pos.y + wy;
-        r.max.z = b.pos.z + wz;
+        r.min.x = b.transform.pos.x - wx;
+        r.min.y = b.transform.pos.y - wy;
+        r.min.z = b.transform.pos.z - wz;
+        r.max.x = b.transform.pos.x + wx;
+        r.max.y = b.transform.pos.y + wy;
+        r.max.z = b.transform.pos.z + wz;
     }
     
     /**

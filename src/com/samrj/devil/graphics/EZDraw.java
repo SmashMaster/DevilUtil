@@ -331,9 +331,7 @@ public final class EZDraw
     public static void oBox(OBox3 box)
     {
         stack.push();
-        stack.mat.translate(box.pos);
-        stack.mat.rotate(box.rot);
-        stack.mat.mult(box.sca);
+        stack.mat.mult(box.transform);
         box();
         stack.pop();
     }
