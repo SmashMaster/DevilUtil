@@ -15,98 +15,11 @@ import com.samrj.devil.math.Vec4;
 public class Geo3DUtil
 {
     /**
-     * Computes the barycentric coordinates of the given point p projected onto
-     * the triangle formed by points a, b, and c, and stores the result in r.
-     */
-    public static final void baryCoords(Vec3 a, Vec3 b, Vec3 c, Vec3 p, Vec3 r)
-    {
-        Vec3 v0 = Vec3.sub(b, a), v1 = Vec3.sub(c, a), v2 = Vec3.sub(p, a);
-        float d00 = v0.dot(v0);
-        float d01 = v0.dot(v1);
-        float d11 = v1.dot(v1);
-        float d20 = v2.dot(v0);
-        float d21 = v2.dot(v1);
-        float denom = d00*d11 - d01*d01;
-        
-        r.y = (d11*d20 - d01*d21)/denom;
-        r.z = (d00*d21 - d01*d20)/denom;
-        r.x = 1.0f - r.y - r.z;
-    }
-    
-    /**
-     * Computes the barycentric coordinates of the given point p projected onto
-     * the triangle formed by points a, b, and c, and returns a new vector
-     * containing the result.
-     * 
-     * @return A new vector containing the result.
-     */
-    public static final Vec3 baryCoords(Vec3 a, Vec3 b, Vec3 c, Vec3 p)
-    {
-        Vec3 r = new Vec3();
-        baryCoords(a, b, c, p, r);
-        return r;
-    }
-    
-    /**
-     * Creates a point on the given triangle formed by points a, b, c, using
-     * the given barycentric coordinates, and stores the result in r.
-     */
-    public static final void baryPoint(Vec3 a, Vec3 b, Vec3 c, Vec3 bary, Vec3 r)
-    {
-        Vec3.mult(a, bary.x, r);
-        r.madd(b, bary.y);
-        r.madd(c, bary.z);
-    }
-    
-    /**
-     * Creates a point on the given triangle formed by points a, b, c, using
-     * the given barycentric coordinates, and returns it as a new vector.
-     */
-    public static final Vec3 baryPoint(Vec3 a, Vec3 b, Vec3 c, Vec3 bary)
-    {
-        Vec3 r = new Vec3();
-        baryPoint(a, b, c, bary, r);
-        return r;
-    }
-    
-    /**
      * Returns whether the given barycentric coordinates lie on a triangle.
      */
     public static final boolean baryContained(Vec3 bary)
     {
         return bary.y > 0.0f && bary.z > 0.0f && (bary.y + bary.z) < 1.0f;
-    }
-    
-    /**
-     * Computes the normal vector and plane constant for the plane formed by
-     * points a, b, and c, and stores the result in r.
-     */
-    public static final void plane(Vec3 a, Vec3 b, Vec3 c, Vec4 r)
-    {
-        Vec3 n = Vec3.sub(c, a).cross(Vec3.sub(b, a)).normalize();
-        r.x = n.x;
-        r.y = n.y;
-        r.z = n.z;
-        r.w = a.dot(n);
-    }
-    
-    /**
-     * Computes the normal vector and plane constant for the plane formed by
-     * points a, b, and c, and returns a new vector containing the result.
-     */
-    public static final Vec4 plane(Vec3 a, Vec3 b, Vec3 c)
-    {
-        Vec4 r = new Vec4();
-        plane(a, b, c, r);
-        return r;
-    }
-    
-    /**
-     * Returns the area of the triangle formed by the three given points.
-     */
-    public static final float area(Vec3 a, Vec3 b, Vec3 c)
-    {
-        return Vec3.sub(b, a).cross(Vec3.sub(c, a)).length()*0.5f;
     }
     
     /**

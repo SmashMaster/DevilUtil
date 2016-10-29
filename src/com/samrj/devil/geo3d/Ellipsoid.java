@@ -108,19 +108,20 @@ public class Ellipsoid implements ConvexShape
         Vec3 aDir = Vec3.sub(f.a.p, pos).div(radii);
         Vec3 bDir = Vec3.sub(f.b.p, pos).div(radii);
         Vec3 cDir = Vec3.sub(f.c.p, pos).div(radii);
+        Triangle3 localTri = Triangle3.from(aDir, bDir, cDir);
+        Vec4 plane = Triangle3.plane(localTri);
         
-        Vec4 plane = Geo3DUtil.plane(aDir, bDir, cDir);
         if (plane.w > 0.0f) plane.negate();
         if (plane.w < -1.0f || Float.isNaN(plane.w)) return null; //Too far apart or NaN.
         
-        Vec3 bary = Geo3DUtil.baryCoords(f.a.p, f.b.p, f.c.p, pos);
+        Vec3 bary = Triangle3.barycentric(f, pos);
         if (!Geo3DUtil.baryContained(bary)) return null; //Not inside triangle.
         
         if (Util.isZero(plane.w, EPSILON)) return isectCenter(f); //Intersected center.
         
         IsectResult out = new IsectResult(f);
-        Geo3DUtil.baryPoint(f.a.p, f.b.p, f.c.p, bary, out.point);
-        Geo3DUtil.baryPoint(aDir, bDir, cDir, bary, out.surface);
+        Triangle3.interpolate(f, bary, out.point);
+        Triangle3.interpolate(localTri, bary, out.surface);
         out.surface.div(-plane.w).mult(radii).add(pos);
         Geo3DUtil.normal(plane, out.normal);
         out.normal.div(radii).normalize();
@@ -199,19 +200,20 @@ public class Ellipsoid implements ConvexShape
         Vec3 ae = Vec3.div(f.a.p, radii);
         Vec3 be = Vec3.div(f.b.p, radii);
         Vec3 ce = Vec3.div(f.c.p, radii);
+        Triangle3 localTri = Triangle3.from(ae, be, ce);
         
-        Vec4 plane = Geo3DUtil.plane(ae, be, ce);
+        Vec4 plane = Triangle3.plane(localTri);
         float t = Geo3DUtil.sweepSpherePlane(p0, cDir, plane, 1.0f);
         if (Float.isNaN(t) || t <= 0.0f || t >= 1.0f)
             return null; //Moving away or won't get there in time.
         
         Vec3 position = Vec3.madd(pos, dp, t);
-        Vec3 bary = Geo3DUtil.baryCoords(f.a.p, f.b.p, f.c.p, position);
+        Vec3 bary = Triangle3.barycentric(f, position);
         if (!Geo3DUtil.baryContained(bary)) return null; //Missed the triangle.
         
         SweepResult out = new SweepResult(f);
         out.time = t;
-        Geo3DUtil.baryPoint(f.a.p, f.b.p, f.c.p, bary, out.point);
+        Triangle3.interpolate(f, bary, out.point);
         Vec3.copy(position, out.position);
         Vec3.sub(position, out.point, out.normal);
         out.normal.normalize();

@@ -333,7 +333,7 @@ public class GeoMesh<VERT extends Vertex<VERT>> implements Geometry
         }
     }
     
-    public static final class Face implements GeomObject
+    public static final class Face implements Triangle3, GeomObject
     {
         public Vertex a, b, c;
         public Edge ab, bc, ca;
@@ -341,6 +341,24 @@ public class GeoMesh<VERT extends Vertex<VERT>> implements Geometry
         private Face(Vertex a, Vertex b, Vertex c)
         {
             this.a = a; this.b = b; this.c = c;
+        }
+        
+        @Override
+        public Vec3 a()
+        {
+            return a.p;
+        }
+
+        @Override
+        public Vec3 b()
+        {
+            return b.p;
+        }
+
+        @Override
+        public Vec3 c()
+        {
+            return c.p;
         }
         
         @Override
