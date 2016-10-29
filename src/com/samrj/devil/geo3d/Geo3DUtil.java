@@ -1,6 +1,5 @@
 package com.samrj.devil.geo3d;
 
-import com.samrj.devil.geo3d.GeoMesh.Face;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.Vec4;
@@ -107,10 +106,11 @@ public class Geo3DUtil
      * Casts the given ray against the given triangle and returns the results of
      * the cast, or null if the ray missed.
      */
-    public static RaycastResult raycast(Vec3 p0, Vec3 dp, Face f)
+    public static RaycastResult raycast(Triangle3 f, Vec3 p0, Vec3 dp, boolean terminated)
     {
-        Vec3 ab = Vec3.sub(f.b.p, f.a.p);
-        Vec3 ac = Vec3.sub(f.c.p, f.a.p);
+        Vec3 a = f.a(), b = f.b(), c = f.c();
+        Vec3 ab = Vec3.sub(b, a);
+        Vec3 ac = Vec3.sub(c, a);
 
         Vec3 n = Vec3.cross(ab, ac);
         float d = dp.dot(n);
@@ -123,9 +123,10 @@ public class Geo3DUtil
         }
         
         float ood = 1.0f/d;
-        Vec3 ap = Vec3.sub(p0, f.a.p);
+        Vec3 ap = Vec3.sub(p0, a);
         float t = ap.dot(n)*ood;
-        if (t < 0.0f || t > 1.0f) return null; //Behind or too far.
+        if (t < 0.0f) return null; //Ray behind triangle.
+        if (terminated && t > 1.0f) return null; //Triangle too far.
         
         Vec3 e = backface ? Vec3.cross(ap, dp) : Vec3.cross(dp, ap);
         float v = ac.dot(e);
@@ -139,8 +140,8 @@ public class Geo3DUtil
         
         RaycastResult out = new RaycastResult(f);
         out.time = t;
-        Vec3.mult(f.a.p, u, out.point);
-        out.point.madd(f.b.p, v).madd(f.c.p, w);
+        Vec3.mult(a, u, out.point);
+        out.point.madd(b, v).madd(c, w);
         Vec3.normalize(n, out.normal);
         return out;
     }

@@ -1,8 +1,5 @@
 package com.samrj.devil.geo3d;
 
-import com.samrj.devil.geo3d.GeoMesh.Edge;
-import com.samrj.devil.geo3d.GeoMesh.Face;
-import com.samrj.devil.geo3d.GeoMesh.Vertex;
 import com.samrj.devil.math.Vec3;
 
 /**
@@ -20,7 +17,7 @@ public interface ConvexShape
      * @param v The vertex to clip against.
      * @return The results of the clip test, or null if not intersecting.
      */
-    IsectResult isect(Vertex v);
+    IsectResult isect(Vertex3 v);
     
     /**
      * Intersects this shape against the given line segment.
@@ -28,7 +25,7 @@ public interface ConvexShape
      * @param e The edge to clip against.
      * @return The results of the clip test, or null if not intersecting.
      */
-    IsectResult isect(Edge e);
+    IsectResult isect(Edge3 e);
     
     /**
      * Intersects this shape against the given triangle.
@@ -36,7 +33,7 @@ public interface ConvexShape
      * @param f The face to clip against.
      * @return The results of the clip test, or null if not intersecting.
      */
-    IsectResult isect(Face f);
+    IsectResult isect(Triangle3 f);
     
     /**
      * Sweeps this shape in the given direction, against the given point.
@@ -45,7 +42,7 @@ public interface ConvexShape
      * @param v The vertex to sweep against.
      * @return The results of the sweep test, or null if missed.
      */
-    SweepResult sweep(Vec3 dp, Vertex v);
+    SweepResult sweep(Vec3 dp, Vertex3 v);
     
     /**
      * Sweeps this shape in the given direction, against the given line segment.
@@ -54,7 +51,7 @@ public interface ConvexShape
      * @param e The edge to sweep against.
      * @return The results of the sweep test, or null if missed.
      */
-    SweepResult sweep(Vec3 dp, Edge e);
+    SweepResult sweep(Vec3 dp, Edge3 e);
     
     /**
      * Sweeps this shape in the given direction, against the given triangle.
@@ -63,7 +60,7 @@ public interface ConvexShape
      * @param f The face to sweep against.
      * @return The results of the sweep test, or null if missed.
      */
-    SweepResult sweep(Vec3 dp, Face f);
+    SweepResult sweep(Vec3 dp, Triangle3 f);
     
     /**
      * Returns a bounding box that contains this convex shape. Should be as

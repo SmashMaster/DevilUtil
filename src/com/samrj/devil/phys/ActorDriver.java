@@ -2,14 +2,12 @@ package com.samrj.devil.phys;
 
 import com.samrj.devil.geo3d.Ellipsoid;
 import com.samrj.devil.geo3d.Geo3DUtil;
-import com.samrj.devil.geo3d.GeoMesh.Face;
-import com.samrj.devil.geo3d.GeomObject;
 import com.samrj.devil.geo3d.Geometry;
 import com.samrj.devil.geo3d.SweepResult;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.util.FloatConsumer;
-import java.util.stream.Stream;
+import com.samrj.devil.geo3d.GeoPrimitive;
 
 /**
  * Basic class handling collision and movement of a character in a 3D space.
@@ -20,20 +18,7 @@ import java.util.stream.Stream;
  */
 public final class ActorDriver
 {
-    public static final GeomObject VIRTUAL_GROUND = new GeomObject()
-    {
-        @Override
-        public GeomObject.Type getType()
-        {
-            return GeomObject.Type.VIRTUAL;
-        }
-
-        @Override
-        public Stream<Face> getFaces()
-        {
-            return Stream.empty();
-        }
-    };
+    public static final GeoPrimitive VIRTUAL_GROUND = () -> GeoPrimitive.Type.VIRTUAL;
     
     public final Vec3 pos, vel = new Vec3();
     
@@ -86,7 +71,7 @@ public final class ActorDriver
     private final Ellipsoid shape = new Ellipsoid();
     private final Vec3 displacement = new Vec3();
     private final Vec3 groundNormal = new Vec3(0.0f, 1.0f, 0.0f);
-    private GeomObject groundObject;
+    private GeoPrimitive groundObject;
     private boolean applyGravity;
     
     /**
@@ -166,7 +151,7 @@ public final class ActorDriver
     /**
      * Returns whatever geometry object this actor is currently standing on.
      */
-    public GeomObject getGroundObject()
+    public GeoPrimitive getGroundObject()
     {
         return groundObject;
     }
@@ -190,15 +175,15 @@ public final class ActorDriver
         return out;
     }
     
-    private void getNormal(GeomObject obj, Vec3 result)
-    {
-        obj.getFaces()
-                .map(Face::getNormal)
-                .peek(n -> {if (n.y < 0.0f) n.negate();})
-                .reduce((a, b) -> a.y > b.y ? a : b)
-                .filter(n -> n.y > result.y)
-                .ifPresent(result::set);
-    }
+//    private void getNormal(GeomObject obj, Vec3 result)
+//    {
+//        obj.getFaces()
+//                .map(Face::getNormal)
+//                .peek(n -> {if (n.y < 0.0f) n.negate();})
+//                .reduce((a, b) -> a.y > b.y ? a : b)
+//                .filter(n -> n.y > result.y)
+//                .ifPresent(result::set);
+//    }
     
     /**
      * Steps the player's simulation forward by the given time-step.
@@ -286,7 +271,7 @@ public final class ActorDriver
             
             float height = isect.point.y - pos.y + shape.radii.y;
             if (height > climbHeight) Geo3DUtil.restrain(vel, isect.normal);
-            else getNormal(isect.object, isect.normal);
+//            else getNormal(isect.object, isect.normal);
             
             if (isValidGround(isect.normal) && (!onGround() || isect.normal.y > groundNormal.y))
             {

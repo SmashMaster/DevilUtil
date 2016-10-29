@@ -138,6 +138,17 @@ public class Box3
     }
     
     /**
+     * Sets the given box to be infinitely large.
+     * 
+     * @param r The box to set.
+     */
+    public static final void infinite(Box3 r)
+    {
+        r.min.set(Float.NEGATIVE_INFINITY);
+        r.max.set(Float.POSITIVE_INFINITY);
+    }
+    
+    /**
      * Sets the given box to the smallest one which can contain the given
      * oriented box.
      * 
@@ -286,6 +297,18 @@ public class Box3
     {
         Box3 result = new Box3();
         unit(result);
+        return result;
+    }
+    
+    /**
+     * Returns a new infinite box.
+     * 
+     * @return A new infinite box.
+     */
+    public static final Box3 infinite()
+    {
+        Box3 result = new Box3();
+        infinite(result);
         return result;
     }
     
@@ -444,6 +467,18 @@ public class Box3
     public Box3 setEmpty()
     {
         empty(this);
+        return this;
+    }
+    
+    public Box3 setUnit()
+    {
+        unit(this);
+        return this;
+    }
+    
+    public Box3 setInfinite()
+    {
+        infinite(this);
         return this;
     }
     

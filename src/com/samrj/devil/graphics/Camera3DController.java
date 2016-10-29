@@ -163,7 +163,7 @@ public final class Camera3DController
         if (blockGeom != null && !dp.isZero(0.0f))
         {
             blockShape.pos.set(camera.pos);
-            SweepResult ray = blockGeom.sweepFirst(blockShape, dp);
+            SweepResult ray = blockGeom.sweepFirst(blockShape, dp).orElse(null);
             if (ray != null) camera.pos.madd(dp, ray.time);
             else camera.pos.add(dp);
         }

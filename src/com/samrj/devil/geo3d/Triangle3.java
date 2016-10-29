@@ -10,7 +10,7 @@ import com.samrj.devil.math.Vec4;
  * @copyright 2016 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public interface Triangle3
+public interface Triangle3 extends GeoPrimitive
 {
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
@@ -241,4 +241,10 @@ public interface Triangle3
      * @return The third vertex of this triangle.
      */
     public Vec3 c();
+    
+    @Override
+    public default Type getType()
+    {
+        return Type.TRIANGLE;
+    }
 }

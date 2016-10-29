@@ -1,6 +1,5 @@
 package com.samrj.devil.geo3d;
 
-import com.samrj.devil.geo3d.GeoMesh.Face;
 import com.samrj.devil.math.Vec3;
 
 /**
@@ -30,9 +29,9 @@ public class RaycastResult
     /**
      * The face that was hit.
      */
-    public final Face face;
+    public final Triangle3 face;
     
-    RaycastResult(Face face)
+    RaycastResult(Triangle3 face)
     {
         this.face = face;
     }

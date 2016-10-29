@@ -95,6 +95,13 @@ public class OBox3
         return true;
     }
     
+    /**
+     * Returns whether the given oriented box is touching the given triangle.
+     * 
+     * @param box An oriented box.
+     * @param triangle A triangle.
+     * @return Whether the box and triangle are touching.
+     */
     public static boolean touching(OBox3 box, Triangle3 triangle)
     {
         Vec3 a = toLocal(box, triangle.a());

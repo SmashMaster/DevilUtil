@@ -2,6 +2,7 @@ package com.samrj.devil.geo3d;
 
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -13,22 +14,17 @@ import java.util.stream.Stream;
  */
 public interface Geometry
 {
-    Stream<RaycastResult> raycastUnsorted(Vec3 p0, Vec3 dp);
+    //Base methods
+    Stream<RaycastResult> raycastUnsorted(Vec3 p0, Vec3 dp, boolean terminated);
+    Stream<IsectResult> intersectUnsorted(ConvexShape shape);
+    Stream<SweepResult> sweepUnsorted(ConvexShape shape, Vec3 dp);
     
-    default Stream<RaycastResult> raycast(Vec3 p0, Vec3 dp)
+    //Ordered streams
+    default Stream<RaycastResult> raycast(Vec3 p0, Vec3 dp, boolean terminated)
     {
-        return raycastUnsorted(p0, dp)
+        return raycastUnsorted(p0, dp, terminated)
                 .sorted((a, b) -> Util.compare(a.time, b.time));
     }
-    
-    default RaycastResult raycastFirst(Vec3 p0, Vec3 dp)
-    {
-        return raycastUnsorted(p0, dp)
-                .reduce((a, b) -> a.time < b.time ? a : b)
-                .orElse(null);
-    }
-    
-    Stream<IsectResult> intersectUnsorted(ConvexShape shape);
     
     default Stream<IsectResult> intersect(ConvexShape shape)
     {
@@ -36,25 +32,43 @@ public interface Geometry
                 .sorted((a, b) -> Util.compare(b.depth, a.depth, 0.0f));
     }
     
-    default IsectResult intersectDeepest(ConvexShape shape)
-    {
-        return intersectUnsorted(shape)
-                .reduce((a, b) -> a.depth > b.depth ? a : b)
-                .orElse(null);
-    }
-    
-    Stream<SweepResult> sweepUnsorted(ConvexShape shape, Vec3 dp);
-    
     default Stream<SweepResult> sweep(ConvexShape shape, Vec3 dp)
     {
         return sweepUnsorted(shape, dp)
                 .sorted((a, b) -> Util.compare(a.time, b.time, 0.0f));
     }
     
-    default SweepResult sweepFirst(ConvexShape shape, Vec3 dp)
+    //Single-result methods
+    default Optional<RaycastResult> raycastFirst(Vec3 p0, Vec3 dp, boolean terminated)
+    {
+        return raycastUnsorted(p0, dp, terminated)
+                .reduce((a, b) -> a.time < b.time ? a : b);
+    }
+    
+    default Optional<IsectResult> intersectDeepest(ConvexShape shape)
+    {
+        return intersectUnsorted(shape)
+                .reduce((a, b) -> a.depth > b.depth ? a : b);
+    }
+    
+    default Optional<SweepResult> sweepFirst(ConvexShape shape, Vec3 dp)
     {
         return sweepUnsorted(shape, dp)
-                .reduce((a, b) -> a.time < b.time ? a : b)
-                .orElse(null);
+                .reduce((a, b) -> a.time < b.time ? a : b);
+    }
+    
+    //Bounds-related methods
+    default Box3 getBounds()
+    {
+        return Box3.infinite();
+    }
+    
+    default boolean areBoundsDirty()
+    {
+        return false;
+    }
+    
+    default void updateBounds()
+    {
     }
 }
