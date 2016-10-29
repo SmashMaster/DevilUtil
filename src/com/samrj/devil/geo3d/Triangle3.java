@@ -7,10 +7,11 @@ import com.samrj.devil.math.Vec4;
  * Interface for triangle-like objects.
  * 
  * @author Samuel Johnson (SmashMaster)
+ * @param <V> The type of vertex this triangle stores.
  * @copyright 2016 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public interface Triangle3 extends GeoPrimitive
+public interface Triangle3<V extends Vertex3> extends GeoPrimitive
 {
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
@@ -111,6 +112,39 @@ public interface Triangle3 extends GeoPrimitive
         result.w = t.a().p().dot(n);
     }
     // </editor-fold>
+    /**
+     * Creates a new triangle from the three given vertices. Changes to the
+     * vertices will reflect in the created triangle, and vice-versa.
+     * 
+     * @param a The first vertex.
+     * @param b The second vertex.
+     * @param c The third vertex.
+     * @return A new triangle from the given vertex.
+     */
+    public static Triangle3 from(Vertex3 a, Vertex3 b, Vertex3 c)
+    {
+        return new Triangle3()
+        {
+            @Override
+            public Vertex3 a()
+            {
+                return a;
+            }
+
+            @Override
+            public Vertex3 b()
+            {
+                return b;
+            }
+
+            @Override
+            public Vertex3 c()
+            {
+                return c;
+            }
+        };
+    }
+    
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
     /**
      * Creates a new triangle from the three given vectors. Changes to the
@@ -123,30 +157,7 @@ public interface Triangle3 extends GeoPrimitive
      */
     public static Triangle3 from(Vec3 a, Vec3 b, Vec3 c)
     {
-        Vertex3 va = Vertex3.from(a);
-        Vertex3 vb = Vertex3.from(b);
-        Vertex3 vc = Vertex3.from(c);
-        
-        return new Triangle3()
-        {
-            @Override
-            public Vertex3 a()
-            {
-                return va;
-            }
-
-            @Override
-            public Vertex3 b()
-            {
-                return vb;
-            }
-
-            @Override
-            public Vertex3 c()
-            {
-                return vc;
-            }
-        };
+        return from(Vertex3.from(a), Vertex3.from(b), Vertex3.from(c));
     }
     
     /**
@@ -229,21 +240,21 @@ public interface Triangle3 extends GeoPrimitive
      * 
      * @return The first vertex of this triangle.
      */
-    public Vertex3 a();
+    public V a();
     
     /**
      * Returns the second vertex of this triangle.
      * 
      * @return The second vertex of this triangle.
      */
-    public Vertex3 b();
+    public V b();
     
     /**
      * Returns the third vertex of this triangle.
      * 
      * @return The third vertex of this triangle.
      */
-    public Vertex3 c();
+    public V c();
     
     @Override
     public default Type getType()

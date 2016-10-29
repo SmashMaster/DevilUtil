@@ -1,7 +1,10 @@
 package com.samrj.devil.model;
 
+import com.samrj.devil.geo3d.Vertex3;
 import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.io.Memory;
+import com.samrj.devil.math.Vec2;
+import com.samrj.devil.math.Vec3;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -10,6 +13,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.IntFunction;
 
 /**
  * DevilModel mesh.
@@ -141,10 +145,105 @@ public final class Mesh extends DataBlock
         else return materials.get(0).get();
     }
     
+    /**
+     * Reads this mesh data, allocating a new object for each vertex.
+     * 
+     * @return An array of newly allocated MeshVertices.
+     */
+    public MeshVertex[] readVertices()
+    {
+        MeshVertex[] vertices = new MeshVertex[numVertices];
+        for (int i=0; i<numVertices; i++) vertices[i] = new MeshVertex();
+        
+        vertexData.rewind();
+        for (MeshVertex v : vertices) v.position.read(vertexData);
+        if (hasNormals) for (MeshVertex v : vertices) v.normal.read(vertexData);
+        for (int uv=0; uv<uvLayers.length; uv++)
+            for (MeshVertex v : vertices) v.uvs[uv].read(vertexData);
+        if (hasTangents) if (hasNormals) for (MeshVertex v : vertices) v.tangent.read(vertexData);
+        for (int color=0; color<colorLayers.length; color++)
+            for (MeshVertex v : vertices) v.colors[color].read(vertexData);
+        for (int i=0; i<numGroups; i++) for (MeshVertex v : vertices)
+            v.groupIndex[i] = vertexData.getInt();
+        for (int i=0; i<numGroups; i++) for (MeshVertex v : vertices)
+            v.groupWeight[i] = vertexData.getFloat();
+        vertexData.rewind();
+        
+        return vertices;
+    }
+    
+    /**
+     * Reads the indices for this mesh, performing the given operation on each
+     * triangle in this mesh, using the given index function.
+     * 
+     * @param <V> The type of vertex to operate on.
+     * @param vertexFunction A function which converts indices into vertices.
+     * @param consumer A consumer which accepts three vertices at a time.
+     */
+    public <V> void forEachTriangle(IntFunction<V> vertexFunction, TriConsumer<V> consumer)
+    {
+        indexData.rewind();
+        for (int i=0; i<numTriangles; i++)
+        {
+            V a = vertexFunction.apply(indexData.getInt());
+            V b = vertexFunction.apply(indexData.getInt());
+            V c = vertexFunction.apply(indexData.getInt());
+            consumer.accept(a, b, c);
+        }
+        indexData.rewind();
+    }
+    
+    /**
+     * Reads this mesh data, then performs the given operation on each triangle.
+     * 
+     * @param consumer The operation to perform on each triangle.
+     */
+    public void forEachTriangle(TriConsumer<MeshVertex> consumer)
+    {
+        MeshVertex[] vertices = readVertices();
+        forEachTriangle(i -> vertices[i], consumer);
+    }
+    
     @Override
     void destroy()
     {
         vertexBlock.free();
         indexBlock.free();
+    }
+    
+    public class MeshVertex implements Vertex3
+    {
+        public final Vec3 position = new Vec3();
+        public final Vec3 normal;
+        public final Vec2[] uvs;
+        public final Vec3 tangent;
+        public final Vec3[] colors;
+        public int[] groupIndex;
+        public float[] groupWeight;
+        public int material = -1;
+
+        private MeshVertex()
+        {
+            normal = hasNormals ? new Vec3() : null;
+            uvs = new Vec2[uvLayers.length];
+            for (int i=0; i<uvs.length; i++) uvs[i] = new Vec2();
+            tangent = hasTangents ? new Vec3() : null;
+            colors = new Vec3[colorLayers.length];
+            for (int i=0; i<colors.length; i++) colors[i] = new Vec3();
+            groupIndex = new int[numGroups];
+            groupWeight = new float[numGroups];
+        }
+
+        @Override
+        public Vec3 p()
+        {
+            return position;
+        }
+    }
+    
+    @FunctionalInterface
+    public interface TriConsumer<V>
+    {
+        public void accept(V a, V b, V c);
     }
 }
