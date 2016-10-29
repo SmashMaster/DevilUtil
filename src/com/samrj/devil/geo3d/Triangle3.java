@@ -27,6 +27,20 @@ public interface Triangle3
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static mutator methods">
     /**
+     * Copies the given source triangle into the given target triangle. Does not
+     * copy any information other than vertex positions.
+     * 
+     * @param source The triangle to copy from.
+     * @param target The triangle to copy into.
+     */
+    public static void copy(Triangle3 source, Triangle3 target)
+    {
+        Vec3.copy(source.a(), target.a());
+        Vec3.copy(source.b(), target.b());
+        Vec3.copy(source.c(), target.c());
+    }
+    
+    /**
      * Computes the barycentric coordinates of the given point projected onto
      * the given triangle, and stores the result in {@code result};
      * 
@@ -68,6 +82,20 @@ public interface Triangle3
     }
     
     /**
+     * Computes the normal vector of the given triangle, and stores it in the
+     * given vector.
+     * 
+     * @param t A triangle.
+     * @param result The vector in which to store the result.
+     */
+    public static void normal(Triangle3 t, Vec3 result)
+    {
+        Vec3 a = t.a(), b = t.b(), c = t.c();
+        Vec3 n = Vec3.sub(c, a).cross(Vec3.sub(b, a));
+        Vec3.normalize(n, result);
+    }
+    
+    /**
      * Computes the normal vector and plane constant for the given triangle, and
      * stores them in {@code result};
      * 
@@ -76,12 +104,11 @@ public interface Triangle3
      */
     public static void plane(Triangle3 t, Vec4 result)
     {
-        Vec3 a = t.a(), b = t.b(), c = t.c();
-        Vec3 n = Vec3.sub(c, a).cross(Vec3.sub(b, a)).normalize();
+        Vec3 n = normal(t);
         result.x = n.x;
         result.y = n.y;
         result.z = n.z;
-        result.w = a.dot(n);
+        result.w = t.a().dot(n);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
@@ -119,6 +146,20 @@ public interface Triangle3
     }
     
     /**
+     * Creates a new triangle with the same current vertex positions as the
+     * given triangle. Changes to the new triangle will *not* reflect in the old
+     * one, or vice-versa. The new triangle is not guaranteed to be the same
+     * class as the given one.
+     * 
+     * @param triangle The triangle to copy.
+     * @return A new triangle.
+     */
+    public static Triangle3 copy(Triangle3 triangle)
+    {
+        return from(new Vec3(triangle.a()), new Vec3(triangle.b()), new Vec3(triangle.c()));
+    }
+    
+    /**
      * Computes the barycentric coordinates of the given point projected onto
      * the given triangle, and returns the result as a new vector.
      * 
@@ -145,6 +186,20 @@ public interface Triangle3
     {
         Vec3 result = new Vec3();
         interpolate(t, bary, result);
+        return result;
+    }
+    
+    /**
+     * Computes the normal vector for the given triangle, and returns the result
+     * as a new vector.
+     * 
+     * @param t A triangle.
+     * @return A new vector containing the result.
+     */
+    public static Vec3 normal(Triangle3 t)
+    {
+        Vec3 result = new Vec3();
+        normal(t, result);
         return result;
     }
     

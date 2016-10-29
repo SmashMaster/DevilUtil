@@ -13,6 +13,7 @@ import com.samrj.devil.math.Vec3;
  */
 public class Box3
 {
+    // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
      * Returns whether or not the two boxes are touching each-other.
      */
@@ -23,6 +24,84 @@ public class Box3
                a.max.z >= b.min.z && b.max.z >= a.min.z;
     }
     
+    private static boolean axisFailTest(Triangle3 triangle, Vec3 axis, Vec3 edge)
+    {
+        Vec3 a = Vec3.cross(axis, edge);
+        float r = Math.abs(a.x) + Math.abs(a.y) + Math.abs(a.z);
+        
+        float p0 = Vec3.dot(a, triangle.a());
+        float p1 = Vec3.dot(a, triangle.b());
+        float p2 = Vec3.dot(a, triangle.c());
+        
+        float min = Math.min(Math.min(p0, p1), p2);
+        if (min > r) return true;
+        
+        float max = Math.max(Math.max(p0, p1), p2);
+        if (max < -r) return true;
+        
+        return false;
+    }
+    
+    private static final Vec3 AXIS_X = new Vec3(1.0f, 0.0f, 0.0f);
+    private static final Vec3 AXIS_Y = new Vec3(0.0f, 1.0f, 0.0f);
+    private static final Vec3 AXIS_Z = new Vec3(0.0f, 0.0f, 1.0f);
+    
+    /**
+     * Returns whether or not the given triangle is touching the unit box.
+     * 
+     * @param t A triangle.
+     * @return Whether the triangle is touching the unit box.
+     */
+    public static boolean touchingUnitBox(Triangle3 t)
+    {
+        Vec3 a = t.a(), b = t.b(), c = t.c();
+        
+        //AABB test
+        if (!touching(contain(t), unit())) return false;
+        
+        //Plane intersection test
+        Vec3 n = Triangle3.normal(t);
+        float pc = Vec3.dot(n, a);
+        if (Math.abs(n.x) + Math.abs(n.y) + Math.abs(n.z) < Math.abs(pc)) return false;
+        
+        //Separating axis tests
+        Vec3 ab = Vec3.sub(b, a);
+        Vec3 bc = Vec3.sub(c, b);
+        Vec3 ca = Vec3.sub(a, c);
+        
+        if (axisFailTest(t, AXIS_X, ab)) return false;
+        if (axisFailTest(t, AXIS_X, bc)) return false;
+        if (axisFailTest(t, AXIS_X, ca)) return false;
+        if (axisFailTest(t, AXIS_Y, ab)) return false;
+        if (axisFailTest(t, AXIS_Y, bc)) return false;
+        if (axisFailTest(t, AXIS_Y, ca)) return false;
+        if (axisFailTest(t, AXIS_Z, ab)) return false;
+        if (axisFailTest(t, AXIS_Z, bc)) return false;
+        if (axisFailTest(t, AXIS_Z, ca)) return false;
+        
+        return true;
+    }
+    
+    /**
+     * Returns whether or not the given triangle is touching the given box.
+     * 
+     * @param box A box.
+     * @param t A triangle.
+     * @return Whether the triangle and box are touching.
+     */
+    public static boolean touching(Box3 box, Triangle3 t)
+    {
+        Vec3 center = Vec3.add(box.min, box.max).mult(0.5f);
+        Vec3 radius = Vec3.sub(box.max, box.min).mult(0.5f);
+        
+        Vec3 a = Vec3.sub(t.a(), center).div(radius);
+        Vec3 b = Vec3.sub(t.b(), center).div(radius);
+        Vec3 c = Vec3.sub(t.c(), center).div(radius);
+        Triangle3 local = Triangle3.from(a, b, c);
+        
+        return touchingUnitBox(local);
+    }
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static mutator methods">
     /**
      * Copies the source box into the target box. 
@@ -48,6 +127,17 @@ public class Box3
     }
     
     /**
+     * Sets the given box to the unit box, centered around the origin.
+     * 
+     * @param r The box to set.
+     */
+    public static final void unit(Box3 r)
+    {
+        r.min.set(-1.0f);
+        r.max.set(1.0f);
+    }
+    
+    /**
      * Sets the given box to the smallest one which can contain the given
      * oriented box.
      * 
@@ -69,6 +159,24 @@ public class Box3
         r.max.x = b.transform.pos.x + wx;
         r.max.y = b.transform.pos.y + wy;
         r.max.z = b.transform.pos.z + wz;
+    }
+    
+    /**
+     * Sets the given box to the smallest one which can contain the given
+     * triangle.
+     * 
+     * @param t The triangle to contain.
+     * @param r The box in which to store the result.
+     */
+    public static final void contain(Triangle3 t, Box3 r)
+    {
+        Vec3 a = t.a(), b = t.b(), c = t.c();
+        r.min.x = Math.min(Math.min(a.x, b.x), c.x);
+        r.max.x = Math.max(Math.max(a.x, b.x), c.x);
+        r.min.y = Math.min(Math.min(a.y, b.y), c.y);
+        r.max.y = Math.max(Math.max(a.y, b.y), c.y);
+        r.min.z = Math.min(Math.min(a.z, b.z), c.z);
+        r.max.z = Math.max(Math.max(a.z, b.z), c.z);
     }
     
     /**
@@ -159,12 +267,25 @@ public class Box3
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
     /**
      * Returns a new empty box. Behaves well during expansion.
+     * 
      * @return A new empty box.
      */
     public static final Box3 empty()
     {
         Box3 result = new Box3();
         empty(result);
+        return result;
+    }
+    
+    /**
+     * Returns a new unit box.
+     * 
+     * @return A new unit box.
+     */
+    public static final Box3 unit()
+    {
+        Box3 result = new Box3();
+        unit(result);
         return result;
     }
     
@@ -179,6 +300,19 @@ public class Box3
     {
         Box3 result = new Box3();
         contain(b, result);
+        return result;
+    }
+    
+    /**
+     * Returns the smallest box that can contain the given triangle.
+     * 
+     * @param t A triangle to contain.
+     * @return A new box containing the result.
+     */
+    public static final Box3 contain(Triangle3 t)
+    {
+        Box3 result = new Box3();
+        contain(t, result);
         return result;
     }
     
@@ -278,6 +412,7 @@ public class Box3
         Vec3.copy(box.max, this.max);
     }
     
+    // <editor-fold defaultstate="collapsed" desc="Instance accessor methods">
     /**
      * Returns whether or not this is touching the given box.
      * 
@@ -289,6 +424,17 @@ public class Box3
         return touching(this, box);
     }
     
+    /**
+     * Returns whether this is touching the given triangle.
+     * 
+     * @param t A triangle.
+     * @return Whether or not this is touching the triangle.
+     */
+    public boolean touching(Triangle3 t)
+    {
+        return touching(this, t);
+    }
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Instance mutator methods">
     /**
      * Sets this to the empty box and returns this.
@@ -304,6 +450,12 @@ public class Box3
     public Box3 setContain(OBox3 b)
     {
         contain(b, this);
+        return this;
+    }
+    
+    public Box3 setContain(Triangle3 t)
+    {
+        contain(t, this);
         return this;
     }
     

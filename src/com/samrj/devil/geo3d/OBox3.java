@@ -95,6 +95,15 @@ public class OBox3
         return true;
     }
     
+    public static boolean touching(OBox3 box, Triangle3 triangle)
+    {
+        Vec3 a = toLocal(box, triangle.a());
+        Vec3 b = toLocal(box, triangle.b());
+        Vec3 c = toLocal(box, triangle.c());
+        Triangle3 local = Triangle3.from(a, b, c);
+        return Box3.touchingUnitBox(local);
+    }
+    
     /**
      * Returns whether the given box contains the given vertex.
      * 
