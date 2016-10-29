@@ -104,9 +104,9 @@ public class OBox3
      */
     public static boolean touching(OBox3 box, Triangle3 triangle)
     {
-        Vec3 a = toLocal(box, triangle.a());
-        Vec3 b = toLocal(box, triangle.b());
-        Vec3 c = toLocal(box, triangle.c());
+        Vec3 a = toLocal(box, triangle.a().p());
+        Vec3 b = toLocal(box, triangle.b().p());
+        Vec3 c = toLocal(box, triangle.c().p());
         Triangle3 local = Triangle3.from(a, b, c);
         return Box3.touchingUnitBox(local);
     }

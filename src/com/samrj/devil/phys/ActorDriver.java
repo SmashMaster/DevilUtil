@@ -2,12 +2,12 @@ package com.samrj.devil.phys;
 
 import com.samrj.devil.geo3d.Ellipsoid;
 import com.samrj.devil.geo3d.Geo3DUtil;
+import com.samrj.devil.geo3d.GeoPrimitive;
 import com.samrj.devil.geo3d.Geometry;
 import com.samrj.devil.geo3d.SweepResult;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.util.FloatConsumer;
-import com.samrj.devil.geo3d.GeoPrimitive;
 
 /**
  * Basic class handling collision and movement of a character in a 3D space.

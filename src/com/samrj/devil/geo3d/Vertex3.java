@@ -11,13 +11,18 @@ import com.samrj.devil.math.Vec3;
  */
 public interface Vertex3 extends GeoPrimitive
 {
+    public static Vertex3 from(Vec3 v)
+    {
+        return () -> v;
+    }
+    
     /**
      * Returns a reference to the position of this vertex. Changes to the given
      * vector are reflected in the vertex, and vice-versa.
      * 
      * @return The position of this vertex.
      */
-    public Vec3 a();
+    public Vec3 p();
     
     @Override
     public default Type getType()

@@ -1,7 +1,5 @@
 package com.samrj.devil.geo3d;
 
-import com.samrj.devil.math.Vec3;
-
 /**
  * Interface for edge-like objects.
  * 
@@ -12,20 +10,18 @@ import com.samrj.devil.math.Vec3;
 public interface Edge3 extends GeoPrimitive
 {
     /**
-     * Returns a reference to the position of the first vertex of this edge.
-     * Changes to the edge are reflected in the vertex, and vice-versa.
+     * Returns the first vertex of this edge.
      * 
      * @return The first vertex of this edge.
      */
-    public Vec3 a();
+    public Vertex3 a();
     
     /**
-     * Returns a reference to the position of the second vertex of this edge.
-     * Changes to the edge are reflected in the vertex, and vice-versa.
+     * Returns the second vertex of this edge.
      * 
      * @return The second vertex of this edge.
      */
-    public Vec3 b();
+    public Vertex3 b();
     
     @Override
     public default Type getType()

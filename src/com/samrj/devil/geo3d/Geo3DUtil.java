@@ -108,7 +108,7 @@ public class Geo3DUtil
      */
     public static RaycastResult raycast(Triangle3 f, Vec3 p0, Vec3 dp, boolean terminated)
     {
-        Vec3 a = f.a(), b = f.b(), c = f.c();
+        Vec3 a = f.a().p(), b = f.b().p(), c = f.c().p();
         Vec3 ab = Vec3.sub(b, a);
         Vec3 ac = Vec3.sub(c, a);
 

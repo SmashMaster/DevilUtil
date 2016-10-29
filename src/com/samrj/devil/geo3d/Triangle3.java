@@ -21,7 +21,7 @@ public interface Triangle3 extends GeoPrimitive
      */
     public static float area(Triangle3 t)
     {
-        Vec3 a = t.a(), b = t.b(), c = t.c();
+        Vec3 a = t.a().p(), b = t.b().p(), c = t.c().p();
         return Vec3.sub(b, a).cross(Vec3.sub(c, a)).length()*0.5f;
     }
     // </editor-fold>
@@ -35,9 +35,9 @@ public interface Triangle3 extends GeoPrimitive
      */
     public static void copy(Triangle3 source, Triangle3 target)
     {
-        Vec3.copy(source.a(), target.a());
-        Vec3.copy(source.b(), target.b());
-        Vec3.copy(source.c(), target.c());
+        Vec3.copy(source.a().p(), target.a().p());
+        Vec3.copy(source.b().p(), target.b().p());
+        Vec3.copy(source.c().p(), target.c().p());
     }
     
     /**
@@ -50,7 +50,7 @@ public interface Triangle3 extends GeoPrimitive
      */
     public static void barycentric(Triangle3 t, Vec3 p, Vec3 result)
     {
-        Vec3 a = t.a(), b = t.b(), c = t.c();
+        Vec3 a = t.a().p(), b = t.b().p(), c = t.c().p();
         Vec3 v0 = Vec3.sub(b, a), v1 = Vec3.sub(c, a), v2 = Vec3.sub(p, a);
         float d00 = v0.dot(v0);
         float d01 = v0.dot(v1);
@@ -74,7 +74,7 @@ public interface Triangle3 extends GeoPrimitive
      */
     public static void interpolate(Triangle3 t, Vec3 bary, Vec3 result)
     {
-        Vec3 a = t.a(), b = t.b(), c = t.c();
+        Vec3 a = t.a().p(), b = t.b().p(), c = t.c().p();
         Vec3 out = Vec3.mult(a, bary.x); //Temp var in case bary == result
         Vec3.madd(out, b, bary.y, out);
         Vec3.madd(out, c, bary.z, out);
@@ -90,7 +90,7 @@ public interface Triangle3 extends GeoPrimitive
      */
     public static void normal(Triangle3 t, Vec3 result)
     {
-        Vec3 a = t.a(), b = t.b(), c = t.c();
+        Vec3 a = t.a().p(), b = t.b().p(), c = t.c().p();
         Vec3 n = Vec3.sub(c, a).cross(Vec3.sub(b, a));
         Vec3.normalize(n, result);
     }
@@ -108,7 +108,7 @@ public interface Triangle3 extends GeoPrimitive
         result.x = n.x;
         result.y = n.y;
         result.z = n.z;
-        result.w = t.a().dot(n);
+        result.w = t.a().p().dot(n);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
@@ -123,24 +123,28 @@ public interface Triangle3 extends GeoPrimitive
      */
     public static Triangle3 from(Vec3 a, Vec3 b, Vec3 c)
     {
+        Vertex3 va = Vertex3.from(a);
+        Vertex3 vb = Vertex3.from(b);
+        Vertex3 vc = Vertex3.from(c);
+        
         return new Triangle3()
         {
             @Override
-            public Vec3 a()
+            public Vertex3 a()
             {
-                return a;
+                return va;
             }
 
             @Override
-            public Vec3 b()
+            public Vertex3 b()
             {
-                return b;
+                return vb;
             }
 
             @Override
-            public Vec3 c()
+            public Vertex3 c()
             {
-                return c;
+                return vc;
             }
         };
     }
@@ -156,7 +160,9 @@ public interface Triangle3 extends GeoPrimitive
      */
     public static Triangle3 copy(Triangle3 triangle)
     {
-        return from(new Vec3(triangle.a()), new Vec3(triangle.b()), new Vec3(triangle.c()));
+        return from(new Vec3(triangle.a().p()),
+                    new Vec3(triangle.b().p()),
+                    new Vec3(triangle.c().p()));
     }
     
     /**
@@ -219,28 +225,25 @@ public interface Triangle3 extends GeoPrimitive
     // </editor-fold>
     
     /**
-     * Returns a reference to the position of the first vertex of this triangle.
-     * Changes to the triangle are reflected in the vertex, and vice-versa.
+     * Returns the first vertex of this triangle.
      * 
      * @return The first vertex of this triangle.
      */
-    public Vec3 a();
+    public Vertex3 a();
     
     /**
-     * Returns a reference to the position of the second vertex of this triangle.
-     * Changes to the triangle are reflected in the vertex, and vice-versa.
+     * Returns the second vertex of this triangle.
      * 
      * @return The second vertex of this triangle.
      */
-    public Vec3 b();
+    public Vertex3 b();
     
     /**
-     * Returns a reference to the position of the third vertex of this triangle.
-     * Changes to the triangle are reflected in the vertex, and vice-versa.
+     * Returns the third vertex of this triangle.
      * 
      * @return The third vertex of this triangle.
      */
-    public Vec3 c();
+    public Vertex3 c();
     
     @Override
     public default Type getType()

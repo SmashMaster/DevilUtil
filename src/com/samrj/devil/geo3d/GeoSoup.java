@@ -6,17 +6,20 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * Basic geometry class which accepts unordered, unstructured mesh data.
+ * Basic geometry class which stores unordered, unstructured mesh data.
  * 
  * @author Samuel Johnson (SmashMaster)
+ * @param <V> The type of vertex this soup contains.
+ * @param <E> The type of edge this soup contains.
+ * @param <T> The type of triangle this soup contains.
  * @copyright 2016 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class GeoSoup implements Geometry
+public class GeoSoup<V extends Vertex3, E extends Edge3, T extends Triangle3> implements Geometry
 {
-    public final List<Vertex3> verts = new ArrayList<>();
-    public final List<Edge3> edges = new ArrayList<>();
-    public final List<Triangle3> faces = new ArrayList<>();
+    public final List<V> verts = new ArrayList<>();
+    public final List<E> edges = new ArrayList<>();
+    public final List<T> faces = new ArrayList<>();
     
     private final Box3 bounds = Box3.infinite();
     private boolean boundsDirty = true;
@@ -71,17 +74,17 @@ public class GeoSoup implements Geometry
     public void updateBounds()
     {
         bounds.setEmpty();
-        for (Vertex3 v : verts) bounds.expand(v.a());
+        for (Vertex3 v : verts) bounds.expand(v.p());
         for (Edge3 e : edges)
         {
-            bounds.expand(e.a());
-            bounds.expand(e.b());
+            bounds.expand(e.a().p());
+            bounds.expand(e.b().p());
         }
         for (Triangle3 f : faces)
         {
-            bounds.expand(f.a());
-            bounds.expand(f.b());
-            bounds.expand(f.c());
+            bounds.expand(f.a().p());
+            bounds.expand(f.b().p());
+            bounds.expand(f.c().p());
         }
         
         boundsDirty = false;

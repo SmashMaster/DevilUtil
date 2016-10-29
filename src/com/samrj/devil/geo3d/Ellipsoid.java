@@ -52,7 +52,7 @@ public class Ellipsoid implements ConvexShape
     @Override
     public IsectResult isect(Vertex3 v)
     {
-        Vec3 p = v.a();
+        Vec3 p = v.p();
         
         Vec3 dir = Vec3.sub(p, pos).div(radii);
         float sqLen = dir.squareLength();
@@ -75,7 +75,7 @@ public class Ellipsoid implements ConvexShape
     @Override
     public IsectResult isect(Edge3 e)
     {
-        Vec3 a = e.a(), b = e.b();
+        Vec3 a = e.a().p(), b = e.b().p();
         
         Vec3 aDir = Vec3.sub(a, pos).div(radii);
         Vec3 eDir = Vec3.sub(b, a).div(radii);
@@ -106,9 +106,9 @@ public class Ellipsoid implements ConvexShape
     @Override
     public IsectResult isect(Triangle3 f)
     {
-        Vec3 aDir = Vec3.sub(f.a(), pos).div(radii);
-        Vec3 bDir = Vec3.sub(f.b(), pos).div(radii);
-        Vec3 cDir = Vec3.sub(f.c(), pos).div(radii);
+        Vec3 aDir = Vec3.sub(f.a().p(), pos).div(radii);
+        Vec3 bDir = Vec3.sub(f.b().p(), pos).div(radii);
+        Vec3 cDir = Vec3.sub(f.c().p(), pos).div(radii);
         Triangle3 localTri = Triangle3.from(aDir, bDir, cDir);
         Vec4 plane = Triangle3.plane(localTri);
         
@@ -133,7 +133,7 @@ public class Ellipsoid implements ConvexShape
     @Override
     public SweepResult sweep(Vec3 dp, Vertex3 v)
     {
-        Vec3 p = v.a();
+        Vec3 p = v.p();
         Vec3 dpe = Vec3.div(dp, radii);
         float dpSqLen = dpe.squareLength();
         Vec3 pDir = Vec3.sub(pos, p).div(radii);
@@ -159,7 +159,7 @@ public class Ellipsoid implements ConvexShape
     @Override
     public SweepResult sweep(Vec3 dp, Edge3 e)
     {
-        Vec3 a = e.a(), b = e.b();
+        Vec3 a = e.a().p(), b = e.b().p();
         Vec3 dpe = Vec3.div(dp, radii);
         float dpeLen = dpe.squareLength();
         
@@ -200,9 +200,9 @@ public class Ellipsoid implements ConvexShape
         Vec3 p0 = Vec3.div(pos, radii);
         Vec3 cDir = Vec3.div(dp, radii);
         
-        Vec3 ae = Vec3.div(f.a(), radii);
-        Vec3 be = Vec3.div(f.b(), radii);
-        Vec3 ce = Vec3.div(f.c(), radii);
+        Vec3 ae = Vec3.div(f.a().p(), radii);
+        Vec3 be = Vec3.div(f.b().p(), radii);
+        Vec3 ce = Vec3.div(f.c().p(), radii);
         Triangle3 localTri = Triangle3.from(ae, be, ce);
         
         Vec4 plane = Triangle3.plane(localTri);

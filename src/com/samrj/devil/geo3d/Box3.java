@@ -29,9 +29,9 @@ public class Box3
         Vec3 a = Vec3.cross(axis, edge);
         float r = Math.abs(a.x) + Math.abs(a.y) + Math.abs(a.z);
         
-        float p0 = Vec3.dot(a, triangle.a());
-        float p1 = Vec3.dot(a, triangle.b());
-        float p2 = Vec3.dot(a, triangle.c());
+        float p0 = Vec3.dot(a, triangle.a().p());
+        float p1 = Vec3.dot(a, triangle.b().p());
+        float p2 = Vec3.dot(a, triangle.c().p());
         
         float min = Math.min(Math.min(p0, p1), p2);
         if (min > r) return true;
@@ -54,7 +54,7 @@ public class Box3
      */
     public static boolean touchingUnitBox(Triangle3 t)
     {
-        Vec3 a = t.a(), b = t.b(), c = t.c();
+        Vec3 a = t.a().p(), b = t.b().p(), c = t.c().p();
         
         //AABB test
         if (!touching(contain(t), unit())) return false;
@@ -94,9 +94,9 @@ public class Box3
         Vec3 center = Vec3.add(box.min, box.max).mult(0.5f);
         Vec3 radius = Vec3.sub(box.max, box.min).mult(0.5f);
         
-        Vec3 a = Vec3.sub(t.a(), center).div(radius);
-        Vec3 b = Vec3.sub(t.b(), center).div(radius);
-        Vec3 c = Vec3.sub(t.c(), center).div(radius);
+        Vec3 a = Vec3.sub(t.a().p(), center).div(radius);
+        Vec3 b = Vec3.sub(t.b().p(), center).div(radius);
+        Vec3 c = Vec3.sub(t.c().p(), center).div(radius);
         Triangle3 local = Triangle3.from(a, b, c);
         
         return touchingUnitBox(local);
@@ -139,8 +139,8 @@ public class Box3
      */
     public static boolean touching(Box3 box, Edge3 e)
     {
-        Vec3 p0 = e.a();
-        Vec3 dp = Vec3.sub(e.b(), p0);
+        Vec3 p0 = e.a().p();
+        Vec3 dp = Vec3.sub(e.b().p(), p0);
         return touchingRay(box, p0, dp, true);
     }
     // </editor-fold>
@@ -223,7 +223,7 @@ public class Box3
      */
     public static final void contain(Triangle3 t, Box3 r)
     {
-        Vec3 a = t.a(), b = t.b(), c = t.c();
+        Vec3 a = t.a().p(), b = t.b().p(), c = t.c().p();
         r.min.x = Math.min(Math.min(a.x, b.x), c.x);
         r.max.x = Math.max(Math.max(a.x, b.x), c.x);
         r.min.y = Math.min(Math.min(a.y, b.y), c.y);
