@@ -101,6 +101,48 @@ public class Box3
         
         return touchingUnitBox(local);
     }
+    
+    /**
+     * Returns whether or not the given box is touching the given ray.
+     * 
+     * @param box The box to raytrace against.
+     * @param p0 The starting position of the ray.
+     * @param dp The difference between the start and end of the ray.
+     * @param terminated Whether the ray should terminate at the length of dp.
+     * @return Whether the ray hit the box.
+     */
+    public static boolean touchingRay(Box3 box, Vec3 p0, Vec3 dp, boolean terminated)
+    {
+        float tx1 = (box.min.x - p0.x)/dp.x;
+        float tx2 = (box.max.x - p0.x)/dp.x;
+        float ty1 = (box.min.y - p0.y)/dp.y;
+        float ty2 = (box.max.y - p0.y)/dp.y;
+        float tz1 = (box.min.z - p0.z)/dp.z;
+        float tz2 = (box.max.z - p0.z)/dp.z;
+
+        float tmin = Math.min(tx1, tx2);
+        float tmax = Math.max(tx1, tx2);
+        tmin = Math.max(tmin, Math.min(ty1, ty2));
+        tmax = Math.min(tmax, Math.max(ty1, ty2));
+        tmin = Math.max(tmin, Math.min(tz1, tz2));
+        tmax = Math.min(tmax, Math.max(tz1, tz2));
+
+        return tmax >= tmin && tmax >= 0.0f && (!terminated || tmin <= 1.0f);
+    }
+    
+    /**
+     * Returns whether or not the given box is touching the given edge.
+     * 
+     * @param box A box.
+     * @param e An edge.
+     * @return Whether the edge is touching the box.
+     */
+    public static boolean touching(Box3 box, Edge3 e)
+    {
+        Vec3 p0 = e.a();
+        Vec3 dp = Vec3.sub(e.b(), p0);
+        return touchingRay(box, p0, dp, true);
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static mutator methods">
     /**

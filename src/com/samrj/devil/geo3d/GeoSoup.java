@@ -52,7 +52,7 @@ public class GeoSoup implements Geometry
     @Override
     public Box3 getBounds()
     {
-        return Box3.infinite();
+        return new Box3(bounds);
     }
     
     public void markBoundsDirty()
@@ -83,5 +83,7 @@ public class GeoSoup implements Geometry
             bounds.expand(f.b());
             bounds.expand(f.c());
         }
+        
+        boundsDirty = false;
     }
 }

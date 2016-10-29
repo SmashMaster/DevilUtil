@@ -66,5 +66,5 @@ public interface ConvexShape
      * Returns a bounding box that contains this convex shape. Should be as
      * small as possible.
      */
-    Box3 bounds();
+    Box3 getBounds();
 }
