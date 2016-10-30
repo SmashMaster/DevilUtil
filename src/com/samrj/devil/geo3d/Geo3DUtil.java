@@ -111,9 +111,9 @@ public class Geo3DUtil
         Vec3 a = f.a().p(), b = f.b().p(), c = f.c().p();
         Vec3 ab = Vec3.sub(b, a);
         Vec3 ac = Vec3.sub(c, a);
-
+        
         Vec3 n = Vec3.cross(ab, ac);
-        float d = dp.dot(n);
+        float d = -dp.dot(n);
         if (d == 0.0f) return null; //Ray parallel to triangle.
         boolean backface = d < 0.0f;
         if (backface)
@@ -128,7 +128,7 @@ public class Geo3DUtil
         if (t < 0.0f) return null; //Ray behind triangle.
         if (terminated && t > 1.0f) return null; //Triangle too far.
         
-        Vec3 e = backface ? Vec3.cross(ap, dp) : Vec3.cross(dp, ap);
+        Vec3 e = backface ? Vec3.cross(dp, ap) : Vec3.cross(ap, dp);
         float v = ac.dot(e);
         if (v < 0.0f || v > d) return null; //Missed triangle.
         float w = -ab.dot(e);
