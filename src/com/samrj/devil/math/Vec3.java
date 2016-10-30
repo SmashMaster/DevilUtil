@@ -22,6 +22,7 @@
 
 package com.samrj.devil.math;
 
+import com.samrj.devil.geo3d.Vertex3;
 import com.samrj.devil.io.Bufferable;
 import com.samrj.devil.io.Streamable;
 import java.io.DataInputStream;
@@ -53,7 +54,7 @@ import java.nio.ByteBuffer;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Vec3 implements Bufferable, Streamable
+public class Vec3 implements Bufferable, Streamable, Vertex3
 {
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
@@ -1421,6 +1422,12 @@ public class Vec3 implements Bufferable, Streamable
         out.writeFloat(x);
         out.writeFloat(y);
         out.writeFloat(z);
+    }
+    
+    @Override
+    public Vec3 p()
+    {
+        return this;
     }
     
     @Override
