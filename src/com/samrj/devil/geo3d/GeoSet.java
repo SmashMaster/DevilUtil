@@ -1,8 +1,7 @@
 package com.samrj.devil.geo3d;
 
 import com.samrj.devil.math.Vec3;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
@@ -15,14 +14,18 @@ import java.util.stream.Stream;
  */
 public class GeoSet implements Geometry
 {
-    public final List<Geometry> list = new ArrayList<>();
-    
+    private final Supplier<Stream<Geometry>> provider;
     private final Box3 bounds = Box3.infinite();
+    
+    public GeoSet(Supplier<Stream<Geometry>> provider)
+    {
+        this.provider = provider;
+    }
     
     @Override
     public Stream<RaycastResult> raycastUnsorted(Vec3 p0, Vec3 dp, boolean terminated)
     {
-        return list.stream()
+        return provider.get()
                 .filter(geom -> Box3.touchingRay(geom.getBounds(), p0, dp, terminated))
                 .flatMap(geom -> geom.raycastUnsorted(p0, dp, terminated));
     }
@@ -31,7 +34,7 @@ public class GeoSet implements Geometry
     public Stream<IsectResult> intersectUnsorted(ConvexShape shape)
     {
         Box3 shapeBounds = shape.getBounds();
-        return list.stream()
+        return provider.get()
                 .filter(geom -> Box3.touching(shapeBounds, geom.getBounds()))
                 .flatMap(geom -> geom.intersectUnsorted(shape));
     }
@@ -40,7 +43,7 @@ public class GeoSet implements Geometry
     public Stream<SweepResult> sweepUnsorted(ConvexShape shape, Vec3 dp)
     {
         Box3 shapeBounds = shape.getBounds().sweep(dp);
-        return list.stream()
+        return provider.get()
                 .filter(geom -> Box3.touching(shapeBounds, geom.getBounds()))
                 .flatMap(geom -> geom.sweepUnsorted(shape, dp));
     }
@@ -54,14 +57,14 @@ public class GeoSet implements Geometry
     @Override
     public boolean areBoundsDirty()
     {
-        return list.stream().anyMatch(Geometry::areBoundsDirty);
+        return provider.get().anyMatch(Geometry::areBoundsDirty);
     }
     
     @Override
     public void updateBounds()
     {
         bounds.setEmpty();
-        list.stream().filter(Geometry::areBoundsDirty).forEach(Geometry::updateBounds);
-        list.stream().map(Geometry::getBounds).forEach(bounds::expand);
+        provider.get().filter(Geometry::areBoundsDirty).forEach(Geometry::updateBounds);
+        provider.get().map(Geometry::getBounds).forEach(bounds::expand);
     }
 }
