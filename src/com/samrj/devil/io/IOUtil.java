@@ -97,6 +97,17 @@ public final class IOUtil
         }
     }
     
+    public static <T> void forEachPair(T[] array, BiConsumer<T, T> func)
+    {
+        int len = array.length;
+        for (int i0=0; i0<len-1; i0++)
+        {
+            T e0 = array[i0];
+            for (int i1=i0+1; i1<len; i1++)
+                func.accept(e0, array[i1]);
+        }
+    }
+    
     public static <T> void filter(Collection<T> collection, Predicate<T> predicate)
     {
         Iterator<T> it = collection.iterator();
