@@ -124,6 +124,19 @@ public final class Camera3DController
     }
     
     /**
+     * Points this camera at the given position.
+     */
+    public void pointAt(Vec3 pos)
+    {
+        Vec3 dir = Vec3.sub(pos, target);
+        dir.y -= height;
+        
+        setAngles((float)Math.atan2(dir.y, Math.sqrt(dir.x*dir.x + dir.z*dir.z)),
+                  (float)Math.atan2(-dir.x, -dir.z));
+        update();
+    }
+    
+    /**
      * Applies a change in rotation to this camera as a given pitch and yaw.
      */
     public void deltaAngles(float dPitch, float dYaw)
