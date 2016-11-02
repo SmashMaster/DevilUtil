@@ -255,6 +255,13 @@ public class OBox3
         Transform.copy(b.transform, transform);
     }
     
+    public OBox3(Box3 b)
+    {
+        transform.pos.set(b.max).add(b.min).mult(0.5f);
+        transform.sca.set(b.max).sub(b.min).mult(0.5f);
+        transform.rot.setIdentity();
+    }
+    
     // <editor-fold defaultstate="collapsed" desc="Instance accessor methods">
     /**
      * Returns whether this is touching the given box.
