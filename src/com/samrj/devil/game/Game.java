@@ -298,6 +298,15 @@ public abstract class Game
     // </editor-fold>
     
     /**
+     * Flushes the keyboard/mouse input queues and discards all events. Also
+     * releases any held buttons and invalidates the mouse position.
+     */
+    public final void discardInput()
+    {
+        eventBuffer.discardInput();
+    }
+    
+    /**
      * Runs the game, showing the window and beginning the game loop. Must be
      * called on the main thread, and the game cannot be destroyed.
      */

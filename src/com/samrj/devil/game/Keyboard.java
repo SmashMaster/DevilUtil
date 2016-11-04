@@ -21,6 +21,11 @@ public final class Keyboard
         this.keyCallback = keyCallback;
     }
     
+    public final void reset()
+    {
+        states.clear();
+    }
+    
     public final void key(int key, int action, int mods)
     {
         if (key >= 0) switch (action)

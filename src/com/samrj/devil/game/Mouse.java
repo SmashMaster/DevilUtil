@@ -1,5 +1,6 @@
 package com.samrj.devil.game;
 
+import java.util.Arrays;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -29,6 +30,12 @@ public final class Mouse
         this.cursorCallback = cursorCallback;
         this.buttonCallback = buttonCallback;
         this.scrollCallback = scrollCallback;
+    }
+    
+    public final void reset()
+    {
+        posDirty = true;
+        Arrays.fill(states, false);
     }
     
     public final void cursorPos(float x, float y)

@@ -39,9 +39,11 @@ public final class EventBuffer
         while (!eventQueue.isEmpty()) eventQueue.poll().run();
     }
     
-    public void discardEvents()
+    public void discardInput()
     {
         eventQueue.clear();
+        mouse.reset();
+        keyboard.reset();
     }
     
     private void onCursorPos(long window, double xpos, double ypos)
