@@ -115,6 +115,7 @@ public abstract class Game
     private final long frameTime;
     private final EventBuffer eventBuffer;
     
+    private boolean onLongFrame;
     private boolean destroyed;
     
     /**
@@ -307,6 +308,16 @@ public abstract class Game
     }
     
     /**
+     * Marks the current frame as taking a long time, so that excessively long
+     * steps are not called next frame. Pairs well with discardInput() in order
+     * to combat jumpy state after long frames, such as after loading screens.
+     */
+    public final void markLongFrame()
+    {
+        onLongFrame = true;
+    }
+    
+    /**
      * Runs the game, showing the window and beginning the game loop. Must be
      * called on the main thread, and the game cannot be destroyed.
      */
@@ -334,7 +345,9 @@ public abstract class Game
                 if (GLFW.glfwWindowShouldClose(window)) stop();
                 
                 //Step
-                lastFrameTime = frameStart - lastFrameStart;
+                if (onLongFrame) lastFrameTime = frameTime;
+                else lastFrameTime = frameStart - lastFrameStart;
+                onLongFrame = false;
                 float dt = (float)(lastFrameTime/1_000_000_000.0);
                 stepper.step(this::step, dt);
                 lastFrameStart = frameStart;
