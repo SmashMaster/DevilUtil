@@ -49,6 +49,11 @@ public class Source extends DALObj
         AL10.alSourcei(id, AL10.AL_LOOPING, looping ? AL10.AL_TRUE : AL10.AL_FALSE);
     }
     
+    public void paramf(int param, float value)
+    {
+        AL10.alSourcef(id, param, value);
+    }
+    
     public void parami(int param, int value)
     {
         AL10.alSourcei(id, param, value);
@@ -67,6 +72,14 @@ public class Source extends DALObj
     public void stop()
     {
         AL10.alSourceStop(id);
+    }
+    
+    /**
+     * Returns one of AL_INITIAL, AL_PLAYING, AL_PAUSED, and AL_STOPPED.
+     */
+    public int getState()
+    {
+        return AL10.alGetSourcei(id, AL10.AL_SOURCE_STATE);
     }
     
     @Override
