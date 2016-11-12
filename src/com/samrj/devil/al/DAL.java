@@ -203,6 +203,21 @@ public class DAL
         return gen(new Source());
     }
     
+    public static EffectSlot genEffectSlot()
+    {
+        return gen(new EffectSlot());
+    }
+    
+    public static Effect genEffect()
+    {
+        return gen(new Effect());
+    }
+    
+    public static Filter genFilter()
+    {
+        return gen(new Filter());
+    }
+    
     /**
      * Deletes each DevilGL object in the given array.
      * 

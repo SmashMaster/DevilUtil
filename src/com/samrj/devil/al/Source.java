@@ -2,6 +2,8 @@ package com.samrj.devil.al;
 
 import com.samrj.devil.math.Vec3;
 import org.lwjgl.openal.AL10;
+import org.lwjgl.openal.AL11;
+import org.lwjgl.openal.EXTEfx;
 
 /**
  * An OpenAL sound source.
@@ -57,6 +59,24 @@ public class Source extends DALObj
     public void parami(int param, int value)
     {
         AL10.alSourcei(id, param, value);
+    }
+    
+    public void setDirectFilter(Filter filter)
+    {
+        int fid = filter != null ? filter.id : EXTEfx.AL_FILTER_NULL;
+        AL10.alSourcei(id, EXTEfx.AL_DIRECT_FILTER, fid);
+    }
+    
+    public void sendToEffectSlot(int localSend, Filter filter, EffectSlot slot)
+    {
+        int sid = slot != null ? slot.id :  EXTEfx.AL_EFFECTSLOT_NULL;
+        int fid = filter != null ? filter.id :  EXTEfx.AL_FILTER_NULL;
+        AL11.alSource3i(id, EXTEfx.AL_AUXILIARY_SEND_FILTER, sid, localSend, fid);
+    }
+    
+    public void sendToEffectSlot(int localSend, EffectSlot slot)
+    {
+        sendToEffectSlot(localSend, null, slot);
     }
     
     public void play()
