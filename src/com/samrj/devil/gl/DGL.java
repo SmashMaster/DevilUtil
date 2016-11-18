@@ -796,7 +796,7 @@ public final class DGL
      */
     public static void delete(DGLObj... objects)
     {
-        for (DGLObj object : objects)
+        for (DGLObj object : objects) if (DGL.objects.contains(object))
         {
             object.delete();
             DGL.objects.remove(object);
