@@ -68,7 +68,8 @@ public final class ActorDriver
     public Runnable jumpCallback, fallCallback;
     public FloatConsumer landCallback;
     
-    private final Ellipsoid shape = new Ellipsoid();
+    public final Ellipsoid shape = new Ellipsoid();
+    
     private final Vec3 displacement = new Vec3();
     private final Vec3 groundNormal = new Vec3(0.0f, 1.0f, 0.0f);
     private GeoPrimitive groundObject;

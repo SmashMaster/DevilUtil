@@ -71,4 +71,16 @@ public interface Geometry
     default void updateBounds()
     {
     }
+    
+    //Utility stuff
+    
+    /**
+     * Returns false if the ray between the two given points intersects this
+     * geometry, true otherwise.
+     */
+    default boolean areVisible(Vec3 a, Vec3 b)
+    {
+        Vec3 dp = Vec3.sub(b, a);
+        return !raycast(a, dp, true).findAny().isPresent();
+    }
 }
