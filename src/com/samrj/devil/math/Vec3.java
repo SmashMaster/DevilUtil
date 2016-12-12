@@ -1105,7 +1105,7 @@ public class Vec3 implements Bufferable, Streamable, Vertex3
             case 0: x = f; return this;
             case 1: y = f; return this;
             case 2: z = f; return this;
-            default: throw new ArrayIndexOutOfBoundsException();
+            default: throw new ArrayIndexOutOfBoundsException(i);
         }
     }
     

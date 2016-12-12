@@ -23,6 +23,7 @@
 package com.samrj.devil.math.topo;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Hash-map based directed acyclic graph. To be used mainly for topological
@@ -33,7 +34,7 @@ import java.util.*;
  */
 public class DAG<TYPE>
 {
-    private final Map<TYPE, Vertex> vertices = new LinkedHashMap<>();
+    private final Map<TYPE, Vertex> vertices = new IdentityHashMap<>();
     
     /**
      * Hash-map based directed graph vertex class.
@@ -289,6 +290,19 @@ public class DAG<TYPE>
         Set<TYPE> out = new LinkedHashSet<>();
         for (TYPE data : vertices.keySet()) out.add(data);
         return out;
+    }
+    
+    public Stream<TYPE> stream()
+    {
+        return vertices.keySet().stream();
+    }
+    
+    public Stream<Edge<TYPE>> edgeStream()
+    {
+        return vertices.entrySet().stream()
+                .map(e -> e.getValue())
+                .flatMap(start -> start.out.stream()
+                        .map(end -> new Edge<>(start.data, end.data)));
     }
     
     /**
