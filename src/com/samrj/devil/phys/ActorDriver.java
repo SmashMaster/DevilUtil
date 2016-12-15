@@ -260,27 +260,28 @@ public final class ActorDriver
             }
         }
         
-        Vec3 nudge = new Vec3();
-        int[] collisions = {0};
-
         //Clip against the level
-        if (geom != null) geom.intersectUnsorted(shape).forEach(isect ->
+        if (geom != null)
         {
-            nudge.add(Vec3.sub(isect.point, isect.surface));
-            collisions[0]++;
+            Vec3 nudge = new Vec3();
             
-            float height = isect.point.y - pos.y + shape.radii.y;
-            if (height > climbHeight) Geo3DUtil.restrain(vel, isect.normal);
-//            else getNormal(isect.object, isect.normal);
-            
-            if (isValidGround(isect.normal) && (!onGround() || isect.normal.y > groundNormal.y))
+            geom.intersectUnsorted(shape).forEach(isect ->
             {
-                groundObject = isect.object;
-                groundNormal.set(isect.normal);
-            }
-        });
+                nudge.add(Vec3.sub(isect.point, isect.surface));
+
+                float height = isect.point.y - pos.y + shape.radii.y;
+                if (height > climbHeight) Geo3DUtil.restrain(vel, isect.normal);
+
+                if (isValidGround(isect.normal) && (!onGround() || isect.normal.y > groundNormal.y))
+                {
+                    groundObject = isect.object;
+                    groundNormal.set(isect.normal);
+                }
+            });
+            
+            pos.add(nudge);
+        }
         
-        if (collisions[0] > 0) pos.add(nudge.div(collisions[0]));
         boolean endOnGround = onGround();
         if (endOnGround) Geo3DUtil.restrain(vel, groundNormal);
 
