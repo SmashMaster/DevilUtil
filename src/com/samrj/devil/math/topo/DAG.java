@@ -22,7 +22,12 @@
 
 package com.samrj.devil.math.topo;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -36,6 +41,11 @@ public class DAG<TYPE>
 {
     private final Map<TYPE, Vertex> vertices = new IdentityHashMap<>();
     
+    private static <T> Set<T> newSet()
+    {
+        return Collections.newSetFromMap(new IdentityHashMap<>());
+    }
+    
     /**
      * Hash-map based directed graph vertex class.
      */
@@ -45,11 +55,11 @@ public class DAG<TYPE>
         /**
          * Set of vertices that have an outgoing edge whose end is this.
          */
-        private final Set<Vertex> in = new LinkedHashSet<>();
+        private final Set<Vertex> in = newSet();
         /**
          * Set of vertices that have an incoming edge whose start is this.
          */
-        private final Set<Vertex> out = new LinkedHashSet<>();
+        private final Set<Vertex> out = newSet();
         
         private Vertex(TYPE data)
         {
@@ -179,7 +189,7 @@ public class DAG<TYPE>
      */
     public Set<TYPE> getSinks()
     {
-        Set<TYPE> out = new LinkedHashSet<>();
+        Set<TYPE> out = newSet();
         for (Vertex v : vertices.values()) if (v.out.isEmpty()) out.add(v.data);
         return out;
     }
@@ -190,7 +200,7 @@ public class DAG<TYPE>
      */
     public Set<TYPE> getSources()
     {
-        Set<TYPE> out = new LinkedHashSet<>();
+        Set<TYPE> out = newSet();
         for (Vertex v : vertices.values()) if (v.in.isEmpty()) out.add(v.data);
         return out;
     }
@@ -202,7 +212,7 @@ public class DAG<TYPE>
      */
     public List<Edge<TYPE>> getEdges()
     {
-        List<Edge<TYPE>> out = new LinkedList<>();
+        List<Edge<TYPE>> out = new ArrayList<>();
         for (Vertex st : vertices.values()) for (Vertex en : st.out)
             out.add(new Edge<>(st.data, en.data));
         return out;
@@ -214,7 +224,7 @@ public class DAG<TYPE>
     public List<Edge<TYPE>> getSortedEdges()
     {
         List<TYPE> order = sort();
-        List<Edge<TYPE>> out = new LinkedList<>();
+        List<Edge<TYPE>> out = new ArrayList<>();
         for (TYPE stData : order)
         {
             Vertex st = vertices.get(stData);
@@ -225,8 +235,8 @@ public class DAG<TYPE>
     
     private boolean isCyclic()
     {
-        Set<Vertex> unmarked = new LinkedHashSet<>();
-        Set<Vertex> tempmarked = new LinkedHashSet<>();
+        Set<Vertex> unmarked = newSet();
+        Set<Vertex> tempmarked = newSet();
         unmarked.addAll(vertices.values());
         
         while (!unmarked.isEmpty())
@@ -270,7 +280,7 @@ public class DAG<TYPE>
         Vertex v = vertices.get(vertex);
         if (v == null) return null;
         
-        Set<TYPE> out = new LinkedHashSet<>();
+        Set<TYPE> out = newSet();
         for (Vertex pv : v.in) out.add(pv.data);
         return out;
     }
@@ -280,14 +290,14 @@ public class DAG<TYPE>
         Vertex v = vertices.get(vertex);
         if (v == null) return null;
         
-        Set<TYPE> out = new LinkedHashSet<>();
+        Set<TYPE> out = newSet();
         for (Vertex cv : v.out) out.add(cv.data);
         return out;
     }
     
     public Set<TYPE> getAll()
     {
-        Set<TYPE> out = new LinkedHashSet<>();
+        Set<TYPE> out = newSet();
         for (TYPE data : vertices.keySet()) out.add(data);
         return out;
     }
@@ -315,8 +325,8 @@ public class DAG<TYPE>
         
         if (isEmpty()) return out;
         
-        Set<Vertex> unmarked = new LinkedHashSet<>();
-        Set<Vertex> tempmarked = new LinkedHashSet<>();
+        Set<Vertex> unmarked = newSet();
+        Set<Vertex> tempmarked = newSet();
         unmarked.addAll(vertices.values());
         
         while (!unmarked.isEmpty())
