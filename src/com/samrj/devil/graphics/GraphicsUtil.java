@@ -3,6 +3,7 @@ package com.samrj.devil.graphics;
 import com.samrj.devil.io.MemStack;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
+import com.samrj.devil.math.Transform;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
@@ -75,6 +76,16 @@ public final class GraphicsUtil
         GL11.glMatrixMode(mode);
         GL11.nglMultMatrixf(address);
         MemStack.pop();
+    }
+    
+    public static void glLoadMatrix(Transform t, int mode)
+    {
+        glLoadMatrix(Mat4.transform(t), mode);
+    }
+    
+    public static void glMultMatrix(Transform t, int mode)
+    {
+        glMultMatrix(Mat4.transform(t), mode);
     }
     
     public static void glVertex(Vec2 v)
