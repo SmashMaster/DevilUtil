@@ -83,17 +83,22 @@ public class LittleEndianInputStream extends DataInputStream
         return Double.longBitsToDouble(readLittleLong());
     }
     
-    public final String readNullTermStr() throws IOException
+    public final String readTermStr(char terminator) throws IOException
     {
         StringBuilder builder = new StringBuilder();
         
         while (true)
         {
             char c = (char)in.read();
-            if (c == '\0') break;
+            if (c == terminator) break;
             builder.append(c);
         }
         
         return builder.toString();
+    }
+    
+    public final String readNullTermStr() throws IOException
+    {
+        return readTermStr('\0');
     }
 }
