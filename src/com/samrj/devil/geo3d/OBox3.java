@@ -319,4 +319,10 @@ public class OBox3
         lerp(this, b, t, this);
         return this;
     }
+    
+    @Override
+    public String toString()
+    {
+        return "OBox3: " + transform.toString();
+    }
 }
