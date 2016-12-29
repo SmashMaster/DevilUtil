@@ -23,6 +23,7 @@
 package com.samrj.devil.graphics;
 
 import com.samrj.devil.gl.Image;
+import org.lwjgl.opengl.EXTTextureCompressionS3TC;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL14;
 import org.lwjgl.opengl.GL30;
@@ -162,7 +163,8 @@ public class TexUtil
             case GL30.GL_RGB16F:
             case GL30.GL_RGB16I:
             case GL30.GL_RGB32F:
-            case GL30.GL_RGB32I: return GL11.GL_RGB;
+            case GL30.GL_RGB32I:
+            case EXTTextureCompressionS3TC.GL_COMPRESSED_RGB_S3TC_DXT1_EXT: return GL11.GL_RGB;
                 
             case GL11.GL_RGBA:
             case GL11.GL_RGBA2:
@@ -173,8 +175,11 @@ public class TexUtil
             case GL30.GL_RGBA16F:
             case GL30.GL_RGBA16I:
             case GL30.GL_RGBA32F:
-            case GL30.GL_RGBA32I: return GL11.GL_RGBA;
-                
+            case GL30.GL_RGBA32I:
+            case EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+            case EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+            case EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT5_EXT: return GL11.GL_RGBA;
+            
             //Deprecated formats.
             case GL11.GL_LUMINANCE:
             case GL11.GL_LUMINANCE8:
@@ -187,7 +192,7 @@ public class TexUtil
             case GL11.GL_LUMINANCE_ALPHA:
             case GL11.GL_LUMINANCE8_ALPHA8:
             case GL11.GL_LUMINANCE16_ALPHA16: return GL11.GL_LUMINANCE_ALPHA;
-                
+             
             default: return -1;
         }
     }

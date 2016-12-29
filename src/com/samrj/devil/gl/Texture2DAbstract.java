@@ -136,6 +136,29 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
     }
     
     /**
+     * Uploads the given compressed image to this texture. After calling, the
+     * image may be safely deleted from memory. Any previous image data
+     * associated with this texture is released.
+     * 
+     * @param image The compressed image to upload.
+     * @return This texture.
+     */
+    public T image(ImageCompressed image)
+    {
+        if (image.deleted()) throw new IllegalStateException("Image is deleted.");
+        
+        int baseFormat = TexUtil.getBaseFormat(image.format);
+        int oldID = tempBind();
+        GL11.nglTexImage2D(target, 0, image.format, width, height, 0,
+                baseFormat, GL11.GL_UNSIGNED_BYTE, image.address());
+        tempUnbind(oldID);
+        
+        setVRAMUsage(image.size());
+        
+        return getThis();
+    }
+    
+    /**
      * Overwrites the stored image for this texture with the given image. This
      * texture must already have allocated storage.
      * 

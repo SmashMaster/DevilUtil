@@ -234,6 +234,20 @@ public final class DGL
     }
     
     /**
+     * Creates a new compressed image container. Does not allocate any storage
+     * for the image.
+     * 
+     * @param width The width of the image, in pixels.
+     * @param height The height of the image, in pixels.
+     * @param format The OpenGL compressed image format to use.
+     * @return A new compressed image container.
+     */
+    public static ImageCompressed genImageCompressed(int width, int height, int format)
+    {
+        return gen(new ImageCompressed(width, height, format));
+    }
+    
+    /**
      * Allocates an image  buffer for the given raster, then buffers the raster
      * in it. Returns the allocated buffer.
      * 
