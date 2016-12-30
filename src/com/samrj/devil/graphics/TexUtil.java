@@ -163,8 +163,7 @@ public class TexUtil
             case GL30.GL_RGB16F:
             case GL30.GL_RGB16I:
             case GL30.GL_RGB32F:
-            case GL30.GL_RGB32I:
-            case EXTTextureCompressionS3TC.GL_COMPRESSED_RGB_S3TC_DXT1_EXT: return GL11.GL_RGB;
+            case GL30.GL_RGB32I: return GL11.GL_RGB;
                 
             case GL11.GL_RGBA:
             case GL11.GL_RGBA2:
@@ -175,10 +174,7 @@ public class TexUtil
             case GL30.GL_RGBA16F:
             case GL30.GL_RGBA16I:
             case GL30.GL_RGBA32F:
-            case GL30.GL_RGBA32I:
-            case EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
-            case EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
-            case EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT5_EXT: return GL11.GL_RGBA;
+            case GL30.GL_RGBA32I: return GL11.GL_RGBA;
             
             //Deprecated formats.
             case GL11.GL_LUMINANCE:
@@ -260,6 +256,11 @@ public class TexUtil
             case GL11.GL_LUMINANCE_ALPHA: return "GL_LUMINANCE_ALPHA";
             case GL11.GL_LUMINANCE8_ALPHA8: return "GL_LUMINANCE8_ALPHA8";
             case GL11.GL_LUMINANCE16_ALPHA16: return "GL_LUMINANCE16_ALPHA16";
+            
+            case EXTTextureCompressionS3TC.GL_COMPRESSED_RGB_S3TC_DXT1_EXT: return "GL_COMPRESSED_RGB_S3TC_DXT1_EXT";
+            case EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT1_EXT: return "GL_COMPRESSED_RGBA_S3TC_DXT1_EXT";
+            case EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT3_EXT: return "GL_COMPRESSED_RGBA_S3TC_DXT3_EXT";
+            case EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT5_EXT: return "GL_COMPRESSED_RGBA_S3TC_DXT5_EXT";
                 
             default: return "UNSUPPORTED_FORMAT";
         }

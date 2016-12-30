@@ -24,6 +24,7 @@ package com.samrj.devil.gl;
 
 import com.samrj.devil.graphics.TexUtil;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL13;
 import org.lwjgl.system.MemoryUtil;
 
 /**
@@ -147,10 +148,12 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
     {
         if (image.deleted()) throw new IllegalStateException("Image is deleted.");
         
-        int baseFormat = TexUtil.getBaseFormat(image.format);
+        width = image.width;
+        height = image.height;
+        
         int oldID = tempBind();
-        GL11.nglTexImage2D(target, 0, image.format, width, height, 0,
-                baseFormat, GL11.GL_UNSIGNED_BYTE, image.address());
+        GL13.nglCompressedTexImage2D(target, 0, image.format, width, height, 0,
+                image.size(), image.address());
         tempUnbind(oldID);
         
         setVRAMUsage(image.size());

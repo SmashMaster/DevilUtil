@@ -61,7 +61,7 @@ public class ImageCompressed extends DGLObj
      */
     public ByteBuffer buffer()
     {
-        return memory != null ? memory.makeView() : null;
+        return memory != null ? memory.buffer : null;
     }
     
     /**
@@ -93,6 +93,7 @@ public class ImageCompressed extends DGLObj
     {
         size = -1;
         memory.free();
+        memory = null;
         deleted = true;
     }
 }
