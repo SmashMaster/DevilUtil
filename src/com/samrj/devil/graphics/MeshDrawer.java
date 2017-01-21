@@ -84,7 +84,7 @@ public class MeshDrawer implements VertexData
             case 2: groupsType = VEC2I; weightType = VEC2; break;
             case 3: groupsType = VEC3I; weightType = VEC3; break;
             case 4: groupsType = VEC4I; weightType = VEC4; break;
-            default: throw new IllegalArgumentException("Vertex group count over four.");
+            default: throw new IllegalArgumentException("Vertex group count of " + mesh.numGroups + ", limited to four.");
         }
         
         groups = new Attribute(groupsType, mesh.groupIndexOffset, mesh.numGroups > 0);

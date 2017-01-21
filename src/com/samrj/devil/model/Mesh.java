@@ -104,20 +104,20 @@ public final class Mesh extends DataBlock
         materialOffset = intOffset*4;
         if (hasMaterials) intOffset += numVertices;
         
-        vertexBlock = new Memory(intOffset*4);
-        vertexData = vertexBlock.buffer;
+        vertexBlock = numVertices != 0 ? new Memory(intOffset*4) : null;
+        vertexData = numVertices != 0 ? vertexBlock.buffer : null;
         
         for (int i=0; i<intOffset; i++) vertexData.putInt(in.readInt());
         
         numTriangles = in.readInt();
         int triangleIndexInts = numTriangles*3;
-        indexBlock = new Memory(triangleIndexInts*4);
-        indexData = indexBlock.buffer;
+        indexBlock = numTriangles != 0 ? new Memory(triangleIndexInts*4) : null;
+        indexData = numTriangles != 0 ? indexBlock.buffer : null;
         
         for (int i=0; i<triangleIndexInts; i++) indexData.putInt(in.readInt());
-        indexData.rewind();
+        if (indexData != null) indexData.rewind();
         
-        if (hasMaterials)
+        if (hasMaterials && vertexData != null)
         {
             Set<Integer> matIndices = new HashSet<>();
             List<DataPointer<Material>> matList = new ArrayList<>();
@@ -132,7 +132,8 @@ public final class Mesh extends DataBlock
             materials = Collections.unmodifiableList(matList);
         }
         else materials = Collections.EMPTY_LIST;
-        vertexData.rewind();
+        
+        if (vertexData != null) vertexData.rewind();
     }
     
     /**
@@ -154,6 +155,8 @@ public final class Mesh extends DataBlock
     {
         MeshVertex[] vertices = new MeshVertex[numVertices];
         for (int i=0; i<numVertices; i++) vertices[i] = new MeshVertex();
+        
+        if (numVertices == 0) return vertices;
         
         vertexData.rewind();
         for (MeshVertex v : vertices) v.position.read(vertexData);
@@ -182,6 +185,8 @@ public final class Mesh extends DataBlock
      */
     public <V> void forEachTriangle(IntFunction<V> vertexFunction, TriConsumer<V> consumer)
     {
+        if (indexData == null) return;
+        
         indexData.rewind();
         for (int i=0; i<numTriangles; i++)
         {
@@ -207,8 +212,8 @@ public final class Mesh extends DataBlock
     @Override
     void destroy()
     {
-        vertexBlock.free();
-        indexBlock.free();
+        if (vertexBlock != null) vertexBlock.free();
+        if (indexBlock != null) indexBlock.free();
     }
     
     public class MeshVertex implements Vertex3

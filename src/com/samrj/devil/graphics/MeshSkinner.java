@@ -3,6 +3,7 @@ package com.samrj.devil.graphics;
 import com.samrj.devil.gl.ShaderProgram;
 import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.io.Memory;
+import com.samrj.devil.math.Mat4;
 import com.samrj.devil.model.ArmatureSolver;
 import com.samrj.devil.model.ArmatureSolver.BoneSolver;
 import com.samrj.devil.model.Mesh;
@@ -48,7 +49,11 @@ public class MeshSkinner
             MemoryUtil.memCopy(matBlock.address, prevMatBlock.address, matBlock.size);
         
         matData.rewind();
-        bones.forEach(bone -> bone.skinMatrix.write(matData));
+        bones.forEach(bone ->
+        {
+            if (bone == null) new Mat4().write(matData);
+            else bone.skinMatrix.write(matData);
+        });
         
         if (onFirstFrame && prevMatricesEnabled())
         {
