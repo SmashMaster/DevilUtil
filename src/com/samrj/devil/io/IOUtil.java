@@ -67,6 +67,18 @@ public final class IOUtil
         return Collections.unmodifiableList(out);
     }
     
+    /**
+     * Removes the entry at the given index without preserving the order of the
+     * remaining entries. Very fast for array lists because subsequent elements
+     * are not shifted.
+     */
+    public static <T> void quickRemove(List<T> list, int index)
+    {
+        int end = list.size() - 1;
+        T last = list.remove(end);
+        list.set(index, last);
+    }
+    
     public static InputStream stringStream(String string)
     {
         return new ByteArrayInputStream(string.getBytes(StandardCharsets.UTF_8));
