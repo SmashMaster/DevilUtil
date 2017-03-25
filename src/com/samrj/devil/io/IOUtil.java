@@ -76,7 +76,7 @@ public final class IOUtil
     {
         int end = list.size() - 1;
         T last = list.remove(end);
-        list.set(index, last);
+        if (index != end) list.set(index, last);
     }
     
     public static InputStream stringStream(String string)
