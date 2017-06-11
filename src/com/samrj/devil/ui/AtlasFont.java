@@ -65,8 +65,8 @@ public class AtlasFont
     private final Char[] chars;
     private final int firstCharID;
     
-    private final VertexStream stream;
-    private final Vec2 pos, coord;
+    private VertexStream stream;
+    private Vec2 pos, coord;
     
     public AtlasFont(String directory, String fontFile) throws IOException
     {
@@ -134,11 +134,6 @@ public class AtlasFont
         firstCharID = minChar;
         
         in.close();
-        
-        stream = DGL.genVertexStream(1024, -1);
-        pos = stream.vec2("in_pos");
-        coord = stream.vec2("in_tex_coord");
-        stream.begin();
     }
     
     public String getName()
@@ -177,13 +172,27 @@ public class AtlasFont
         return lineHeight;
     }
     
-    public void draw(String text, Vec2 pos, Vec2 align)
+    private Vec2 alignPos(String text, Vec2 pos, Vec2 align)
     {
         pos = new Vec2(pos.x, pos.y - lineHeight + baseHeight);
         align = new Vec2(align.x - 1.0f, -align.y - 1.0f).mult(0.5f);
         align.x *= getWidth(text);
         align.y *= baseHeight-lineHeight;
         pos.add(align);
+        return pos;
+    }
+    
+    public void draw(String text, Vec2 pos, Vec2 align)
+    {
+        if (stream == null)
+        {
+            stream = DGL.genVertexStream(1024, -1);
+            this.pos = stream.vec2("in_pos");
+            coord = stream.vec2("in_tex_coord");
+            stream.begin();
+        }
+        
+        pos = alignPos(text, pos, align);
         
         int x = 0;
         for (int i=0; i<text.length(); i++)
@@ -219,9 +228,59 @@ public class AtlasFont
         draw(text, p, Alignment.NE);
     }
     
+    public void drawDeprecated(String text, Vec2 pos, Vec2 align)
+    {
+        pos = alignPos(text, pos, align);
+        
+        boolean shouldEnable = !GL11.glIsEnabled(GL11.GL_TEXTURE_2D);
+        if (shouldEnable) GL11.glEnable(GL11.GL_TEXTURE_2D);
+        
+        texture.bind(GL13.GL_TEXTURE0);
+        GL11.glBegin(GL11.GL_QUADS);
+        
+        int x = 0;
+        for (int i=0; i<text.length(); i++)
+        {
+            Char c = getChar(text.charAt(i));
+            if (c == null) continue;
+            
+            int lf = Math.round(pos.x) + x + c.xOffset;
+            int rt = lf + c.width;
+            int bt = Math.round(pos.y) + c.yOffset;
+            int tp = bt + c.height;
+            
+            GL11.glTexCoord2f(c.tx0, c.ty0); GL11.glVertex2f(lf, bt);
+            GL11.glTexCoord2f(c.tx0, c.ty1); GL11.glVertex2f(lf, tp);
+            GL11.glTexCoord2f(c.tx1, c.ty1); GL11.glVertex2f(rt, tp);
+            GL11.glTexCoord2f(c.tx1, c.ty0); GL11.glVertex2f(rt, bt);
+            
+            x += c.xAdvance;
+        }
+        
+        GL11.glEnd();
+        
+        if (shouldEnable) GL11.glDisable(GL11.GL_TEXTURE_2D);
+    }
+    
+    public void drawDeprecated(String text, Vec2 p, Alignment align)
+    {
+        drawDeprecated(text, p, align.dir());
+    }
+    
+    public void drawDeprecated(String text, Vec2 p)
+    {
+        drawDeprecated(text, p, Alignment.NE);
+    }
+    
     public void delete()
     {
-        DGL.delete(stream, texture);
+        if (stream != null)
+        {
+            DGL.delete(stream);
+            stream = null;
+        }
+        
+        DGL.delete(texture);
     }
     
     private class Char
