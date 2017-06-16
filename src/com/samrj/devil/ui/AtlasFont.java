@@ -172,6 +172,11 @@ public class AtlasFont
         return lineHeight;
     }
     
+    public Texture2D getTexture()
+    {
+        return texture;
+    }
+    
     private Vec2 alignPos(String text, Vec2 pos, Vec2 align)
     {
         pos = new Vec2(pos.x, pos.y - lineHeight + baseHeight);
