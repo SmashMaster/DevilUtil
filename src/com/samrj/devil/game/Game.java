@@ -150,6 +150,12 @@ public abstract class Game
             GLFW.glfwMakeContextCurrent(window);
             GLFW.glfwSwapInterval(config.vsync ? 1 : 0);
             GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+            GLFW.glfwSetWindowSizeCallback(window, (window, width, height) ->
+            {
+                config.resolution.set(width, height);
+                GL11.glViewport(0, 0, width, height);
+                onResized(width, height);
+            });
         }
         
         if (!config.fullscreen) //Center window
@@ -296,6 +302,11 @@ public abstract class Game
      * associated with this game.
      */
     public void onDestroy() {};
+    
+    /**
+     * Called when the game window is resized.
+     */
+    public void onResized(int width, int height) {};
     // </editor-fold>
     
     /**
