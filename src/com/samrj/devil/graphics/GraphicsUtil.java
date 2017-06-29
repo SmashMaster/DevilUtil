@@ -46,41 +46,71 @@ public final class GraphicsUtil
                               0.0f, 0.0f, 0.0f, 1.0f);
     }
     
-    public static void glLoadMatrix(Mat3 m, int mode)
+    public static void glLoadMatrix(Mat3 m)
     {
         long address = mat3As4(m);
-        GL11.glMatrixMode(mode);
         GL11.nglLoadMatrixf(address);
+        MemStack.pop();
+    }
+    
+    public static void glLoadMatrix(Mat3 m, int mode)
+    {
+        GL11.glMatrixMode(mode);
+        glLoadMatrix(m);
+    }
+    
+    public static void glMultMatrix(Mat3 m)
+    {
+        long address = mat3As4(m);
+        GL11.nglMultMatrixf(address);
         MemStack.pop();
     }
     
     public static void glMultMatrix(Mat3 m, int mode)
     {
-        long address = mat3As4(m);
         GL11.glMatrixMode(mode);
-        GL11.nglMultMatrixf(address);
+        glMultMatrix(m);
+    }
+    
+    public static void glLoadMatrix(Mat4 m)
+    {
+        long address = MemStack.wrap(m);
+        GL11.nglLoadMatrixf(address);
         MemStack.pop();
     }
     
     public static void glLoadMatrix(Mat4 m, int mode)
     {
-        long address = MemStack.wrap(m);
         GL11.glMatrixMode(mode);
-        GL11.nglLoadMatrixf(address);
+        glLoadMatrix(m);
+    }
+    
+    public static void glMultMatrix(Mat4 m)
+    {
+        long address = MemStack.wrap(m);
+        GL11.nglMultMatrixf(address);
         MemStack.pop();
     }
     
     public static void glMultMatrix(Mat4 m, int mode)
     {
-        long address = MemStack.wrap(m);
         GL11.glMatrixMode(mode);
-        GL11.nglMultMatrixf(address);
-        MemStack.pop();
+        glMultMatrix(m);
+    }
+    
+    public static void glLoadMatrix(Transform t)
+    {
+        glLoadMatrix(Mat4.transform(t));
     }
     
     public static void glLoadMatrix(Transform t, int mode)
     {
         glLoadMatrix(Mat4.transform(t), mode);
+    }
+    
+    public static void glMultMatrix(Transform t)
+    {
+        glMultMatrix(Mat4.transform(t));
     }
     
     public static void glMultMatrix(Transform t, int mode)
