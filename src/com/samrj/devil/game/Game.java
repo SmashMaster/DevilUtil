@@ -113,7 +113,6 @@ public abstract class Game
     public final TimeStepper stepper;
     
     private final long frameTime;
-    private final EventBuffer eventBuffer;
     
     private boolean onLongFrame;
     private boolean destroyed;
@@ -193,8 +192,7 @@ public abstract class Game
         {
             mouse = new Mouse(window, this::onMouseMoved, this::onMouseButton, this::onMouseScroll);
             mouse.setGrabbed(false);
-            keyboard = new Keyboard(this::onKey);
-            eventBuffer = new EventBuffer(window, mouse, keyboard);
+            keyboard = new Keyboard(window, this::onKey);
         }
         // </editor-fold>
         stepper = config.stepper;
@@ -313,9 +311,9 @@ public abstract class Game
      * Flushes the keyboard/mouse input queues and discards all events. Also
      * releases any held buttons and invalidates the mouse position.
      */
+    @Deprecated
     public final void discardInput()
     {
-        eventBuffer.discardInput();
     }
     
     /**
@@ -351,7 +349,6 @@ public abstract class Game
 
                 //Input
                 GLFW.glfwPollEvents();
-                eventBuffer.flushEvents();
                 Gamepads.update();
                 if (GLFW.glfwWindowShouldClose(window)) stop();
                 

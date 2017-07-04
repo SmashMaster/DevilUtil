@@ -1,5 +1,6 @@
 package com.samrj.devil.game;
 
+import com.samrj.devil.display.GLFWUtil;
 import java.util.Arrays;
 import org.lwjgl.glfw.GLFW;
 
@@ -20,7 +21,6 @@ public final class Mouse
     
     private boolean posDirty = true;
     private float x, y;
-    private float dx, dy;
     
     public Mouse(long window, CursorCallback cursorCallback,
             ButtonCallback buttonCallback, ScrollCallback scrollCallback)
@@ -30,16 +30,25 @@ public final class Mouse
         this.cursorCallback = cursorCallback;
         this.buttonCallback = buttonCallback;
         this.scrollCallback = scrollCallback;
+        
+        GLFW.glfwSetCursorPosCallback(window, this::cursorPos);
+        GLFW.glfwSetMouseButtonCallback(window, this::button);
+        GLFW.glfwSetScrollCallback(window, this::scroll);
     }
     
+    @Deprecated
     public final void reset()
     {
         posDirty = true;
         Arrays.fill(states, false);
     }
     
-    public final void cursorPos(float x, float y)
+    private void cursorPos(long window, double xpos, double ypos)
     {
+        ypos = GLFWUtil.getWindowSize(window).y - ypos;
+        
+        float dx, dy;
+        
         if (posDirty)
         {
             dx = 0.0f;
@@ -48,17 +57,17 @@ public final class Mouse
         }
         else
         {
-            dx = x - this.x;
-            dy = y - this.y;
+            dx = (float)xpos - x;
+            dy = (float)ypos - y;
         }
         
-        this.x = x;
-        this.y = y;
+        x = (float)xpos;
+        y = (float)ypos;
         
         cursorCallback.accept(x, y, dx, dy);
     }
     
-    public final void button(int button, int action, int mods)
+    private void button(long window, int button, int action, int mods)
     {
         switch (action)
         {
@@ -69,9 +78,9 @@ public final class Mouse
         buttonCallback.accept(button, action, mods);
     }
     
-    public final void scroll(float dx, float dy)
+    private void scroll(long window, double xoffset, double yoffset)
     {
-        scrollCallback.accept(dx, dy);
+        scrollCallback.accept((float)xoffset, (float)yoffset);
     }
     
     public final float getX()
@@ -82,16 +91,6 @@ public final class Mouse
     public final float getY()
     {
         return y;
-    }
-    
-    public final float getDX()
-    {
-        return dx;
-    }
-    
-    public final float getDY()
-    {
-        return dy;
     }
     
     public final boolean isButtonDown(int button)
@@ -107,7 +106,19 @@ public final class Mouse
     
     public void setGrabbed(boolean grabbed)
     {
+        //GLFW generates weird cursor position events after disabling/enabling
+        //the cursor. Prevent this by resetting the mouse position.
+        
+//        long a = MemStack.push(8);
+//        long b = MemStack.push(8);
+//        GLFW.nglfwGetCursorPos(window, a, b);
+//        double mx = MemoryUtil.memGetDouble(a);
+//        double my = MemoryUtil.memGetDouble(b);
+//        MemStack.pop(2);
+        
         setCursorMode(grabbed ? GLFW.GLFW_CURSOR_DISABLED : GLFW.GLFW_CURSOR_NORMAL);
+        
+//        GLFW.glfwSetCursorPos(window, mx, my);
     }
     
     public boolean isGrabbed()

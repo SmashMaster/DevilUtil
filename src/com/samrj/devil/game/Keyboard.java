@@ -15,18 +15,15 @@ public final class Keyboard
     private final BitSet states;
     private final KeyCallback keyCallback;
     
-    public Keyboard(KeyCallback keyCallback)
+    Keyboard(long window, KeyCallback keyCallback)
     {
+        if (keyCallback == null) throw new NullPointerException();
         states = new BitSet(GLFW.GLFW_KEY_LAST + 1);
+        GLFW.glfwSetKeyCallback(window, this::key);
         this.keyCallback = keyCallback;
     }
     
-    public final void reset()
-    {
-        states.clear();
-    }
-    
-    public final void key(int key, int action, int mods)
+    private void key(long window, int key, int scancode, int action, int mods)
     {
         if (key >= 0) switch (action)
         {
@@ -35,6 +32,12 @@ public final class Keyboard
         }
         
         keyCallback.accept(key, action, mods);
+    }
+    
+    @Deprecated
+    public final void reset()
+    {
+        states.clear();
     }
     
     public final boolean isKeyDown(int key)
