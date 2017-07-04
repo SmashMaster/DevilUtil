@@ -36,6 +36,11 @@ public final class Mouse
         GLFW.glfwSetScrollCallback(window, this::scroll);
     }
     
+    public final void setPosDirty()
+    {
+        posDirty = true;
+    }
+    
     @Deprecated
     public final void reset()
     {
@@ -91,6 +96,13 @@ public final class Mouse
     public final float getY()
     {
         return y;
+    }
+    
+    public final void setPos(float x, float y)
+    {
+        y = GLFWUtil.getWindowSize(window).y - y;
+        GLFW.glfwSetCursorPos(window, x, y);
+        cursorPos(window, x, y);
     }
     
     public final boolean isButtonDown(int button)
