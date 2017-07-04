@@ -99,26 +99,10 @@ public final class Mouse
         return states[button];
     }
     
-    public void setCursorMode(int glfwCursorModeEnum)
-    {
-        GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, glfwCursorModeEnum);
-    }
-    
     public void setGrabbed(boolean grabbed)
     {
-        //GLFW generates weird cursor position events after disabling/enabling
-        //the cursor. Prevent this by resetting the mouse position.
-        
-//        long a = MemStack.push(8);
-//        long b = MemStack.push(8);
-//        GLFW.nglfwGetCursorPos(window, a, b);
-//        double mx = MemoryUtil.memGetDouble(a);
-//        double my = MemoryUtil.memGetDouble(b);
-//        MemStack.pop(2);
-        
-        setCursorMode(grabbed ? GLFW.GLFW_CURSOR_DISABLED : GLFW.GLFW_CURSOR_NORMAL);
-        
-//        GLFW.glfwSetCursorPos(window, mx, my);
+        int mode = grabbed ? GLFW.GLFW_CURSOR_DISABLED : GLFW.GLFW_CURSOR_NORMAL;
+        GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, mode);
     }
     
     public boolean isGrabbed()
