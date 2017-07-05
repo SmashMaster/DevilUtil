@@ -224,8 +224,13 @@ public final class ArmatureSolver
         @Override
         public void populateSolveGraph(DAG<Constraint> graph)
         {
-            if (parent != null) graph.addEdge(parent, this);
-            else graph.add(this);
+            graph.add(this);
+            
+            if (parent != null)
+            {
+                graph.add(parent);
+                graph.addEdge(parent, this);
+            }
         }
 
         @Override

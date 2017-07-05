@@ -31,6 +31,8 @@ public class CopyTransformConstraint implements ArmatureSolver.Constraint
     @Override
     public void populateSolveGraph(DAG<ArmatureSolver.Constraint> graph)
     {
+        graph.add(this);
+        
         graph.addEdge(source, this);
         if (parent != null) graph.addEdge(parent, this);
         graph.addEdge(this, target);

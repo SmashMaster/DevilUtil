@@ -32,6 +32,8 @@ public class ChildOfConstraint implements ArmatureSolver.Constraint
     @Override
     public void populateSolveGraph(DAG<ArmatureSolver.Constraint> graph)
     {
+        graph.add(this);
+        
         graph.addEdge(parent, this);
         if (realParent != null) graph.addEdge(realParent, this);
         graph.addEdge(this, child);

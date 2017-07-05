@@ -64,6 +64,8 @@ public class IKConstraint implements ArmatureSolver.Constraint
     @Override
     public void populateSolveGraph(DAG<ArmatureSolver.Constraint> graph)
     {
+        graph.add(this);
+        
         graph.addEdge(parent, this);
         graph.addEdge(target, this);
         graph.addEdge(pole, this);
