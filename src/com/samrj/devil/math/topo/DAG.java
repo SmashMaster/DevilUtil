@@ -126,17 +126,6 @@ public class DAG<TYPE>
         return true;
     }
     
-    private Vertex addGet(TYPE node)
-    {
-        Vertex out = vertices.get(node);
-        if (out == null)
-        {
-            out = new Vertex(node);
-            vertices.put(node, out);
-        }
-        return out;
-    }
-    
     /**
      * Adds an edge to the DAG.
      * 
@@ -144,12 +133,14 @@ public class DAG<TYPE>
      * @throws CyclicGraphException if adding this edge would make the
      *         graph cyclic
      */
-    public boolean addEdge(TYPE start, TYPE end)
+    public boolean addEdgeSafe(TYPE start, TYPE end)
     {
         if (start == null || end == null) throw new NullPointerException();
         
-        Vertex pv = addGet(start);
-        Vertex cv = addGet(end);
+        Vertex pv = vertices.get(start);
+        Vertex cv = vertices.get(end);
+        
+        if (pv == null || cv == null) throw new IllegalArgumentException();
         
         if (pv.out.contains(cv)) return false;
         
@@ -161,6 +152,34 @@ public class DAG<TYPE>
             pv.out.remove(cv);
             cv.in.remove(pv);
             throw new CyclicGraphException();
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Adds an edge to the DAG if the edge doesn't already exist, and
+     * adding that edge would not make the graph cyclic.
+     * 
+     * @return true if the edge was added
+     */
+    public boolean addEdge(TYPE start, TYPE end)
+    {
+        if (start == null || end == null) throw new NullPointerException();
+        
+        Vertex pv = vertices.get(start);
+        Vertex cv = vertices.get(end);
+        
+        if (pv == null || cv == null) throw new IllegalArgumentException();
+        
+        pv.out.add(cv);
+        cv.in.add(pv);
+        
+        if (isCyclic())
+        {
+            pv.out.remove(cv);
+            cv.in.remove(pv);
+            return false;
         }
         
         return true;
