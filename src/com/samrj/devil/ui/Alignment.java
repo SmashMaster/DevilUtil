@@ -25,6 +25,17 @@ public enum Alignment
         return new Vec2(x, y);
     }
     
+    public void align(Vec2 center, Vec2 radius, Vec2 result)
+    {
+        result.x = center.x + x*radius.x;
+        result.y = center.y + y*radius.y;
+    }
+    
+    public void align(Vec2 center, Vec2 radius)
+    {
+        align(center, radius, center);
+    }
+    
     public Alignment opp()
     {
         switch (this)
