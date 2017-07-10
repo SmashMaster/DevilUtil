@@ -13,6 +13,21 @@ public enum Alignment
     W (-1f,  0f), C(0f,  0f),  E(1f,  0f),
     SW(-1f, -1f), S(0f, -1f), SE(1f, -1f);
     
+    public static Alignment get(float x, float y)
+    {
+        int ix = (int)x, iy = (int)y;
+        if (x != ix || y != iy) throw new IllegalArgumentException();
+        
+        switch (ix)
+        {
+            case 1: switch (iy) {case -1: return SE; case 0: return E; case 1: return NE;} break;
+            case 0: switch (iy) {case -1: return S; case 0: return C; case 1: return N;} break;
+            case -1: switch (iy) {case -1: return SW; case 0: return W; case 1: return NW;} break;
+        }
+        
+        throw new IllegalArgumentException();
+    }
+    
     public final float x, y;
     
     private Alignment(float x, float y)
@@ -31,9 +46,11 @@ public enum Alignment
         result.y = center.y + y*radius.y;
     }
     
-    public void align(Vec2 center, Vec2 radius)
+    public Vec2 align(Vec2 center, Vec2 radius)
     {
-        align(center, radius, center);
+        Vec2 result = new Vec2();
+        align(center, radius, result);
+        return result;
     }
     
     public Alignment opp()
