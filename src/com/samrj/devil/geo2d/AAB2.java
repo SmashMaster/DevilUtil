@@ -62,6 +62,12 @@ public class AAB2
         return new AAB2(pos.x - rx, pos.x + rx,
                        pos.y - ry, pos.y + ry);
     }
+    
+    public static AAB2 fromHalfWidth(Vec2 pos, Vec2 radius)
+    {
+        return new AAB2(pos.x - radius.x, pos.x + radius.x,
+                        pos.y - radius.y, pos.y + radius.y);
+    }
     // </editor-fold>
     
     public float x0, x1, y0, y1;
