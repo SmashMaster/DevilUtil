@@ -296,15 +296,15 @@ public abstract class Game
     public void render() {};
     
     /**
+     * Called when the game window is resized.
+     */
+    public void onResized(int width, int height) {};
+    
+    /**
      * Called when this game is destroyed. Should release any system resources
      * associated with this game.
      */
     public void onDestroy() {};
-    
-    /**
-     * Called when the game window is resized.
-     */
-    public void onResized(int width, int height) {};
     // </editor-fold>
     
     /**

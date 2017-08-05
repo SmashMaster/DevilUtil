@@ -17,8 +17,9 @@ import com.samrj.devil.math.Vec3;
  */
 public final class Camera3DController
 {
-    public final Camera3D camera;
     public final Vec3 target = new Vec3();
+    
+    private Camera3D camera;
     
     /**
      * The mouse sensitivity of this camera, in radians per pixel.
@@ -46,6 +47,12 @@ public final class Camera3DController
     
     public Camera3DController(Camera3D camera)
     {
+        setCamera(camera);
+    }
+    
+    public void setCamera(Camera3D camera)
+    {
+        if (camera == null) throw new NullPointerException();
         this.camera = camera;
     }
     
