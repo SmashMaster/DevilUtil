@@ -23,6 +23,7 @@
 package com.samrj.devil.math.topo;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -39,27 +40,29 @@ import java.util.stream.Stream;
  */
 public class DAG<TYPE>
 {
-    private final Map<TYPE, Vertex> vertices = new IdentityHashMap<>();
-    
     private static <T> Set<T> newSet()
     {
         return Collections.newSetFromMap(new IdentityHashMap<>());
     }
     
+    private final Map<TYPE, Vertex> vertices = new IdentityHashMap<>();
+    private final List<Vertex> order = new ArrayList<>();
+    
     /**
      * Hash-map based directed graph vertex class.
      */
-    private class Vertex
+    private class Vertex implements Comparable<Vertex>
     {
         private final TYPE data;
-        /**
-         * Set of vertices that have an outgoing edge whose end is this.
-         */
+        
+        //Set of vertices that have an outgoing edge whose end is this.
         private final Set<Vertex> in = newSet();
-        /**
-         * Set of vertices that have an incoming edge whose start is this.
-         */
+        
+        //Set of vertices that have an incoming edge whose start is this.
         private final Set<Vertex> out = newSet();
+        
+        //Index of this vertex in the order list.
+        private int index;
         
         private Vertex(TYPE data)
         {
@@ -80,6 +83,18 @@ public class DAG<TYPE>
             
             return data.equals(((Vertex)obj).data);
         }
+        
+        @Override
+        public String toString()
+        {
+            return data.toString();
+        }
+
+        @Override
+        public int compareTo(Vertex v)
+        {
+            return index < v.index ? -1 : 1;
+        }
     }
     
     /**
@@ -92,6 +107,12 @@ public class DAG<TYPE>
         private Edge(TYPE s, TYPE e)
         {
             start = s; end = e;
+        }
+        
+        @Override
+        public String toString()
+        {
+            return "[" + start.toString() + " -> " + end.toString() + "]";
         }
     }
     
@@ -106,12 +127,20 @@ public class DAG<TYPE>
         if (vertex == null) throw new NullPointerException();
         if (vertices.containsKey(vertex)) return false;
         
-        Vertex n = new Vertex(vertex);
+        Vertex v = new Vertex(vertex);
+        v.index = order.size();
         
-        vertices.put(vertex, n);
+        vertices.put(vertex, v);
+        order.add(v);
+        
         return false;
     }
     
+    /**
+     * Removes the given vertex and any edges connected to it from this graph.
+     * 
+     * @return true if the vertex was removed
+     */
     public boolean remove(TYPE vertex)
     {
         if (vertex == null) throw new NullPointerException();
@@ -120,9 +149,87 @@ public class DAG<TYPE>
         
         if (v == null) return false;
         
+        order.remove(v.index);
+        int size = order.size();
+        for (int i=v.index; i<size; i++) order.get(i).index = i;
+        
         for (Vertex cn : v.out) cn.in.remove(v);
         for (Vertex pn : v.in) pn.out.remove(v);
         
+        return true;
+    }
+    
+    private void dfsForward(Vertex current, int rightBound, Set<Vertex> result)
+    {
+        result.add(current);
+        for (Vertex neighbor : current.out)
+            if (neighbor.index <= rightBound && !result.contains(neighbor))
+                dfsForward(neighbor, rightBound, result);
+    }
+    
+    private void dfsBackward(Vertex current, int leftBound, Set<Vertex> result)
+    {
+        result.add(current);
+        for (Vertex neighbor : current.in)
+            if (neighbor.index >= leftBound && !result.contains(neighbor))
+                dfsBackward(neighbor, leftBound, result);
+    }
+    
+    private boolean edge(Vertex start, Vertex end, boolean safe)
+    {
+        if (start == null || end == null) throw new IllegalArgumentException();
+        if (start.out.contains(end)) return false;
+        
+        //Check if order is not invalidated.
+        if (start.index < end.index)
+        {
+            start.out.add(end);
+            end.in.add(start);
+            return true;
+        }
+        
+        //Populate left group. Considered using TreeMap for this--but only need
+        //to sort once. IdentityHashMaps are deadly fast anyway.
+        Set<Vertex> leftGroup = newSet();
+        dfsForward(end, start.index, leftGroup);
+        
+        //Ensure no cycle would be created by adding this edge.
+        if (leftGroup.contains(start))
+        {
+            if (safe) throw new CyclicGraphException();
+            else return false;
+        }
+        
+        //Populate right group.
+        Set<Vertex> rightGroup = newSet();
+        dfsBackward(start, end.index, rightGroup);
+        
+        //Now the fun begins: We need to reassign indices to each vertex in
+        //leftGroup and rightGroup, such that:
+        // * order is maintained within each group
+        // * rightGroup is now entirely to the left of leftGroup
+        
+        //First, sort our groups by index.
+        List<Vertex> leftSorted = new ArrayList<>(leftGroup);
+        Collections.sort(leftSorted);
+        List<Vertex> rightSorted = new ArrayList<>(rightGroup);
+        Collections.sort(rightSorted);
+        
+        //Then, pool together all indices.
+        int[] indices = new int[leftSorted.size() + rightSorted.size()];
+        
+        int i = 0;
+        for (Vertex v : leftSorted) indices[i++] = v.index;
+        for (Vertex v : rightSorted) indices[i++] = v.index;
+        
+        //Now swap the right with the left.
+        i = 0;
+        for (Vertex v : rightSorted) order.set(v.index = indices[i++], v);
+        for (Vertex v : leftSorted) order.set(v.index = indices[i++], v);
+        
+        //Finally, add the edge and we're done!
+        start.out.add(end);
+        end.in.add(start);
         return true;
     }
     
@@ -137,24 +244,7 @@ public class DAG<TYPE>
     {
         if (start == null || end == null) throw new NullPointerException();
         
-        Vertex pv = vertices.get(start);
-        Vertex cv = vertices.get(end);
-        
-        if (pv == null || cv == null) throw new IllegalArgumentException();
-        
-        if (pv.out.contains(cv)) return false;
-        
-        pv.out.add(cv);
-        cv.in.add(pv);
-        
-        if (isCyclic())
-        {
-            pv.out.remove(cv);
-            cv.in.remove(pv);
-            throw new CyclicGraphException();
-        }
-        
-        return true;
+        return edge(vertices.get(start), vertices.get(end), true);
     }
     
     /**
@@ -167,40 +257,42 @@ public class DAG<TYPE>
     {
         if (start == null || end == null) throw new NullPointerException();
         
-        Vertex pv = vertices.get(start);
-        Vertex cv = vertices.get(end);
+        return edge(vertices.get(start), vertices.get(end), false);
+    }
+    
+    /**
+     * Returns true and removes the given edge from this DAG if it exists.
+     * Otherwise, returns false.
+     * 
+     * @return true if the edge was removed.
+     */
+    public boolean removeEdge(TYPE start, TYPE end)
+    {
+        if (start == null || end == null) throw new NullPointerException();
         
-        if (pv == null || cv == null) throw new IllegalArgumentException();
+        Vertex sv = vertices.get(start);
+        Vertex ev = vertices.get(end);
         
-        pv.out.add(cv);
-        cv.in.add(pv);
+        if (sv == null || ev == null) return false;
+        if (!sv.out.contains(ev)) return false;
         
-        if (isCyclic())
-        {
-            pv.out.remove(cv);
-            cv.in.remove(pv);
-            return false;
-        }
+        sv.out.remove(ev);
+        ev.in.remove(sv);
         
         return true;
     }
     
-    public boolean removeEdge(TYPE parent, TYPE child)
+    /**
+     * Performs a topological sort on this DAG and returns the result in a list,
+     * in ascending order of depth.
+     */
+    public List<TYPE> sort()
     {
-        if (parent == null || child == null) throw new NullPointerException();
-        
-        Vertex pv = vertices.get(parent);
-        if (pv == null) return false;
-        
-        Vertex cv = vertices.get(child);
-        if (cv == null) return false;
-        
-        if (!pv.out.contains(cv)) return false;
-        
-        pv.out.remove(cv);
-        cv.in.remove(pv);
-        
-        return true;
+        int size = order.size();
+        Object[] array = new Object[order.size()];
+        for (int i=0; i<size; i++) array[i] = order.get(i).data;
+        List<TYPE> out = (List<TYPE>)Arrays.asList(array);
+        return out;
     }
     
     /**
@@ -250,33 +342,6 @@ public class DAG<TYPE>
             for (Vertex en : st.out) out.add(new Edge<>(stData, en.data));
         }
         return out;
-    }
-    
-    private boolean isCyclic()
-    {
-        Set<Vertex> unmarked = newSet();
-        Set<Vertex> tempmarked = newSet();
-        unmarked.addAll(vertices.values());
-        
-        while (!unmarked.isEmpty())
-        {
-            Vertex v = unmarked.iterator().next();
-            if (checkVisit(v, unmarked, tempmarked)) return true;
-        }
-        
-        return false;
-    }
-    
-    private boolean checkVisit(Vertex v, Set<Vertex> unmarked, Set<Vertex> tempmarked)
-    {
-        if (tempmarked.contains(v)) return true;
-        if (!unmarked.remove(v)) return false;
-        
-        tempmarked.add(v);
-        for (Vertex cv : v.in) if (checkVisit(cv, unmarked, tempmarked)) return true;
-        tempmarked.remove(v);
-        
-        return false;
     }
     
     public boolean contains(TYPE vertex)
@@ -335,41 +400,6 @@ public class DAG<TYPE>
     }
     
     /**
-     * Performs a topological sort on this DAG and returns the result in a list,
-     * in ascending order of depth.
-     */
-    public List<TYPE> sort()
-    {
-        List<TYPE> out = new ArrayList<>(vertices.size());
-        
-        if (isEmpty()) return out;
-        
-        Set<Vertex> unmarked = newSet();
-        Set<Vertex> tempmarked = newSet();
-        unmarked.addAll(vertices.values());
-        
-        while (!unmarked.isEmpty())
-        {
-            Vertex v = unmarked.iterator().next();
-            sortVisit(v, out, unmarked, tempmarked);
-        }
-        
-        return out;
-    }
-    
-    private void sortVisit(Vertex v, List<TYPE> out, Set<Vertex> unmarked, Set<Vertex> tempmarked)
-    {
-        if (tempmarked.contains(v)) throw new CyclicGraphException();
-        if (!unmarked.remove(v)) return;
-        
-        tempmarked.add(v);
-        for (Vertex cn : v.in) sortVisit(cn, out, unmarked, tempmarked);
-        tempmarked.remove(v);
-        
-        out.add(v.data);
-    }
-    
-    /**
      * Returns a new DAG with the given node as the only sink; all others are
      * ignored.
      */
@@ -388,22 +418,22 @@ public class DAG<TYPE>
     private void trimVisit(Vertex v, DAG<TYPE> graph)
     {
         graph.add(v.data);
-        
         for (Vertex in : v.in) trimVisit(in, graph);
     }
     
     public void clear()
     {
         vertices.clear();
+        order.clear();
     }
     
     public int size()
     {
-        return vertices.size();
+        return order.size();
     }
     
     public boolean isEmpty()
     {
-        return vertices.isEmpty();
+        return order.isEmpty();
     }
 }
