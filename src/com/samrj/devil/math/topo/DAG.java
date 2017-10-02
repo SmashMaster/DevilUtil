@@ -221,6 +221,7 @@ public class DAG<TYPE>
         int i = 0;
         for (Vertex v : leftSorted) indices[i++] = v.index;
         for (Vertex v : rightSorted) indices[i++] = v.index;
+        Arrays.sort(indices);
         
         //Now swap the right with the left.
         i = 0;
