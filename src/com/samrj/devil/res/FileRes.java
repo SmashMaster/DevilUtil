@@ -37,13 +37,7 @@ public class FileRes extends Resource
 
         URI fileURI = file.toURI();
         URI relURI = workingDir.toURI().relativize(fileURI);
-
-        if (relURI != fileURI)
-        {
-            String path = relURI.getPath();
-            return new FileRes(path, file);
-        }
-        else throw new AbsoluteFileException(file.toString());
+        return new FileRes(relURI.getPath(), file);
     }
     
     public static FileRes findSilent(File file)
@@ -54,14 +48,7 @@ public class FileRes extends Resource
 
         URI fileURI = file.toURI();
         URI relURI = workingDir.toURI().relativize(fileURI);
-
-        if (relURI != fileURI)
-        {
-            String path = relURI.getPath();
-            return new FileRes(path, file);
-        }
-        
-        return null;
+        return new FileRes(relURI.getPath(), file);
     }
     
     public static boolean isValid(File file)
