@@ -113,11 +113,12 @@ public final class Image extends DGLObj
      */
     public int index(int x, int y, int b)
     {
+        y = height - 1 - y;
         return (b + (x + y*width)*bands)*type.size;
     }
     
     /**
-     * Performs the given function each pixel and band in this image, in the
+     * Performs the given function for each pixel and band in this image, in the
      * order they should be buffered by OpenGL.
      * 
      * @param s The sample function to use per pixel/band.
@@ -129,6 +130,30 @@ public final class Image extends DGLObj
             for (int x=0; x<width; x++)
                 for (int b=0; b<bands; b++) s.sample(x, y, b);
         return this;
+    }
+    
+    /**
+     * Returns the value for the given pixel coordinates and band. The range of
+     * the returned value depends on the format of the image. Byte values are
+     * considered to be unsigned.
+     * 
+     * @param x The x coordinate of the pixel.
+     * @param y The y coordinate of the pixel.
+     * @param b The color band.
+     * @return The value at the specified pixel and band.
+     */
+    public double get(int x, int y, int b)
+    {
+        int index = index(x, y, b);
+        switch (type)
+        {
+            case BYTE: return Byte.toUnsignedInt(buffer.get(index));
+            case CHAR: return buffer.getChar(index);
+            case SHORT: return buffer.getShort(index);
+            case INT: return buffer.getInt(index);
+            case FLOAT: return buffer.getFloat(index);
+            default: throw new IllegalArgumentException();
+        }
     }
     
     /**
