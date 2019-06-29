@@ -143,6 +143,21 @@ public class Box3
         Vec3 dp = Vec3.sub(e.b().p(), p0);
         return touchingRay(box, p0, dp, true);
     }
+    
+    /**
+     * Returns whether the given box is touching the given vertex.
+     * 
+     * @param box A box.
+     * @param v A vertex.
+     * @return Whether the vertex is touching the box.
+     */
+    public static boolean touching(Box3 box, Vertex3 v)
+    {
+        Vec3 p = v.p();
+        return p.x >= box.min.x && p.x <= box.max.x &&
+               p.y >= box.min.y && p.y <= box.max.y &&
+               p.z >= box.min.z && p.z <= box.max.z;
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static mutator methods">
     /**
@@ -230,6 +245,24 @@ public class Box3
         r.max.y = Math.max(Math.max(a.y, b.y), c.y);
         r.min.z = Math.min(Math.min(a.z, b.z), c.z);
         r.max.z = Math.max(Math.max(a.z, b.z), c.z);
+    }
+    
+    /**
+     * Sets the given box to the smallest one which can contain the given
+     * edge.
+     * 
+     * @param t The edge to contain.
+     * @param r The box in which to store the result.
+     */
+    public static final void contain(Edge3 t, Box3 r)
+    {
+        Vec3 a = t.a().p(), b = t.b().p();
+        r.min.x = Math.min(a.x, b.x);
+        r.max.x = Math.max(a.x, b.x);
+        r.min.y = Math.min(a.y, b.y);
+        r.max.y = Math.max(a.y, b.y);
+        r.min.z = Math.min(a.z, b.z);
+        r.max.z = Math.max(a.z, b.z);
     }
     
     /**
@@ -381,6 +414,13 @@ public class Box3
         return result;
     }
     
+    public static final Box3 contain(Edge3 e)
+    {
+        Box3 result = new Box3();
+        contain(e, result);
+        return result;
+    }
+    
     /**
      * Returns the smallest box that can contain the given box and vector.
      * 
@@ -499,6 +539,28 @@ public class Box3
     {
         return touching(this, t);
     }
+    
+    /**
+     * Returns whether this is touching the given edge.
+     * 
+     * @param e An edge.
+     * @return True if this box touches the edge.
+     */
+    public boolean touching(Edge3 e)
+    {
+        return touching(this, e);
+    }
+    
+    /**
+     * Returns whether this is touching the given vertex.
+     * 
+     * @param v A vertex.
+     * @return True if this box touches the vertex.
+     */
+    public boolean touching(Vertex3 v)
+    {
+        return touching(this, v);
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Instance mutator methods">
     /**
@@ -533,6 +595,12 @@ public class Box3
     public Box3 setContain(Triangle3 t)
     {
         contain(t, this);
+        return this;
+    }
+    
+    public Box3 setContain(Edge3 e)
+    {
+        contain(e, this);
         return this;
     }
     
