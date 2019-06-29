@@ -90,7 +90,6 @@ public final class Camera3DController
     public void setPitch(float pitch)
     {
         this.pitch = Util.clamp(pitch, -Util.PId2, Util.PId2);
-        update();
     }
     
     /**
@@ -107,7 +106,6 @@ public final class Camera3DController
     public void setYaw(float yaw)
     {
         this.yaw = Util.reduceAngle(yaw);
-        update();
     }
     
     /**
@@ -117,7 +115,6 @@ public final class Camera3DController
     {
         this.pitch = Util.clamp(pitch, -Util.PId2, Util.PId2);
         this.yaw = Util.reduceAngle(yaw);
-        update();
     }
     
     /**
@@ -140,7 +137,6 @@ public final class Camera3DController
         
         setAngles((float)Math.atan2(dir.y, Math.sqrt(dir.x*dir.x + dir.z*dir.z)),
                   (float)Math.atan2(-dir.x, -dir.z));
-        update();
     }
     
     /**
