@@ -192,7 +192,7 @@ public abstract class Game
         {
             mouse = new Mouse(window, this::onMouseMoved, this::onMouseButton, this::onMouseScroll);
             mouse.setGrabbed(false);
-            keyboard = new Keyboard(window, this::onKey);
+            keyboard = new Keyboard(window, this::onKey, this::onCharacter);
         }
         // </editor-fold>
         stepper = config.stepper;
@@ -279,6 +279,14 @@ public abstract class Game
      * @param mods Bit field describing which modifier keys were held down.
      */
     public void onKey(int key, int action, int mods) {};
+    
+    /**
+     * Called whenever a character is typed. Always called before step() and
+     * render(). Automatically accounts for modifiers like shift.
+     * 
+     * @param character The character that was typed.
+     */
+    public void onCharacter(char character) {};
     
     /**
      * Steps the simulation by a given amount of time. Called after input and
