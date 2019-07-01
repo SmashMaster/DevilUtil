@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,15 +22,15 @@
 
 package com.samrj.devil.model;
 
-import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Transform;
 import com.samrj.devil.math.Vec2;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import org.blender.dna.BezTriple;
+import org.cakelab.blender.nio.CArrayFacade;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -189,6 +189,11 @@ public class FCurve
         return bezier(left.co, left.right, right.left, right.co, time);
     }
     
+    //Needed to change from Blender's coordinate system to DevilUtil's.
+    private static final int[][] INDEX_MAP = {{2, 0, 1},
+                                              {0, 3, 1, 2},
+                                              {2, 0, 1}};
+    
     public final String boneName;
     public final Transform.Property property;
     public final int propertyIndex;
@@ -197,13 +202,48 @@ public class FCurve
     
     private final TreeMap<Float, Integer> keyInds;
     
-    FCurve(DataInputStream in) throws IOException
+    FCurve(org.blender.dna.FCurve bfCurve) throws IOException
     {
-        boolean hasBone = in.readShort() != 0;
-        property = Transform.Property.values()[in.readShort()];
-        boneName = hasBone ? IOUtil.readPaddedUTF(in) : null;
-        propertyIndex = in.readInt();
-        keyframes = IOUtil.listFromStream(in, Keyframe::new);
+        String rnaPath = Blender.blendString(bfCurve.getRna_path());
+        String propertyName;
+        
+        if (rnaPath.startsWith("pose.bones[\""))
+        {
+            int boneNameEndIndex = rnaPath.indexOf("\"].");
+            boneName = rnaPath.substring(12, boneNameEndIndex);
+            propertyName = rnaPath.substring(boneNameEndIndex + 3);
+        }
+        else
+        {
+            boneName = null;
+            propertyName = rnaPath;
+        }
+        
+        int pi;
+        switch (propertyName)
+        {
+            case "location":
+                property = Transform.Property.POSITION;
+                pi = 0;
+                break;
+            case "rotation_quaternion":
+                property = Transform.Property.ROTATION;
+                pi = 1;
+                break;
+            case "scale":
+                property = Transform.Property.SCALE;
+                pi = 2;
+                break;
+            default: throw new IllegalArgumentException("Illegal property: " + propertyName);
+        }
+        
+        propertyIndex = INDEX_MAP[pi][bfCurve.getArray_index()];
+        
+        int numKeys = bfCurve.getTotvert();
+        BezTriple[] bezts = bfCurve.getBezt().toArray(numKeys);
+        
+        keyframes = new ArrayList<>(bezts.length);
+        for (BezTriple bezt : bezts) keyframes.add(new Keyframe(bezt));
         
         float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY;
         keyInds = new TreeMap<>();
@@ -241,11 +281,11 @@ public class FCurve
     public class Keyframe
     {
         public final Interpolation interpolation;
-        public final Vec2 co, left, right;
+        public final Vec2 left, co, right;
         
-        Keyframe(DataInputStream in) throws IOException
+        Keyframe(BezTriple bezt) throws IOException
         {
-            switch (in.readInt())
+            switch (bezt.getIpo())
             {
                 case 0: interpolation = Interpolation.CONSTANT; break;
                 case 1: interpolation = Interpolation.LINEAR; break;
@@ -253,9 +293,13 @@ public class FCurve
                 default: interpolation = Interpolation.LINEAR; break;
             }
             
-            co = new Vec2(in);
-            left = new Vec2(in);
-            right = new Vec2(in);
+            CArrayFacade<Float>[] vecf = bezt.getVec().toArray();
+            float[][] vec = new float[3][];
+            for (int i=0; i<3; i++) vec[i] = vecf[i].toFloatArray();
+            
+            left = new Vec2(vec[0][0], vec[0][1]);
+            co = new Vec2(vec[1][0], vec[1][1]);
+            right = new Vec2(vec[2][0], vec[2][1]);
         }
     }
 }

@@ -1,9 +1,5 @@
 package com.samrj.devil.model;
 
-import com.samrj.devil.io.IOUtil;
-import java.io.DataInputStream;
-import java.io.IOException;
-
 /**
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2016 Samuel Johnson
@@ -13,28 +9,16 @@ public abstract class DataBlock
 {
     public enum Type
     {
-        LIBRARY (Library::new),
-        ACTION  (Action::new),
-        ARMATURE(Armature::new),
-        CURVE   (Curve::new),
-        LAMP    (Lamp::new),
-        MATERIAL(Material::new),
-        MESH    (Mesh::new),
-        OBJECT  (ModelObject::new),
-        SCENE   (Scene::new),
-        TEXTURE (Texture::new);
-        
-        private final ModelConstructor<?> constructor;
-        
-        private Type(ModelConstructor<?> constructor)
-        {
-            this.constructor = constructor;
-        }
-        
-        ArrayMap<?> makeArrayMap(Model model, DataInputStream in) throws IOException
-        {
-            return new ArrayMap<>(model, in, constructor);
-        }
+        LIBRARY,
+        ACTION,
+        ARMATURE,
+        CURVE,
+        LAMP,
+        MATERIAL,
+        MESH,
+        OBJECT,
+        SCENE,
+        TEXTURE;
     }
     
     public static Type getType(int index)
@@ -43,14 +27,13 @@ public abstract class DataBlock
     }
     
     public final Model model;
-    public final int modelIndex;
     public final String name;
     
-    DataBlock(Model model, int modelIndex, DataInputStream in) throws IOException
+    DataBlock(Model model, String name)
     {
+        if (model == null || name == null) throw new NullPointerException();
         this.model = model;
-        this.modelIndex = modelIndex;
-        name = IOUtil.readPaddedUTF(in);
+        this.name = name;
     }
     
     void destroy()

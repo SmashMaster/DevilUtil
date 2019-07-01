@@ -1,18 +1,19 @@
 package com.samrj.devil.model;
 
-import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.model.Pose.PoseBone;
-import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.blender.dna.TimeMarker;
+import org.blender.dna.bAction;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Action extends DataBlock
@@ -23,20 +24,28 @@ public final class Action extends DataBlock
     private final List<Marker> markers;
     private final Map<String, Marker> markerMap;
     
-    Action(Model model, int modelIndex, DataInputStream in) throws IOException
+    Action(Model model, bAction bAction) throws IOException
     {
-        super(model, modelIndex, in);
-        fcurves = IOUtil.listFromStream(in, FCurve::new);
+        super(model, bAction.getId().getName().asString().substring(2));
         
+        fcurves = new ArrayList<>();
         float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY;
-        for (FCurve fcurve : fcurves)
+        for (org.blender.dna.FCurve bfCurve : Blender.blendList(bAction.getCurves(), org.blender.dna.FCurve.class))
         {
-            if (fcurve.minX < min) min = fcurve.minX;
-            if (fcurve.maxX > max) max = fcurve.maxX;
+            FCurve fCurve = new FCurve(bfCurve);
+            fcurves.add(new FCurve(bfCurve));
+            
+            if (fCurve.minX < min) min = fCurve.minX;
+            if (fCurve.maxX > max) max = fCurve.maxX;
         }
         minX = min; maxX = max;
         
-        markers = IOUtil.listFromStream(in, Marker::new);
+        markers = new ArrayList<>();
+        for (TimeMarker bMarker : Blender.blendList(bAction.getMarkers(), TimeMarker.class))
+        {
+            markers.add(new Marker(bMarker));
+        }
+        
         markerMap = new HashMap<>(markers.size());
         for (Marker marker : markers) markerMap.put(marker.name, marker);
     }
@@ -89,10 +98,10 @@ public final class Action extends DataBlock
         public final String name;
         public final float frame;
         
-        private Marker(DataInputStream in) throws IOException
+        private Marker(TimeMarker bMarker) throws IOException
         {
-            name = IOUtil.readPaddedUTF(in);
-            frame = in.readInt();
+            name = bMarker.getName().asString();
+            frame = bMarker.getFrame();
         }
         
         @Override
