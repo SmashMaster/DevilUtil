@@ -1,6 +1,8 @@
 package com.samrj.devil.geo3d;
 
 import com.samrj.devil.math.Vec3;
+import java.util.Collection;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
@@ -15,33 +17,46 @@ import java.util.stream.Stream;
  */
 public class GeoSoup<V extends Vertex3, E extends Edge3, F extends Triangle3> implements Geometry
 {
-    private final V[] verts;
-    private final E[] edges;
-    private final F[] faces;
+    private final Supplier<Stream<V>> vertProvider;
+    private final Supplier<Stream<E>> edgeProvider;
+    private final Supplier<Stream<F>> faceProvider;
     
     private final Box3 bounds = Box3.infinite();
-    private boolean boundsDirty = true;
+    
+    public GeoSoup(Supplier<Stream<V>> vProvider, Supplier<Stream<E>> eProvider, Supplier<Stream<F>> fProvider)
+    {
+        if (vProvider == null) throw new NullPointerException();
+        if (eProvider == null) throw new NullPointerException();
+        if (fProvider == null) throw new NullPointerException();
+        
+        vertProvider = vProvider;
+        edgeProvider = eProvider;
+        faceProvider = fProvider;
+    }
+    
+    public GeoSoup(Collection<V> verts, Collection<E> edges, Collection<F> faces)
+    {
+        this(verts::stream, edges::stream, faces::stream);
+    }
     
     public GeoSoup(V[] verts, E[] edges, F[] faces)
     {
-        this.verts = verts;
-        this.edges = edges;
-        this.faces = faces;
+        this(() -> Stream.of(verts), () -> Stream.of(edges), () -> Stream.of(faces));
     }
     
     public Stream<V> verts()
     {
-        return Stream.of(verts);
+        return vertProvider.get();
     }
     
     public Stream<E> edges()
     {
-        return Stream.of(edges);
+        return edgeProvider.get();
     }
     
     public Stream<F> faces()
     {
-        return Stream.of(faces);
+        return faceProvider.get();
     }
     
     @Override
@@ -79,35 +94,18 @@ public class GeoSoup<V extends Vertex3, E extends Edge3, F extends Triangle3> im
         return new Box3(bounds);
     }
     
-    public void markBoundsDirty()
-    {
-        boundsDirty = true;
-        bounds.setInfinite();
-    }
-    
     @Override
     public boolean areBoundsDirty()
     {
-        return boundsDirty;
+        return true;
     }
     
     @Override
     public void updateBounds()
     {
         bounds.setEmpty();
-        verts().forEach(v -> bounds.expand(v.p()));
-        edges().forEach(e ->
-        {
-            bounds.expand(e.a().p());
-            bounds.expand(e.b().p());
-        });
-        faces().forEach(f ->
-        {
-            bounds.expand(f.a().p());
-            bounds.expand(f.b().p());
-            bounds.expand(f.c().p());
-        });
-        
-        boundsDirty = false;
+        verts().forEach(bounds::expand);
+        edges().forEach(bounds::expand);
+        faces().forEach(bounds::expand);
     }
 }
