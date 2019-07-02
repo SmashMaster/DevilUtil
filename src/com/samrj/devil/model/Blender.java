@@ -80,6 +80,13 @@ class Blender
         return builder.toString();
     }
     
+    static String blendString(CPointer<Byte> pointer, int bytes) throws IOException
+    {
+        StringBuilder builder = new StringBuilder(bytes);
+        for (byte b : pointer.toByteArray(bytes)) builder.append((char)b);
+        return builder.toString();
+    }
+    
     static Vec3 vec3(CArrayFacade<Float> facade) throws IOException
     {
         float[] v = facade.toFloatArray(3);

@@ -66,6 +66,11 @@ public final class Model
             arraymaps.put(Type.ARMATURE, armatures);
             
             curves = new ArrayMap<>();
+            for (org.blender.dna.Curve bCurve : Blender.blendList(lib.getCurve()))
+            {
+                Curve curve = new Curve(this, bCurve);
+                curves.put(curve.name, curve);
+            }
             arraymaps.put(Type.CURVE, curves);
             
             lamps = new ArrayMap<>();
