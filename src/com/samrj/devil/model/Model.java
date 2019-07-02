@@ -95,6 +95,11 @@ public final class Model
             arraymaps.put(Type.MATERIAL, materials);
             
             meshes = new ArrayMap<>();
+            for (org.blender.dna.Mesh bMesh : Blender.blendList(library.getMesh()))
+            {
+                Mesh mesh = new Mesh(this, bMesh);
+                meshes.put(mesh.name, mesh);
+            }
             arraymaps.put(Type.MESH, meshes);
             
             objects = new ArrayMap<>();

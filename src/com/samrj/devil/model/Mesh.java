@@ -1,11 +1,11 @@
 package com.samrj.devil.model;
 
+import com.samrj.devil.geo3d.Earcut;
 import com.samrj.devil.geo3d.Vertex3;
-import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.io.Memory;
+import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -14,16 +14,33 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.IntFunction;
+import org.blender.dna.MLoop;
+import org.blender.dna.MPoly;
+import org.blender.dna.MVert;
 
 /**
  * DevilModel mesh.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Mesh extends DataBlock
 {
+    private static class LoopTri
+    {
+        private final int poly;
+        private final int va, vb, vc;
+        
+        private LoopTri(int poly, int start, int va, int vb, int vc)
+        {
+            this.poly = poly;
+            this.va = start + va;
+            this.vb = start + vb;
+            this.vc = start + vc;
+        }
+    }
+    
     public final boolean hasNormals, hasTangents;
     public final int numGroups;
     public final boolean hasMaterials;
@@ -46,21 +63,122 @@ public final class Mesh extends DataBlock
     
     public final List<DataPointer<Material>> materials;
     
-    Mesh(Model model, int modelIndex, DataInputStream in) throws IOException
+    Mesh(Model model, org.blender.dna.Mesh bMesh) throws IOException
     {
-        super(model, modelIndex, in);
+        super(model, bMesh.getId().getName().asString().substring(2));
         
-        int flags = in.readInt();
+        MPoly[] mPolys = bMesh.getMpoly().toArray(bMesh.getTotpoly());
+        MLoop[] mLoops = bMesh.getMloop().toArray(bMesh.getTotloop());
+        MVert[] mVerts = bMesh.getMvert().toArray(bMesh.getTotvert());
+        
+        Vec3[] vertPos = new Vec3[mVerts.length];
+        for (int i=0; i<mVerts.length; i++) vertPos[i] = Blender.vec3(mVerts[i].getCo());
+        
+//        System.out.println(name + " " + mPolys.length + " " + mLoops.length + " " + mVerts.length);
+        
+        List<LoopTri> tris = new ArrayList<>();
+        
+        for (int iPoly=0; iPoly<mPolys.length; iPoly++)
+        {
+            MPoly mPoly = mPolys[iPoly];
+            
+            int start = mPoly.getLoopstart();
+            int count = mPoly.getTotloop();
+            int end = start + count;
+            
+            if (count < 3) {} //Degenerate poly
+            else if (count == 3) //Single triangle poly
+            {
+                tris.add(new LoopTri(iPoly, start, 0, 1, 2));
+            }
+            else if (count == 4) //Quad; can be split into two tris, but might be concave.
+            {
+                Vec3 v0 = vertPos[mLoops[start].getV()];
+                Vec3 v1 = vertPos[mLoops[start + 1].getV()];
+                Vec3 v2 = vertPos[mLoops[start + 2].getV()];
+                Vec3 v3 = vertPos[mLoops[start + 3].getV()];
+                
+                Vec3 e01 = Vec3.sub(v1, v0);
+                Vec3 e02 = Vec3.sub(v2, v0);
+                Vec3 e03 = Vec3.sub(v3, v0);
+                
+                Vec3 crossA = Vec3.cross(e01, e02);
+                Vec3 crossB = Vec3.cross(e03, e02);
+                
+                if (crossA.dot(crossB) > 0.0f)
+                {
+                    tris.add(new LoopTri(iPoly, start, 0, 1, 3));
+                    tris.add(new LoopTri(iPoly, start, 1, 2, 3));
+                }
+                else
+                {
+                    tris.add(new LoopTri(iPoly, start, 0, 1, 2));
+                    tris.add(new LoopTri(iPoly, start, 0, 2, 3));
+                }
+            }
+            else
+            {
+                //Calculate normal by Newell's method
+                Vec3 normal = new Vec3();
+                for (int i0=start; i0<end; i0++)
+                {
+                    int i1 = i0 + 1;
+                    if (i1 == end) i1 = start;
+                    
+                    Vec3 v0 = vertPos[mLoops[i0].getV()];
+                    Vec3 v1 = vertPos[mLoops[i1].getV()];
+                    
+                    normal.x += (v0.y - v1.y)*(v0.z + v1.z);
+                    normal.y += (v0.z - v1.z)*(v0.x + v1.x);
+                    normal.z += (v0.x - v1.x)*(v0.y + v1.y);
+                }
+                
+                //Make a matrix for projection to 2D
+                float nrmLen = normal.length();
+                if (nrmLen == 0.0f) normal.z = 1.0f;
+                else normal.div(nrmLen);
+                Mat3 basis = Blender.orthogBasis(normal);
+                
+                double[] projData = new double[count*2];
+                
+                for (int i=0; i<count; i++)
+                {
+                    Vec3 v = vertPos[mLoops[start + i].getV()];
+                    Vec3 projected = Vec3.mult(v, basis);
+                    
+                    projData[i*2] = projected.x;
+                    projData[i*2 + 1] = projected.y;
+                }
+                
+                //Compute the triangulation
+                List<Integer> triangulated = Earcut.earcut(projData);
+                
+                for (int i=0; i<triangulated.size();)
+                {
+                    int a = triangulated.get(i++) + start;
+                    int b = triangulated.get(i++) + start;
+                    int c = triangulated.get(i++) + start;
+                    
+                    tris.add(new LoopTri(iPoly, start, a, b, c));
+                }
+            }
+        }
+        
+        
+        
+//        System.out.println(tris.size() + " triangles");
+        
+        int flags = 0;
         hasNormals = (flags & 1) != 0;
         hasTangents = (flags & 2) != 0;
         boolean hasGroups = (flags & 4) != 0;
         hasMaterials = (flags & 8) != 0;
         
-        uvLayers = IOUtil.arrayFromStream(in, String.class, IOUtil::readPaddedUTF);
-        colorLayers = IOUtil.arrayFromStream(in, String.class, IOUtil::readPaddedUTF);
+        uvLayers = new String[0];
+        colorLayers = new String[0];
         
-        numGroups = in.readInt();
-        numVertices = in.readInt();
+        numGroups = 0;
+        numVertices = 0;
         
         //The order and length of vertex data is defined by io_mesh_dvm.
         
@@ -104,17 +222,14 @@ public final class Mesh extends DataBlock
         materialOffset = intOffset*4;
         if (hasMaterials) intOffset += numVertices;
         
-        vertexBlock = numVertices != 0 ? new Memory(intOffset*4) : null;
-        vertexData = numVertices != 0 ? vertexBlock.buffer : null;
+        vertexBlock = null;
+        vertexData = null;
         
-        for (int i=0; i<intOffset; i++) vertexData.putInt(in.readInt());
-        
-        numTriangles = in.readInt();
+        numTriangles = 0;
         int triangleIndexInts = numTriangles*3;
         indexBlock = numTriangles != 0 ? new Memory(triangleIndexInts*4) : null;
         indexData = numTriangles != 0 ? indexBlock.buffer : null;
         
-        for (int i=0; i<triangleIndexInts; i++) indexData.putInt(in.readInt());
         if (indexData != null) indexData.rewind();
         
         if (hasMaterials && vertexData != null)
@@ -126,8 +241,8 @@ public final class Mesh extends DataBlock
             {
                 int matIndex = vertexData.getInt();
                 if (matIndex < 0) continue;
-                if (matIndices.add(matIndex))
-                    matList.add(new DataPointer(model, Type.MATERIAL, matIndex));
+//                if (matIndices.add(matIndex))
+//                    matList.add(new DataPointer(model, Type.MATERIAL, matIndex));
             }
             materials = Collections.unmodifiableList(matList);
         }

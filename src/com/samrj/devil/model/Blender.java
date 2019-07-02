@@ -115,6 +115,37 @@ class Blender
                         m[3][1], m[3][2], m[3][0], m[3][3]);
     }
     
+    /**
+     * This lets us project points onto a plane defined by a normal, and ignore the z coordinate.
+     */
+    static void orthogBasis(Vec3 n, Mat3 result)
+    {
+        n = Vec3.negate(n);
+        float len = n.length();
+
+        if (len != 0)
+        {
+            //Todo: Optimize this
+            Vec3 b = Vec3.cross(n, new Vec3(1.0f, 0.0f, 0.0f));
+            if (b.isZero(0.01f)) Vec3.cross(n, new Vec3(0.0f, 1.0f, 0.0f), b);
+            b.normalize();
+            
+            Vec3 t = Vec3.cross(n, b).normalize();
+            
+            result.set(b.x, b.y, b.z,
+                       t.x, t.y, t.z,
+                       0.0f, 0.0f, 0.0f);
+        }
+        else result.setIdentity(); //Cannot create basis from zero vector
+    }
+    
+    static Mat3 orthogBasis(Vec3 n)
+    {
+        Mat3 result = new Mat3();
+        orthogBasis (n, result);
+        return result;
+    }
+    
     private Blender()
     {
     }
