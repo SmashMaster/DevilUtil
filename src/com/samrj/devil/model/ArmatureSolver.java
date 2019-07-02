@@ -196,7 +196,7 @@ public final class ArmatureSolver
         
         private void populate()
         {
-            if (bone.parentIndex >= 0) parent = bones.get(bone.parentIndex);
+            if (bone.parent != null) parent = nameMap.get(bone.parent.name);
         }
         
         public BoneSolver getParent()

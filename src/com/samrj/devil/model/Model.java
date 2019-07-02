@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.EnumMap;
 import org.blender.dna.bAction;
+import org.blender.dna.bArmature;
 import org.blender.utils.MainLib;
 import org.cakelab.blender.io.BlenderFile;
 
@@ -57,6 +58,11 @@ public final class Model
             arraymaps.put(Type.ACTION, actions);
             
             armatures = new ArrayMap<>();
+            for (bArmature bArm : Blender.blendList(lib.getBArmature()))
+            {
+                Armature armature = new Armature(this, bArm);
+                armatures.put(armature.name, armature);
+            }
             arraymaps.put(Type.ARMATURE, armatures);
             
             curves = new ArrayMap<>();

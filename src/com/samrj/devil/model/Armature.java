@@ -1,13 +1,13 @@
 package com.samrj.devil.model;
 
-import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Vec3;
-import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.blender.dna.bArmature;
 
 /**
  * Armature definition class. Can be shared between multiple objects. Give to
@@ -22,14 +22,30 @@ public final class Armature extends DataBlock
     public final List<Bone> bones;
     private final Map<String, Bone> nameMap;
     
-    Armature(Model model, int modelIndex, DataInputStream in) throws IOException
+    Armature(Model model, bArmature bArm) throws IOException
     {
-        super(model, modelIndex, in);
-        bones = IOUtil.listFromStream(in, Bone::new);
-        bones.forEach(bone -> bone.populate(bones));
+        super(model, bArm.getId().getName().asString().substring(2));
         
-        nameMap = new HashMap<>(bones.size());
-        bones.forEach(bone -> nameMap.put(bone.name, bone));
+        bones = new ArrayList<>();
+        nameMap = new HashMap<>();
+        for (org.blender.dna.Bone bBone : Blender.blendList(bArm.getBonebase(), org.blender.dna.Bone.class))
+        {
+            Bone bone = new Bone(null, bBone);
+            recursiveAdd(bone, bBone);
+            bones.add(bone);
+            nameMap.put(bone.name, bone);
+        }
+    }
+    
+    private void recursiveAdd(Bone bone, org.blender.dna.Bone bBone) throws IOException
+    {
+        for (org.blender.dna.Bone bChild : Blender.blendList(bBone.getChildbase(), org.blender.dna.Bone.class))
+        {
+            Bone child = new Bone(bone, bChild);
+            recursiveAdd(child, bChild);
+            bones.add(child);
+            nameMap.put(child.name, child);
+        }
     }
     
     public Bone getBone(String name)
@@ -40,34 +56,24 @@ public final class Armature extends DataBlock
     public class Bone
     {
         public final String name;
-        final int parentIndex;
+        public final Bone parent;
         public final boolean inheritRotation;
 
         public final Vec3 head, tail;
         public final Mat3 matrix; //bone direction -> object rest direction
         public final Mat3 invMat; //object rest direction -> bone direction
-
-        private Bone parent;
-
-        private Bone(DataInputStream in) throws IOException
+        
+        private Bone(Bone parent, org.blender.dna.Bone bBone) throws IOException
         {
-            name = IOUtil.readPaddedUTF(in);
-            parentIndex = in.readInt();
-            inheritRotation = in.readInt() != 0;
-            head = new Vec3(in);
-            tail = new Vec3(in);
-            matrix = new Mat3(in);
+            name = bBone.getName().asString();
+            this.parent = parent;
+            
+            inheritRotation = (bBone.getFlag() & (1 << 9)) != 0; //BONE_HINGE flag
+            
+            head = Blender.vec3(bBone.getArm_head());
+            tail = Blender.vec3(bBone.getArm_tail());
+            matrix = Blender.mat3(bBone.getArm_mat()); //Might need to be bone_mat instead.
             invMat = Mat3.invert(matrix);
-        }
-
-        void populate(List<Bone> bones)
-        {
-            if (parentIndex >= 0) parent = bones.get(parentIndex);
-        }
-
-        public Bone getParent()
-        {
-            return parent;
         }
     }
 }
