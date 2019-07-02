@@ -1,17 +1,18 @@
 package com.samrj.devil.model;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Library extends DataBlock
 {
-    Library(Model model, int modelIndex, DataInputStream in) throws IOException
+    Library(Model model, org.blender.dna.Library bLib) throws IOException
     {
-        super(model, modelIndex, in);
+        super(model, bLib.getId().getName().asString().substring(2));
+        
+        //Placeholder
     }
 }

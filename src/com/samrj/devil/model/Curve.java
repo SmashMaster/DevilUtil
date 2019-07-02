@@ -1,8 +1,6 @@
 package com.samrj.devil.model;
 
-import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Vec3;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +10,7 @@ import org.cakelab.blender.nio.CArrayFacade;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Curve extends DataBlock

@@ -5,7 +5,7 @@ import java.util.Optional;
 /**
  * @author Samuel Johnson (SmashMaster)
  * @param <T> The type of data block this pointer points to.
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class DataPointer<T extends DataBlock>
@@ -30,19 +30,6 @@ public final class DataPointer<T extends DataBlock>
     DataPointer(Model model, int typeID, String name)
     {
         this(model, DataBlock.getType(typeID), name);
-    }
-    
-    DataPointer(Model model, DataBlock.Type type, int index)
-    {
-        this.model = model;
-        name = null;
-        this.index = index;
-        this.type = type;
-    }
-    
-    DataPointer(Model model, int typeID, int index)
-    {
-        this(model, DataBlock.getType(typeID), index);
     }
     
     /**

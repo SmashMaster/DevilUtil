@@ -14,7 +14,7 @@ import org.blender.dna.bArmature;
  * an ArmatureSolver to pose.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Armature extends DataBlock

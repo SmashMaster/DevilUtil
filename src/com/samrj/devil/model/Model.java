@@ -13,7 +13,7 @@ import org.cakelab.blender.io.BlenderFile;
  * .DVM file loader. Corresponds with the Blender python exporter.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Model
@@ -44,13 +44,18 @@ public final class Model
             boolean isCompatible = MainLib.doCompatibilityCheck(file.readFileGlobal());
             if (!isCompatible) throw new java.lang.IllegalArgumentException("Incompatible .blend file");
                 
-            MainLib lib = new MainLib(file);
+            MainLib library = new MainLib(file);
             
             libraries = new ArrayMap<>();
+            for (org.blender.dna.Library bLib : Blender.blendList(library.getLibrary()))
+            {
+                Library lib = new Library(this, bLib);
+                libraries.put(lib.name, lib);
+            }
             arraymaps.put(Type.LIBRARY, libraries);
             
             actions = new ArrayMap<>();
-            for (bAction bAction : Blender.blendList(lib.getBAction()))
+            for (bAction bAction : Blender.blendList(library.getBAction()))
             {
                 Action action = new Action(this, bAction);
                 actions.put(action.name, action);
@@ -58,7 +63,7 @@ public final class Model
             arraymaps.put(Type.ACTION, actions);
             
             armatures = new ArrayMap<>();
-            for (bArmature bArm : Blender.blendList(lib.getBArmature()))
+            for (bArmature bArm : Blender.blendList(library.getBArmature()))
             {
                 Armature armature = new Armature(this, bArm);
                 armatures.put(armature.name, armature);
@@ -66,7 +71,7 @@ public final class Model
             arraymaps.put(Type.ARMATURE, armatures);
             
             curves = new ArrayMap<>();
-            for (org.blender.dna.Curve bCurve : Blender.blendList(lib.getCurve()))
+            for (org.blender.dna.Curve bCurve : Blender.blendList(library.getCurve()))
             {
                 Curve curve = new Curve(this, bCurve);
                 curves.put(curve.name, curve);
@@ -74,9 +79,19 @@ public final class Model
             arraymaps.put(Type.CURVE, curves);
             
             lamps = new ArrayMap<>();
+            for (org.blender.dna.Lamp bLamp : Blender.blendList(library.getLamp()))
+            {
+                Lamp lamp = new Lamp(this, bLamp);
+                lamps.put(lamp.name, lamp);
+            }
             arraymaps.put(Type.LAMP, lamps);
             
             materials = new ArrayMap<>();
+            for (org.blender.dna.Material bMat : Blender.blendList(library.getMaterial()))
+            {
+                Material mat = new Material(this, bMat);
+                materials.put(mat.name, mat);
+            }
             arraymaps.put(Type.MATERIAL, materials);
             
             meshes = new ArrayMap<>();

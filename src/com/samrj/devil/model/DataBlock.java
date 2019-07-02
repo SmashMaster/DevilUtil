@@ -2,7 +2,7 @@ package com.samrj.devil.model;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public abstract class DataBlock
