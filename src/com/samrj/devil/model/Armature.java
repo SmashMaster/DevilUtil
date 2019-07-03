@@ -24,7 +24,7 @@ public final class Armature extends DataBlock
     
     Armature(Model model, bArmature bArm) throws IOException
     {
-        super(model, bArm.getId().getName().asString().substring(2));
+        super(model, bArm.getId());
         
         bones = new ArrayList<>();
         nameMap = new HashMap<>();

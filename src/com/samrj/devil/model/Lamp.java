@@ -21,7 +21,7 @@ public final class Lamp extends DataBlock
     
     Lamp(Model model, org.blender.dna.Lamp bLamp) throws IOException
     {
-        super(model, bLamp.getId().getName().asString().substring(2));
+        super(model, bLamp.getId());
         
         color = new Vec3(bLamp.getR(), bLamp.getG(), bLamp.getB()).mult(bLamp.getEnergy());
         type = Type.values()[bLamp.getType()];

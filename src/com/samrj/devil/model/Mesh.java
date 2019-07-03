@@ -63,7 +63,7 @@ public final class Mesh extends DataBlock
     
     Mesh(Model model, org.blender.dna.Mesh bMesh) throws IOException
     {
-        super(model, bMesh.getId().getName().asString().substring(2));
+        super(model, bMesh.getId());
         
         MPoly[] mPolys = bMesh.getMpoly().toArray(bMesh.getTotpoly());
         MLoop[] mLoops = bMesh.getMloop().toArray(bMesh.getTotloop());

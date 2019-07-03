@@ -1,5 +1,11 @@
 package com.samrj.devil.model;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import org.blender.dna.ID;
+import org.blender.dna.IDProperty;
+
 /**
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2019 Samuel Johnson
@@ -28,12 +34,30 @@ public abstract class DataBlock
     
     public final Model model;
     public final String name;
+    public final List<Property> properties;
     
-    DataBlock(Model model, String name)
+    DataBlock(Model model, ID bID) throws IOException
     {
-        if (model == null || name == null) throw new NullPointerException();
+        if (model == null || bID == null) throw new NullPointerException();
         this.model = model;
-        this.name = name;
+        name = bID.getName().asString().substring(2);
+        
+        IDProperty bProp = bID.getProperties().get();
+        properties = bProp != null ? new Property(bProp).properties : Collections.emptyList();
+    }
+    
+    public final Property getProperty(String name)
+    {
+        for (Property property : properties)
+            if (name.equals(property.name))
+                return property;
+        return null;
+    }
+    
+    public final List<Property> getSubproperties(String name)
+    {
+        Property prop = getProperty(name);
+        return prop != null ? prop.properties : Collections.emptyList();
     }
     
     void destroy()

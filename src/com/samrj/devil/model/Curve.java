@@ -19,7 +19,7 @@ public final class Curve extends DataBlock
     
     Curve(Model model, org.blender.dna.Curve bCurve) throws IOException
     {
-        super(model, bCurve.getId().getName().asString().substring(2));
+        super(model, bCurve.getId());
         
         splines = new ArrayList<>();
         for (Nurb bNurb : Blender.blendList(bCurve.getNurb(), Nurb.class))

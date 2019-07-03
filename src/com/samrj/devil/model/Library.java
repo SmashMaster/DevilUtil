@@ -11,7 +11,7 @@ public final class Library extends DataBlock
 {
     Library(Model model, org.blender.dna.Library bLib) throws IOException
     {
-        super(model, bLib.getId().getName().asString().substring(2));
+        super(model, bLib.getId());
         
         //Placeholder
     }

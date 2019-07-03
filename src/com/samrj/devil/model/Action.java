@@ -26,7 +26,7 @@ public final class Action extends DataBlock
     
     Action(Model model, bAction bAction) throws IOException
     {
-        super(model, bAction.getId().getName().asString().substring(2));
+        super(model, bAction.getId());
         
         fcurves = new ArrayList<>();
         float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY;

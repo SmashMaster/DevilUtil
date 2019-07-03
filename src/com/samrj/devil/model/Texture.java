@@ -1,8 +1,7 @@
 package com.samrj.devil.model;
 
-import com.samrj.devil.io.IOUtil;
-import java.io.DataInputStream;
 import java.io.IOException;
+import org.blender.dna.Tex;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -11,13 +10,8 @@ import java.io.IOException;
  */
 public class Texture extends DataBlock
 {
-    public final String filepath;
-    
-    Texture(Model model, int modelIndex, DataInputStream in) throws IOException
+    Texture(Model model, Tex bTex) throws IOException
     {
-        super(model, modelIndex, in);
-        
-        if (in.readInt() != 0) filepath = IOUtil.readPaddedUTF(in);
-        else filepath = null;
+        super(model, bTex.getId());
     }
 }

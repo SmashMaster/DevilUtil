@@ -18,7 +18,7 @@ public final class ArrayMap<T extends DataBlock> implements Iterable<T>
     {
     }
     
-    void put(String name, T data)
+    void put(T data)
     {
         list.add(data);
         map.put(data.name, data);

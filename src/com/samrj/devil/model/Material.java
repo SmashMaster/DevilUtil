@@ -18,7 +18,7 @@ public final class Material extends DataBlock
     
     Material(Model model, org.blender.dna.Material bMat) throws IOException
     {
-        super(model, bMat.getId().getName().asString().substring(2));
+        super(model, bMat.getId());
         
         diffuseColor = new Vec3(bMat.getR(), bMat.getG(), bMat.getB());
         specularColor = new Vec3(bMat.getSpecr(), bMat.getSpecg(), bMat.getSpecb()).mult(bMat.getSpec());
