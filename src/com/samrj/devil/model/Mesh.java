@@ -9,12 +9,16 @@ import com.samrj.devil.math.Vec3;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.IntFunction;
+import org.blender.dna.MDeformVert;
+import org.blender.dna.MFace;
 import org.blender.dna.MLoop;
 import org.blender.dna.MPoly;
 import org.blender.dna.MVert;
+import org.cakelab.blender.nio.CPointer;
 
 /**
  * DevilModel mesh.
@@ -39,7 +43,7 @@ public final class Mesh extends DataBlock
         }
     }
     
-    public final boolean hasNormals, hasTangents;
+    public final boolean hasTangents;
     public final int numGroups;
     public final boolean hasMaterials;
     
@@ -65,15 +69,39 @@ public final class Mesh extends DataBlock
     {
         super(model, bMesh.getId());
         
-        MPoly[] mPolys = bMesh.getMpoly().toArray(bMesh.getTotpoly());
-        MLoop[] mLoops = bMesh.getMloop().toArray(bMesh.getTotloop());
-        MVert[] mVerts = bMesh.getMvert().toArray(bMesh.getTotvert());
+        /**
+         * PREPARE MESH DATA
+         */
         
+        materials = new ArrayList<>();
+        Map<Integer, Integer> materialIndexMap = new HashMap<>();
+        CPointer<org.blender.dna.Material>[] mats = bMesh.getMat().toArray(bMesh.getTotcol());
+        if (mats != null)
+        {
+            int blenderMatIndex = 0;
+            for (CPointer<org.blender.dna.Material> ptr : mats)
+            {
+                if (!ptr.isNull())
+                {
+                    int matIndex = materials.size();
+                    String matName = ptr.get().getId().getName().asString().substring(2);
+                    materials.add(new DataPointer<>(model, Type.MATERIAL, matName));
+                    materialIndexMap.put(blenderMatIndex, matIndex);
+                }
+                blenderMatIndex++;
+            }
+        }
+        
+        MVert[] mVerts = bMesh.getMvert().toArray(bMesh.getTotvert());
         Vec3[] verts = new Vec3[mVerts.length];
         for (int i=0; i<mVerts.length; i++) verts[i] = Blender.vec3(mVerts[i].getCo());
+        Vec3[] normals = new Vec3[mVerts.length];
+        for (int i=0; i<mVerts.length; i++) normals[i] = Blender.normal(mVerts[i].getNo());
         
-//        System.out.println(name + " " + mPolys.length + " " + mLoops.length + " " + mVerts.length);
+        MLoop[] mLoops = bMesh.getMloop().toArray(bMesh.getTotloop());
+        Vec3[] loopNormals = new Vec3[mLoops.length];
         
+        MPoly[] mPolys = bMesh.getMpoly().toArray(bMesh.getTotpoly());
         List<LoopTri> loopTris = new ArrayList<>();
         
         for (int iPoly=0; iPoly<mPolys.length; iPoly++)
@@ -84,6 +112,26 @@ public final class Mesh extends DataBlock
             int count = mPoly.getTotloop();
             int end = start + count;
             
+            //Calculate normal by Newell's method
+            Vec3 normal = new Vec3();
+            for (int i0=start; i0<end; i0++)
+            {
+                int i1 = i0 + 1;
+                if (i1 == end) i1 = start;
+
+                Vec3 v0 = verts[mLoops[i0].getV()];
+                Vec3 v1 = verts[mLoops[i1].getV()];
+
+                normal.x += (v0.y - v1.y)*(v0.z + v1.z);
+                normal.y += (v0.z - v1.z)*(v0.x + v1.x);
+                normal.z += (v0.x - v1.x)*(v0.y + v1.y);
+            }
+            
+            float nrmLen = normal.length();
+            if (nrmLen == 0.0f) normal.z = 1.0f;
+            else normal.div(nrmLen);
+            
+            //Triangulate the face
             if (count < 3) {} //Degenerate poly
             else if (count == 3) //Single triangle poly
             {
@@ -114,27 +162,9 @@ public final class Mesh extends DataBlock
                     loopTris.add(new LoopTri(iPoly, start, 0, 2, 3));
                 }
             }
-            else
+            else //Need to triangulate by ear clipping
             {
-                //Calculate normal by Newell's method
-                Vec3 normal = new Vec3();
-                for (int i0=start; i0<end; i0++)
-                {
-                    int i1 = i0 + 1;
-                    if (i1 == end) i1 = start;
-                    
-                    Vec3 v0 = verts[mLoops[i0].getV()];
-                    Vec3 v1 = verts[mLoops[i1].getV()];
-                    
-                    normal.x += (v0.y - v1.y)*(v0.z + v1.z);
-                    normal.y += (v0.z - v1.z)*(v0.x + v1.x);
-                    normal.z += (v0.x - v1.x)*(v0.y + v1.y);
-                }
-                
                 //Make a matrix for projection to 2D
-                float nrmLen = normal.length();
-                if (nrmLen == 0.0f) normal.z = 1.0f;
-                else normal.div(nrmLen);
                 Mat3 basis = Blender.orthogBasis(normal);
                 
                 double[] projData = new double[count*2];
@@ -160,12 +190,33 @@ public final class Mesh extends DataBlock
                     loopTris.add(new LoopTri(iPoly, start, a, b, c));
                 }
             }
+            
+            //Store normals
+            boolean isSmooth = (mPoly.getFlag() & 1) != 0;
+            if (isSmooth)
+                for (int i=start; i<end; i++)
+                    loopNormals[i] = normals[mLoops[i].getV()];
+            else for (int i=start; i<end; i++)
+                    loopNormals[i] = normal;
         }
         
-        numVertices = verts.length;
+        int maxGroups = -1;
+        CPointer<MDeformVert> dVertPtr = bMesh.getDvert();
+        if (!dVertPtr.isNull())
+        {
+            MDeformVert[] dVerts = dVertPtr.toArray(mVerts.length);
+            
+            for (int i=0; i<mVerts.length; i++)
+                maxGroups = Math.max(maxGroups, dVerts[i].getTotweight());
+        }
+        
+        /**
+         * CALCULATE BUFFER POINTERS
+         */
+        
+        numVertices = mLoops.length;
         numTriangles = loopTris.size();
         
-        hasNormals = false;
         hasTangents = false;
         numGroups = 0;
         hasMaterials = false;
@@ -179,7 +230,7 @@ public final class Mesh extends DataBlock
         
         //Normals
         normalOffset = intOffset*4;
-        if (hasNormals) intOffset += numVertices*3;
+        intOffset += numVertices*3;
         
         //UVs
         uvOffsets = new int[uvLayers.length];
@@ -213,15 +264,77 @@ public final class Mesh extends DataBlock
         materialOffset = intOffset*4;
         if (hasMaterials) intOffset += numVertices;
         
+        /**
+         * ALLOCATE AND FILL BUFFERS
+         */
+        
         vertexBlock = numVertices != 0 ? new Memory(intOffset*4) : null;
         vertexData = numVertices != 0 ? vertexBlock.buffer : null;
-        for (Vec3 vert : verts)
+        if (vertexData != null)
         {
-            vertexData.putFloat(vert.x);
-            vertexData.putFloat(vert.y);
-            vertexData.putFloat(vert.z);
+            vertexData.position(positionOffset);
+            for (int i=0; i<numVertices; i++)
+            {
+                Vec3 vert = verts[mLoops[i].getV()];
+                
+                vertexData.putFloat(vert.x);
+                vertexData.putFloat(vert.y);
+                vertexData.putFloat(vert.z);
+            }
+            
+            vertexData.position(normalOffset);
+            for (int i=0; i<numVertices; i++)
+            {
+                Vec3 normal = loopNormals[i];
+                if (normal != null)
+                {
+                    vertexData.putFloat(normal.x);
+                    vertexData.putFloat(normal.y);
+                    vertexData.putFloat(normal.z);
+                }
+                else
+                {
+                    vertexData.putFloat(0.0f);
+                    vertexData.putFloat(0.0f);
+                    vertexData.putFloat(0.0f);
+                }
+            }
+            
+            for (int layer=0; layer<uvLayers.length; layer++)
+            {
+                vertexData.position(uvOffsets[layer]);
+                //put uvs
+            }
+            
+            if (hasTangents)
+            {
+                vertexData.position(tangentOffset);
+                //put tangents
+            }
+            
+            for (int layer=0; layer<colorLayers.length; layer++)
+            {
+                vertexData.position(colorOffsets[layer]);
+                //put colors
+            }
+            
+            if (numGroups > 0)
+            {
+                vertexData.position(groupIndexOffset);
+                //put group indices
+                
+                vertexData.position(groupWeightOffset);
+                //put group weights
+            }
+            
+            if (hasMaterials)
+            {
+                vertexData.position(materialOffset);
+                //put materials
+            }
+            
+            vertexData.rewind();
         }
-        vertexData.rewind();
         
         int triangleIndexInts = numTriangles*3;
         indexBlock = numTriangles != 0 ? new Memory(triangleIndexInts*4) : null;
@@ -230,35 +343,12 @@ public final class Mesh extends DataBlock
         {
             for (LoopTri loopTri : loopTris)
             {
-                int ia = mLoops[loopTri.va].getV();
-                int ib = mLoops[loopTri.vb].getV();
-                int ic = mLoops[loopTri.vc].getV();
-                
-                indexData.putInt(ia);
-                indexData.putInt(ib);
-                indexData.putInt(ic);
+                indexData.putInt(loopTri.va);
+                indexData.putInt(loopTri.vb);
+                indexData.putInt(loopTri.vc);
             }
             indexData.rewind();
         }
-        
-//        if (hasMaterials && vertexData != null)
-//        {
-//            Set<Integer> matIndices = new HashSet<>();
-//            List<DataPointer<Material>> matList = new ArrayList<>();
-//            vertexData.position(materialOffset);
-//            for (int i=0; i<numVertices; i++)
-//            {
-//                int matIndex = vertexData.getInt();
-//                if (matIndex < 0) continue;
-//                if (matIndices.add(matIndex))
-//                    matList.add(new DataPointer(model, Type.MATERIAL, matIndex));
-//            }
-//            materials = Collections.unmodifiableList(matList);
-//        }
-//        else
-            materials = Collections.EMPTY_LIST;
-        
-        if (vertexData != null) vertexData.rewind();
     }
     
     /**
@@ -285,10 +375,10 @@ public final class Mesh extends DataBlock
         
         vertexData.rewind();
         for (MeshVertex v : vertices) v.position.read(vertexData);
-        if (hasNormals) for (MeshVertex v : vertices) v.normal.read(vertexData);
+        for (MeshVertex v : vertices) v.normal.read(vertexData);
         for (int uv=0; uv<uvLayers.length; uv++)
             for (MeshVertex v : vertices) v.uvs[uv].read(vertexData);
-        if (hasTangents) if (hasNormals) for (MeshVertex v : vertices) v.tangent.read(vertexData);
+        if (hasTangents) for (MeshVertex v : vertices) v.tangent.read(vertexData);
         for (int color=0; color<colorLayers.length; color++)
             for (MeshVertex v : vertices) v.colors[color].read(vertexData);
         for (int i=0; i<numGroups; i++) for (MeshVertex v : vertices)
@@ -344,7 +434,7 @@ public final class Mesh extends DataBlock
     public class MeshVertex implements Vertex3
     {
         public final Vec3 position = new Vec3();
-        public final Vec3 normal;
+        public final Vec3 normal = new Vec3();
         public final Vec2[] uvs;
         public final Vec3 tangent;
         public final Vec3[] colors;
@@ -354,7 +444,6 @@ public final class Mesh extends DataBlock
 
         private MeshVertex()
         {
-            normal = hasNormals ? new Vec3() : null;
             uvs = new Vec2[uvLayers.length];
             for (int i=0; i<uvs.length; i++) uvs[i] = new Vec2();
             tangent = hasTangents ? new Vec3() : null;

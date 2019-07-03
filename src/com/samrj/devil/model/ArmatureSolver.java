@@ -65,9 +65,9 @@ public final class ArmatureSolver
         Armature armature = object.data.get();
         
         bones = IOUtil.mapList(armature.bones, BoneSolver::new);
-        bones.forEach(BoneSolver::populate);
         nameMap = new HashMap<>(bones.size());
         bones.forEach(bone -> nameMap.put(bone.bone.name, bone));
+        bones.forEach(BoneSolver::populate);
         
         ikConstraints = IOUtil.mapList(object.ikConstraints, ikDef -> new IKConstraint(ikDef, this));
         constraints = new LinkedList<>();
@@ -186,6 +186,7 @@ public final class ArmatureSolver
         
         private BoneSolver(Bone bone)
         {
+            if (bone == null) throw new NullPointerException();
             this.bone = bone;
             poseTransform = Transform.identity();
             finalTransform = Transform.identity();

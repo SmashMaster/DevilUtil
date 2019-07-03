@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 import org.blender.dna.TimeMarker;
 import org.blender.dna.bAction;
@@ -43,7 +44,10 @@ public final class Action extends DataBlock
         markers = new ArrayList<>();
         for (TimeMarker bMarker : Blender.list(bAction.getMarkers(), TimeMarker.class))
         {
-            markers.add(new Marker(bMarker));
+            float frame = bMarker.getFrame();
+            String[] markerNames = bMarker.getName().asString().split("\\+");
+            for (String markerName : markerNames)
+                markers.add(new Marker(frame, markerName.trim()));
         }
         
         markerMap = new HashMap<>(markers.size());
@@ -82,6 +86,13 @@ public final class Action extends DataBlock
         return markerMap.get(name);
     }
     
+    public Marker requireMarker(String name)
+    {
+        Marker marker = markerMap.get(name);
+        if (marker == null) throw new NoSuchElementException(name);
+        return marker;
+    }
+    
     public Stream<Marker> passMarkers(float start, float end)
     {
         if (end == start) return Stream.of();
@@ -95,13 +106,13 @@ public final class Action extends DataBlock
     
     public class Marker
     {
-        public final String name;
         public final float frame;
+        public final String name;
         
-        private Marker(TimeMarker bMarker) throws IOException
+        private Marker(float frame, String name) throws IOException
         {
-            name = bMarker.getName().asString();
-            frame = bMarker.getFrame();
+            this.frame = frame;
+            this.name = name;
         }
         
         @Override

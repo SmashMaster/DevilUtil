@@ -94,6 +94,12 @@ class Blender
         return new Vec3(v[1], v[2], v[0]);
     }
     
+    static Vec3 normal(CArrayFacade<Short> facade) throws IOException
+    {
+        short[] nrm = facade.toShortArray(3);
+        return new Vec3(nrm[1], nrm[2], nrm[0]).div(32768.0f);
+    }
+    
     static Quat quat(CArrayFacade<Float> facade) throws IOException
     {
         float[] q = facade.toFloatArray(4);
@@ -126,7 +132,6 @@ class Blender
      */
     static void orthogBasis(Vec3 n, Mat3 result)
     {
-        n = Vec3.negate(n);
         float len = n.length();
 
         if (len != 0)

@@ -142,8 +142,8 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
             String parentName = bParent.getId().getName().asString().substring(2);
             parent = new DataPointer<>(model, Type.OBJECT, parentName);
             
-            if (bParent.getPartype() == 7)
-                parentBoneName = bParent.getParsubstr().asString();
+            if (bObject.getPartype() == 7)
+                parentBoneName = bObject.getParsubstr().asString();
             else parentBoneName = null;
             
             parentMatrix = Blender.mat4(bObject.getParentinv());

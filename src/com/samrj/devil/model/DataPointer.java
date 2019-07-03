@@ -87,4 +87,10 @@ public final class DataPointer<T extends DataBlock>
     {
         return get() == null;
     }
+
+    @Override
+    public String toString()
+    {
+        return type + ":" + name;
+    }
 }

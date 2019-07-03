@@ -61,7 +61,7 @@ public class MeshDrawer implements VertexData
         
         //Set up attributes.
         position = new Attribute(VEC3, mesh.positionOffset, true);
-        normal = new Attribute(VEC3, mesh.normalOffset, mesh.hasNormals);
+        normal = new Attribute(VEC3, mesh.normalOffset, true);
         uvs = new HashMap<>();
         for (int i=0; i<mesh.uvLayers.length; i++)
         {

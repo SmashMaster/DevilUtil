@@ -293,9 +293,8 @@ public class FCurve
                 default: interpolation = Interpolation.LINEAR; break;
             }
             
-            CArrayFacade<Float>[] vecf = bezt.getVec().toArray();
             float[][] vec = new float[3][];
-            for (int i=0; i<3; i++) vec[i] = vecf[i].toFloatArray();
+            for (int i=0; i<3; i++) vec[i] = bezt.getVec().get(i).toFloatArray(3);
             
             left = new Vec2(vec[0][0], vec[0][1]);
             co = new Vec2(vec[1][0], vec[1][1]);
