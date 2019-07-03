@@ -10,9 +10,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.IntFunction;
 import org.blender.dna.MLoop;
 import org.blender.dna.MPoly;
@@ -71,12 +69,12 @@ public final class Mesh extends DataBlock
         MLoop[] mLoops = bMesh.getMloop().toArray(bMesh.getTotloop());
         MVert[] mVerts = bMesh.getMvert().toArray(bMesh.getTotvert());
         
-        Vec3[] vertPos = new Vec3[mVerts.length];
-        for (int i=0; i<mVerts.length; i++) vertPos[i] = Blender.vec3(mVerts[i].getCo());
+        Vec3[] verts = new Vec3[mVerts.length];
+        for (int i=0; i<mVerts.length; i++) verts[i] = Blender.vec3(mVerts[i].getCo());
         
 //        System.out.println(name + " " + mPolys.length + " " + mLoops.length + " " + mVerts.length);
         
-        List<LoopTri> tris = new ArrayList<>();
+        List<LoopTri> loopTris = new ArrayList<>();
         
         for (int iPoly=0; iPoly<mPolys.length; iPoly++)
         {
@@ -89,14 +87,14 @@ public final class Mesh extends DataBlock
             if (count < 3) {} //Degenerate poly
             else if (count == 3) //Single triangle poly
             {
-                tris.add(new LoopTri(iPoly, start, 0, 1, 2));
+                loopTris.add(new LoopTri(iPoly, start, 0, 1, 2));
             }
             else if (count == 4) //Quad; can be split into two tris, but might be concave.
             {
-                Vec3 v0 = vertPos[mLoops[start].getV()];
-                Vec3 v1 = vertPos[mLoops[start + 1].getV()];
-                Vec3 v2 = vertPos[mLoops[start + 2].getV()];
-                Vec3 v3 = vertPos[mLoops[start + 3].getV()];
+                Vec3 v0 = verts[mLoops[start].getV()];
+                Vec3 v1 = verts[mLoops[start + 1].getV()];
+                Vec3 v2 = verts[mLoops[start + 2].getV()];
+                Vec3 v3 = verts[mLoops[start + 3].getV()];
                 
                 Vec3 e01 = Vec3.sub(v1, v0);
                 Vec3 e02 = Vec3.sub(v2, v0);
@@ -107,13 +105,13 @@ public final class Mesh extends DataBlock
                 
                 if (crossA.dot(crossB) > 0.0f)
                 {
-                    tris.add(new LoopTri(iPoly, start, 0, 1, 3));
-                    tris.add(new LoopTri(iPoly, start, 1, 2, 3));
+                    loopTris.add(new LoopTri(iPoly, start, 0, 1, 3));
+                    loopTris.add(new LoopTri(iPoly, start, 1, 2, 3));
                 }
                 else
                 {
-                    tris.add(new LoopTri(iPoly, start, 0, 1, 2));
-                    tris.add(new LoopTri(iPoly, start, 0, 2, 3));
+                    loopTris.add(new LoopTri(iPoly, start, 0, 1, 2));
+                    loopTris.add(new LoopTri(iPoly, start, 0, 2, 3));
                 }
             }
             else
@@ -125,8 +123,8 @@ public final class Mesh extends DataBlock
                     int i1 = i0 + 1;
                     if (i1 == end) i1 = start;
                     
-                    Vec3 v0 = vertPos[mLoops[i0].getV()];
-                    Vec3 v1 = vertPos[mLoops[i1].getV()];
+                    Vec3 v0 = verts[mLoops[i0].getV()];
+                    Vec3 v1 = verts[mLoops[i1].getV()];
                     
                     normal.x += (v0.y - v1.y)*(v0.z + v1.z);
                     normal.y += (v0.z - v1.z)*(v0.x + v1.x);
@@ -143,7 +141,7 @@ public final class Mesh extends DataBlock
                 
                 for (int i=0; i<count; i++)
                 {
-                    Vec3 v = vertPos[mLoops[start + i].getV()];
+                    Vec3 v = verts[mLoops[start + i].getV()];
                     Vec3 projected = Vec3.mult(v, basis);
                     
                     projData[i*2] = projected.x;
@@ -155,32 +153,25 @@ public final class Mesh extends DataBlock
                 
                 for (int i=0; i<triangulated.size();)
                 {
-                    int a = triangulated.get(i++) + start;
-                    int b = triangulated.get(i++) + start;
-                    int c = triangulated.get(i++) + start;
+                    int a = triangulated.get(i++);
+                    int b = triangulated.get(i++);
+                    int c = triangulated.get(i++);
                     
-                    tris.add(new LoopTri(iPoly, start, a, b, c));
+                    loopTris.add(new LoopTri(iPoly, start, a, b, c));
                 }
             }
         }
         
+        numVertices = verts.length;
+        numTriangles = loopTris.size();
         
-        
-//        System.out.println(tris.size() + " triangles");
-        
-        int flags = 0;
-        hasNormals = (flags & 1) != 0;
-        hasTangents = (flags & 2) != 0;
-        boolean hasGroups = (flags & 4) != 0;
-        hasMaterials = (flags & 8) != 0;
+        hasNormals = false;
+        hasTangents = false;
+        numGroups = 0;
+        hasMaterials = false;
         
         uvLayers = new String[0];
         colorLayers = new String[0];
-        
-        numGroups = 0;
-        numVertices = 0;
-        
-        //The order and length of vertex data is defined by io_mesh_dvm.
         
         //Positions
         positionOffset = 0;
@@ -212,41 +203,60 @@ public final class Mesh extends DataBlock
         
         //Group indices
         groupIndexOffset = intOffset*4;
-        if (hasGroups) intOffset += numVertices*numGroups;
+        intOffset += numVertices*numGroups;
         
         //Group weights
         groupWeightOffset = intOffset*4;
-        if (hasGroups) intOffset += numVertices*numGroups;
+        intOffset += numVertices*numGroups;
         
         //Material indices
         materialOffset = intOffset*4;
         if (hasMaterials) intOffset += numVertices;
         
-        vertexBlock = null;
-        vertexData = null;
+        vertexBlock = numVertices != 0 ? new Memory(intOffset*4) : null;
+        vertexData = numVertices != 0 ? vertexBlock.buffer : null;
+        for (Vec3 vert : verts)
+        {
+            vertexData.putFloat(vert.x);
+            vertexData.putFloat(vert.y);
+            vertexData.putFloat(vert.z);
+        }
+        vertexData.rewind();
         
-        numTriangles = 0;
         int triangleIndexInts = numTriangles*3;
         indexBlock = numTriangles != 0 ? new Memory(triangleIndexInts*4) : null;
         indexData = numTriangles != 0 ? indexBlock.buffer : null;
-        
-        if (indexData != null) indexData.rewind();
-        
-        if (hasMaterials && vertexData != null)
+        if (indexData != null)
         {
-            Set<Integer> matIndices = new HashSet<>();
-            List<DataPointer<Material>> matList = new ArrayList<>();
-            vertexData.position(materialOffset);
-            for (int i=0; i<numVertices; i++)
+            for (LoopTri loopTri : loopTris)
             {
-                int matIndex = vertexData.getInt();
-                if (matIndex < 0) continue;
+                int ia = mLoops[loopTri.va].getV();
+                int ib = mLoops[loopTri.vb].getV();
+                int ic = mLoops[loopTri.vc].getV();
+                
+                indexData.putInt(ia);
+                indexData.putInt(ib);
+                indexData.putInt(ic);
+            }
+            indexData.rewind();
+        }
+        
+//        if (hasMaterials && vertexData != null)
+//        {
+//            Set<Integer> matIndices = new HashSet<>();
+//            List<DataPointer<Material>> matList = new ArrayList<>();
+//            vertexData.position(materialOffset);
+//            for (int i=0; i<numVertices; i++)
+//            {
+//                int matIndex = vertexData.getInt();
+//                if (matIndex < 0) continue;
 //                if (matIndices.add(matIndex))
 //                    matList.add(new DataPointer(model, Type.MATERIAL, matIndex));
-            }
-            materials = Collections.unmodifiableList(matList);
-        }
-        else materials = Collections.EMPTY_LIST;
+//            }
+//            materials = Collections.unmodifiableList(matList);
+//        }
+//        else
+            materials = Collections.EMPTY_LIST;
         
         if (vertexData != null) vertexData.rewind();
     }
