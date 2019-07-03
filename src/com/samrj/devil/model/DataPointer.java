@@ -14,7 +14,6 @@ public final class DataPointer<T extends DataBlock>
     
     private final Model model;
     private final String name;
-    private final int index;
     
     private T data;
     private boolean dirty = true;
@@ -23,13 +22,7 @@ public final class DataPointer<T extends DataBlock>
     {
         this.model = model;
         this.name = name;
-        index = -1;
         this.type = type;
-    }
-    
-    DataPointer(Model model, int typeID, String name)
-    {
-        this(model, DataBlock.getType(typeID), name);
     }
     
     /**
@@ -41,8 +34,7 @@ public final class DataPointer<T extends DataBlock>
         {
             ArrayMap<T> array = model.get(type);
             
-            if (name != null) data = array.get(name);
-            else if (index >= 0) data = array.get(index);
+            if (array != null && name != null) data = array.get(name);
             else data = null;
             
             dirty = false;

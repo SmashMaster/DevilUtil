@@ -1,6 +1,5 @@
 package com.samrj.devil.model.constraint;
 
-import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Util;
@@ -8,7 +7,6 @@ import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.topo.DAG;
 import com.samrj.devil.model.ArmatureSolver;
 import com.samrj.devil.model.ArmatureSolver.BoneSolver;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Set;
 
@@ -120,12 +118,12 @@ public class IKConstraint implements ArmatureSolver.Constraint
         public final String poleName;
         public final float poleAngle;
         
-        public IKDefinition(DataInputStream in) throws IOException
+        public IKDefinition(String boneName, String targetName, String poleName, float poleAngle) throws IOException
         {
-            boneName = IOUtil.readPaddedUTF(in);
-            targetName = IOUtil.readPaddedUTF(in);
-            poleName = IOUtil.readPaddedUTF(in);
-            poleAngle = in.readFloat();
+            this.boneName = boneName;
+            this.targetName = targetName;
+            this.poleName = poleName;
+            this.poleAngle = poleAngle;
         }
     }
 }

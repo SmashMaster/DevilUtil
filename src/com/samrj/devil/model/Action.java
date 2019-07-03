@@ -30,7 +30,7 @@ public final class Action extends DataBlock
         
         fcurves = new ArrayList<>();
         float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY;
-        for (org.blender.dna.FCurve bfCurve : Blender.blendList(bAction.getCurves(), org.blender.dna.FCurve.class))
+        for (org.blender.dna.FCurve bfCurve : Blender.list(bAction.getCurves(), org.blender.dna.FCurve.class))
         {
             FCurve fCurve = new FCurve(bfCurve);
             fcurves.add(new FCurve(bfCurve));
@@ -41,7 +41,7 @@ public final class Action extends DataBlock
         minX = min; maxX = max;
         
         markers = new ArrayList<>();
-        for (TimeMarker bMarker : Blender.blendList(bAction.getMarkers(), TimeMarker.class))
+        for (TimeMarker bMarker : Blender.list(bAction.getMarkers(), TimeMarker.class))
         {
             markers.add(new Marker(bMarker));
         }

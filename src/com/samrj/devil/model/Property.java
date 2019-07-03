@@ -53,7 +53,7 @@ public final class Property
                 break;
             case 6:
                 type = Type.GROUP;
-                for (IDProperty subBProp : Blender.blendList(data.getGroup(), IDProperty.class))
+                for (IDProperty subBProp : Blender.list(data.getGroup(), IDProperty.class))
                     properties.add(new Property(subBProp));
                 break;
             case 7:

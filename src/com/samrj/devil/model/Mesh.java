@@ -1,6 +1,6 @@
 package com.samrj.devil.model;
 
-import com.samrj.devil.geo3d.Earcut;
+import com.samrj.devil.geo2d.Earcut;
 import com.samrj.devil.geo3d.Vertex3;
 import com.samrj.devil.io.Memory;
 import com.samrj.devil.math.Mat3;

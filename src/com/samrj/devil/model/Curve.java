@@ -22,7 +22,7 @@ public final class Curve extends DataBlock
         super(model, bCurve.getId());
         
         splines = new ArrayList<>();
-        for (Nurb bNurb : Blender.blendList(bCurve.getNurb(), Nurb.class))
+        for (Nurb bNurb : Blender.list(bCurve.getNurb(), Nurb.class))
             splines.add(new Spline(bNurb));
     }
     

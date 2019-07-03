@@ -1,20 +1,24 @@
 package com.samrj.devil.model;
 
-import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Mat4;
+import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Transform;
+import com.samrj.devil.math.Vec3;
 import com.samrj.devil.model.constraint.IKConstraint.IKDefinition;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.blender.dna.BlenderObject;
-import org.blender.dna.IDProperty;
-import org.cakelab.blender.nio.CPointer;
+import org.blender.dna.bAction;
+import org.blender.dna.bArmature;
+import org.blender.dna.bConstraint;
+import org.blender.dna.bDeformGroup;
+import org.blender.dna.bKinematicConstraint;
+import org.blender.dna.bPose;
+import org.blender.dna.bPoseChannel;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -31,16 +35,16 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
     
     public final Scene scene;
     public final Map<String, String> arguments;
-//    public final Transform transform;
-//    public final List<String> vertexGroups;
-//    public final Pose pose;
-//    public final List<IKDefinition> ikConstraints;
-//    public final DataPointer<DATA_TYPE> data;
-//    public final DataPointer<ModelObject<?>> parent;
-//    public final String parentBoneName;
-//    public final Mat4 parentMatrix;
-//    public final DataPointer<Action> action;
-//    public final EmptyType emptyType;
+    public final Transform transform;
+    public final List<String> vertexGroups;
+    public final Pose pose;
+    public final List<IKDefinition> ikConstraints;
+    public final DataPointer<DATA_TYPE> data;
+    public final DataPointer<ModelObject<?>> parent;
+    public final String parentBoneName;
+    public final Mat4 parentMatrix;
+    public final DataPointer<Action> action;
+    public final EmptyType emptyType;
     
     ModelObject(Model model, Scene scene, BlenderObject bObject) throws IOException
     {
@@ -56,34 +60,132 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
             arguments.put(pName, pValue);
         }
         
-//        int dataType = in.readInt();
-//        int dataLibIndex = dataType >= 0 ? in.readInt() : -1;
-//        int dataIndex = dataType >= 0 && dataLibIndex < 0 ? in.readInt() : -1;
-//        if (dataLibIndex >= 0) IOUtil.readPaddedUTF(in); //Data library name
-//        data = new DataPointer(model, dataType, dataIndex);
-//        int parentIndex = in.readInt();
-//        parent = new DataPointer<>(model, Type.OBJECT, parentIndex);
-//        parentMatrix = parentIndex >= 0 ? new Mat4(in) : null;
-//        parentBoneName = (parentIndex >= 0 && in.readInt() != 0) ? IOUtil.readPaddedUTF(in) : null;
-//        
-//        transform = new Transform(in);
-//        vertexGroups = IOUtil.listFromStream(in, IOUtil::readPaddedUTF);
-//        boolean hasPose = in.readInt() != 0;
-//        if (hasPose)
-//        {
-//            pose = new Pose(in);
-//            ikConstraints = IOUtil.listFromStream(in, IKDefinition::new);
-//        }
-//        else
-//        {
-//            pose = null;
-//            ikConstraints = Collections.emptyList();
-//        }
-//        
-//        action = new DataPointer<>(model, Type.ACTION, in.readInt());
-//        
-//        int emptyTypeID = in.readInt();
-//        emptyType = emptyTypeID >= 0 ? EmptyType.values()[emptyTypeID] : null;
+        Vec3 pos = Blender.vec3(bObject.getLoc());
+        Quat rot = Blender.quat(bObject.getQuat());
+        Vec3 sca = Blender.vec3(bObject.getSize());
+        transform = new Transform(pos, rot, sca);
+        
+        vertexGroups = new ArrayList<>();
+        for (bDeformGroup group : Blender.list(bObject.getDefbase(), bDeformGroup.class))
+            vertexGroups.add(group.getName().asString());
+        
+        bPose bPose = bObject.getPose().get();
+        ikConstraints = new ArrayList<>();
+        if (bPose != null)
+        {
+            pose = new Pose(bPose);
+            
+            for (bPoseChannel bChan : Blender.list(bPose.getChanbase(), bPoseChannel.class))
+                for (bConstraint bCons : Blender.list(bChan.getConstraints(), bConstraint.class))
+            {
+                if (bCons.getType() != 3) continue;
+                bKinematicConstraint bIK = bCons.getData().cast(bKinematicConstraint.class).get();
+                
+                if (bIK.getRootbone() != 2) continue; //Only support 2-bone IK at this time
+                
+                BlenderObject target = bIK.getTar().get();
+                String subtarget = bIK.getSubtarget().asString();
+                if (target == null || subtarget.isEmpty()) continue;
+                
+                BlenderObject poleTarget = bIK.getPoletar().get();
+                String poleSubtarget = bIK.getPolesubtarget().asString();
+                if (poleTarget == null || poleSubtarget.isEmpty()) continue;
+                
+                String bone = bChan.getName().asString();
+                ikConstraints.add(new IKDefinition(bone, subtarget, poleSubtarget, bIK.getPoleangle()));
+            }
+        }
+        else pose = null;
+        
+        Type dataType = null;
+        String dataName = null;
+        switch (bObject.getType())
+        {
+            case 1:
+                dataType = Type.MESH;
+                org.blender.dna.Mesh bMesh = bObject.getData().cast(org.blender.dna.Mesh.class).get();
+                dataName = bMesh.getId().getName().asString().substring(2);
+                break;
+            case 2:
+                dataType = Type.CURVE;
+                org.blender.dna.Curve bCurve = bObject.getData().cast(org.blender.dna.Curve.class).get();
+                dataName = bCurve.getId().getName().asString().substring(2);
+                break;
+            case 10:
+                dataType = Type.LAMP;
+                org.blender.dna.Lamp bLamp = bObject.getData().cast(org.blender.dna.Lamp.class).get();
+                dataName = bLamp.getId().getName().asString().substring(2);
+                break;
+            case 25:
+                dataType = Type.ARMATURE;
+                bArmature bArmature = bObject.getData().cast(bArmature.class).get();
+                dataName = bArmature.getId().getName().asString().substring(2);
+                break;
+                
+            //Unimplemented types:
+            case 3: //surf
+            case 4: //font
+            case 5: //mball
+            case 11: //camera
+            case 12: //speaker
+            case 22: //lattice
+                
+            case 0: //empty
+            default:
+                break;
+        }
+        data = new DataPointer<>(model, dataType, dataName);
+        
+        BlenderObject bParent = bObject.getParent().get();
+        if (bParent != null)
+        {
+            String parentName = bParent.getId().getName().asString().substring(2);
+            parent = new DataPointer<>(model, Type.OBJECT, parentName);
+            
+            if (bParent.getPartype() == 7)
+                parentBoneName = bParent.getParsubstr().asString();
+            else parentBoneName = null;
+            
+            parentMatrix = Blender.mat4(bObject.getParentinv());
+        }
+        else
+        {
+            parent = new DataPointer<>(model, null, null);
+            parentBoneName = null;
+            parentMatrix = null;
+        }
+        
+        bAction bAction = bObject.getAction().get();
+        if (bAction != null)
+        {
+            String actionName = bAction.getId().getName().asString().substring(2);
+            action = new DataPointer<>(model, Type.ACTION, actionName);
+        }
+        else action = new DataPointer<>(model, null, null);
+        
+        switch(bObject.getEmpty_drawtype())
+        {
+            case 2:
+                emptyType = EmptyType.AXES;
+                break;
+            case 5:
+                emptyType = EmptyType.CUBE;
+                break;
+            case 6:
+                emptyType = EmptyType.SPHERE;
+                break;
+                
+            //Unimplemented types:
+            case 1: //arrows
+            case 3: //circle
+            case 4: //single arrow
+            case 7: //cone
+            case 8: //image
+                
+            default:
+                emptyType = null;
+                break;
+        }
     }
     
     public <T extends DataBlock> ModelObject<T> asType(Class<T> typeClass)

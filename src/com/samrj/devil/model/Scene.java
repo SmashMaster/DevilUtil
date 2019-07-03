@@ -1,8 +1,8 @@
 package com.samrj.devil.model;
 
 import java.io.IOException;
-import org.blender.dna.BlenderObject;
 import org.blender.dna.Base;
+import org.blender.dna.BlenderObject;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -18,7 +18,7 @@ public final class Scene extends DataBlock
         super(model, bScene.getId());
         
         objects = new ArrayMap<>();
-        for (Base base : Blender.blendList(bScene.getBase(), Base.class))
+        for (Base base : Blender.list(bScene.getBase(), Base.class))
         {
             BlenderObject bObject = base.getObject().get();
             objects.put(new ModelObject<>(model, this, bObject));

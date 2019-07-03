@@ -28,7 +28,7 @@ public final class Armature extends DataBlock
         
         bones = new ArrayList<>();
         nameMap = new HashMap<>();
-        for (org.blender.dna.Bone bBone : Blender.blendList(bArm.getBonebase(), org.blender.dna.Bone.class))
+        for (org.blender.dna.Bone bBone : Blender.list(bArm.getBonebase(), org.blender.dna.Bone.class))
         {
             Bone bone = new Bone(null, bBone);
             recursiveAdd(bone, bBone);
@@ -39,7 +39,7 @@ public final class Armature extends DataBlock
     
     private void recursiveAdd(Bone bone, org.blender.dna.Bone bBone) throws IOException
     {
-        for (org.blender.dna.Bone bChild : Blender.blendList(bBone.getChildbase(), org.blender.dna.Bone.class))
+        for (org.blender.dna.Bone bChild : Blender.list(bBone.getChildbase(), org.blender.dna.Bone.class))
         {
             Bone child = new Bone(bone, bChild);
             recursiveAdd(child, bChild);

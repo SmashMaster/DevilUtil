@@ -16,7 +16,7 @@
  * THIS SOFTWARE.
  */
 
-package com.samrj.devil.geo3d;
+package com.samrj.devil.geo2d;
 
 import java.util.ArrayList;
 import java.util.Comparator;

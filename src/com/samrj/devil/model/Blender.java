@@ -2,6 +2,7 @@ package com.samrj.devil.model;
 
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
+import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Vec3;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -15,7 +16,7 @@ import org.cakelab.blender.nio.CPointer;
 
 class Blender
 {
-    static <T extends CFacade> List<T> blendList(T first) throws IOException
+    static <T extends CFacade> List<T> list(T first) throws IOException
     {
         ArrayList<T> result = new ArrayList<>();
         if (first == null) return new ArrayList<>();
@@ -42,7 +43,7 @@ class Blender
         return result;
     }
     
-    static <T extends CFacade> List<T> blendList(ListBase base, Class<T> cls) throws IOException
+    static <T extends CFacade> List<T> list(ListBase base, Class<T> cls) throws IOException
     {
         ArrayList<T> result = new ArrayList<>();
         T next = base.getFirst().cast(cls).get();
@@ -67,7 +68,7 @@ class Blender
         return result;
     }
     
-    static String blendString(CPointer<Byte> pointer) throws IOException
+    static String string(CPointer<Byte> pointer) throws IOException
     {
         StringBuilder builder = new StringBuilder();
         while (true)
@@ -80,7 +81,7 @@ class Blender
         return builder.toString();
     }
     
-    static String blendString(CPointer<Byte> pointer, int bytes) throws IOException
+    static String string(CPointer<Byte> pointer, int bytes) throws IOException
     {
         StringBuilder builder = new StringBuilder(bytes);
         for (byte b : pointer.toByteArray(bytes)) builder.append((char)b);
@@ -91,6 +92,12 @@ class Blender
     {
         float[] v = facade.toFloatArray(3);
         return new Vec3(v[1], v[2], v[0]);
+    }
+    
+    static Quat quat(CArrayFacade<Float> facade) throws IOException
+    {
+        float[] q = facade.toFloatArray(4);
+        return new Quat(q[0], q[2], q[3], q[1]);
     }
     
     static Mat3 mat3(CArrayFacade<CArrayFacade<Float>> facade) throws IOException
@@ -106,8 +113,7 @@ class Blender
     static Mat4 mat4(CArrayFacade<CArrayFacade<Float>> facade) throws IOException
     {
         float[][] m = new float[4][];
-        CArrayFacade<Float>[] arf = facade.toArray(4);
-        for (int i=0; i<4; i++) m[i] = arf[i].toFloatArray(4);
+        for (int i=0; i<4; i++) m[i] = facade.get(i).toFloatArray(4);
         
         return new Mat4(m[1][1], m[1][2], m[1][0], m[1][3],
                         m[2][1], m[2][2], m[2][0], m[2][3],
@@ -142,7 +148,7 @@ class Blender
     static Mat3 orthogBasis(Vec3 n)
     {
         Mat3 result = new Mat3();
-        orthogBasis (n, result);
+        orthogBasis(n, result);
         return result;
     }
     

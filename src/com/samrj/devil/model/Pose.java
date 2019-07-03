@@ -23,8 +23,10 @@
 package com.samrj.devil.model;
 
 import com.samrj.devil.io.IOUtil;
+import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Transform;
 import com.samrj.devil.math.Transform.Property;
+import com.samrj.devil.math.Vec3;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Collection;
@@ -33,6 +35,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import org.blender.dna.bPose;
+import org.blender.dna.bPoseChannel;
 
 /**
  * Class for storing and manipulating bone pose information. Is not tied to
@@ -45,17 +49,23 @@ public class Pose
     private final Map<String, PoseBone> bones;
     private final Collection<PoseBone> bCollection;
     
-    Pose(DataInputStream in) throws IOException
+    Pose(bPose bPose) throws IOException
     {
-        int numBones = in.readInt();
-        bones = new HashMap<>(numBones);
-        for (int i=0; i<numBones; i++)
-        {
-            PoseBone bone = new PoseBone(in);
-            bones.put(bone.name, bone);
-        }
-        
+        bones = new HashMap<>();
         bCollection = Collections.unmodifiableCollection(bones.values());
+        
+        for (bPoseChannel bChan : Blender.list(bPose.getChanbase(), bPoseChannel.class))
+        {
+            String name = bChan.getName().asString();
+            Vec3 pos = Blender.vec3(bChan.getLoc());
+            Quat rot = Blender.quat(bChan.getQuat());
+            Vec3 sca = Blender.vec3(bChan.getSize());
+            
+            PoseBone bone = new PoseBone(name);
+            bone.transform.set(pos, rot, sca);
+            
+            bones.put(name, bone);
+        }
     }
     
     /**
