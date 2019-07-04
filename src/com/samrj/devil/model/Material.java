@@ -7,6 +7,11 @@ import java.util.List;
 import org.blender.dna.MTex;
 import org.cakelab.blender.nio.CPointer;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2019 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public final class Material extends DataBlock
 {
     public final int modelIndex;

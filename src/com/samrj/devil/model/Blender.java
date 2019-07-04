@@ -14,6 +14,11 @@ import org.cakelab.blender.nio.CArrayFacade;
 import org.cakelab.blender.nio.CFacade;
 import org.cakelab.blender.nio.CPointer;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2019 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 class Blender
 {
     static <T extends CFacade> List<T> list(T first) throws IOException

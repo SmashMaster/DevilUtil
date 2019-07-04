@@ -1,3 +1,25 @@
+/*
+ * Copyright (c) 2019 Sam Johnson
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package com.samrj.devil.model;
 
 import com.samrj.devil.geo2d.Earcut;
@@ -24,22 +46,18 @@ import org.blender.dna.MVert;
 import org.cakelab.blender.nio.CPointer;
 
 /**
- * DevilModel mesh.
+ * Blender mesh object.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
- * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Mesh extends DataBlock
 {
     private static class LoopTri
     {
-        private final int poly;
         private final int va, vb, vc;
         
-        private LoopTri(int poly, int start, int va, int vb, int vc)
+        private LoopTri(int start, int va, int vb, int vc)
         {
-            this.poly = poly;
             this.va = start + va;
             this.vb = start + vb;
             this.vc = start + vc;
@@ -140,7 +158,7 @@ public final class Mesh extends DataBlock
             if (count < 3) {} //Degenerate poly
             else if (count == 3) //Single triangle poly
             {
-                loopTris.add(new LoopTri(iPoly, start, 0, 1, 2));
+                loopTris.add(new LoopTri(start, 0, 1, 2));
             }
             else if (count == 4) //Quad; can be split into two tris, but might be concave.
             {
@@ -158,13 +176,13 @@ public final class Mesh extends DataBlock
                 
                 if (crossA.dot(crossB) > 0.0f)
                 {
-                    loopTris.add(new LoopTri(iPoly, start, 0, 1, 3));
-                    loopTris.add(new LoopTri(iPoly, start, 1, 2, 3));
+                    loopTris.add(new LoopTri(start, 0, 1, 3));
+                    loopTris.add(new LoopTri(start, 1, 2, 3));
                 }
                 else
                 {
-                    loopTris.add(new LoopTri(iPoly, start, 0, 1, 2));
-                    loopTris.add(new LoopTri(iPoly, start, 0, 2, 3));
+                    loopTris.add(new LoopTri(start, 0, 1, 2));
+                    loopTris.add(new LoopTri(start, 0, 2, 3));
                 }
             }
             else //Need to triangulate by ear clipping
@@ -189,7 +207,7 @@ public final class Mesh extends DataBlock
                     int b = triangulated.get(i++);
                     int c = triangulated.get(i++);
                     
-                    loopTris.add(new LoopTri(iPoly, start, a, b, c));
+                    loopTris.add(new LoopTri(start, a, b, c));
                 }
             }
             
@@ -235,6 +253,10 @@ public final class Mesh extends DataBlock
         }
         
         //Loop data: uv and colors
+        List<String> uvLayerNames = new ArrayList<>();
+        List<MLoopUV[]> uvLayerData = new ArrayList<>();
+        List<String> colorLayerNames = new ArrayList<>();
+        List<MLoopCol[]> colorLayerData = new ArrayList<>();
         CustomDataLayer[] layers = bMesh.getLdata().getLayers().toArray(bMesh.getLdata().getTotlayer());
         if (layers != null)
         {
@@ -246,9 +268,19 @@ public final class Mesh extends DataBlock
                 {
                     case 16: //uv
                         MLoopUV[] uvData = layer.getData().cast(MLoopUV.class).toArray(mLoops.length);
+                        if (uvData != null)
+                        {
+                            uvLayerNames.add(layerName);
+                            uvLayerData.add(uvData);
+                        }
                         break;
                     case 17: //colors
                         MLoopCol[] colData = layer.getData().cast(MLoopCol.class).toArray(mLoops.length);
+                        if (colData != null)
+                        {
+                            colorLayerNames.add(layerName);
+                            colorLayerData.add(colData);
+                        }
                         break;
                 }
             }
@@ -266,8 +298,8 @@ public final class Mesh extends DataBlock
         numGroups = maxGroup + 1;
         hasMaterials = loopMats != null;
         
-        uvLayers = new String[0];
-        colorLayers = new String[0];
+        uvLayers = uvLayerNames.toArray(new String[uvLayerNames.size()]);
+        colorLayers = colorLayerNames.toArray(new String[colorLayerNames.size()]);
         
         //Positions
         positionOffset = 0;
@@ -348,19 +380,34 @@ public final class Mesh extends DataBlock
             for (int layer=0; layer<uvLayers.length; layer++)
             {
                 vertexData.position(uvOffsets[layer]);
-                //put uvs
+                
+                MLoopUV[] uvs = uvLayerData.get(layer);
+                for (int i=0; i<numVertices; i++)
+                {
+                    float[] uv = uvs[i].getUv().toFloatArray(2);
+                    vertexData.putFloat(uv[0]);
+                    vertexData.putFloat(uv[1]);
+                }
             }
             
             if (hasTangents)
             {
                 vertexData.position(tangentOffset);
-                //put tangents
+                //tangents need to be calculated from normals and uvs.
             }
             
             for (int layer=0; layer<colorLayers.length; layer++)
             {
                 vertexData.position(colorOffsets[layer]);
-                //put colors
+                
+                MLoopCol[] colors = colorLayerData.get(layer);
+                for (int i=0; i<numVertices; i++)
+                {
+                    MLoopCol color = colors[i];
+                    vertexData.putFloat((color.getR() & 0xFF)/255.0f);
+                    vertexData.putFloat((color.getG() & 0xFF)/255.0f);
+                    vertexData.putFloat((color.getB() & 0xFF)/255.0f);
+                }
             }
             
             if (numGroups > 0)

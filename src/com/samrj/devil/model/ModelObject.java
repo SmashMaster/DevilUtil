@@ -23,7 +23,7 @@ import org.blender.dna.bPoseChannel;
 /**
  * @author Samuel Johnson (SmashMaster)
  * @param <DATA_TYPE> The type of datablock this ModelObject encapsulates.
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
@@ -60,8 +60,30 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
             arguments.put(pName, pValue);
         }
         
+        Quat rot;
+        switch (bObject.getRotmode())
+        {
+            case -1: //Axis-angle rotation
+                Vec3 axis = Blender.vec3(bObject.getRotAxis());
+                float ang = bObject.getRotAngle();
+                rot = Quat.rotation(axis, ang);
+                break;
+            case 0: //Quaternion
+                rot = Blender.quat(bObject.getQuat());
+                break;
+            case 1: //XYZ Euler rotation (blender's axes are different)
+                Vec3 angles = Blender.vec3(bObject.getRot());
+                rot = Quat.identity();
+                rot.rotate(new Vec3(0, 1, 0), angles.y);
+                rot.rotate(new Vec3(1, 0, 0), angles.x);
+                rot.rotate(new Vec3(0, 0, 1), angles.z);
+                break;
+            default:
+                rot = Quat.identity();
+                break;
+        }
+        
         Vec3 pos = Blender.vec3(bObject.getLoc());
-        Quat rot = Blender.quat(bObject.getQuat());
         Vec3 sca = Blender.vec3(bObject.getSize());
         transform = new Transform(pos, rot, sca);
         
@@ -142,8 +164,7 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
             String parentName = bParent.getId().getName().asString().substring(2);
             parent = new DataPointer<>(model, Type.OBJECT, parentName);
             
-            if (bObject.getPartype() == 7)
-                parentBoneName = bObject.getParsubstr().asString();
+            if (bObject.getPartype() == 7) parentBoneName = bObject.getParsubstr().asString();
             else parentBoneName = null;
             
             parentMatrix = Blender.mat4(bObject.getParentinv());

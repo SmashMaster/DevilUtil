@@ -9,6 +9,11 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2019 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public final class ArrayMap<T extends DataBlock> implements Iterable<T>
 {
     private final List<T> list = new ArrayList<>();

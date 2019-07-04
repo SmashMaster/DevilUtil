@@ -12,7 +12,7 @@ import java.util.Set;
  * support inherited rotation yet.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class ChildOfConstraint implements ArmatureSolver.Constraint

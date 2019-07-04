@@ -6,7 +6,7 @@ import org.blender.dna.BlenderObject;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Scene extends DataBlock
