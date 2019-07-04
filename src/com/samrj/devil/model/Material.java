@@ -1,14 +1,21 @@
 package com.samrj.devil.model;
 
 import com.samrj.devil.math.Vec3;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import org.blender.dna.MTex;
+import org.cakelab.blender.nio.CPointer;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2019 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public final class Material extends DataBlock
 {
+    public final int modelIndex;
+    
     public final Vec3 diffuseColor, specularColor;
     public final float specularHardness;
     public final float specularIOR;
@@ -16,20 +23,26 @@ public final class Material extends DataBlock
     
     public final List<TextureSlot> textures;
     
-    Material(Model model, int modelIndex, DataInputStream in) throws IOException
+    Material(Model model, int modelIndex, org.blender.dna.Material bMat) throws IOException
     {
-        super(model, modelIndex, in);
+        super(model, bMat.getId());
+        this.modelIndex = modelIndex;
         
-        diffuseColor = new Vec3(in);
-        specularColor = new Vec3(in);
-        specularHardness = in.readFloat();
-        specularIOR = in.readFloat();
-        emit = in.readFloat();
+        diffuseColor = new Vec3(bMat.getR(), bMat.getG(), bMat.getB()).mult(bMat.getRef());
+        specularColor = new Vec3(bMat.getSpecr(), bMat.getSpecg(), bMat.getSpecb()).mult(bMat.getSpec());
+        specularHardness = bMat.getHar();
+        specularIOR = bMat.getRefrac();
+        emit = bMat.getEmit();
         
-        int numTextures = in.readInt();
-        ArrayList<TextureSlot> texes = new ArrayList<>(numTextures);
-        for (int i=0; i<numTextures; i++) texes.add(new TextureSlot(model, in));
-        textures = Collections.unmodifiableList(texes);
+        textures = new ArrayList<>();
+        CPointer<MTex>[] mTexs = bMat.getMtex().toArray();
+        for (int i=0; i<18; i++) //MAX_MTEX is 18 in blender
+        {
+            MTex mTex = mTexs[i].get();
+            if (mTex == null) break;
+            
+            textures.add(new TextureSlot(mTex));
+        }
     }
     
     public class TextureSlot
@@ -40,13 +53,22 @@ public final class Material extends DataBlock
         public final float specularFactor;
         public final float normalFactor;
 
-        TextureSlot(Model model, DataInputStream in) throws IOException
+        TextureSlot(MTex mTex) throws IOException
         {
-            texture = new DataPointer(model, Type.TEXTURE, in.readInt());
-            diffuseFactor = in.readFloat();
-            emitFactor = in.readFloat();
-            specularFactor = in.readFloat();
-            normalFactor = in.readFloat();
+            String texName = mTex.getTex().get().getId().getName().asString().substring(2);
+            
+            //Defined in super old versions of DNA_material_types.h in Blender's source code
+            int mapMask = mTex.getMapto();
+            boolean mapToColor = (mapMask & 1) != 0;
+            boolean mapToEmit = (mapMask & 64) != 0;
+            boolean mapToSpec = (mapMask & 32) != 0;
+            boolean mapToNormal = (mapMask & 2) != 0;
+            
+            texture = new DataPointer(model, Type.TEXTURE, texName);
+            diffuseFactor = mapToColor ? mTex.getColfac() : 0.0f;
+            emitFactor = mapToEmit ? mTex.getEmitfac() : 0.0f;
+            specularFactor = mapToSpec ? mTex.getSpecfac() : 0.0f;
+            normalFactor = mapToNormal ? mTex.getNorfac() : 0.0f;
         }
     }
 }

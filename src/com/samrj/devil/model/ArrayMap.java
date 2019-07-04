@@ -1,7 +1,5 @@
 package com.samrj.devil.model;
 
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -11,24 +9,24 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+/**
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2019 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public final class ArrayMap<T extends DataBlock> implements Iterable<T>
 {
-    private final List<T> list;
-    private final Map<String, T> map;
-
-    ArrayMap(Model model, DataInputStream in, ModelConstructor<T> constructor) throws IOException
+    private final List<T> list = new ArrayList<>();
+    private final Map<String, T> map = new HashMap<>();
+    
+    ArrayMap()
     {
-        in.skip(4);
-        int size = in.readInt();
-        list = new ArrayList<>(size);
-        map = new HashMap<>(size);
-        
-        for (int i=0; i<size; i++)
-        {
-            T data = constructor.construct(model, i, in);
-            list.add(data);
-            map.put(data.name, data);
-        }
+    }
+    
+    void put(T data)
+    {
+        list.add(data);
+        map.put(data.name, data);
     }
 
     public boolean contains(String name)

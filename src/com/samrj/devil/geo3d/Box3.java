@@ -151,12 +151,16 @@ public class Box3
      * @param v A vertex.
      * @return Whether the vertex is touching the box.
      */
+    public static boolean touching(Box3 box, Vec3 v)
+    {
+        return v.x >= box.min.x && v.x <= box.max.x &&
+               v.y >= box.min.y && v.y <= box.max.y &&
+               v.z >= box.min.z && v.z <= box.max.z;
+    }
+    
     public static boolean touching(Box3 box, Vertex3 v)
     {
-        Vec3 p = v.p();
-        return p.x >= box.min.x && p.x <= box.max.x &&
-               p.y >= box.min.y && p.y <= box.max.y &&
-               p.z >= box.min.z && p.z <= box.max.z;
+        return touching(box, v.p());
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static mutator methods">
@@ -281,6 +285,24 @@ public class Box3
         r.max.x = Util.max(b.max.x, v.x);
         r.max.y = Util.max(b.max.y, v.y);
         r.max.z = Util.max(b.max.z, v.z);
+    }
+    
+    public static final void expand(Box3 b, Vertex3 v, Box3 r)
+    {
+        expand(b, v.p(), r);
+    }
+    
+    public static final void expand(Box3 b, Edge3 e, Box3 r)
+    {
+        expand(b, e.a(), r);
+        expand(b, e.b(), r);
+    }
+    
+    public static final void expand(Box3 b, Triangle3 f, Box3 r)
+    {
+        expand(b, f.a(), r);
+        expand(b, f.b(), r);
+        expand(b, f.b(), r);
     }
     
     /**
@@ -551,6 +573,11 @@ public class Box3
         return touching(this, e);
     }
     
+    public boolean touching(Vec3 v)
+    {
+        return touching(this, v);
+    }
+    
     /**
      * Returns whether this is touching the given vertex.
      * 
@@ -604,6 +631,18 @@ public class Box3
         return this;
     }
     
+    public Box3 expand(Triangle3 f)
+    {
+        expand(this, f, this);
+        return this;
+    }
+    
+    public Box3 expand(Edge3 e)
+    {
+        expand(this, e, this);
+        return this;
+    }
+    
     /**
      * Expands this by the given vector and returns this.
      * 
@@ -611,6 +650,12 @@ public class Box3
      * @return This box.
      */
     public Box3 expand(Vec3 v)
+    {
+        expand(this, v, this);
+        return this;
+    }
+    
+    public Box3 expand(Vertex3 v)
     {
         expand(this, v, this);
         return this;

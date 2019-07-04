@@ -1,40 +1,30 @@
 package com.samrj.devil.model;
 
-import com.samrj.devil.io.IOUtil;
-import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import org.blender.dna.ID;
+import org.blender.dna.IDProperty;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public abstract class DataBlock
 {
     public enum Type
     {
-        LIBRARY (Library::new),
-        ACTION  (Action::new),
-        ARMATURE(Armature::new),
-        CURVE   (Curve::new),
-        LAMP    (Lamp::new),
-        MATERIAL(Material::new),
-        MESH    (Mesh::new),
-        OBJECT  (ModelObject::new),
-        SCENE   (Scene::new),
-        TEXTURE (Texture::new);
-        
-        private final ModelConstructor<?> constructor;
-        
-        private Type(ModelConstructor<?> constructor)
-        {
-            this.constructor = constructor;
-        }
-        
-        ArrayMap<?> makeArrayMap(Model model, DataInputStream in) throws IOException
-        {
-            return new ArrayMap<>(model, in, constructor);
-        }
+        LIBRARY,
+        ACTION,
+        ARMATURE,
+        CURVE,
+        LAMP,
+        MATERIAL,
+        MESH,
+        OBJECT,
+        SCENE,
+        TEXTURE;
     }
     
     public static Type getType(int index)
@@ -43,14 +33,31 @@ public abstract class DataBlock
     }
     
     public final Model model;
-    public final int modelIndex;
     public final String name;
+    public final List<Property> properties;
     
-    DataBlock(Model model, int modelIndex, DataInputStream in) throws IOException
+    DataBlock(Model model, ID bID) throws IOException
     {
+        if (model == null || bID == null) throw new NullPointerException();
         this.model = model;
-        this.modelIndex = modelIndex;
-        name = IOUtil.readPaddedUTF(in);
+        name = bID.getName().asString().substring(2);
+        
+        IDProperty bProp = bID.getProperties().get();
+        properties = bProp != null ? new Property(bProp).properties : Collections.emptyList();
+    }
+    
+    public final Property getProperty(String name)
+    {
+        for (Property property : properties)
+            if (name.equals(property.name))
+                return property;
+        return null;
+    }
+    
+    public final List<Property> getSubproperties(String name)
+    {
+        Property prop = getProperty(name);
+        return prop != null ? prop.properties : Collections.emptyList();
     }
     
     void destroy()

@@ -10,7 +10,7 @@ import java.util.Set;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class CopyTransformConstraint implements ArmatureSolver.Constraint

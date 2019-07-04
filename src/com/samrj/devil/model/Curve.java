@@ -1,24 +1,29 @@
 package com.samrj.devil.model;
 
-import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Vec3;
-import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import org.blender.dna.BezTriple;
+import org.blender.dna.Nurb;
+import org.cakelab.blender.nio.CArrayFacade;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Curve extends DataBlock
 {
     public final List<Spline> splines;
     
-    Curve(Model model, int modelIndex, DataInputStream in) throws IOException
+    Curve(Model model, org.blender.dna.Curve bCurve) throws IOException
     {
-        super(model, modelIndex, in);
-        splines = IOUtil.listFromStream(in, Spline::new);
+        super(model, bCurve.getId());
+        
+        splines = new ArrayList<>();
+        for (Nurb bNurb : Blender.list(bCurve.getNurb(), Nurb.class))
+            splines.add(new Spline(bNurb));
     }
     
     public static class Spline
@@ -26,22 +31,29 @@ public final class Curve extends DataBlock
         public final boolean cyclic;
         public final List<SplinePoint> points;
         
-        Spline(DataInputStream in) throws IOException
+        Spline(Nurb bNurb) throws IOException
         {
-            cyclic = in.readInt() != 0;
-            points = IOUtil.listFromStream(in, SplinePoint::new);
+            cyclic = (bNurb.getFlagu() & 1) != 0; //CU_NURB_CYCLIC flag
+            
+            int numPoints = bNurb.getPntsu();
+            BezTriple[] bezts = bNurb.getBezt().toArray(numPoints);
+
+            points = new ArrayList<>(bezts.length);
+            for (BezTriple bezt : bezts) points.add(new SplinePoint(bezt));
         }
     }
     
     public static class SplinePoint
     {
-        public final Vec3 co, left, right;
+        public final Vec3 left, co, right;
         
-        SplinePoint(DataInputStream in) throws IOException
+        SplinePoint(BezTriple bezt) throws IOException
         {
-            co = new Vec3(in);
-            left = new Vec3(in);
-            right = new Vec3(in);
+            CArrayFacade<CArrayFacade<Float>> vec = bezt.getVec();
+            
+            left = Blender.vec3(vec.get(0));
+            co = Blender.vec3(vec.get(1));
+            right = Blender.vec3(vec.get(2));
         }
     }
 }

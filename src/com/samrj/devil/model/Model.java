@@ -1,27 +1,43 @@
 package com.samrj.devil.model;
 
-import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.model.DataBlock.Type;
-import com.samrj.devil.res.Resource;
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
+import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
+import org.blender.dna.Tex;
+import org.blender.dna.bAction;
+import org.blender.dna.bArmature;
+import org.blender.utils.MainLib;
+import org.cakelab.blender.io.BlenderFile;
+import org.cakelab.blender.io.block.Block;
+import org.cakelab.blender.io.dna.DNAModel;
+import org.cakelab.blender.io.dna.DNAStruct;
+import org.cakelab.blender.nio.CPointer;
 
 /**
  * .DVM file loader. Corresponds with the Blender python exporter.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Model
 {
-    private static final byte[] MAGIC = IOUtil.hexToBytes("9F0A446576696C4D6F64656C");
-    private static final int VERSION_MAJOR = 0, VERSION_MINOR = 24;
+    private static final boolean DEBUG = true;
     
     private final EnumMap<DataBlock.Type, ArrayMap<?>> arraymaps = new EnumMap<>(DataBlock.Type.class);
+    
+    final Map<Long, DebugBlock> debugMap;
+    
+    String debugTypeOf(CPointer ptr) throws IOException
+    {
+        if (ptr == null) return null;
+        DebugBlock block = debugMap.get(ptr.getAddress());
+        if (block == null) return null;
+        return block.struct.getType().getName();
+    }
     
     public final String path;
     
@@ -32,8 +48,8 @@ public final class Model
     public final ArrayMap<Lamp> lamps;
     public final ArrayMap<Material> materials;
     public final ArrayMap<Mesh> meshes;
-    public final ArrayMap<ModelObject> objects;
     public final ArrayMap<Scene> scenes;
+    public final ArrayMap<ModelObject> objects;
     public final ArrayMap<Texture> textures;
     
     private boolean destroyed;
@@ -42,32 +58,79 @@ public final class Model
     {
         this.path = path;
         
-        try (BufferedInputStream inputStream = new BufferedInputStream(Resource.open(path)))
+        long t0 = System.nanoTime();
+        
+        try (BlenderFile file = new BlenderFile(new File(path), true))
         {
-            DataInputStream in = new DataInputStream(inputStream);
+            boolean isCompatible = MainLib.doCompatibilityCheck(file.readFileGlobal());
+            if (!isCompatible) throw new java.lang.IllegalArgumentException("Incompatible .blend file");
             
-            byte[] header = new byte[12];
-            in.read(header);
-            if (!Arrays.equals(header, MAGIC))
-                throw new IOException("Illegal file format specified.");
-            int versionMajor = in.readShort();
-            int versionMinor = in.readShort();
-            if (versionMajor != VERSION_MAJOR || versionMinor != VERSION_MINOR)
-                throw new IOException("Unable to load DVM version " + versionMajor + "." + versionMinor);
+            if (DEBUG)
+            {
+                debugMap = new HashMap<>();
+                DNAModel model = file.getBlenderModel();
+
+                for (Block block : file.getBlocks())
+                {
+                    DNAStruct struct = model.getStruct(block.header.getSdnaIndex());
+                    debugMap.put(block.header.getAddress(), new DebugBlock(block, struct));
+                }
+            }
+            else debugMap = null;
             
-            for (Type type : Type.values())
-                arraymaps.put(type, type.makeArrayMap(this, in));
+            MainLib library = new MainLib(file);
             
-            libraries = get(Type.LIBRARY);
-            actions = get(Type.ACTION);
-            armatures = get(Type.ARMATURE);
-            curves = get(Type.CURVE);
-            lamps = get(Type.LAMP);
-            materials = get(Type.MATERIAL);
-            meshes = get(Type.MESH);
-            objects = get(Type.OBJECT);
-            scenes = get(Type.SCENE);
-            textures = get(Type.TEXTURE);
+            libraries = new ArrayMap<>();
+            for (org.blender.dna.Library bLib : Blender.list(library.getLibrary()))
+                libraries.put(new Library(this, bLib));
+            arraymaps.put(Type.LIBRARY, libraries);
+            
+            actions = new ArrayMap<>();
+            for (bAction bAction : Blender.list(library.getBAction()))
+                actions.put(new Action(this, bAction));
+            arraymaps.put(Type.ACTION, actions);
+            
+            armatures = new ArrayMap<>();
+            for (bArmature bArm : Blender.list(library.getBArmature()))
+                armatures.put(new Armature(this, bArm));
+            arraymaps.put(Type.ARMATURE, armatures);
+            
+            curves = new ArrayMap<>();
+            for (org.blender.dna.Curve bCurve : Blender.list(library.getCurve()))
+                curves.put(new Curve(this, bCurve));
+            arraymaps.put(Type.CURVE, curves);
+            
+            lamps = new ArrayMap<>();
+            for (org.blender.dna.Lamp bLamp : Blender.list(library.getLamp()))
+                lamps.put(new Lamp(this, bLamp));
+            arraymaps.put(Type.LAMP, lamps);
+            
+            materials = new ArrayMap<>();
+            int i = 0;
+            for (org.blender.dna.Material bMat : Blender.list(library.getMaterial()))
+                materials.put(new Material(this, i++, bMat));
+            arraymaps.put(Type.MATERIAL, materials);
+            
+            meshes = new ArrayMap<>();
+            for (org.blender.dna.Mesh bMesh : Blender.list(library.getMesh()))
+                meshes.put(new Mesh(this, bMesh));
+            arraymaps.put(Type.MESH, meshes);
+            
+            scenes = new ArrayMap<>();
+            for (org.blender.dna.Scene bScene : Blender.list(library.getScene()))
+                scenes.put(new Scene(this, bScene));
+            arraymaps.put(Type.SCENE, scenes);
+            
+            objects = new ArrayMap<>();
+            for (Scene scene : scenes)
+                for (ModelObject object : scene.objects)
+                    objects.put(object);
+            arraymaps.put(Type.OBJECT, objects);
+            
+            textures = new ArrayMap<>();
+            for (Tex bTex : Blender.list(library.getTex()))
+                textures.put(new Texture(this, bTex));
+            arraymaps.put(Type.TEXTURE, textures);
         }
         catch (IOException e)
         {
@@ -92,5 +155,16 @@ public final class Model
         if (destroyed) throw new IllegalStateException("Already destroyed.");
         arraymaps.forEach((t, m) -> m.destroy());
         destroyed = true;
+    }
+    
+    static class DebugBlock
+    {
+        final Block block;
+        final DNAStruct struct;
+        
+        private DebugBlock(Block block, DNAStruct struct)
+        {
+            this.block = block; this.struct = struct;
+        }
     }
 }

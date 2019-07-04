@@ -1,23 +1,22 @@
 package com.samrj.devil.model;
 
-import com.samrj.devil.io.IOUtil;
-import java.io.DataInputStream;
 import java.io.IOException;
+import org.blender.dna.Tex;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class Texture extends DataBlock
 {
     public final String filepath;
     
-    Texture(Model model, int modelIndex, DataInputStream in) throws IOException
+    Texture(Model model, Tex bTex) throws IOException
     {
-        super(model, modelIndex, in);
+        super(model, bTex.getId());
         
-        if (in.readInt() != 0) filepath = IOUtil.readPaddedUTF(in);
-        else filepath = null;
+        org.blender.dna.Image bImage = bTex.getIma().get();
+        filepath = bImage != null ? bImage.getName().asString() : null;
     }
 }

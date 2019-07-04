@@ -1,12 +1,11 @@
 package com.samrj.devil.model;
 
 import com.samrj.devil.math.Vec3;
-import java.io.DataInputStream;
 import java.io.IOException;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Lamp extends DataBlock
@@ -20,11 +19,12 @@ public final class Lamp extends DataBlock
     public final Type type;
     public final float radius;
     
-    Lamp(Model model, int modelIndex, DataInputStream in) throws IOException
+    Lamp(Model model, org.blender.dna.Lamp bLamp) throws IOException
     {
-        super(model, modelIndex, in);
-        color = new Vec3(in);
-        type = Type.values()[in.readInt()];
-        radius = type == Type.POINT ? in.readFloat() : -1.0f;
+        super(model, bLamp.getId());
+        
+        color = new Vec3(bLamp.getR(), bLamp.getG(), bLamp.getB()).mult(bLamp.getEnergy());
+        type = Type.values()[bLamp.getType()];
+        radius = type == Type.POINT ? bLamp.getDist() : -1.0f;
     }
 }

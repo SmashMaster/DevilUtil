@@ -1,30 +1,33 @@
 package com.samrj.devil.model;
 
-import com.samrj.devil.math.Vec3;
-import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import org.blender.dna.Base;
+import org.blender.dna.BlenderObject;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Scene extends DataBlock
 {
-    public final Vec3 backgroundColor;
-    public final List<DataPointer<ModelObject<?>>> objects;
+    public final ArrayMap<ModelObject<?>> objects;
     
-    Scene(Model model, int modelIndex, DataInputStream in) throws IOException
+    Scene(Model model, org.blender.dna.Scene bScene) throws IOException
     {
-        super(model, modelIndex, in);
-        backgroundColor = new Vec3(in);
-        int numObjects = in.readInt();
-        ArrayList<DataPointer<ModelObject<?>>> list = new ArrayList<>(numObjects);
-        for (int i=0; i<numObjects; i++)
-            list.add(new DataPointer(model, Type.OBJECT, in.readInt()));
-        objects = Collections.unmodifiableList(list);
+        super(model, bScene.getId());
+        
+        objects = new ArrayMap<>();
+        for (Base base : Blender.list(bScene.getBase(), Base.class))
+        {
+            BlenderObject bObject = base.getObject().get();
+            objects.put(new ModelObject<>(model, this, bObject));
+        }
+    }
+    
+    @Override
+    void destroy()
+    {
+        objects.destroy();
     }
 }

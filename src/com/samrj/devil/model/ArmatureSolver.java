@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -65,9 +65,9 @@ public final class ArmatureSolver
         Armature armature = object.data.get();
         
         bones = IOUtil.mapList(armature.bones, BoneSolver::new);
-        bones.forEach(BoneSolver::populate);
         nameMap = new HashMap<>(bones.size());
         bones.forEach(bone -> nameMap.put(bone.bone.name, bone));
+        bones.forEach(BoneSolver::populate);
         
         ikConstraints = IOUtil.mapList(object.ikConstraints, ikDef -> new IKConstraint(ikDef, this));
         constraints = new LinkedList<>();
@@ -186,6 +186,7 @@ public final class ArmatureSolver
         
         private BoneSolver(Bone bone)
         {
+            if (bone == null) throw new NullPointerException();
             this.bone = bone;
             poseTransform = Transform.identity();
             finalTransform = Transform.identity();
@@ -196,7 +197,7 @@ public final class ArmatureSolver
         
         private void populate()
         {
-            if (bone.parentIndex >= 0) parent = bones.get(bone.parentIndex);
+            if (bone.parent != null) parent = nameMap.get(bone.parent.name);
         }
         
         public BoneSolver getParent()

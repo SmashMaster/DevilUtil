@@ -14,13 +14,17 @@ public final class Keyboard
 {
     private final BitSet states;
     private final KeyCallback keyCallback;
+    private final CharacterCallback charCallback;
     
-    Keyboard(long window, KeyCallback keyCallback)
+    Keyboard(long window, KeyCallback keyCallback, CharacterCallback charCallback)
     {
         if (keyCallback == null) throw new NullPointerException();
+        if (charCallback == null) throw new NullPointerException();
         states = new BitSet(GLFW.GLFW_KEY_LAST + 1);
         GLFW.glfwSetKeyCallback(window, this::key);
         this.keyCallback = keyCallback;
+        GLFW.glfwSetCharCallback(window, this::character);
+        this.charCallback = charCallback;
     }
     
     private void key(long window, int key, int scancode, int action, int mods)
@@ -32,6 +36,11 @@ public final class Keyboard
         }
         
         keyCallback.accept(key, action, mods);
+    }
+    
+    private void character(long window, int codepoint)
+    {
+        for (char c : Character.toChars(codepoint)) charCallback.accept(c);
     }
     
     @Deprecated
@@ -50,5 +59,11 @@ public final class Keyboard
     public interface KeyCallback
     {
         public void accept(int key, int action, int mods);
+    }
+    
+    @FunctionalInterface
+    public interface CharacterCallback
+    {
+        public void accept(char character);
     }
 }
