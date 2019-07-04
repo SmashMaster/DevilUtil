@@ -9,6 +9,8 @@ import org.cakelab.blender.nio.CPointer;
 
 public final class Material extends DataBlock
 {
+    public final int modelIndex;
+    
     public final Vec3 diffuseColor, specularColor;
     public final float specularHardness;
     public final float specularIOR;
@@ -16,11 +18,12 @@ public final class Material extends DataBlock
     
     public final List<TextureSlot> textures;
     
-    Material(Model model, org.blender.dna.Material bMat) throws IOException
+    Material(Model model, int modelIndex, org.blender.dna.Material bMat) throws IOException
     {
         super(model, bMat.getId());
+        this.modelIndex = modelIndex;
         
-        diffuseColor = new Vec3(bMat.getR(), bMat.getG(), bMat.getB());
+        diffuseColor = new Vec3(bMat.getR(), bMat.getG(), bMat.getB()).mult(bMat.getRef());
         specularColor = new Vec3(bMat.getSpecr(), bMat.getSpecg(), bMat.getSpecb()).mult(bMat.getSpec());
         specularHardness = bMat.getHar();
         specularIOR = bMat.getRefrac();

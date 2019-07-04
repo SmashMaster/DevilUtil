@@ -13,10 +13,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.IntFunction;
+import org.blender.dna.CustomDataLayer;
 import org.blender.dna.MDeformVert;
 import org.blender.dna.MDeformWeight;
-import org.blender.dna.MFace;
 import org.blender.dna.MLoop;
+import org.blender.dna.MLoopCol;
+import org.blender.dna.MLoopUV;
 import org.blender.dna.MPoly;
 import org.blender.dna.MVert;
 import org.cakelab.blender.nio.CPointer;
@@ -74,6 +76,7 @@ public final class Mesh extends DataBlock
          * PREPARE MESH DATA
          */
         
+        //Populate materials list
         materials = new ArrayList<>();
         Map<Integer, Integer> materialIndexMap = new HashMap<>();
         CPointer<org.blender.dna.Material>[] mats = bMesh.getMat().toArray(bMesh.getTotcol());
@@ -101,6 +104,7 @@ public final class Mesh extends DataBlock
         
         MLoop[] mLoops = bMesh.getMloop().toArray(bMesh.getTotloop());
         Vec3[] loopNormals = new Vec3[mLoops.length];
+        int[] loopMats = materials.isEmpty() ? null : new int[mLoops.length];
         
         MPoly[] mPolys = bMesh.getMpoly().toArray(bMesh.getTotpoly());
         List<LoopTri> loopTris = new ArrayList<>();
@@ -165,11 +169,9 @@ public final class Mesh extends DataBlock
             }
             else //Need to triangulate by ear clipping
             {
-                //Make a matrix for projection to 2D
+                //Project to 2D
                 Mat3 basis = Blender.orthogBasis(normal);
-                
                 double[] projData = new double[count*2];
-                
                 for (int i=0; i<count; i++)
                 {
                     Vec3 v = verts[mLoops[start + i].getV()];
@@ -181,7 +183,6 @@ public final class Mesh extends DataBlock
                 
                 //Compute the triangulation
                 List<Integer> triangulated = Earcut.earcut(projData);
-                
                 for (int i=0; i<triangulated.size();)
                 {
                     int a = triangulated.get(i++);
@@ -199,6 +200,14 @@ public final class Mesh extends DataBlock
                     loopNormals[i] = normals[mLoops[i].getV()];
             else for (int i=start; i<end; i++)
                     loopNormals[i] = normal;
+            
+            //Store face material
+            if (loopMats != null)
+            {
+                int polyMat = materials.get(mPoly.getMat_nr()).get().modelIndex;
+                for (int i=start; i<end; i++)
+                    loopMats[i] = polyMat;
+            }
         }
         
         //Prepare vertex group data
@@ -225,6 +234,27 @@ public final class Mesh extends DataBlock
             }
         }
         
+        //Loop data: uv and colors
+        CustomDataLayer[] layers = bMesh.getLdata().getLayers().toArray(bMesh.getLdata().getTotlayer());
+        if (layers != null)
+        {
+            for (CustomDataLayer layer : layers)
+            {
+                String layerName = layer.getName().asString();
+                
+                switch (layer.getType())
+                {
+                    case 16: //uv
+                        MLoopUV[] uvData = layer.getData().cast(MLoopUV.class).toArray(mLoops.length);
+                        break;
+                    case 17: //colors
+                        MLoopCol[] colData = layer.getData().cast(MLoopCol.class).toArray(mLoops.length);
+                        break;
+                }
+            }
+        }
+        
+        
         /**
          * CALCULATE BUFFER POINTERS
          */
@@ -234,7 +264,7 @@ public final class Mesh extends DataBlock
         
         hasTangents = false;
         numGroups = maxGroup + 1;
-        hasMaterials = false;
+        hasMaterials = loopMats != null;
         
         uvLayers = new String[0];
         colorLayers = new String[0];
@@ -352,10 +382,11 @@ public final class Mesh extends DataBlock
                 }
             }
             
-            if (hasMaterials)
+            if (loopMats != null)
             {
                 vertexData.position(materialOffset);
-                //put materials
+                for (int i=0; i<numVertices; i++)
+                    vertexData.putInt(loopMats[i]);
             }
             
             vertexData.rewind();

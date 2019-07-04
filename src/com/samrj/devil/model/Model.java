@@ -106,8 +106,9 @@ public final class Model
             arraymaps.put(Type.LAMP, lamps);
             
             materials = new ArrayMap<>();
+            int i = 0;
             for (org.blender.dna.Material bMat : Blender.list(library.getMaterial()))
-                materials.put(new Material(this, bMat));
+                materials.put(new Material(this, i++, bMat));
             arraymaps.put(Type.MATERIAL, materials);
             
             meshes = new ArrayMap<>();

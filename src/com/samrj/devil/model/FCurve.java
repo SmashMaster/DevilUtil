@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import org.blender.dna.BezTriple;
-import org.cakelab.blender.nio.CArrayFacade;
 
 /**
  * @author Samuel Johnson (SmashMaster)
