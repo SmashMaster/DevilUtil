@@ -141,8 +141,7 @@ public class DAL
     
     public static SoundBuffer decodeOgg(InputStream in) throws IOException
     {
-        PCMBuffer buffer = OGGDecoder.decode(in);
-        return gen(new SoundBuffer(buffer));
+        throw new UnsupportedOperationException();
     }
     
     public static SoundBuffer decodeOgg(String path) throws IOException
