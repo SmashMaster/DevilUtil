@@ -60,18 +60,10 @@ public final class Model
         
         long t0 = System.nanoTime();
         
-        try (BlenderFile file = new BlenderFile(new File(path)))
+        try (BlenderFile file = new BlenderFile(new File(path), true))
         {
-            long t1 = System.nanoTime();
-            System.out.println("File: " + (t1 - t0)/1_000_000_000.0);
-            t0 = t1;
-            
             boolean isCompatible = MainLib.doCompatibilityCheck(file.readFileGlobal());
             if (!isCompatible) throw new java.lang.IllegalArgumentException("Incompatible .blend file");
-            
-            t1 = System.nanoTime();
-            System.out.println("Compat: " + (t1 - t0)/1_000_000_000.0);
-            t0 = t1;
             
             if (DEBUG)
             {
@@ -86,15 +78,7 @@ public final class Model
             }
             else debugMap = null;
             
-            t1 = System.nanoTime();
-            System.out.println("Debug: " + (t1 - t0)/1_000_000_000.0);
-            t0 = t1;
-            
             MainLib library = new MainLib(file);
-            
-            t1 = System.nanoTime();
-            System.out.println("Lib: " + (t1 - t0)/1_000_000_000.0);
-            t0 = t1;
             
             libraries = new ArrayMap<>();
             for (org.blender.dna.Library bLib : Blender.list(library.getLibrary()))
@@ -146,10 +130,6 @@ public final class Model
             for (Tex bTex : Blender.list(library.getTex()))
                 textures.put(new Texture(this, bTex));
             arraymaps.put(Type.TEXTURE, textures);
-            
-            t1 = System.nanoTime();
-            System.out.println("DVM: " + (t1 - t0)/1_000_000_000.0);
-            t0 = t1;
         }
         catch (IOException e)
         {

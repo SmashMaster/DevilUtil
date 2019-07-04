@@ -68,12 +68,12 @@ public final class Armature extends DataBlock
             name = bBone.getName().asString();
             this.parent = parent;
             
-            inheritRotation = (bBone.getFlag() & (1 << 9)) != 0; //BONE_HINGE flag
+            inheritRotation = (bBone.getFlag() & (1 << 9)) == 0; //BONE_HINGE flag
             
             head = Blender.vec3(bBone.getArm_head());
             tail = Blender.vec3(bBone.getArm_tail());
-            matrix = Blender.mat3(bBone.getArm_mat()); //Might need to be bone_mat instead.
-            invMat = Mat3.invert(matrix);
+            invMat = Blender.mat3(bBone.getArm_mat());
+            matrix = Mat3.invert(invMat);
         }
     }
 }

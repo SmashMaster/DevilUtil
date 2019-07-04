@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.IntFunction;
 import org.blender.dna.MDeformVert;
+import org.blender.dna.MDeformWeight;
 import org.blender.dna.MFace;
 import org.blender.dna.MLoop;
 import org.blender.dna.MPoly;
@@ -200,14 +201,28 @@ public final class Mesh extends DataBlock
                     loopNormals[i] = normal;
         }
         
-        int maxGroups = -1;
+        //Prepare vertex group data
+        int maxGroup = -1;
         CPointer<MDeformVert> dVertPtr = bMesh.getDvert();
-        if (!dVertPtr.isNull())
-        {
-            MDeformVert[] dVerts = dVertPtr.toArray(mVerts.length);
-            
+        MDeformVert[] dVerts = dVertPtr.isNull() ? null : dVertPtr.toArray(mVerts.length);
+        if (dVerts != null)
             for (int i=0; i<mVerts.length; i++)
-                maxGroups = Math.max(maxGroups, dVerts[i].getTotweight());
+                maxGroup = Math.max(maxGroup, dVerts[i].getTotweight());
+        
+        int[][] groupIndices = new int[mVerts.length][maxGroup + 1];
+        float[][] groupWeights = new float[mVerts.length][maxGroup + 1];
+        
+        if (dVerts != null && maxGroup >= 0) for (int vi=0; vi<mVerts.length; vi++)
+        {
+            MDeformVert dVert = dVerts[vi];
+            MDeformWeight[] weights = dVert.getDw().toArray(dVert.getTotweight());
+            
+            for (int wi=0; wi<weights.length; wi++)
+            {
+                MDeformWeight weight = weights[wi];
+                groupIndices[vi][wi] = weight.getDef_nr();
+                groupWeights[vi][wi] = weight.getWeight();
+            }
         }
         
         /**
@@ -218,7 +233,7 @@ public final class Mesh extends DataBlock
         numTriangles = loopTris.size();
         
         hasTangents = false;
-        numGroups = 0;
+        numGroups = maxGroup + 1;
         hasMaterials = false;
         
         uvLayers = new String[0];
@@ -321,10 +336,20 @@ public final class Mesh extends DataBlock
             if (numGroups > 0)
             {
                 vertexData.position(groupIndexOffset);
-                //put group indices
+                for (int lvi=0; lvi<numVertices; lvi++)
+                {
+                    int vi = mLoops[lvi].getV();
+                    for (int gi=0; gi<numGroups; gi++)
+                        vertexData.putInt(groupIndices[vi][gi]);
+                }
                 
                 vertexData.position(groupWeightOffset);
-                //put group weights
+                for (int lvi=0; lvi<numVertices; lvi++)
+                {
+                    int vi = mLoops[lvi].getV();
+                    for (int gi=0; gi<numGroups; gi++)
+                        vertexData.putFloat(groupWeights[vi][gi]);
+                }
             }
             
             if (hasMaterials)
