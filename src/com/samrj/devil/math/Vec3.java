@@ -1436,13 +1436,19 @@ public class Vec3 implements Bufferable, Streamable, Vertex3
         return "(" + x + ", " + y + ", " + z + ")";
     }
     
+    public boolean equals(Vec3 v)
+    {
+        if (v == null) return false;
+        return x == v.x && y == v.y && z == v.z;
+    }
+    
     @Override
     public boolean equals(Object o)
     {
         if (o == null) return false;
         if (o.getClass() != this.getClass()) return false;
         final Vec3 v = (Vec3)o;
-        return v.x == x && v.y == y && v.z == z;
+        return equals(v);
     }
     
     @Override

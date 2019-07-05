@@ -1249,13 +1249,19 @@ public class Vec2 implements Bufferable, Streamable
         return "(" + x + ", " + y + ")";
     }
     
+    public boolean equals(Vec2 v)
+    {
+        if (v == null) return false;
+        return x == v.x && y == v.y;
+    }
+    
     @Override
     public boolean equals(Object o)
     {
         if (o == null) return false;
         if (o.getClass() != this.getClass()) return false;
         final Vec2 v = (Vec2)o;
-        return v.x == x && v.y == y;
+        return equals(v);
     }
     
     @Override

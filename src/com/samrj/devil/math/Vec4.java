@@ -1260,13 +1260,19 @@ public class Vec4 implements Bufferable, Streamable
         return "(" + x + ", " + y + ", " + z + ", " + w + ")";
     }
     
+    public boolean equals(Vec4 v)
+    {
+        if (v == null) return false;
+        return v.x == x && v.y == y && v.z == z && v.w == w;
+    }
+    
     @Override
     public boolean equals(Object o)
     {
         if (o == null) return false;
         if (o.getClass() != this.getClass()) return false;
         final Vec4 v = (Vec4)o;
-        return v.x == x && v.y == y && v.z == z && v.w == w;
+        return equals(v);
     }
     
     @Override
