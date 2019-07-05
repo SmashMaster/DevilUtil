@@ -1274,5 +1274,40 @@ public class Mat3 implements Bufferable, Streamable
                "[" + d + ", " + e + ", " + f + "]\n" +
                "[" + g + ", " + h + ", " + i + "]";
     }
+    
+    public boolean equals(Mat3 mat)
+    {
+        if (mat == null) return false;
+        
+        return a == mat.a && b == mat.b && c == mat.c &&
+               d == mat.d && e == mat.e && f == mat.f &&
+               g == mat.g && h == mat.h && i == mat.i;
+    }
+    
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null) return false;
+        if (getClass() != o.getClass()) return false;
+        final Mat3 mat = (Mat3)o;
+        return equals(mat);
+    }
+    
+    @Override
+    public int hashCode()
+    {
+        int hash = 7;
+        hash = 31*hash + Float.floatToIntBits(a);
+        hash = 31*hash + Float.floatToIntBits(b);
+        hash = 31*hash + Float.floatToIntBits(c);
+        hash = 31*hash + Float.floatToIntBits(d);
+        hash = 31*hash + Float.floatToIntBits(e);
+        hash = 31*hash + Float.floatToIntBits(f);
+        hash = 31*hash + Float.floatToIntBits(g);
+        hash = 31*hash + Float.floatToIntBits(h);
+        hash = 31*hash + Float.floatToIntBits(i);
+        return hash;
+    }
     // </editor-fold>
 }

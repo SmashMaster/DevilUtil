@@ -804,5 +804,34 @@ public class Mat2 implements Bufferable, Streamable
         return "[" + a + ", " + b + "]\n" +
                "[" + c + ", " + d + "]";
     }
+    
+    public boolean equals(Mat2 mat)
+    {
+        if (mat == null) return false;
+        
+        return a == mat.a && b == mat.b &&
+               c == mat.c && d == mat.d;
+    }
+    
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null) return false;
+        if (getClass() != o.getClass()) return false;
+        final Mat2 mat = (Mat2)o;
+        return equals(mat);
+    }
+    
+    @Override
+    public int hashCode()
+    {
+        int hash = 7;
+        hash = 61*hash + Float.floatToIntBits(a);
+        hash = 61*hash + Float.floatToIntBits(b);
+        hash = 61*hash + Float.floatToIntBits(c);
+        hash = 61*hash + Float.floatToIntBits(d);
+        return hash;
+    }
     // </editor-fold>
 }

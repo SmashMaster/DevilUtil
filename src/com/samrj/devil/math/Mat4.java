@@ -1591,5 +1591,48 @@ public class Mat4 implements Bufferable, Streamable
                "[" + i + ", " + j + ", " + k + ", " + l + "]\n" +
                "[" + m + ", " + n + ", " + o + ", " + p + "]";
     }
+    
+    public boolean equals(Mat4 mat)
+    {
+        if (mat == null) return false;
+        
+        return a == mat.a && b == mat.b && c == mat.c && d == mat.d &&
+               e == mat.e && f == mat.f && g == mat.g && h == mat.h &&
+               i == mat.i && j == mat.j && k == mat.k && l == mat.l &&
+               m == mat.m && n == mat.n && o == mat.o && p == mat.p;
+    }
+    
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null) return false;
+        if (getClass() != o.getClass()) return false;
+        final Mat4 mat = (Mat4)o;
+        return equals(mat);
+    }
+    
+    @Override
+    public int hashCode()
+    {
+        int hash = 5;
+        hash = 79*hash + Float.floatToIntBits(a);
+        hash = 79*hash + Float.floatToIntBits(b);
+        hash = 79*hash + Float.floatToIntBits(c);
+        hash = 79*hash + Float.floatToIntBits(d);
+        hash = 79*hash + Float.floatToIntBits(e);
+        hash = 79*hash + Float.floatToIntBits(f);
+        hash = 79*hash + Float.floatToIntBits(g);
+        hash = 79*hash + Float.floatToIntBits(h);
+        hash = 79*hash + Float.floatToIntBits(i);
+        hash = 79*hash + Float.floatToIntBits(j);
+        hash = 79*hash + Float.floatToIntBits(k);
+        hash = 79*hash + Float.floatToIntBits(l);
+        hash = 79*hash + Float.floatToIntBits(m);
+        hash = 79*hash + Float.floatToIntBits(n);
+        hash = 79*hash + Float.floatToIntBits(o);
+        hash = 79*hash + Float.floatToIntBits(p);
+        return hash;
+    }
     // </editor-fold>
 }
