@@ -213,7 +213,7 @@ public final class Memory
     
     public ByteBuffer makeView()
     {
-        return memByteBuffer(memAddress(buffer), size);
+        return memByteBuffer(address, size);
     }
     
     /**
