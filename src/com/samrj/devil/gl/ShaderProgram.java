@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,15 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.io.MemStack;
-import com.samrj.devil.math.Mat2;
-import com.samrj.devil.math.Mat3;
-import com.samrj.devil.math.Mat4;
-import com.samrj.devil.math.Vec2;
-import com.samrj.devil.math.Vec3;
-import com.samrj.devil.math.Vec4;
+import com.samrj.devil.math.*;
 import com.samrj.devil.util.IdentitySet;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
+import java.util.*;
 import org.lwjgl.system.MemoryUtil;
+
+import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL20C.*;
+import static org.lwjgl.opengl.GL30C.*;
 
 /**
  * OpenGL shader program wrapper.
@@ -69,7 +60,7 @@ public final class ShaderProgram extends DGLObj
         DGL.checkState();
         if (!DGL.getCapabilities().OpenGL20)
             throw new UnsupportedOperationException("Shader programs unsupported in OpenGL < 2.0");
-        id = GL20.glCreateProgram();
+        id = glCreateProgram();
         shaders = new IdentitySet<>();
         state = State.NEW;
     }
@@ -87,7 +78,7 @@ public final class ShaderProgram extends DGLObj
         if (shader.state() != Shader.State.COMPILED) throw new IllegalStateException(
                 "Cannot attach shader that is not compiled.");
         
-        GL20.glAttachShader(id, shader.id);
+        glAttachShader(id, shader.id);
         shaders.add(shader);
         return this;
     }
@@ -101,7 +92,7 @@ public final class ShaderProgram extends DGLObj
      */
     public ShaderProgram detach(Shader shader)
     {
-        GL20.glDetachShader(id, shader.id);
+        glDetachShader(id, shader.id);
         shaders.remove(shader);
         return this;
     }
@@ -125,17 +116,17 @@ public final class ShaderProgram extends DGLObj
      */
     public ShaderProgram detachAll()
     {
-        for (Shader shader : shaders) GL20.glDetachShader(id, shader.id);
+        for (Shader shader : shaders) glDetachShader(id, shader.id);
         shaders.clear();
         return this;
     }
     
     private void checkStatus(int type)
     {
-        if (GL20.glGetProgrami(id, type) != GL11.GL_TRUE)
+        if (glGetProgrami(id, type) != GL_TRUE)
         {
-            int logLength = GL20.glGetProgrami(id, GL20.GL_INFO_LOG_LENGTH);
-            String log = GL20.glGetProgramInfoLog(id, logLength);
+            int logLength = glGetProgrami(id, GL_INFO_LOG_LENGTH);
+            String log = glGetProgramInfoLog(id, logLength);
             throw new ShaderException(log);
         }
     }
@@ -151,10 +142,10 @@ public final class ShaderProgram extends DGLObj
         if (state != State.NEW) throw new IllegalStateException(
                 "Shader program must be new to link.");
         
-        GL20.glLinkProgram(id);
-        checkStatus(GL20.GL_LINK_STATUS);
+        glLinkProgram(id);
+        checkStatus(GL_LINK_STATUS);
         
-        int numAttributes = GL20.glGetProgrami(id, GL20.GL_ACTIVE_ATTRIBUTES);
+        int numAttributes = glGetProgrami(id, GL_ACTIVE_ATTRIBUTES);
         ArrayList<Attribute> attList = new ArrayList<>(numAttributes);
         attMap = new HashMap<>(numAttributes);
         
@@ -164,14 +155,14 @@ public final class ShaderProgram extends DGLObj
         for (int index=0; index<numAttributes; index++)
         {
             long nameAddress = address + 12;
-            GL20.nglGetActiveAttrib(id, index, 31, address, address + 4, address + 8, nameAddress);
+            nglGetActiveAttrib(id, index, 31, address, address + 4, address + 8, nameAddress);
 
             buffer.rewind();
             buffer.getInt();
             int size = buffer.getInt();
             int type = buffer.getInt();
             String name = MemoryUtil.memASCII(nameAddress);
-            int location = GL20.nglGetAttribLocation(id, nameAddress);
+            int location = nglGetAttribLocation(id, nameAddress);
 
             Attribute att = new Attribute(name, type, size, location);
             attList.add(att);
@@ -195,8 +186,8 @@ public final class ShaderProgram extends DGLObj
         if (state != State.LINKED) throw new IllegalStateException(
                 "Shader program must be linked to validate.");
         
-        GL20.glValidateProgram(id);
-        checkStatus(GL20.GL_VALIDATE_STATUS);
+        glValidateProgram(id);
+        checkStatus(GL_VALIDATE_STATUS);
         
         state = State.COMPLETE;
         return this;
@@ -209,7 +200,7 @@ public final class ShaderProgram extends DGLObj
     {
         if (state == State.DELETED) throw new IllegalStateException(
                 "Shader must not be deleted to use.");
-        GL20.glUseProgram(id);
+        glUseProgram(id);
     }
     
     /**
@@ -221,7 +212,7 @@ public final class ShaderProgram extends DGLObj
      */
     public int getAttributeLocation(String name)
     {
-        return GL20.glGetAttribLocation(id, name);
+        return glGetAttribLocation(id, name);
     }
     
     // <editor-fold defaultstate="collapsed" desc="Uniform methods">
@@ -235,7 +226,7 @@ public final class ShaderProgram extends DGLObj
     public int getUniformLocation(String name)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        return GL20.glGetUniformLocation(id, name);
+        return glGetUniformLocation(id, name);
     }
     
     /**
@@ -249,9 +240,9 @@ public final class ShaderProgram extends DGLObj
     public boolean uniform1i(String name, int x)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = GL20.glGetUniformLocation(id, name);
+        int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
-        GL20.glUniform1i(loc, x);
+        glUniform1i(loc, x);
         return true;
     }
     
@@ -266,11 +257,11 @@ public final class ShaderProgram extends DGLObj
     public boolean uniform1iv(String name, int... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = GL20.glGetUniformLocation(id, name);
+        int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
         long address = MemStack.wrapi(array);
-        GL20.nglUniform1iv(loc, array.length, address);
+        nglUniform1iv(loc, array.length, address);
         MemStack.pop();
         return true;
     }
@@ -298,9 +289,9 @@ public final class ShaderProgram extends DGLObj
     public boolean uniform1f(String name, float x)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = GL20.glGetUniformLocation(id, name);
+        int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
-        GL20.glUniform1f(loc, x);
+        glUniform1f(loc, x);
         return true;
     }
     
@@ -315,11 +306,11 @@ public final class ShaderProgram extends DGLObj
     public boolean uniform1fv(String name, float... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = GL20.glGetUniformLocation(id, name);
+        int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
         long address = MemStack.wrapf(array);
-        GL20.nglUniform1fv(loc, array.length, address);
+        nglUniform1fv(loc, array.length, address);
         MemStack.pop();
         return true;
     }
@@ -334,9 +325,9 @@ public final class ShaderProgram extends DGLObj
     public boolean uniform2f(String name, float x, float y)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = GL20.glGetUniformLocation(id, name);
+        int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
-        GL20.glUniform2f(loc, x, y);
+        glUniform2f(loc, x, y);
         return true;
     }
     
@@ -351,11 +342,11 @@ public final class ShaderProgram extends DGLObj
     public boolean uniform2fv(String name, float... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = GL20.glGetUniformLocation(id, name);
+        int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
         long address = MemStack.wrapf(array);
-        GL20.nglUniform2fv(loc, array.length/2, address);
+        nglUniform2fv(loc, array.length/2, address);
         MemStack.pop();
         return true;
     }
@@ -383,11 +374,11 @@ public final class ShaderProgram extends DGLObj
     public boolean uniformVec2v(String name, Vec2... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = GL20.glGetUniformLocation(id, name);
+        int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
         long address = MemStack.wrapv(array);
-        GL20.nglUniform2fv(loc, array.length, address);
+        nglUniform2fv(loc, array.length, address);
         MemStack.pop();
         return true;
     }
@@ -402,9 +393,9 @@ public final class ShaderProgram extends DGLObj
     public boolean uniform3f(String name, float x, float y, float z)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = GL20.glGetUniformLocation(id, name);
+        int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
-        GL20.glUniform3f(loc, x, y, z);
+        glUniform3f(loc, x, y, z);
         return true;
     }
     
@@ -419,11 +410,11 @@ public final class ShaderProgram extends DGLObj
     public boolean uniform3fv(String name, float... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = GL20.glGetUniformLocation(id, name);
+        int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
         long address = MemStack.wrapf(array);
-        GL20.nglUniform3fv(loc, array.length/3, address);
+        nglUniform3fv(loc, array.length/3, address);
         MemStack.pop();
         return true;
     }
@@ -451,11 +442,11 @@ public final class ShaderProgram extends DGLObj
     public boolean uniformVec3v(String name, Vec3... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = GL20.glGetUniformLocation(id, name);
+        int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
         long address = MemStack.wrapv(array);
-        GL20.nglUniform3fv(loc, array.length, address);
+        nglUniform3fv(loc, array.length, address);
         MemStack.pop();
         return true;
     }
@@ -470,9 +461,9 @@ public final class ShaderProgram extends DGLObj
     public boolean uniform4f(String name, float x, float y, float z, float w)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = GL20.glGetUniformLocation(id, name);
+        int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
-        GL20.glUniform4f(loc, x, y, z, w);
+        glUniform4f(loc, x, y, z, w);
         return true;
     }
     
@@ -487,11 +478,11 @@ public final class ShaderProgram extends DGLObj
     public boolean uniform4fv(String name, float... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = GL20.glGetUniformLocation(id, name);
+        int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
         long address = MemStack.wrapf(array);
-        GL20.nglUniform4fv(loc, array.length/4, address);
+        nglUniform4fv(loc, array.length/4, address);
         MemStack.pop();
         return true;
     }
@@ -519,11 +510,11 @@ public final class ShaderProgram extends DGLObj
     public boolean uniformVec4v(String name, Vec4... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = GL20.glGetUniformLocation(id, name);
+        int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
         long address = MemStack.wrapv(array);
-        GL20.nglUniform4fv(loc, array.length, address);
+        nglUniform4fv(loc, array.length, address);
         MemStack.pop();
         return true;
     }
@@ -538,11 +529,11 @@ public final class ShaderProgram extends DGLObj
     public boolean uniformMat2(String name, Mat2 matrix)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = GL20.glGetUniformLocation(id, name);
+        int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
         long address = MemStack.wrap(matrix);
-        GL20.nglUniformMatrix2fv(loc, 1, false, address);
+        nglUniformMatrix2fv(loc, 1, false, address);
         MemStack.pop();
         return true;
     }
@@ -558,11 +549,11 @@ public final class ShaderProgram extends DGLObj
     public boolean uniformMat2v(String name, Mat2... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = GL20.glGetUniformLocation(id, name);
+        int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
         long address = MemStack.wrapv(array);
-        GL20.nglUniformMatrix2fv(loc, array.length, false, address);
+        nglUniformMatrix2fv(loc, array.length, false, address);
         MemStack.pop();
         return true;
     }
@@ -577,11 +568,11 @@ public final class ShaderProgram extends DGLObj
     public boolean uniformMat3(String name, Mat3 matrix)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = GL20.glGetUniformLocation(id, name);
+        int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
         long address = MemStack.wrap(matrix);
-        GL20.nglUniformMatrix3fv(loc, 1, false, address);
+        nglUniformMatrix3fv(loc, 1, false, address);
         MemStack.pop();
         return true;
     }
@@ -597,11 +588,11 @@ public final class ShaderProgram extends DGLObj
     public boolean uniformMat3v(String name, Mat3... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = GL20.glGetUniformLocation(id, name);
+        int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
         long address = MemStack.wrapv(array);
-        GL20.nglUniformMatrix3fv(loc, array.length, false, address);
+        nglUniformMatrix3fv(loc, array.length, false, address);
         MemStack.pop();
         return true;
     }
@@ -616,11 +607,11 @@ public final class ShaderProgram extends DGLObj
     public boolean uniformMat4(String name, Mat4 matrix)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = GL20.glGetUniformLocation(id, name);
+        int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
         long address = MemStack.wrap(matrix);
-        GL20.nglUniformMatrix4fv(loc, 1, false, address);
+        nglUniformMatrix4fv(loc, 1, false, address);
         MemStack.pop();
         return true;
     }
@@ -636,11 +627,11 @@ public final class ShaderProgram extends DGLObj
     public boolean uniformMat4v(String name, Mat4... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = GL20.glGetUniformLocation(id, name);
+        int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
         long address = MemStack.wrapv(array);
-        GL20.nglUniformMatrix4fv(loc, array.length, false, address);
+        nglUniformMatrix4fv(loc, array.length, false, address);
         MemStack.pop();
         return true;
     }
@@ -655,7 +646,7 @@ public final class ShaderProgram extends DGLObj
     public void bindFragDataLocation(String name, int colorNumber)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        GL30.glBindFragDataLocation(id, colorNumber, name);
+        glBindFragDataLocation(id, colorNumber, name);
     }
     
     /**
@@ -705,7 +696,7 @@ public final class ShaderProgram extends DGLObj
         if (DGL.currentProgram() == this) DGL.useProgram(null);
         attributes = null;
         attMap = null;
-        GL20.glDeleteProgram(id);
+        glDeleteProgram(id);
         
         state = State.DELETED;
     }

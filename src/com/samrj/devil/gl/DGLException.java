@@ -1,19 +1,18 @@
 package com.samrj.devil.gl;
 
-import org.lwjgl.opengl.AMDDebugOutput;
-import org.lwjgl.opengl.ARBDebugOutput;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL43;
-import org.lwjgl.opengl.GLCapabilities;
-import org.lwjgl.opengl.GLDebugMessageAMDCallback;
-import org.lwjgl.opengl.GLDebugMessageARBCallback;
-import org.lwjgl.opengl.GLDebugMessageCallback;
-import org.lwjgl.opengl.KHRDebug;
+import org.lwjgl.opengl.*;
 import org.lwjgl.system.Callback;
 import org.lwjgl.system.MemoryUtil;
 
+import static org.lwjgl.opengl.GL11C.*;
+
+/**
+ * Automatically handles OpenGL debugging and exceptions.
+ * 
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2019 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public class DGLException extends RuntimeException
 {
     private static Callback callback;
@@ -52,8 +51,7 @@ public class DGLException extends RuntimeException
     private static void error(int source, int type, int id, int severity, int length, long message, long userParam)
     {
         if (source == GL43.GL_DEBUG_SOURCE_API && type == GL43.GL_DEBUG_TYPE_ERROR)
-            throw new DGLException(getSeverity(severity) + " severity " +
-                    memUTF8(message, length) + " from " + getSource(source));
+            throw new DGLException("from " + getSource(source) + ": " + getSeverity(severity) + " severity " + memUTF8(message, length));
     }
     
     private static void error(int id, int category, int severity, int length, long message, long userParam)
@@ -70,8 +68,8 @@ public class DGLException extends RuntimeException
         {
             GLDebugMessageCallback proc = GLDebugMessageCallback.create(DGLException::error);
             GL43.glDebugMessageCallback(proc, MemoryUtil.NULL);
-            if ((GL11.glGetInteger(GL30.GL_CONTEXT_FLAGS) & GL43.GL_CONTEXT_FLAG_DEBUG_BIT) == 0)
-                GL11.glEnable(GL43.GL_DEBUG_OUTPUT);
+            glEnable(GL43.GL_DEBUG_OUTPUT);
+            glEnable(GL43.GL_DEBUG_OUTPUT_SYNCHRONOUS);
             return proc;
         }
 
@@ -79,8 +77,8 @@ public class DGLException extends RuntimeException
         {
             GLDebugMessageCallback proc = GLDebugMessageCallback.create(DGLException::error);
             KHRDebug.glDebugMessageCallback(proc, MemoryUtil.NULL);
-            if (caps.OpenGL30 && (GL11.glGetInteger(GL30.GL_CONTEXT_FLAGS) & GL43.GL_CONTEXT_FLAG_DEBUG_BIT) == 0)
-                GL11.glEnable(GL43.GL_DEBUG_OUTPUT);
+            glEnable(KHRDebug.GL_DEBUG_OUTPUT);
+            glEnable(KHRDebug.GL_DEBUG_OUTPUT_SYNCHRONOUS);
             return proc;
         }
 
@@ -88,6 +86,7 @@ public class DGLException extends RuntimeException
         {
             GLDebugMessageARBCallback proc = GLDebugMessageARBCallback.create(DGLException::error);
             ARBDebugOutput.glDebugMessageCallbackARB(proc, MemoryUtil.NULL);
+            glEnable(ARBDebugOutput.GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
             return proc;
         }
 

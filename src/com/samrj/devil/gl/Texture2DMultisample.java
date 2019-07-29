@@ -1,13 +1,14 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.graphics.TexUtil;
-import org.lwjgl.opengl.GL32;
+
+import static org.lwjgl.opengl.GL32C.*;
 
 /**
  * OpenGL multisampled 2D texture class.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class Texture2DMultisample extends Texture<Texture2DMultisample>
@@ -16,7 +17,7 @@ public class Texture2DMultisample extends Texture<Texture2DMultisample>
     
     Texture2DMultisample()
     {
-        super(GL32.GL_TEXTURE_2D_MULTISAMPLE, GL32.GL_TEXTURE_BINDING_2D_MULTISAMPLE);
+        super(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_BINDING_2D_MULTISAMPLE);
         width = -1;
         height = -1;
     }
@@ -62,7 +63,7 @@ public class Texture2DMultisample extends Texture<Texture2DMultisample>
         this.height = height;
         
         int oldID = tempBind();
-        GL32.glTexImage2DMultisample(target, samples, format, width, height, fixedSampleLocations);
+        glTexImage2DMultisample(target, samples, format, width, height, fixedSampleLocations);
         tempUnbind(oldID);
         
         setVRAMUsage(TexUtil.getBits(format)*width*height*samples);

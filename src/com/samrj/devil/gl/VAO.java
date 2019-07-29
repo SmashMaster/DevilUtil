@@ -6,15 +6,16 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
-import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
+
+import static org.lwjgl.opengl.GL15C.*;
+import static org.lwjgl.opengl.GL20C.*;
+import static org.lwjgl.opengl.GL30C.*;
 
 /**
  * OpenGL VAO wrapper.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 final class VAO
@@ -100,13 +101,13 @@ final class VAO
         DGL.checkState();
         if (!DGL.getCapabilities().OpenGL30)
             throw new UnsupportedOperationException("Vertex arrays unsupported in OpenGL < 3.0");
-        id = GL30.glGenVertexArrays();
+        id = glGenVertexArrays();
         this.pair = pair;
         
         bind();
         
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, pair.a.vbo());
-        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, pair.a.ibo());
+        glBindBuffer(GL_ARRAY_BUFFER, pair.a.vbo());
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pair.a.ibo());
         
         for (ShaderProgram.Attribute satt : pair.b.getAttributes())
         {
@@ -118,7 +119,7 @@ final class VAO
                 for (int layer=0; layer<type.layers; layer++)
                 {
                     int location = satt.location + layer;
-                    GL20.glEnableVertexAttribArray(location);
+                    glEnableVertexAttribArray(location);
                     vertexAttribPointer(location, type, att.getStride(),
                                         att.getOffset() + layer*type.size);
                 }
@@ -128,22 +129,22 @@ final class VAO
     
     private void vertexAttribPointer(int index, AttributeType type, int stride, long pointerOffset)
     {
-        if (type.isInteger) GL30.nglVertexAttribIPointer(index, type.components, type.glComponent, stride, pointerOffset);
-        else GL20.nglVertexAttribPointer(index, type.components, type.glComponent, false, stride, pointerOffset);
+        if (type.isInteger) nglVertexAttribIPointer(index, type.components, type.glComponent, stride, pointerOffset);
+        else nglVertexAttribPointer(index, type.components, type.glComponent, false, stride, pointerOffset);
     }
     
     private void bind()
     {
-        GL30.glBindVertexArray(id);
+        glBindVertexArray(id);
     }
     
     private void unbind()
     {
-        GL30.glBindVertexArray(0);
+        glBindVertexArray(0);
     }
 
     private void delete()
     {
-        GL30.glDeleteVertexArrays(id);
+        glDeleteVertexArrays(id);
     }
 }

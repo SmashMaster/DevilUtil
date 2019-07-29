@@ -1,13 +1,14 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.graphics.TexUtil;
-import org.lwjgl.opengl.GL11;
+
+import static org.lwjgl.opengl.GL11C.*;
 
 /**
  * OpenGL 1D texture class.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Texture1D extends Texture<Texture1D>
@@ -16,12 +17,12 @@ public final class Texture1D extends Texture<Texture1D>
     
     Texture1D()
     {
-        super(GL11.GL_TEXTURE_1D, GL11.GL_TEXTURE_BINDING_1D);
+        super(GL_TEXTURE_1D, GL_TEXTURE_BINDING_1D);
         
         int oldID = tempBind();
-        parami(GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
-        parami(GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-        parami(GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+        parami(GL_TEXTURE_WRAP_S, GL_REPEAT);
+        parami(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        parami(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         tempUnbind(oldID);
     }
     
@@ -62,7 +63,7 @@ public final class Texture1D extends Texture<Texture1D>
         int primType = TexUtil.getPrimitiveType(format);
         
         int oldID = tempBind();
-        GL11.nglTexImage1D(target, 0, format, width, 0, dataFormat, primType, image.address());
+        nglTexImage1D(target, 0, format, width, 0, dataFormat, primType, image.address());
         tempUnbind(oldID);
         
         setVRAMUsage(TexUtil.getBits(format)*width);

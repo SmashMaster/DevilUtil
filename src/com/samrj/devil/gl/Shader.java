@@ -6,14 +6,15 @@ import com.samrj.devil.res.Resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL20;
+
+import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL20C.*;
 
 /**
  * OpenGL shader object wrapper/loader.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Shader extends DGLObj
@@ -32,7 +33,7 @@ public final class Shader extends DGLObj
         DGL.checkState();
         if (!DGL.getCapabilities().OpenGL20)
             throw new UnsupportedOperationException("Shaders unsupported in OpenGL < 2.0");
-        id = GL20.glCreateShader(type);
+        id = glCreateShader(type);
         this.type = type;
         state = State.NEW;
     }
@@ -62,20 +63,20 @@ public final class Shader extends DGLObj
         long length = MemStack.wrapi(sourceLength);
 
         //Load shader source
-        GL20.nglShaderSource(id, 1, pointer, length);
+        nglShaderSource(id, 1, pointer, length);
 
         //Free allocated memory
         MemStack.pop(2);
         sourceBlock.free();
         
         //Compile
-        GL20.glCompileShader(id);
+        glCompileShader(id);
         
         //Check for errors
-        if (GL20.glGetShaderi(id, GL20.GL_COMPILE_STATUS) != GL11.GL_TRUE)
+        if (glGetShaderi(id, GL_COMPILE_STATUS) != GL_TRUE)
         {
-            int logLength = GL20.glGetShaderi(id, GL20.GL_INFO_LOG_LENGTH);
-            String log = GL20.glGetShaderInfoLog(id, logLength);
+            int logLength = glGetShaderi(id, GL_INFO_LOG_LENGTH);
+            String log = glGetShaderInfoLog(id, logLength);
             throw new ShaderException(path != null ? path + " " + log : log);
         }
         
@@ -110,7 +111,7 @@ public final class Shader extends DGLObj
     {
         if (state == State.DELETED) return;
         
-        GL20.glDeleteShader(id);
+        glDeleteShader(id);
         state = State.DELETED;
     }
 }

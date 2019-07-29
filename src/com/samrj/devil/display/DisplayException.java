@@ -1,7 +1,8 @@
 package com.samrj.devil.display;
 
-import static org.lwjgl.glfw.GLFW.*;
 import org.lwjgl.system.MemoryUtil;
+
+import static org.lwjgl.glfw.GLFW.*;
 
 /**
  * Exception class for GLFW errors.

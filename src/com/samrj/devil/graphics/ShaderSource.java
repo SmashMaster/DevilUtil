@@ -1,20 +1,12 @@
 package com.samrj.devil.graphics;
 
 import com.samrj.devil.res.Resource;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
+import java.io.*;
+import java.util.*;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2014 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 class ShaderSource
@@ -35,7 +27,7 @@ class ShaderSource
     ShaderSource(String name, Resource res) throws IOException
     {
         if (STATIC_HASH == -1) throw new IllegalStateException(
-                "How did you manage to load 2^32 shader sources? Seriously, let me know.");
+                "How did you manage to load 2^31 shader sources? Seriously, let me know.");
         id = STATIC_HASH++;
         
         this.name = name;

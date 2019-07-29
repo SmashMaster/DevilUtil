@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,6 @@
 package com.samrj.devil.geo2d;
 
 import com.samrj.devil.math.Vec2;
-import org.lwjgl.opengl.GL11;
 
 /**
  * 2D Axis-aligned box.
@@ -338,22 +337,6 @@ public class AAB2
             y0 = y1;
             y1 = temp;
         }
-    }
-    
-    public void glVertex()
-    {
-        GL11.glVertex2f(x0, y0);
-        GL11.glVertex2f(x0, y1);
-        GL11.glVertex2f(x1, y1);
-        GL11.glVertex2f(x1, y0);
-    }
-    
-    public void glTexVertex()
-    {
-        GL11.glTexCoord2f(0f, 0f); GL11.glVertex2f(x0, y0);
-        GL11.glTexCoord2f(0f, 1f); GL11.glVertex2f(x0, y1);
-        GL11.glTexCoord2f(1f, 1f); GL11.glVertex2f(x1, y1);
-        GL11.glTexCoord2f(1f, 0f); GL11.glVertex2f(x1, y0);
     }
     
     @Override public String toString()

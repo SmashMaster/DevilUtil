@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,10 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.graphics.TexUtil;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
 import org.lwjgl.system.MemoryUtil;
+
+import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL13C.*;
 
 /**
  * Abstract class for 2D textures.
@@ -81,7 +82,7 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         int primType = TexUtil.getPrimitiveType(format);
         
         int oldID = tempBind();
-        GL11.nglTexImage2D(target, 0, format, width, height, 0,
+        nglTexImage2D(target, 0, format, width, height, 0,
                 baseFormat, primType, MemoryUtil.NULL);
         tempUnbind(oldID);
         
@@ -112,7 +113,7 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         int primType = TexUtil.getPrimitiveType(format);
         
         int oldID = tempBind();
-        GL11.nglTexImage2D(target, 0, format, width, height, 0,
+        nglTexImage2D(target, 0, format, width, height, 0,
                 dataFormat, primType, image.address());
         tempUnbind(oldID);
         
@@ -152,7 +153,7 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         height = image.height;
         
         int oldID = tempBind();
-        GL13.nglCompressedTexImage2D(target, 0, image.format, width, height, 0,
+        nglCompressedTexImage2D(target, 0, image.format, width, height, 0,
                 image.size(), image.address());
         tempUnbind(oldID);
         
@@ -182,7 +183,7 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         
         int primType = TexUtil.getPrimitiveType(format);
         int oldID = tempBind();
-        GL11.nglTexSubImage2D(target, 0, 0, 0, width, height,
+        nglTexSubImage2D(target, 0, 0, 0, width, height,
                 dataFormat, primType, image.address());
         tempUnbind(oldID);
         return getThis();
@@ -210,7 +211,7 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         int dataFormat = TexUtil.getBaseFormat(format);
         int primType = TexUtil.getPrimitiveType(format);
         int oldID = tempBind();
-        GL11.nglGetTexImage(target, 0, dataFormat, primType, image.address());
+        nglGetTexImage(target, 0, dataFormat, primType, image.address());
         tempUnbind(oldID);
         return getThis();
     }

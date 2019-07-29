@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,10 @@ package com.samrj.devil.graphics;
 
 import com.samrj.devil.gl.Image;
 import org.lwjgl.opengl.EXTTextureCompressionS3TC;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL14;
-import org.lwjgl.opengl.GL30;
+
+import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL14C.*;
+import static org.lwjgl.opengl.GL30C.*;
 
 /**
  * Texture utility methods.
@@ -44,17 +45,15 @@ public class TexUtil
     {
         switch (baseFormat)
         {
-            case GL11.GL_LUMINANCE:
-            case GL11.GL_ALPHA:
-            case GL11.GL_DEPTH_COMPONENT:
-            case GL11.GL_RED: return 1;
+            case GL_ALPHA:
+            case GL_DEPTH_COMPONENT:
+            case GL_RED: return 1;
+            
+            case GL_DEPTH_STENCIL:
+            case GL_RG: return 2;
                 
-            case GL11.GL_LUMINANCE_ALPHA:
-            case GL30.GL_DEPTH_STENCIL:
-            case GL30.GL_RG: return 2;
-                
-            case GL11.GL_RGB: return 3;
-            case GL11.GL_RGBA: return 4;
+            case GL_RGB: return 3;
+            case GL_RGBA: return 4;
             
             default: return -1;
         }
@@ -73,42 +72,42 @@ public class TexUtil
         {
             case BYTE: switch (image.bands)
                 {
-                    case 1: return GL30.GL_R8;
-                    case 2: return GL30.GL_RG8;
-                    case 3: return GL11.GL_RGB8;
-                    case 4: return GL11.GL_RGBA8;
+                    case 1: return GL_R8;
+                    case 2: return GL_RG8;
+                    case 3: return GL_RGB8;
+                    case 4: return GL_RGBA8;
                 }
                 break;
             case CHAR: switch (image.bands)
                 {
-                    case 1: return GL30.GL_R16;
-                    case 2: return GL30.GL_RG16;
-                    case 3: return GL11.GL_RGB16;
-                    case 4: return GL11.GL_RGBA16;
+                    case 1: return GL_R16;
+                    case 2: return GL_RG16;
+                    case 3: return GL_RGB16;
+                    case 4: return GL_RGBA16;
                 }
                 break;
             case SHORT: switch (image.bands)
                 {
-                    case 1: return GL30.GL_R16I;
-                    case 2: return GL30.GL_RG16I;
-                    case 3: return GL30.GL_RGB16I;
-                    case 4: return GL30.GL_RGBA16I;
+                    case 1: return GL_R16I;
+                    case 2: return GL_RG16I;
+                    case 3: return GL_RGB16I;
+                    case 4: return GL_RGBA16I;
                 }
                 break;
             case INT: switch (image.bands)
                 {
-                    case 1: return GL30.GL_R32I;
-                    case 2: return GL30.GL_RG32I;
-                    case 3: return GL30.GL_RGB32I;
-                    case 4: return GL30.GL_RGBA32I;
+                    case 1: return GL_R32I;
+                    case 2: return GL_RG32I;
+                    case 3: return GL_RGB32I;
+                    case 4: return GL_RGBA32I;
                 }
                 break;
             case FLOAT: switch (image.bands)
                 {
-                    case 1: return GL30.GL_R32F;
-                    case 2: return GL30.GL_RG32F;
-                    case 3: return GL30.GL_RGB32F;
-                    case 4: return GL30.GL_RGBA32F;
+                    case 1: return GL_R32F;
+                    case 2: return GL_RG32F;
+                    case 3: return GL_RGB32F;
+                    case 4: return GL_RGBA32F;
                 }
                 break;
         }
@@ -125,70 +124,56 @@ public class TexUtil
     {
         switch (format)
         {
-            //Forward-compatible formats.
-            case GL11.GL_DEPTH_COMPONENT:
-            case GL14.GL_DEPTH_COMPONENT16:
-            case GL14.GL_DEPTH_COMPONENT24:
-            case GL14.GL_DEPTH_COMPONENT32:
-            case GL30.GL_DEPTH_COMPONENT32F: return GL11.GL_DEPTH_COMPONENT;
-                
-            case GL11.GL_RED:
-            case GL30.GL_R8:
-            case GL30.GL_R16:
-            case GL30.GL_R16F:
-            case GL30.GL_R16I:
-            case GL30.GL_R32F:
-            case GL30.GL_R32I: return GL11.GL_RED;
-                
-            case GL30.GL_DEPTH_STENCIL:
-            case GL30.GL_DEPTH24_STENCIL8:
-            case GL30.GL_DEPTH32F_STENCIL8: return GL30.GL_DEPTH_STENCIL;
-                
-            case GL30.GL_RG:
-            case GL30.GL_RG8:
-            case GL30.GL_RG16:
-            case GL30.GL_RG16F:
-            case GL30.GL_RG16I:
-            case GL30.GL_RG32F:
-            case GL30.GL_RG32I: return GL30.GL_RG;
-                
-            case GL11.GL_RGB:
-            case GL11.GL_R3_G3_B2:
-            case GL11.GL_RGB4:
-            case GL11.GL_RGB5:
-            case GL11.GL_RGB8:
-            case GL11.GL_RGB10:
-            case GL11.GL_RGB12:
-            case GL11.GL_RGB16:
-            case GL30.GL_RGB16F:
-            case GL30.GL_RGB16I:
-            case GL30.GL_RGB32F:
-            case GL30.GL_RGB32I: return GL11.GL_RGB;
-                
-            case GL11.GL_RGBA:
-            case GL11.GL_RGBA2:
-            case GL11.GL_RGBA4:
-            case GL11.GL_RGBA8:
-            case GL11.GL_RGBA12:
-            case GL11.GL_RGBA16:
-            case GL30.GL_RGBA16F:
-            case GL30.GL_RGBA16I:
-            case GL30.GL_RGBA32F:
-            case GL30.GL_RGBA32I: return GL11.GL_RGBA;
+            case GL_DEPTH_COMPONENT:
+            case GL_DEPTH_COMPONENT16:
+            case GL_DEPTH_COMPONENT24:
+            case GL_DEPTH_COMPONENT32:
+            case GL_DEPTH_COMPONENT32F: return GL_DEPTH_COMPONENT;
             
-            //Deprecated formats.
-            case GL11.GL_LUMINANCE:
-            case GL11.GL_LUMINANCE8:
-            case GL11.GL_LUMINANCE16: return GL11.GL_LUMINANCE;
-                
-            case GL11.GL_ALPHA:
-            case GL11.GL_ALPHA8:
-            case GL11.GL_ALPHA16: return GL11.GL_ALPHA;
-                
-            case GL11.GL_LUMINANCE_ALPHA:
-            case GL11.GL_LUMINANCE8_ALPHA8:
-            case GL11.GL_LUMINANCE16_ALPHA16: return GL11.GL_LUMINANCE_ALPHA;
-             
+            case GL_RED:
+            case GL_R8:
+            case GL_R16:
+            case GL_R16F:
+            case GL_R16I:
+            case GL_R32F:
+            case GL_R32I: return GL_RED;
+            
+            case GL_DEPTH_STENCIL:
+            case GL_DEPTH24_STENCIL8:
+            case GL_DEPTH32F_STENCIL8: return GL_DEPTH_STENCIL;
+            
+            case GL_RG:
+            case GL_RG8:
+            case GL_RG16:
+            case GL_RG16F:
+            case GL_RG16I:
+            case GL_RG32F:
+            case GL_RG32I: return GL_RG;
+            
+            case GL_RGB:
+            case GL_R3_G3_B2:
+            case GL_RGB4:
+            case GL_RGB5:
+            case GL_RGB8:
+            case GL_RGB10:
+            case GL_RGB12:
+            case GL_RGB16:
+            case GL_RGB16F:
+            case GL_RGB16I:
+            case GL_RGB32F:
+            case GL_RGB32I: return GL_RGB;
+            
+            case GL_RGBA:
+            case GL_RGBA2:
+            case GL_RGBA4:
+            case GL_RGBA8:
+            case GL_RGBA12:
+            case GL_RGBA16:
+            case GL_RGBA16F:
+            case GL_RGBA16I:
+            case GL_RGBA32F:
+            case GL_RGBA32I: return GL_RGBA;
+            
             default: return -1;
         }
     }
@@ -203,59 +188,49 @@ public class TexUtil
     {
         switch (format)
         {
-            case GL11.GL_DEPTH_COMPONENT: return "GL_DEPTH_COMPONENT";
-            case GL14.GL_DEPTH_COMPONENT16: return "GL_DEPTH_COMPONENT16";
-            case GL14.GL_DEPTH_COMPONENT24: return "GL_DEPTH_COMPONENT24";
-            case GL14.GL_DEPTH_COMPONENT32: return "GL_DEPTH_COMPONENT32";
-            case GL30.GL_DEPTH_COMPONENT32F: return "GL_DEPTH_COMPONENT32F";
+            case GL_DEPTH_COMPONENT: return "GL_DEPTH_COMPONENT";
+            case GL_DEPTH_COMPONENT16: return "GL_DEPTH_COMPONENT16";
+            case GL_DEPTH_COMPONENT24: return "GL_DEPTH_COMPONENT24";
+            case GL_DEPTH_COMPONENT32: return "GL_DEPTH_COMPONENT32";
+            case GL_DEPTH_COMPONENT32F: return "GL_DEPTH_COMPONENT32F";
                 
-            case GL11.GL_RED: return "GL_RED";
-            case GL30.GL_R8: return "GL_R8";
-            case GL30.GL_R16: return "GL_R16";
-            case GL30.GL_R16F: return "GL_R16F";
-            case GL30.GL_R16I: return "GL_R16I";
-            case GL30.GL_R32F: return "GL_R32F";
-            case GL30.GL_R32I: return "GL_R32I";
+            case GL_RED: return "GL_RED";
+            case GL_R8: return "GL_R8";
+            case GL_R16: return "GL_R16";
+            case GL_R16F: return "GL_R16F";
+            case GL_R16I: return "GL_R16I";
+            case GL_R32F: return "GL_R32F";
+            case GL_R32I: return "GL_R32I";
                 
-            case GL30.GL_DEPTH_STENCIL: return "GL_DEPTH_STENCIL";
-            case GL30.GL_DEPTH24_STENCIL8: return "GL_DEPTH24_STENCIL8";
-            case GL30.GL_DEPTH32F_STENCIL8: return "GL_DEPTH32F_STENCIL8";
+            case GL_DEPTH_STENCIL: return "GL_DEPTH_STENCIL";
+            case GL_DEPTH24_STENCIL8: return "GL_DEPTH24_STENCIL8";
+            case GL_DEPTH32F_STENCIL8: return "GL_DEPTH32F_STENCIL8";
                 
-            case GL30.GL_RG: return "GL_RG";
-            case GL30.GL_RG8: return "GL_RG8";
-            case GL30.GL_RG16: return "GL_RG16";
-            case GL30.GL_RG16F: return "GL_RG16F";
-            case GL30.GL_RG16I: return "GL_RG16I";
-            case GL30.GL_RG32F: return "GL_RG32F";
-            case GL30.GL_RG32I: return "GL_RG32I";
+            case GL_RG: return "GL_RG";
+            case GL_RG8: return "GL_RG8";
+            case GL_RG16: return "GL_RG16";
+            case GL_RG16F: return "GL_RG16F";
+            case GL_RG16I: return "GL_RG16I";
+            case GL_RG32F: return "GL_RG32F";
+            case GL_RG32I: return "GL_RG32I";
                 
-            case GL11.GL_RGB: return "GL_RGB";
-            case GL11.GL_RGB8: return "GL_RGB8";
-            case GL11.GL_RGB16: return "GL_RGB16";
-            case GL30.GL_RGB16F: return "GL_RGB16F";
-            case GL30.GL_RGB16I: return "GL_RGB16I";
-            case GL30.GL_RGB32F: return "GL_RGB32F";
-            case GL30.GL_RGB32I: return "GL_RGB32I";
+            case GL_RGB: return "GL_RGB";
+            case GL_RGB8: return "GL_RGB8";
+            case GL_RGB16: return "GL_RGB16";
+            case GL_RGB16F: return "GL_RGB16F";
+            case GL_RGB16I: return "GL_RGB16I";
+            case GL_RGB32F: return "GL_RGB32F";
+            case GL_RGB32I: return "GL_RGB32I";
                 
-            case GL11.GL_RGBA: return "GL_RGBA";
-            case GL11.GL_RGBA8: return "GL_RGBA8";
-            case GL11.GL_RGBA16: return "GL_RGBA16";
-            case GL30.GL_RGBA16F: return "GL_RGBA16F";
-            case GL30.GL_RGBA16I: return "GL_RGBA16I";
-            case GL30.GL_RGBA32F: return "GL_RGBA32F";
-            case GL30.GL_RGBA32I: return "GL_RGBA32I";
-                
-            case GL11.GL_LUMINANCE: return "GL_LUMINANCE";
-            case GL11.GL_LUMINANCE8: return "GL_LUMINANCE8";
-            case GL11.GL_LUMINANCE16: return "GL_LUMINANCE16";
-                
-            case GL11.GL_ALPHA: return "GL_ALPHA";
-            case GL11.GL_ALPHA8: return "GL_ALPHA8";
-            case GL11.GL_ALPHA16: return "GL_ALPHA16";
-                
-            case GL11.GL_LUMINANCE_ALPHA: return "GL_LUMINANCE_ALPHA";
-            case GL11.GL_LUMINANCE8_ALPHA8: return "GL_LUMINANCE8_ALPHA8";
-            case GL11.GL_LUMINANCE16_ALPHA16: return "GL_LUMINANCE16_ALPHA16";
+            case GL_RGBA: return "GL_RGBA";
+            case GL_RGBA8: return "GL_RGBA8";
+            case GL_RGBA16: return "GL_RGBA16";
+            case GL_RGBA16F: return "GL_RGBA16F";
+            case GL_RGBA16I: return "GL_RGBA16I";
+            case GL_RGBA32F: return "GL_RGBA32F";
+            case GL_RGBA32I: return "GL_RGBA32I";
+            
+            case GL_ALPHA: return "GL_ALPHA";
             
             case EXTTextureCompressionS3TC.GL_COMPRESSED_RGB_S3TC_DXT1_EXT: return "GL_COMPRESSED_RGB_S3TC_DXT1_EXT";
             case EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT1_EXT: return "GL_COMPRESSED_RGBA_S3TC_DXT1_EXT";
@@ -275,10 +250,10 @@ public class TexUtil
     {
         switch (bands)
         {
-            case 1: return GL11.GL_RED;
-            case 2: return GL30.GL_RG;
-            case 3: return GL11.GL_RGB;
-            case 4: return GL11.GL_RGBA;
+            case 1: return GL_RED;
+            case 2: return GL_RG;
+            case 3: return GL_RGB;
+            case 4: return GL_RGBA;
                 
             default: return -1;
         }
@@ -295,40 +270,34 @@ public class TexUtil
         switch (format)
         {
             default:
-            case GL11.GL_LUMINANCE8:
-            case GL11.GL_ALPHA8:
-            case GL11.GL_LUMINANCE8_ALPHA8:
-            case GL30.GL_R8:
-            case GL30.GL_RG8:
-            case GL11.GL_RGB8:
-            case GL11.GL_RGBA8: return GL11.GL_UNSIGNED_BYTE;
+            case GL_R8:
+            case GL_RG8:
+            case GL_RGB8:
+            case GL_RGBA8: return GL_UNSIGNED_BYTE;
             
-            case GL11.GL_LUMINANCE16:
-            case GL11.GL_ALPHA16:
-            case GL11.GL_LUMINANCE16_ALPHA16:
-            case GL14.GL_DEPTH_COMPONENT16:
-            case GL30.GL_R16:
-            case GL30.GL_RG16:
-            case GL11.GL_RGB16:
-            case GL11.GL_RGBA16: return GL11.GL_UNSIGNED_SHORT;
+            case GL_DEPTH_COMPONENT16:
+            case GL_R16:
+            case GL_RG16:
+            case GL_RGB16:
+            case GL_RGBA16: return GL_UNSIGNED_SHORT;
             
-            case GL30.GL_R16I:
-            case GL30.GL_RG16I:
-            case GL30.GL_RGB16I:
-            case GL30.GL_RGBA16I: return GL11.GL_SHORT;
+            case GL_R16I:
+            case GL_RG16I:
+            case GL_RGB16I:
+            case GL_RGBA16I: return GL_SHORT;
             
-            case GL30.GL_DEPTH_COMPONENT32F:
-            case GL30.GL_R32F:
-            case GL30.GL_RG32F:
-            case GL30.GL_RGB32F:
-            case GL30.GL_RGBA32F: return GL11.GL_FLOAT;
+            case GL_DEPTH_COMPONENT32F:
+            case GL_R32F:
+            case GL_RG32F:
+            case GL_RGB32F:
+            case GL_RGBA32F: return GL_FLOAT;
             
-            case GL30.GL_R32I:
-            case GL30.GL_RG32I:
-            case GL30.GL_RGB32I:
-            case GL30.GL_RGBA32I: return GL11.GL_INT;
+            case GL_R32I:
+            case GL_RG32I:
+            case GL_RGB32I:
+            case GL_RGBA32I: return GL_INT;
             
-            case GL30.GL_DEPTH24_STENCIL8: return GL30.GL_UNSIGNED_INT_24_8;
+            case GL_DEPTH24_STENCIL8: return GL_UNSIGNED_INT_24_8;
         }
     }
     
@@ -340,67 +309,53 @@ public class TexUtil
     {
         switch (format)
         {
-            //Forward-compatible formats.
-            case GL11.GL_DEPTH_COMPONENT: return 24;
-            case GL14.GL_DEPTH_COMPONENT16: return 16;
-            case GL14.GL_DEPTH_COMPONENT24: return 24;
-            case GL14.GL_DEPTH_COMPONENT32:
-            case GL30.GL_DEPTH_COMPONENT32F: return 32;
-            case GL11.GL_RED:
-            case GL30.GL_R8: return 8;
-            case GL30.GL_R16:
-            case GL30.GL_R16F:
-            case GL30.GL_R16I: return 16;
-            case GL30.GL_R32F:
-            case GL30.GL_R32I: return 32;
-            case GL30.GL_DEPTH_STENCIL: return 8;
-            case GL30.GL_DEPTH24_STENCIL8: return 32;
-            case GL30.GL_DEPTH32F_STENCIL8: return 40;
+            case GL_DEPTH_COMPONENT: return 24;
+            case GL_DEPTH_COMPONENT16: return 16;
+            case GL_DEPTH_COMPONENT24: return 24;
+            case GL_DEPTH_COMPONENT32:
+            case GL_DEPTH_COMPONENT32F: return 32;
+            case GL_RED:
+            case GL_R8: return 8;
+            case GL_R16:
+            case GL_R16F:
+            case GL_R16I: return 16;
+            case GL_R32F:
+            case GL_R32I: return 32;
+            case GL_DEPTH_STENCIL: return 8;
+            case GL_DEPTH24_STENCIL8: return 32;
+            case GL_DEPTH32F_STENCIL8: return 40;
                 
-            case GL30.GL_RG:
-            case GL30.GL_RG8: return 16;
-            case GL30.GL_RG16:
-            case GL30.GL_RG16F:
-            case GL30.GL_RG16I: return 32;
-            case GL30.GL_RG32F:
-            case GL30.GL_RG32I: return 64;
+            case GL_RG:
+            case GL_RG8: return 16;
+            case GL_RG16:
+            case GL_RG16F:
+            case GL_RG16I: return 32;
+            case GL_RG32F:
+            case GL_RG32I: return 64;
                 
-            case GL11.GL_RGB: return 24;
-            case GL11.GL_R3_G3_B2: return 8;
-            case GL11.GL_RGB4: return 12;
-            case GL11.GL_RGB5: return 15;
-            case GL11.GL_RGB8: return 24;
-            case GL11.GL_RGB10: return 30;
-            case GL11.GL_RGB12: return 36;
-            case GL11.GL_RGB16:
-            case GL30.GL_RGB16F:
-            case GL30.GL_RGB16I: return 48;
-            case GL30.GL_RGB32F:
-            case GL30.GL_RGB32I: return 96;
+            case GL_RGB: return 24;
+            case GL_R3_G3_B2: return 8;
+            case GL_RGB4: return 12;
+            case GL_RGB5: return 15;
+            case GL_RGB8: return 24;
+            case GL_RGB10: return 30;
+            case GL_RGB12: return 36;
+            case GL_RGB16:
+            case GL_RGB16F:
+            case GL_RGB16I: return 48;
+            case GL_RGB32F:
+            case GL_RGB32I: return 96;
                 
-            case GL11.GL_RGBA: return 32;
-            case GL11.GL_RGBA2: return 8;
-            case GL11.GL_RGBA4: return 16;
-            case GL11.GL_RGBA8: return 32;
-            case GL11.GL_RGBA12: return 48;
-            case GL11.GL_RGBA16:
-            case GL30.GL_RGBA16F:
-            case GL30.GL_RGBA16I: return 64;
-            case GL30.GL_RGBA32F:
-            case GL30.GL_RGBA32I: return 128;
-                
-            //Deprecated formats.
-            case GL11.GL_LUMINANCE:
-            case GL11.GL_LUMINANCE8: return 8;
-            case GL11.GL_LUMINANCE16: return 16;
-                
-            case GL11.GL_ALPHA:
-            case GL11.GL_ALPHA8: return 8;
-            case GL11.GL_ALPHA16: return 16;
-                
-            case GL11.GL_LUMINANCE_ALPHA:
-            case GL11.GL_LUMINANCE8_ALPHA8: return 16;
-            case GL11.GL_LUMINANCE16_ALPHA16: return 32;
+            case GL_RGBA: return 32;
+            case GL_RGBA2: return 8;
+            case GL_RGBA4: return 16;
+            case GL_RGBA8: return 32;
+            case GL_RGBA12: return 48;
+            case GL_RGBA16:
+            case GL_RGBA16F:
+            case GL_RGBA16I: return 64;
+            case GL_RGBA32F:
+            case GL_RGBA32I: return 128;
                 
             default: return -1;
         }
@@ -414,10 +369,10 @@ public class TexUtil
     {
         switch (filter)
         {
-            case GL11.GL_NEAREST_MIPMAP_NEAREST:
-            case GL11.GL_LINEAR_MIPMAP_NEAREST:
-            case GL11.GL_NEAREST_MIPMAP_LINEAR:
-            case GL11.GL_LINEAR_MIPMAP_LINEAR: return true;
+            case GL_NEAREST_MIPMAP_NEAREST:
+            case GL_LINEAR_MIPMAP_NEAREST:
+            case GL_NEAREST_MIPMAP_LINEAR:
+            case GL_LINEAR_MIPMAP_LINEAR: return true;
                 
             default: return false;
         }
@@ -434,9 +389,9 @@ public class TexUtil
     {
         switch (bits)
         {
-            case 16: return GL14.GL_DEPTH_COMPONENT16;
-            case 24: return GL14.GL_DEPTH_COMPONENT24;
-            case 32: return GL14.GL_DEPTH_COMPONENT32;
+            case 16: return GL_DEPTH_COMPONENT16;
+            case 24: return GL_DEPTH_COMPONENT24;
+            case 32: return GL_DEPTH_COMPONENT32;
             default: return -1;
         }
     }

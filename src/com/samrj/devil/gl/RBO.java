@@ -1,14 +1,15 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.graphics.TexUtil;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
+
+import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL30C.*;
 
 /**
  * OpenGL render buffer wrapper.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class RBO extends DGLObj
@@ -22,7 +23,7 @@ public final class RBO extends DGLObj
         DGL.checkState();
         if (!DGL.getCapabilities().OpenGL30) throw new UnsupportedOperationException(
                 "Render buffers unsupported in OpenGL < 3.0");
-        id = GL30.glGenRenderbuffers();
+        id = glGenRenderbuffers();
     }
     
     /**
@@ -30,20 +31,20 @@ public final class RBO extends DGLObj
      */
     public final boolean isBound()
     {
-        return !deleted && GL11.glGetInteger(GL30.GL_RENDERBUFFER_BINDING) == id;
+        return !deleted && glGetInteger(GL_RENDERBUFFER_BINDING) == id;
     }
     
     final int tempBind()
     {
-        int oldID = GL11.glGetInteger(GL30.GL_RENDERBUFFER_BINDING);
-        if (oldID != id) GL30.glBindRenderbuffer(GL30.GL_RENDERBUFFER, id);
+        int oldID = glGetInteger(GL_RENDERBUFFER_BINDING);
+        if (oldID != id) glBindRenderbuffer(GL_RENDERBUFFER, id);
         return oldID;
     }
     
     final void tempUnbind(int oldID)
     {
         if (oldID == id) return;
-        GL30.glBindRenderbuffer(GL30.GL_RENDERBUFFER, oldID);
+        glBindRenderbuffer(GL_RENDERBUFFER, oldID);
     }
     
     /**
@@ -52,7 +53,7 @@ public final class RBO extends DGLObj
     public final void bind()
     {
         if (deleted) throw new IllegalStateException("Cannot bind deleted render buffer.");
-        GL30.glBindRenderbuffer(GL30.GL_RENDERBUFFER, id);
+        glBindRenderbuffer(GL_RENDERBUFFER, id);
     }
     
     /**
@@ -67,7 +68,7 @@ public final class RBO extends DGLObj
         if (width <= 0 || height <= 0) throw new IllegalArgumentException("Illegal image dimensions.");
         
         int oldID = tempBind();
-        GL30.glRenderbufferStorage(GL30.GL_RENDERBUFFER, format, width, height);
+        glRenderbufferStorage(GL_RENDERBUFFER, format, width, height);
         tempUnbind(oldID);
         
         long newVRAM = TexUtil.getBits(format)*width*height;
@@ -80,7 +81,7 @@ public final class RBO extends DGLObj
     {
         Profiler.removeUsedVRAM(vramUsage);
         vramUsage = 0;
-        GL30.glDeleteRenderbuffers(id);
+        glDeleteRenderbuffers(id);
         deleted = true;
     }
 }

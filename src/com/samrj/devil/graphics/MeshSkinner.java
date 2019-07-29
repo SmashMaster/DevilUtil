@@ -10,14 +10,15 @@ import com.samrj.devil.model.Mesh;
 import com.samrj.devil.model.ModelObject;
 import java.nio.ByteBuffer;
 import java.util.List;
-import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryUtil;
+
+import static org.lwjgl.opengl.GL20C.*;
 
 /**
  * Class that performs mesh deformation for armatures.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class MeshSkinner
@@ -71,7 +72,7 @@ public class MeshSkinner
     public void uniformMats(ShaderProgram shader, String arrayName)
     {
         int loc = shader.getUniformLocation(arrayName);
-        GL20.nglUniformMatrix4fv(loc, bones.size(), false, matBlock.address);
+        nglUniformMatrix4fv(loc, bones.size(), false, matBlock.address);
     }
     
     /**
@@ -98,7 +99,7 @@ public class MeshSkinner
         if (!prevMatricesEnabled()) throw new IllegalStateException();
         
         int loc = shader.getUniformLocation(arrayName);
-        GL20.nglUniformMatrix4fv(loc, bones.size(), false, prevMatBlock.address);
+        nglUniformMatrix4fv(loc, bones.size(), false, prevMatBlock.address);
     }
     
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@ package com.samrj.devil.io;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**

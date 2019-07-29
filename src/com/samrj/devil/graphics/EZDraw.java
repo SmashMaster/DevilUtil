@@ -8,20 +8,17 @@ import com.samrj.devil.gl.Shader;
 import com.samrj.devil.gl.ShaderProgram;
 import com.samrj.devil.gl.VertexStream;
 import com.samrj.devil.io.IOUtil;
-import com.samrj.devil.math.Mat4;
-import com.samrj.devil.math.Util;
-import com.samrj.devil.math.Vec2;
-import com.samrj.devil.math.Vec3;
-import com.samrj.devil.math.Vec4;
+import com.samrj.devil.math.*;
 import java.io.IOException;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL20;
+
+import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL20C.*;
 
 /**
  * Utility class for forward-compatible primitive drawing.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class EZDraw
@@ -80,9 +77,9 @@ public final class EZDraw
         
         try
         {
-            Shader vert = DGL.genShader(GL20.GL_VERTEX_SHADER);
+            Shader vert = DGL.genShader(GL_VERTEX_SHADER);
             vert.source(IOUtil.stringStream(VERT_SOURCE));
-            Shader frag = DGL.genShader(GL20.GL_FRAGMENT_SHADER);
+            Shader frag = DGL.genShader(GL_FRAGMENT_SHADER);
             frag.source(IOUtil.stringStream(FRAG_SOURCE));
             shader = DGL.loadProgram(vert, frag);
             DGL.delete(vert, frag);
@@ -253,21 +250,21 @@ public final class EZDraw
     {
         float dt = 8.0f/segments;
         
-        begin(GL11.GL_LINE_LOOP);
+        begin(GL_LINE_LOOP);
         for (float t=0.0f; t<8.0f; t+=dt)
         {
             Vec2 dir = Util.squareDir(t).normalize();
             vertex(dir.x, dir.y, 0.0f);
         }
         end();
-        begin(GL11.GL_LINE_LOOP);
+        begin(GL_LINE_LOOP);
         for (float t=0.0f; t<8.0f; t+=dt)
         {
             Vec2 dir = Util.squareDir(t).normalize();
             vertex(dir.x, 0.0f, dir.y);
         }
         end();
-        begin(GL11.GL_LINE_LOOP);
+        begin(GL_LINE_LOOP);
         for (float t=0.0f; t<8.0f; t+=dt)
         {
             Vec2 dir = Util.squareDir(t).normalize();
@@ -287,7 +284,7 @@ public final class EZDraw
     
     public static void box()
     {
-        begin(GL11.GL_LINES);
+        begin(GL_LINES);
         vertex(-1.0f, -1.0f, -1.0f);
         vertex(-1.0f, -1.0f,  1.0f);
         vertex(-1.0f,  1.0f, -1.0f);
@@ -340,7 +337,7 @@ public final class EZDraw
     {
         float dt = 8.0f/segments;
         
-        begin(GL11.GL_LINE_LOOP);
+        begin(GL_LINE_LOOP);
         for (float t=0.0f; t<8.0f; t+=dt)
         {
             Vec2 dir = Util.squareDir(t).normalize();

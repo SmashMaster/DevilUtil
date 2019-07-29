@@ -1,6 +1,7 @@
 package com.samrj.devil.display;
 
 import com.samrj.devil.util.IntList;
+
 import static org.lwjgl.glfw.GLFW.*;
 
 /**

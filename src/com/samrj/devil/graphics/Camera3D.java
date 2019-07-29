@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,14 +22,7 @@
 
 package com.samrj.devil.graphics;
 
-import com.samrj.devil.math.Mat3;
-import com.samrj.devil.math.Mat4;
-import com.samrj.devil.math.Quat;
-import com.samrj.devil.math.Vec2;
-import com.samrj.devil.math.Vec2i;
-import com.samrj.devil.math.Vec3;
-import com.samrj.devil.math.Vec4;
-import org.lwjgl.opengl.GL11;
+import com.samrj.devil.math.*;
 
 /**
  * 3D camera class.
@@ -146,15 +139,6 @@ public class Camera3D
         right.setAsColumn(rot, 0);
         up.setAsColumn(rot, 1);
         forward.setAsColumn(rot, 2).negate();
-    }
-    
-    /**
-     * Loads this camera's matrices into OpenGL.
-     */
-    public void glLoadMatrices()
-    {
-        GraphicsUtil.glLoadMatrix(projMat, GL11.GL_PROJECTION);
-        GraphicsUtil.glLoadMatrix(viewMat, GL11.GL_MODELVIEW);
     }
     
     /**

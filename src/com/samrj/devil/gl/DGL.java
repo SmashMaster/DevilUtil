@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,12 +35,13 @@ import java.util.IdentityHashMap;
 import java.util.Set;
 import javax.imageio.ImageIO;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GLCapabilities;
 import org.lwjgl.system.MemoryUtil;
+
+import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL20C.*;
+import static org.lwjgl.opengl.GL30C.*;
+import static org.lwjgl.opengl.GL31C.*;
 
 /**
  * DevilGL. A state-based, object-oriented, forward compatible OpenGL wrapper;
@@ -158,8 +159,8 @@ public final class DGL
      */
     public static ShaderProgram loadProgram(String path) throws IOException
     {
-        Shader vertShader = loadShader(path + ".vert", GL20.GL_VERTEX_SHADER);
-        Shader fragShader = loadShader(path + ".frag", GL20.GL_FRAGMENT_SHADER);
+        Shader vertShader = loadShader(path + ".vert", GL_VERTEX_SHADER);
+        Shader fragShader = loadShader(path + ".frag", GL_FRAGMENT_SHADER);
         ShaderProgram program = loadProgram(vertShader, fragShader);
         delete(vertShader, fragShader);
         return program;
@@ -176,7 +177,7 @@ public final class DGL
     {
         if (boundProgram != shaderProgram)
         {
-            if (shaderProgram == null) GL20.glUseProgram(0);
+            if (shaderProgram == null) glUseProgram(0);
             else shaderProgram.use();
             boundProgram = shaderProgram;
         }
@@ -299,7 +300,7 @@ public final class DGL
             long yAddr = MemStack.push(4);
             long wAddr = MemStack.push(4);
             long hAddr = MemStack.push(4);
-            GL11.nglGetIntegerv(GL11.GL_VIEWPORT, xAddr);
+            nglGetIntegerv(GL_VIEWPORT, xAddr);
             x = MemoryUtil.memGetInt(xAddr);
             y = MemoryUtil.memGetInt(yAddr);
             w = MemoryUtil.memGetInt(wAddr);
@@ -308,7 +309,7 @@ public final class DGL
         }
         
         Image out = genImage(w, h, 3, PrimType.BYTE);
-        GL11.nglReadPixels(x, y, w, h, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, out.address());
+        nglReadPixels(x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE, out.address());
         return out;
     }
     // </editor-fold>
@@ -656,14 +657,14 @@ public final class DGL
     {
         switch (target)
         {
-            case GL30.GL_FRAMEBUFFER: readFBO = fbo; drawFBO = fbo; break;
-            case GL30.GL_READ_FRAMEBUFFER: readFBO = fbo; break;
-            case GL30.GL_DRAW_FRAMEBUFFER: drawFBO = fbo; break;
+            case GL_FRAMEBUFFER: readFBO = fbo; drawFBO = fbo; break;
+            case GL_READ_FRAMEBUFFER: readFBO = fbo; break;
+            case GL_DRAW_FRAMEBUFFER: drawFBO = fbo; break;
             default: throw new IllegalArgumentException("Illegal target specified.");
         }
         
         if (fbo != null) fbo.bind(target);
-        else GL30.glBindFramebuffer(target, 0);
+        else glBindFramebuffer(target, 0);
         return fbo;
     }
     
@@ -677,7 +678,7 @@ public final class DGL
      */
     public static FBO bindFBO(FBO fbo)
     {
-        return bindFBO(fbo, GL30.GL_FRAMEBUFFER);
+        return bindFBO(fbo, GL_FRAMEBUFFER);
     }
     
     /**
@@ -692,7 +693,7 @@ public final class DGL
      */
     public static void blitFBO(int width, int height, int mask)
     {
-        GL30.glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, mask, GL11.GL_NEAREST);
+        glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, mask, GL_NEAREST);
     }
     
     /**
@@ -715,11 +716,11 @@ public final class DGL
     {
         FBO oldRead = readFBO, oldDraw = drawFBO;
         
-        bindFBO(source, GL30.GL_READ_FRAMEBUFFER);
-        bindFBO(target, GL30.GL_DRAW_FRAMEBUFFER);
+        bindFBO(source, GL_READ_FRAMEBUFFER);
+        bindFBO(target, GL_DRAW_FRAMEBUFFER);
         blitFBO(width, height, mask);
-        bindFBO(oldRead, GL30.GL_READ_FRAMEBUFFER);
-        bindFBO(oldDraw, GL30.GL_DRAW_FRAMEBUFFER);
+        bindFBO(oldRead, GL_READ_FRAMEBUFFER);
+        bindFBO(oldDraw, GL_DRAW_FRAMEBUFFER);
     }
     
     /**
@@ -769,8 +770,8 @@ public final class DGL
         
         VAO.bindFor(data, boundProgram, () ->
         {
-            if (inds < 0) GL11.glDrawArrays(mode, 0, verts);
-            else GL11.glDrawElements(mode, inds, GL11.GL_UNSIGNED_INT, 0);
+            if (inds < 0) glDrawArrays(mode, 0, verts);
+            else glDrawElements(mode, inds, GL_UNSIGNED_INT, 0);
         });
         
         return data;
@@ -796,8 +797,8 @@ public final class DGL
         
         VAO.bindFor(data, boundProgram, () ->
         {
-            if (inds < 0) GL31.glDrawArraysInstanced(mode, 0, verts, primcount);
-            else GL31.glDrawElementsInstanced(mode, inds, GL11.GL_UNSIGNED_INT, 0, primcount);
+            if (inds < 0) glDrawArraysInstanced(mode, 0, verts, primcount);
+            else glDrawElementsInstanced(mode, inds, GL_UNSIGNED_INT, 0, primcount);
         });
         
         return data;

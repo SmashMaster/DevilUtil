@@ -24,8 +24,9 @@ package com.samrj.devil.display;
 
 import com.samrj.devil.io.MemStack;
 import com.samrj.devil.math.Vec2i;
-import static org.lwjgl.glfw.GLFW.*;
 import org.lwjgl.system.MemoryUtil;
+
+import static org.lwjgl.glfw.GLFW.*;
 
 /**
  * Utility class for GLFW. GLFW must be initialized for most of these methods to

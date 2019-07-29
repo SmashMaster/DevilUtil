@@ -28,6 +28,7 @@ import com.samrj.devil.io.Memory;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
+import com.samrj.devil.model.Material;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -35,14 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.IntFunction;
-import org.blender.dna.CustomDataLayer;
-import org.blender.dna.MDeformVert;
-import org.blender.dna.MDeformWeight;
-import org.blender.dna.MLoop;
-import org.blender.dna.MLoopCol;
-import org.blender.dna.MLoopUV;
-import org.blender.dna.MPoly;
-import org.blender.dna.MVert;
+import org.blender.dna.*;
 import org.cakelab.blender.nio.CPointer;
 
 /**

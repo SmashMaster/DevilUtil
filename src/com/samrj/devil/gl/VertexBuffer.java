@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,9 @@ package com.samrj.devil.gl;
 
 import com.samrj.devil.io.Memory;
 import java.nio.ByteBuffer;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL15;
+
+import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL15C.*;
 
 /**
  * Vertex data for unmodifiable vertex data. Suitable for data that is built
@@ -110,11 +111,11 @@ public final class VertexBuffer extends VertexBuilder
         ensureState(State.READY);
         if (numVertices <= 0) throw new IllegalStateException("No vertices emitted.");
         
-        vbo = GL15.glGenBuffers();
-        int prevBinding = GL11.glGetInteger(GL15.GL_ARRAY_BUFFER_BINDING);
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
-        GL15.nglBufferData(GL15.GL_ARRAY_BUFFER, numVertices*vertexSize(), vertexBlock.address, GL15.GL_STATIC_DRAW);
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, prevBinding);
+        vbo = glGenBuffers();
+        int prevBinding = glGetInteger(GL_ARRAY_BUFFER_BINDING);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        nglBufferData(GL_ARRAY_BUFFER, numVertices*vertexSize(), vertexBlock.address, GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, prevBinding);
         
         vramUsage += vertexBlock.size*8L;
         vertexBlock.free();
@@ -125,11 +126,11 @@ public final class VertexBuffer extends VertexBuilder
         {
             if (numIndices > 0)
             {
-                ibo = GL15.glGenBuffers();
-                prevBinding = GL11.glGetInteger(GL15.GL_ELEMENT_ARRAY_BUFFER_BINDING);
-                GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ibo);
-                GL15.nglBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, numIndices*4, indexBlock.address, GL15.GL_STATIC_DRAW);
-                GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, prevBinding);
+                ibo = glGenBuffers();
+                prevBinding = glGetInteger(GL_ELEMENT_ARRAY_BUFFER_BINDING);
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+                nglBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices*4, indexBlock.address, GL_STATIC_DRAW);
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevBinding);
             }
             
             vramUsage += indexBlock.size*8L;
@@ -187,8 +188,8 @@ public final class VertexBuffer extends VertexBuilder
         }
         else if (state == State.COMPLETE)
         {
-            GL15.glDeleteBuffers(vbo);
-            if (numIndices > 0) GL15.glDeleteBuffers(ibo);
+            glDeleteBuffers(vbo);
+            if (numIndices > 0) glDeleteBuffers(ibo);
         }
         
         state = State.DELETED;

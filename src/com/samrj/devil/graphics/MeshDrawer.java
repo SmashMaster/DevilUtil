@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,6 @@
 package com.samrj.devil.graphics;
 
 import com.samrj.devil.gl.AttributeType;
-import static com.samrj.devil.gl.AttributeType.*;
 import com.samrj.devil.gl.Profiler;
 import com.samrj.devil.gl.VertexData;
 import com.samrj.devil.model.Mesh;
@@ -31,8 +30,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL15;
+
+import static com.samrj.devil.gl.AttributeType.*;
+import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL15C.*;
 
 /**
  * Utility OpenGL wrapper for DevilModel meshes.
@@ -91,17 +92,17 @@ public class MeshDrawer implements VertexData
         weights = new Attribute(weightType, mesh.groupWeightOffset, mesh.numGroups > 0);
         material = new Attribute(INT, mesh.materialOffset, mesh.hasMaterials);
         
-        vbo = GL15.glGenBuffers();
-        int prevBinding = GL11.glGetInteger(GL15.GL_ARRAY_BUFFER_BINDING);
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
-        GL15.nglBufferData(GL15.GL_ARRAY_BUFFER, mesh.vertexBlock.size, mesh.vertexBlock.address, GL15.GL_STATIC_DRAW);
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, prevBinding);
+        vbo = glGenBuffers();
+        int prevBinding = glGetInteger(GL_ARRAY_BUFFER_BINDING);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        nglBufferData(GL_ARRAY_BUFFER, mesh.vertexBlock.size, mesh.vertexBlock.address, GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, prevBinding);
         
-        ibo = GL15.glGenBuffers();
-        prevBinding = GL11.glGetInteger(GL15.GL_ELEMENT_ARRAY_BUFFER_BINDING);
-        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ibo);
-        GL15.nglBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.indexBlock.size, mesh.indexBlock.address, GL15.GL_STATIC_DRAW);
-        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, prevBinding);
+        ibo = glGenBuffers();
+        prevBinding = glGetInteger(GL_ELEMENT_ARRAY_BUFFER_BINDING);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+        nglBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.indexBlock.size, mesh.indexBlock.address, GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevBinding);
         
         attributes = new HashMap<>();
         
@@ -180,8 +181,8 @@ public class MeshDrawer implements VertexData
         Profiler.removeUsedVRAM(mesh.vertexBlock.size*8L);
         Profiler.removeUsedVRAM(mesh.indexBlock.size*8L);
         
-        GL15.glDeleteBuffers(vbo);
-        GL15.glDeleteBuffers(ibo);
+        glDeleteBuffers(vbo);
+        glDeleteBuffers(ibo);
         
         vbo = -1;
         ibo = -1;

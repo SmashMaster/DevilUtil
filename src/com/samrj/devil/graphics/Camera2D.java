@@ -5,32 +5,14 @@ import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec2i;
-import org.lwjgl.opengl.GL11;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2014 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class Camera2D
 {
-    public static void glLoadScreen(int resX, int resY)
-    {
-        GL11.glMatrixMode(GL11.GL_PROJECTION);
-        GL11.glLoadIdentity();
-        GL11.glOrtho(0f, resX, 0f, resY, -1f, 1f);
-        GL11.glMatrixMode(GL11.GL_MODELVIEW);
-        GL11.glLoadIdentity();
-    }
-    
-    public static void glLoadIdentity()
-    {
-        GL11.glMatrixMode(GL11.GL_PROJECTION);
-        GL11.glLoadIdentity();
-        GL11.glMatrixMode(GL11.GL_MODELVIEW);
-        GL11.glLoadIdentity();
-    }
-    
     public final Vec2 pos;
     public float scale;
     private Mat4 proj;
@@ -72,22 +54,6 @@ public class Camera2D
     public Mat4 getProj()
     {
         return new Mat4(proj);
-    }
-    
-    public void glLoadProj()
-    {
-        GraphicsUtil.glLoadMatrix(proj, GL11.GL_PROJECTION);
-    }
-    
-    public void glLoadView()
-    {
-        GraphicsUtil.glLoadMatrix(getView(), GL11.GL_MODELVIEW);
-    }
-    
-    public void glLoad()
-    {
-        glLoadProj();
-        glLoadView();
     }
     
     public Mat3 getView()

@@ -1,16 +1,12 @@
 package com.samrj.devil.geo3d;
 
-import com.samrj.devil.math.Mat3;
-import com.samrj.devil.math.Quat;
-import com.samrj.devil.math.Transform;
-import com.samrj.devil.math.Util;
-import com.samrj.devil.math.Vec3;
+import com.samrj.devil.math.*;
 
 /**
  * Oriented bounding box class.
  *
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class OBox3

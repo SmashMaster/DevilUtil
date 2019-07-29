@@ -1,27 +1,27 @@
 package com.samrj.devil.gl;
 
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
+import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL12C.*;
 
 /**
  * 3D texture class.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Texture3D extends Texture3DAbstract
 {
     Texture3D()
     {
-        super(GL12.GL_TEXTURE_3D, GL12.GL_TEXTURE_BINDING_3D);
+        super(GL_TEXTURE_3D, GL_TEXTURE_BINDING_3D);
         
         int oldID = tempBind();
-        parami(GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
-        parami(GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
-        parami(GL12.GL_TEXTURE_WRAP_R, GL11.GL_REPEAT);
-        parami(GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-        parami(GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+        parami(GL_TEXTURE_WRAP_S, GL_REPEAT);
+        parami(GL_TEXTURE_WRAP_T, GL_REPEAT);
+        parami(GL_TEXTURE_WRAP_R, GL_REPEAT);
+        parami(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        parami(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         tempUnbind(oldID);
     }
     

@@ -2,6 +2,7 @@ package com.samrj.devil.game;
 
 import com.samrj.devil.display.GLFWUtil;
 import java.util.Arrays;
+
 import static org.lwjgl.glfw.GLFW.*;
 
 /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,11 +22,9 @@
 
 package com.samrj.devil.gl;
 
-import com.samrj.devil.io.MemStack;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL33;
+import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL13C.*;
+import static org.lwjgl.opengl.GL30C.*;
 
 /**
  * Abstract OpenGL texture class.
@@ -44,7 +42,7 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
     Texture(int target, int binding)
     {
         DGL.checkState();
-        id = GL11.glGenTextures();
+        id = glGenTextures();
         this.target = target;
         this.binding = binding;
     }
@@ -56,20 +54,20 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
      */
     public final boolean isBound()
     {
-        return !deleted && GL11.glGetInteger(binding) == id;
+        return !deleted && glGetInteger(binding) == id;
     }
     
     final int tempBind()
     {
-        int oldID = GL11.glGetInteger(binding);
-        if (oldID != id) GL11.glBindTexture(target, id);
+        int oldID = glGetInteger(binding);
+        if (oldID != id) glBindTexture(target, id);
         return oldID;
     }
     
     final void tempUnbind(int oldID)
     {
         if (oldID == id) return;
-        GL11.glBindTexture(target, oldID);
+        glBindTexture(target, oldID);
     }
     
     final void setVRAMUsage(long bits)
@@ -89,7 +87,7 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
     public final T bind()
     {
         if (deleted) throw new IllegalStateException("Cannot bind deleted texture.");
-        GL11.glBindTexture(target, id);
+        glBindTexture(target, id);
         return getThis();
     }
     
@@ -103,11 +101,11 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
     public final T bind(int texture)
     {
         if (deleted) throw new IllegalStateException("Cannot bind deleted texture.");
-        if (texture < GL13.GL_TEXTURE0) throw new IllegalArgumentException();
-        int old = GL11.glGetInteger(GL13.GL_ACTIVE_TEXTURE);
-        GL13.glActiveTexture(texture);
+        if (texture < GL_TEXTURE0) throw new IllegalArgumentException();
+        int old = glGetInteger(GL_ACTIVE_TEXTURE);
+        glActiveTexture(texture);
         bind();
-        GL13.glActiveTexture(old);
+        glActiveTexture(old);
         return getThis();
     }
     
@@ -119,7 +117,7 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
      */
     public final T unbind()
     {
-        if (isBound()) GL11.glBindTexture(target, 0);
+        if (isBound()) glBindTexture(target, 0);
         return getThis();
     }
     
@@ -127,7 +125,7 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
     final void delete()
     {
         Profiler.removeUsedVRAM(vramUsage);
-        GL11.glDeleteTextures(id);
+        glDeleteTextures(id);
         deleted = true;
     }
     
@@ -142,18 +140,9 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
     public final T parami(int param, int value)
     {
         if (!isBound()) throw new IllegalStateException("Texture must be bound.");
-        GL11.glTexParameteri(target, param, value);
+        glTexParameteri(target, param, value);
         return getThis();
     }
-    
-//    public final T paramiv(int param, int... values)
-//    {
-//        if (!isBound()) throw new IllegalStateException("Texture must be bound.");
-//        long address = MemStack.wrapi(values);
-//        GL11.nglTexParameteriv(target, param, address);
-//        MemStack.pop();
-//        return getThis();
-//    }
     
     /**
      * Sets the given parameter to the given float for this texture. The texture
@@ -166,25 +155,7 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
     public final T paramf(int param, float value)
     {
         if (!isBound()) throw new IllegalStateException("Texture must be bound.");
-        GL11.glTexParameterf(target, param, value);
-        return getThis();
-    }
-    
-//    public final T paramfv(int param, float... values)
-//    {
-//        if (!isBound()) throw new IllegalStateException("Texture must be bound.");
-//        long address = MemStack.wrapf(values);
-//        GL11.nglTexParameterfv(target, param, address);
-//        MemStack.pop();
-//        return getThis();
-//    }
-    
-    public final T swizzle(int r, int g, int b, int a)
-    {
-        if (!isBound()) throw new IllegalStateException("Texture must be bound.");
-        long address = MemStack.wrapi(r, g, b, a);
-        GL11.nglTexParameteriv(target, GL33.GL_TEXTURE_SWIZZLE_RGBA, address);
-        MemStack.pop();
+        glTexParameterf(target, param, value);
         return getThis();
     }
     
@@ -196,7 +167,7 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
     public final T generateMipmap()
     {
         int oldID = tempBind();
-        GL30.glGenerateMipmap(target);
+        glGenerateMipmap(target);
         if (!hasMipmaps) setVRAMUsage(vramUsage*2);
         hasMipmaps = true;
         tempUnbind(oldID);

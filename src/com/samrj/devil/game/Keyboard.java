@@ -1,6 +1,7 @@
 package com.samrj.devil.game;
 
 import java.util.BitSet;
+
 import static org.lwjgl.glfw.GLFW.*;
 
 /**

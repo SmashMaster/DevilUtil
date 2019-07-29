@@ -2,26 +2,34 @@ package com.samrj.devil.gl;
 
 import com.samrj.devil.graphics.TexUtil;
 import com.samrj.devil.math.Util.PrimType;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
-import org.lwjgl.opengl.GL13;
 import org.lwjgl.system.MemoryUtil;
 
+import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL12C.*;
+import static org.lwjgl.opengl.GL13C.*;
+
+/**
+ * OpenGL cubemap texture class.
+ * 
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2019 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
 public final class TextureCubemap extends Texture<TextureCubemap>
 {
     private int size;
     
     TextureCubemap()
     {
-        super(GL13.GL_TEXTURE_CUBE_MAP, GL13.GL_TEXTURE_BINDING_CUBE_MAP);
+        super(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BINDING_CUBE_MAP);
         size = 1;
         
         int oldID = tempBind();
-        parami(GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-        parami(GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
-        parami(GL12.GL_TEXTURE_WRAP_R, GL12.GL_CLAMP_TO_EDGE);
-        parami(GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-        parami(GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+        parami(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        parami(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        parami(GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        parami(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        parami(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         tempUnbind(oldID);
     }
     
@@ -50,7 +58,7 @@ public final class TextureCubemap extends Texture<TextureCubemap>
         this.size = size;
         
         int oldID = tempBind();
-        for (int i=0; i<6; i++) GL11.nglTexImage2D(GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+        for (int i=0; i<6; i++) nglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                 0, format, size, size, 0, baseFormat, primType, MemoryUtil.NULL);
         tempUnbind(oldID);
         
@@ -83,7 +91,7 @@ public final class TextureCubemap extends Texture<TextureCubemap>
                 throw new IllegalArgumentException();
         
         int oldID = tempBind();
-        for (int i=0; i<6; i++) GL11.nglTexImage2D(GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+        for (int i=0; i<6; i++) nglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                 0, format, size, size, 0, dataFormat, primType, images[i].address());
         tempUnbind(oldID);
         

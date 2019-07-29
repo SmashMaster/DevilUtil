@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,7 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.io.Bufferable;
-import com.samrj.devil.math.Mat2;
-import com.samrj.devil.math.Mat3;
-import com.samrj.devil.math.Mat4;
-import com.samrj.devil.math.Vec2;
-import com.samrj.devil.math.Vec2i;
-import com.samrj.devil.math.Vec3;
-import com.samrj.devil.math.Vec3i;
-import com.samrj.devil.math.Vec4;
+import com.samrj.devil.math.*;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;

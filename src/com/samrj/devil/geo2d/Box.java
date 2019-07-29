@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,6 @@ package com.samrj.devil.geo2d;
 
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
-import org.lwjgl.opengl.GL11;
 
 /**
  * 2D unaligned box. Rotates around its origin. {@code rx} is its half-width
@@ -158,11 +157,6 @@ public final class Box
             Vec2.sub(x, y).add(pos)};
         
         return out;
-    }
-    
-    public void glVertex()
-    {
-        for (Vec2 v : vertices()) GL11.glVertex2f(v.x, v.y);
     }
     
     @Override

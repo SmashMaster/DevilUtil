@@ -1,15 +1,16 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.graphics.TexUtil;
-import org.lwjgl.opengl.GL12;
 import org.lwjgl.system.MemoryUtil;
+
+import static org.lwjgl.opengl.GL12C.*;
 
 /**
  * Abstract class for 3D textures.
  * 
  * @author Samuel Johnson (SmashMaster)
  * @param <T> This texture's own type.
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 abstract class Texture3DAbstract<T extends Texture3DAbstract<T>> extends Texture<T>
@@ -69,7 +70,7 @@ abstract class Texture3DAbstract<T extends Texture3DAbstract<T>> extends Texture
         this.height = height;
         this.depth = depth;
         int oldID = tempBind();
-        GL12.nglTexImage3D(target, 0, format, width, height, depth, 0,
+        nglTexImage3D(target, 0, format, width, height, depth, 0,
                 baseFormat, primType, MemoryUtil.NULL);
         tempUnbind(oldID);
         
@@ -103,7 +104,7 @@ abstract class Texture3DAbstract<T extends Texture3DAbstract<T>> extends Texture
         
         int primType = TexUtil.getPrimitiveType(format);
         int oldID = tempBind();
-        GL12.nglTexSubImage3D(target, 0, 0, 0, depth, width, height, 1,
+        nglTexSubImage3D(target, 0, 0, 0, depth, width, height, 1,
                 dataFormat, primType, image.address());
         tempUnbind(oldID);
         return getThis();

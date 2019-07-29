@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,11 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.io.MemStack;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
+
+import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL13C.*;
+import static org.lwjgl.opengl.GL20C.*;
+import static org.lwjgl.opengl.GL30C.*;
 
 /**
  * OpenGL frame buffer wrapper. Requires OpenGL 3.0.
@@ -39,17 +40,17 @@ public final class FBO extends DGLObj
     {
         switch (status)
         {
-            case GL30.GL_FRAMEBUFFER_COMPLETE​:
+            case GL_FRAMEBUFFER_COMPLETE​:
                 return "GL_FRAMEBUFFER_COMPLETE​";
-            case GL30.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+            case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
                 return "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
-            case GL30.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+            case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
                 return "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT";
-            case GL30.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+            case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
                 return "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER";
-            case GL30.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+            case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
                 return "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER";
-            case GL30.GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+            case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
                 return "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE";
             default: return null;
         }
@@ -63,7 +64,7 @@ public final class FBO extends DGLObj
         DGL.checkState();
         if (!DGL.getCapabilities().OpenGL30) throw new UnsupportedOperationException(
                 "Frame buffers unsupported in OpenGL < 3.0");
-        id = GL30.glGenFramebuffers();
+        id = glGenFramebuffers();
     }
     
     private void ensureBound()
@@ -74,7 +75,7 @@ public final class FBO extends DGLObj
     
     void bind(int target)
     {
-        GL30.glBindFramebuffer(target, id);
+        glBindFramebuffer(target, id);
     }
     
     /**
@@ -86,7 +87,7 @@ public final class FBO extends DGLObj
     public void texture2D(Texture2D texture, int attachment)
     {
         ensureBound();
-        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, attachment, texture.target, texture.id, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, texture.target, texture.id, 0);
     }
     
     /**
@@ -101,7 +102,7 @@ public final class FBO extends DGLObj
     {
         ensureBound();
         if (layer < 0 || layer >= texture.getDepth()) throw new ArrayIndexOutOfBoundsException();
-        GL30.glFramebufferTexture3D(GL30.GL_FRAMEBUFFER, attachment, texture.target, texture.id, 0, layer);
+        glFramebufferTexture3D(GL_FRAMEBUFFER, attachment, texture.target, texture.id, 0, layer);
     }
     
     /**
@@ -116,7 +117,7 @@ public final class FBO extends DGLObj
     {
         ensureBound();
         if (layer < 0 || layer >= texture.getDepth()) throw new ArrayIndexOutOfBoundsException();
-        GL30.glFramebufferTextureLayer(GL30.GL_FRAMEBUFFER, attachment, texture.id, 0, layer);
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, texture.id, 0, layer);
     }
     
     /**
@@ -131,14 +132,14 @@ public final class FBO extends DGLObj
     {
         ensureBound();
         if (face < 0 || face >= 6) throw new ArrayIndexOutOfBoundsException();
-        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, attachment,
-                GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, texture.id, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment,
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, texture.id, 0);
     }
     
     public void texture2DMultisample(Texture2DMultisample texture, int attachment)
     {
         ensureBound();
-        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, attachment, texture.target, texture.id, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, texture.target, texture.id, 0);
     }
     
     /**
@@ -151,7 +152,7 @@ public final class FBO extends DGLObj
     public void renderBuffer(RBO rbo, int attachment)
     {
         ensureBound();
-        GL30.glFramebufferRenderbuffer(GL30.GL_FRAMEBUFFER, attachment, GL30.GL_RENDERBUFFER, rbo.id);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, rbo.id);
     }
     
     /**
@@ -163,7 +164,7 @@ public final class FBO extends DGLObj
     {
         ensureBound();
         long address = MemStack.wrapi(a);
-        GL20.nglDrawBuffers(a.length, address);
+        nglDrawBuffers(a.length, address);
         MemStack.pop();
     }
     
@@ -175,7 +176,7 @@ public final class FBO extends DGLObj
     public void readBuffer(int buffer)
     {
         ensureBound();
-        GL11.glReadBuffer(buffer);
+        glReadBuffer(buffer);
     }
     
     /**
@@ -184,7 +185,7 @@ public final class FBO extends DGLObj
     public String getStatus()
     {
         ensureBound();
-        int status = GL30.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER);
+        int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         return statusName(status);
     }
     
@@ -192,8 +193,8 @@ public final class FBO extends DGLObj
     void delete()
     {
         if (deleted) return;
-        if (DGL.currentReadFBO() == this) DGL.bindFBO(null, GL30.GL_READ_FRAMEBUFFER);
-        if (DGL.currentDrawFBO() == this) DGL.bindFBO(null, GL30.GL_DRAW_FRAMEBUFFER);
-        GL30.glDeleteFramebuffers(id);
+        if (DGL.currentReadFBO() == this) DGL.bindFBO(null, GL_READ_FRAMEBUFFER);
+        if (DGL.currentDrawFBO() == this) DGL.bindFBO(null, GL_DRAW_FRAMEBUFFER);
+        glDeleteFramebuffers(id);
     }
 }

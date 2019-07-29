@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,12 +28,13 @@ import com.samrj.devil.display.HintSet;
 import com.samrj.devil.game.step.TimeStepper;
 import com.samrj.devil.game.sync.Sync;
 import com.samrj.devil.math.Vec2i;
-import static org.lwjgl.glfw.GLFW.*;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GLCapabilities;
+
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL13C.*;
 
 /**
  * Utility game class.
@@ -133,15 +134,15 @@ public abstract class Game
         // <editor-fold defaultstate="collapsed" desc="Initialize Window">
         {
             glfwDefaultWindowHints();
-            glfwWindowHint(GLFW_RESIZABLE, GL11.GL_FALSE);
-            glfwWindowHint(GLFW_VISIBLE, GL11.GL_FALSE);
-            glfwWindowHint(GLFW_DECORATED, config.borderless ? GL11.GL_FALSE : GL11.GL_TRUE);
-            glfwWindowHint(GLFW_FLOATING, GL11.GL_FALSE);
+            glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+            glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
+            glfwWindowHint(GLFW_DECORATED, config.borderless ? GL_FALSE : GL_TRUE);
+            glfwWindowHint(GLFW_FLOATING, GL_FALSE);
             glfwWindowHint(GLFW_STENCIL_BITS, 0);
             if (config.msaa > 0) glfwWindowHint(GLFW_SAMPLES, config.msaa);
             if (hints != null) hints.glfw();
             
-            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL11.GL_TRUE);
+            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 
             monitor = config.fullscreen ? glfwGetPrimaryMonitor() : 0;
             window = glfwCreateWindow(config.resolution.x, config.resolution.y, title, monitor, 0);
@@ -152,7 +153,7 @@ public abstract class Game
             glfwSetWindowSizeCallback(window, (window, width, height) ->
             {
                 config.resolution.set(width, height);
-                GL11.glViewport(0, 0, width, height);
+                glViewport(0, 0, width, height);
                 onResized(width, height);
             });
         }
@@ -169,8 +170,8 @@ public abstract class Game
         // <editor-fold defaultstate="collapsed" desc="Initialize OpenGL Context">
         {
             capabilities = GL.createCapabilities();
-            GL11.glViewport(0, 0, config.resolution.x, config.resolution.y);
-            GL11.glDisable(GL13.GL_MULTISAMPLE);
+            glViewport(0, 0, config.resolution.x, config.resolution.y);
+            glDisable(GL_MULTISAMPLE);
         }
         // </editor-fold>
         // <editor-fold defaultstate="collapsed" desc="Initialize Sync">
