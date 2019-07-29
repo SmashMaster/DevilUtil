@@ -1,13 +1,13 @@
 package com.samrj.devil.game;
 
 import java.util.BitSet;
-import org.lwjgl.glfw.GLFW;
+import static org.lwjgl.glfw.GLFW.*;
 
 /**
  * Keyboard input class.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Keyboard
@@ -20,10 +20,10 @@ public final class Keyboard
     {
         if (keyCallback == null) throw new NullPointerException();
         if (charCallback == null) throw new NullPointerException();
-        states = new BitSet(GLFW.GLFW_KEY_LAST + 1);
-        GLFW.glfwSetKeyCallback(window, this::key);
+        states = new BitSet(GLFW_KEY_LAST + 1);
+        glfwSetKeyCallback(window, this::key);
         this.keyCallback = keyCallback;
-        GLFW.glfwSetCharCallback(window, this::character);
+        glfwSetCharCallback(window, this::character);
         this.charCallback = charCallback;
     }
     
@@ -31,8 +31,8 @@ public final class Keyboard
     {
         if (key >= 0) switch (action)
         {
-            case GLFW.GLFW_PRESS: states.set(key, true); break;
-            case GLFW.GLFW_RELEASE: states.set(key, false); break;
+            case GLFW_PRESS: states.set(key, true); break;
+            case GLFW_RELEASE: states.set(key, false); break;
         }
         
         keyCallback.accept(key, action, mods);
@@ -51,7 +51,7 @@ public final class Keyboard
     
     public final boolean isKeyDown(int key)
     {
-        if (key < 0 || key > GLFW.GLFW_KEY_LAST) throw new IllegalArgumentException();
+        if (key < 0 || key > GLFW_KEY_LAST) throw new IllegalArgumentException();
         return states.get(key);
     }
     

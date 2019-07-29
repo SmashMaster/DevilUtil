@@ -28,7 +28,7 @@ import com.samrj.devil.display.HintSet;
 import com.samrj.devil.game.step.TimeStepper;
 import com.samrj.devil.game.sync.Sync;
 import com.samrj.devil.math.Vec2i;
-import org.lwjgl.glfw.GLFW;
+import static org.lwjgl.glfw.GLFW.*;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
@@ -63,11 +63,11 @@ public abstract class Game
         
         if (!errorCallInit)
         {
-            GLFW.glfwSetErrorCallback(DisplayException::glfwThrow);
+            glfwSetErrorCallback(DisplayException::glfwThrow);
             errorCallInit = true;
         }
         
-        GLFW.glfwInit();
+        glfwInit();
         Gamepads.init();
         mainThread = Thread.currentThread();
         initialized = true;
@@ -81,7 +81,7 @@ public abstract class Game
         ensureMainThread();
         initialized = false;
         mainThread = null;
-        GLFW.glfwTerminate();
+        glfwTerminate();
     }
     
     /**
@@ -132,24 +132,24 @@ public abstract class Game
         
         // <editor-fold defaultstate="collapsed" desc="Initialize Window">
         {
-            GLFW.glfwDefaultWindowHints();
-            GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GL11.GL_FALSE);
-            GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GL11.GL_FALSE);
-            GLFW.glfwWindowHint(GLFW.GLFW_DECORATED, config.borderless ? GL11.GL_FALSE : GL11.GL_TRUE);
-            GLFW.glfwWindowHint(GLFW.GLFW_FLOATING, GL11.GL_FALSE);
-            GLFW.glfwWindowHint(GLFW.GLFW_STENCIL_BITS, 0);
-            if (config.msaa > 0) GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, config.msaa);
+            glfwDefaultWindowHints();
+            glfwWindowHint(GLFW_RESIZABLE, GL11.GL_FALSE);
+            glfwWindowHint(GLFW_VISIBLE, GL11.GL_FALSE);
+            glfwWindowHint(GLFW_DECORATED, config.borderless ? GL11.GL_FALSE : GL11.GL_TRUE);
+            glfwWindowHint(GLFW_FLOATING, GL11.GL_FALSE);
+            glfwWindowHint(GLFW_STENCIL_BITS, 0);
+            if (config.msaa > 0) glfwWindowHint(GLFW_SAMPLES, config.msaa);
             if (hints != null) hints.glfw();
             
-            GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_DEBUG_CONTEXT, GL11.GL_TRUE);
+            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL11.GL_TRUE);
 
-            monitor = config.fullscreen ? GLFW.glfwGetPrimaryMonitor() : 0;
-            window = GLFW.glfwCreateWindow(config.resolution.x, config.resolution.y, title, monitor, 0);
+            monitor = config.fullscreen ? glfwGetPrimaryMonitor() : 0;
+            window = glfwCreateWindow(config.resolution.x, config.resolution.y, title, monitor, 0);
             
-            GLFW.glfwMakeContextCurrent(window);
-            GLFW.glfwSwapInterval(config.vsync ? 1 : 0);
-            GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-            GLFW.glfwSetWindowSizeCallback(window, (window, width, height) ->
+            glfwMakeContextCurrent(window);
+            glfwSwapInterval(config.vsync ? 1 : 0);
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            glfwSetWindowSizeCallback(window, (window, width, height) ->
             {
                 config.resolution.set(width, height);
                 GL11.glViewport(0, 0, width, height);
@@ -160,9 +160,9 @@ public abstract class Game
         if (!config.fullscreen) //Center window
         {
             Vec2i windowSize = GLFWUtil.getWindowSize(window);
-            GLFWVidMode mode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
+            GLFWVidMode mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
             
-            GLFW.glfwSetWindowPos(window, (mode.width() - windowSize.x)/2,
+            glfwSetWindowPos(window, (mode.width() - windowSize.x)/2,
                                           (mode.height() - windowSize.y)/2);
         }
         // </editor-fold>
@@ -183,7 +183,7 @@ public abstract class Game
             else
             {
                 sync = null;
-                GLFWVidMode mode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
+                GLFWVidMode mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
                 frameTime = Math.round(1_000_000_000.0/mode.refreshRate());
             }
         }
@@ -226,7 +226,7 @@ public abstract class Game
     public final void setTitle(String title)
     {
         ensureMainThread();
-        GLFW.glfwSetWindowTitle(window, title);
+        glfwSetWindowTitle(window, title);
     }
     
     public final Vec2i getResolution()
@@ -347,7 +347,7 @@ public abstract class Game
         try
         {
             running = true;
-            GLFW.glfwShowWindow(window);
+            glfwShowWindow(window);
 
             long lastFrameStart = System.nanoTime() - frameTime;
 
@@ -356,9 +356,9 @@ public abstract class Game
                 frameStart = System.nanoTime();
 
                 //Input
-                GLFW.glfwPollEvents();
+                glfwPollEvents();
                 Gamepads.update();
-                if (GLFW.glfwWindowShouldClose(window)) stop();
+                if (glfwWindowShouldClose(window)) stop();
                 
                 //Step
                 if (onLongFrame) lastFrameTime = frameTime;
@@ -371,7 +371,7 @@ public abstract class Game
                 render();
                 
                 if (sync != null) sync.sync();
-                GLFW.glfwSwapBuffers(window);
+                glfwSwapBuffers(window);
             }
         }
         catch (InterruptedException e)
@@ -420,7 +420,7 @@ public abstract class Game
         destroyed = true;
         
         onDestroy();
-        GLFW.glfwDestroyWindow(window);
+        glfwDestroyWindow(window);
     }
     
     /**

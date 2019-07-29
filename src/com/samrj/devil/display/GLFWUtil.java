@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@ package com.samrj.devil.display;
 
 import com.samrj.devil.io.MemStack;
 import com.samrj.devil.math.Vec2i;
-import org.lwjgl.glfw.GLFW;
+import static org.lwjgl.glfw.GLFW.*;
 import org.lwjgl.system.MemoryUtil;
 
 /**
@@ -39,7 +39,7 @@ public final class GLFWUtil
     {
         long x = MemStack.push(4);
         long y = MemStack.push(4);
-        GLFW.nglfwGetWindowPos(window, x, y);
+        nglfwGetWindowPos(window, x, y);
         Vec2i out = new Vec2i(MemoryUtil.memGetInt(x),
                               MemoryUtil.memGetInt(y));
         MemStack.pop(2);
@@ -50,7 +50,7 @@ public final class GLFWUtil
     {
         long w = MemStack.push(4);
         long h = MemStack.push(4);
-        GLFW.nglfwGetWindowSize(window, w, h);
+        nglfwGetWindowSize(window, w, h);
         Vec2i out = new Vec2i(MemoryUtil.memGetInt(w),
                               MemoryUtil.memGetInt(h));
         MemStack.pop(2);
@@ -61,7 +61,7 @@ public final class GLFWUtil
     {
         long w = MemStack.push(4);
         long h = MemStack.push(4);
-        GLFW.nglfwGetFramebufferSize(window, w, h);
+        nglfwGetFramebufferSize(window, w, h);
         Vec2i out = new Vec2i(MemoryUtil.memGetInt(w),
                               MemoryUtil.memGetInt(h));
         MemStack.pop(2);
@@ -74,7 +74,7 @@ public final class GLFWUtil
         long top = MemStack.push(4);
         long right = MemStack.push(4);
         long bottom = MemStack.push(4);
-        GLFW.nglfwGetWindowFrameSize(window, left, top, right, bottom);
+        nglfwGetWindowFrameSize(window, left, top, right, bottom);
         FrameSize out =  new FrameSize(MemoryUtil.memGetInt(left),
                                        MemoryUtil.memGetInt(top),
                                        MemoryUtil.memGetInt(right),
@@ -87,7 +87,7 @@ public final class GLFWUtil
     {
         long x = MemStack.push(4);
         long y = MemStack.push(4);
-        GLFW.nglfwGetMonitorPos(monitor, x, y);
+        nglfwGetMonitorPos(monitor, x, y);
         Vec2i out = new Vec2i(MemoryUtil.memGetInt(x),
                               MemoryUtil.memGetInt(y));
         MemStack.pop(2);
@@ -98,7 +98,7 @@ public final class GLFWUtil
     {
         long w = MemStack.push(4);
         long h = MemStack.push(4);
-        GLFW.nglfwGetMonitorPhysicalSize(monitor, w, h);
+        nglfwGetMonitorPhysicalSize(monitor, w, h);
         Vec2i out = new Vec2i(MemoryUtil.memGetInt(w),
                               MemoryUtil.memGetInt(h));
         MemStack.pop(2);

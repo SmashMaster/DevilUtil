@@ -10,7 +10,7 @@ import com.samrj.devil.math.Vec2i;
  * Game configuration class.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class GameConfig

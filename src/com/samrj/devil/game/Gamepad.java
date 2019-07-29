@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import org.lwjgl.glfw.GLFW;
+import static org.lwjgl.glfw.GLFW.*;
 
 /**
  * Simple gamepad class.
@@ -27,13 +27,13 @@ public final class Gamepad
     Gamepad(int id)
     {
         this.id = id;
-        name = GLFW.glfwGetJoystickName(id);
+        name = glfwGetJoystickName(id);
         
-        FloatBuffer axesBuf = GLFW.glfwGetJoystickAxes(id);
+        FloatBuffer axesBuf = glfwGetJoystickAxes(id);
         axes = new float[axesBuf.remaining()];
         for (int i=0; i<axes.length; i++) axes[i] = axesBuf.get();
         
-        ByteBuffer butBuf = GLFW.glfwGetJoystickButtons(id);
+        ByteBuffer butBuf = glfwGetJoystickButtons(id);
         buttons = new int[butBuf.remaining()];
         for (int i=0; i<buttons.length; i++) buttons[i] = butBuf.get();
         
@@ -55,10 +55,10 @@ public final class Gamepad
     {
         if (isDisconnected) return;
         
-        FloatBuffer axesBuf = GLFW.glfwGetJoystickAxes(id);
+        FloatBuffer axesBuf = glfwGetJoystickAxes(id);
         for (int i=0; i<axes.length; i++) axes[i] = axesBuf.get();
         
-        ByteBuffer butBuf = GLFW.glfwGetJoystickButtons(id);
+        ByteBuffer butBuf = glfwGetJoystickButtons(id);
         for (int i=0; i<buttons.length; i++)
         {
             int button = i;

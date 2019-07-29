@@ -4,27 +4,27 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
-import org.lwjgl.glfw.GLFW;
+import static org.lwjgl.glfw.GLFW.*;
 
 /**
  * Class which automatically handles connection and disconnection of gamepads.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Gamepads
 {
-    private static final Gamepad[] ARRAY = new Gamepad[GLFW.GLFW_JOYSTICK_LAST];
+    private static final Gamepad[] ARRAY = new Gamepad[GLFW_JOYSTICK_LAST + 1];
     private static final List<Consumer<Gamepad>> CONNECT_CALLBACKS = new ArrayList<>();
     
     static void init()
     {
-        for (int joystick=0; joystick<GLFW.GLFW_JOYSTICK_LAST; joystick++)
-            if (GLFW.glfwJoystickPresent(joystick))
+        for (int joystick=0; joystick<GLFW_JOYSTICK_LAST; joystick++)
+            if (glfwJoystickPresent(joystick))
                 ARRAY[joystick] = new Gamepad(joystick);
         
-        GLFW.glfwSetJoystickCallback(Gamepads::onJoyStick);
+        glfwSetJoystickCallback(Gamepads::onJoyStick);
     }
     
     private static void onJoyStick(int joystick, int event)
@@ -33,12 +33,12 @@ public final class Gamepads
         {
             switch (event)
             {
-                case GLFW.GLFW_CONNECTED:
+                case GLFW_CONNECTED:
                     Gamepad gamepad = new Gamepad(joystick);
                     ARRAY[joystick] = gamepad;
                     CONNECT_CALLBACKS.forEach(c -> c.accept(gamepad));
                     break;
-                case GLFW.GLFW_DISCONNECTED:
+                case GLFW_DISCONNECTED:
                     ARRAY[joystick].disconnect();
                     ARRAY[joystick] = null;
                     break;
@@ -90,7 +90,7 @@ public final class Gamepads
         {
             forEach(Gamepad::disconnect);
             Arrays.fill(ARRAY, null);
-            GLFW.glfwSetJoystickCallback(null);
+            glfwSetJoystickCallback(null);
             CONNECT_CALLBACKS.clear();
         }
     }
