@@ -48,6 +48,7 @@ public final class Memory
     public static void debug(boolean debug)
     {
         Memory.debug = debug;
+        if (debug) System.out.println("DevilUtil - Memory debug enabled.");
     }
     
     /**

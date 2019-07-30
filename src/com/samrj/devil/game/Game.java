@@ -142,8 +142,6 @@ public abstract class Game
             if (config.msaa > 0) glfwWindowHint(GLFW_SAMPLES, config.msaa);
             if (hints != null) hints.glfw();
             
-            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-
             monitor = config.fullscreen ? glfwGetPrimaryMonitor() : 0;
             window = glfwCreateWindow(config.resolution.x, config.resolution.y, title, monitor, 0);
             

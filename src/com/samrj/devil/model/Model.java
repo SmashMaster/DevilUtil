@@ -25,7 +25,21 @@ import org.cakelab.blender.nio.CPointer;
  */
 public final class Model
 {
-    private static final boolean DEBUG = true;
+    private static boolean debug;
+    
+    /**
+     * Enables or disables debug mode, which stores addresses for every block in
+     * every model, including what type they correspond to.
+     * 
+     * Defaults to false.
+     * 
+     * @param debug Whether to enable debug.
+     */
+    public static void debug(boolean debug)
+    {
+        Model.debug = debug;
+        if (debug) System.out.println("DevilUtil - Model debug enabled.");
+    }
     
     private final EnumMap<DataBlock.Type, ArrayMap<?>> arraymaps = new EnumMap<>(DataBlock.Type.class);
     
@@ -65,7 +79,7 @@ public final class Model
             boolean isCompatible = MainLib.doCompatibilityCheck(file.readFileGlobal());
             if (!isCompatible) throw new java.lang.IllegalArgumentException("Incompatible .blend file");
             
-            if (DEBUG)
+            if (debug)
             {
                 debugMap = new HashMap<>();
                 DNAModel model = file.getBlenderModel();
