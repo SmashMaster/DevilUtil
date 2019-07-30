@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,19 +22,20 @@
 
 package com.samrj.devil.math;
 
-import com.samrj.devil.io.Bufferable;
+import com.samrj.devil.io.FloatBufferable;
 import com.samrj.devil.io.Streamable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 
 /**
  * Quaternion class.
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Quat implements Bufferable, Streamable
+public class Quat implements FloatBufferable, Streamable
 {
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
@@ -1039,6 +1040,24 @@ public class Quat implements Bufferable, Streamable
         buffer.putFloat(y);
         buffer.putFloat(z);
         buffer.putFloat(w);
+    }
+    
+    @Override
+    public void read(FloatBuffer buffer)
+    {
+        x = buffer.get();
+        y = buffer.get();
+        z = buffer.get();
+        w = buffer.get();
+    }
+
+    @Override
+    public void write(FloatBuffer buffer)
+    {
+        buffer.put(x);
+        buffer.put(y);
+        buffer.put(z);
+        buffer.put(w);
     }
     
     @Override

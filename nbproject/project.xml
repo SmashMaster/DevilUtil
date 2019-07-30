@@ -23,6 +23,7 @@
         </references>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
             <word>Bezier</word>
+            <word>bufferable</word>
             <word>compositing</word>
             <word>cubemap</word>
             <word>frustum's</word>

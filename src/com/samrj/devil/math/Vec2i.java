@@ -2,12 +2,13 @@ package com.samrj.devil.math;
 
 import com.samrj.devil.io.Bufferable;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
 /**
  * Basic 2D integer vector class.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class Vec2i implements Bufferable
@@ -58,6 +59,18 @@ public class Vec2i implements Bufferable
     {
         buffer.putInt(x);
         buffer.putInt(y);
+    }
+    
+    public void read(IntBuffer buffer)
+    {
+        x = buffer.get();
+        y = buffer.get();
+    }
+    
+    public void write(IntBuffer buffer)
+    {
+        buffer.put(x);
+        buffer.put(y);
     }
 
     @Override

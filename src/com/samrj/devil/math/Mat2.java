@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,19 +22,20 @@
 
 package com.samrj.devil.math;
 
-import com.samrj.devil.io.Bufferable;
+import com.samrj.devil.io.FloatBufferable;
 import com.samrj.devil.io.Streamable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 
 /**
  * 2x2 matrix class.
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Mat2 implements Bufferable, Streamable 
+public class Mat2 implements FloatBufferable, Streamable 
 {
     /**
      * Returns the determinant of the given matrix.
@@ -773,6 +774,20 @@ public class Mat2 implements Bufferable, Streamable
     {
         buffer.putFloat(a); buffer.putFloat(c);
         buffer.putFloat(b); buffer.putFloat(d);
+    }
+    
+    @Override
+    public void read(FloatBuffer buffer)
+    {
+        a = buffer.get(); c = buffer.get();
+        b = buffer.get(); d = buffer.get();
+    }
+    
+    @Override
+    public void write(FloatBuffer buffer)
+    {
+        buffer.put(a); buffer.put(c);
+        buffer.put(b); buffer.put(d);
     }
     
     @Override

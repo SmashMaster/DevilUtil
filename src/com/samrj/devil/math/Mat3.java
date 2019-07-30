@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,19 +22,20 @@
 
 package com.samrj.devil.math;
 
-import com.samrj.devil.io.Bufferable;
+import com.samrj.devil.io.FloatBufferable;
 import com.samrj.devil.io.Streamable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 
 /**
  * 3x3 matrix class.
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Mat3 implements Bufferable, Streamable 
+public class Mat3 implements FloatBufferable, Streamable 
 {
     private static final float SQRT_2 = (float)Math.sqrt(2.0);
     
@@ -1240,6 +1241,22 @@ public class Mat3 implements Bufferable, Streamable
         buffer.putFloat(a); buffer.putFloat(d); buffer.putFloat(g);
         buffer.putFloat(b); buffer.putFloat(e); buffer.putFloat(h);
         buffer.putFloat(c); buffer.putFloat(f); buffer.putFloat(i);
+    }
+    
+    @Override
+    public void read(FloatBuffer buffer)
+    {
+        a = buffer.get(); d = buffer.get(); g = buffer.get();
+        b = buffer.get(); e = buffer.get(); h = buffer.get();
+        c = buffer.get(); f = buffer.get(); i = buffer.get();
+    }
+    
+    @Override
+    public void write(FloatBuffer buffer)
+    {
+        buffer.put(a); buffer.put(d); buffer.put(g);
+        buffer.put(b); buffer.put(e); buffer.put(h);
+        buffer.put(c); buffer.put(f); buffer.put(i);
     }
     
     @Override

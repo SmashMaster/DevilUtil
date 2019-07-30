@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,19 +22,20 @@
 
 package com.samrj.devil.math;
 
-import com.samrj.devil.io.Bufferable;
+import com.samrj.devil.io.FloatBufferable;
 import com.samrj.devil.io.Streamable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 
 /**
  * Class which represents transformations in 3D space.
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Transform implements Bufferable, Streamable
+public class Transform implements FloatBufferable, Streamable
 {
     public enum Property
     {
@@ -404,6 +405,22 @@ public class Transform implements Bufferable, Streamable
 
     @Override
     public void write(ByteBuffer buffer)
+    {
+        pos.write(buffer);
+        rot.write(buffer);
+        sca.write(buffer);
+    }
+    
+    @Override
+    public void read(FloatBuffer buffer)
+    {
+        pos.read(buffer);
+        rot.read(buffer);
+        sca.read(buffer);
+    }
+    
+    @Override
+    public void write(FloatBuffer buffer)
     {
         pos.write(buffer);
         rot.write(buffer);

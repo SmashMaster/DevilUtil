@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,13 @@
 package com.samrj.devil.math;
 
 import com.samrj.devil.geo3d.Vertex3;
-import com.samrj.devil.io.Bufferable;
+import com.samrj.devil.io.FloatBufferable;
 import com.samrj.devil.io.Streamable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 
 /**
  * Optimized three-dimensional vector class. The design of this class is based
@@ -54,7 +55,7 @@ import java.nio.ByteBuffer;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Vec3 implements Bufferable, Streamable, Vertex3
+public class Vec3 implements FloatBufferable, Streamable, Vertex3
 {
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
@@ -1400,6 +1401,22 @@ public class Vec3 implements Bufferable, Streamable, Vertex3
         buffer.putFloat(x);
         buffer.putFloat(y);
         buffer.putFloat(z);
+    }
+    
+    @Override
+    public void read(FloatBuffer buffer)
+    {
+        x = buffer.get();
+        y = buffer.get();
+        z = buffer.get();
+    }
+
+    @Override
+    public void write(FloatBuffer buffer)
+    {
+        buffer.put(x);
+        buffer.put(y);
+        buffer.put(z);
     }
     
     @Override

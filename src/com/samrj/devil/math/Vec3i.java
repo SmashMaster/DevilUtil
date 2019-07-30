@@ -2,12 +2,13 @@ package com.samrj.devil.math;
 
 import com.samrj.devil.io.Bufferable;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
 /**
  * Basic 3D integer vector class.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class Vec3i implements Bufferable
@@ -42,6 +43,20 @@ public class Vec3i implements Bufferable
         buffer.putInt(x);
         buffer.putInt(y);
         buffer.putInt(z);
+    }
+    
+    public void read(IntBuffer buffer)
+    {
+        x = buffer.get();
+        y = buffer.get();
+        z = buffer.get();
+    }
+    
+    public void write(IntBuffer buffer)
+    {
+        buffer.put(x);
+        buffer.put(y);
+        buffer.put(z);
     }
 
     @Override

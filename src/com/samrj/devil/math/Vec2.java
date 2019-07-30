@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,19 +22,20 @@
 
 package com.samrj.devil.math;
 
-import com.samrj.devil.io.Bufferable;
+import com.samrj.devil.io.FloatBufferable;
 import com.samrj.devil.io.Streamable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 
 /**
  * 2D vector class.
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Vec2 implements Bufferable, Streamable
+public class Vec2 implements FloatBufferable, Streamable
 {
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
@@ -1221,6 +1222,20 @@ public class Vec2 implements Bufferable, Streamable
     {
         buffer.putFloat(x);
         buffer.putFloat(y);
+    }
+    
+    @Override
+    public void read(FloatBuffer buffer)
+    {
+        x = buffer.get();
+        y = buffer.get();
+    }
+
+    @Override
+    public void write(FloatBuffer buffer)
+    {
+        buffer.put(x);
+        buffer.put(y);
     }
     
     @Override

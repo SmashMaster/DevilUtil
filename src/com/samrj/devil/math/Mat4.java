@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,19 +22,20 @@
 
 package com.samrj.devil.math;
 
-import com.samrj.devil.io.Bufferable;
+import com.samrj.devil.io.FloatBufferable;
 import com.samrj.devil.io.Streamable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 
 /**
  * 4x4 matrix class.
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Mat4 implements Bufferable, Streamable
+public class Mat4 implements FloatBufferable, Streamable
 {
     private static final float SQRT_2 = (float)Math.sqrt(2.0);
     
@@ -1554,6 +1555,24 @@ public class Mat4 implements Bufferable, Streamable
         buffer.putFloat(b); buffer.putFloat(f); buffer.putFloat(j); buffer.putFloat(n);
         buffer.putFloat(c); buffer.putFloat(g); buffer.putFloat(k); buffer.putFloat(o);
         buffer.putFloat(d); buffer.putFloat(h); buffer.putFloat(l); buffer.putFloat(p);
+    }
+    
+    @Override
+    public void read(FloatBuffer buffer)
+    {
+        a = buffer.get(); e = buffer.get(); i = buffer.get(); m = buffer.get();
+        b = buffer.get(); f = buffer.get(); j = buffer.get(); n = buffer.get();
+        c = buffer.get(); g = buffer.get(); k = buffer.get(); o = buffer.get();
+        d = buffer.get(); h = buffer.get(); l = buffer.get(); p = buffer.get();
+    }
+    
+    @Override
+    public void write(FloatBuffer buffer)
+    {
+        buffer.put(a); buffer.put(e); buffer.put(i); buffer.put(m);
+        buffer.put(b); buffer.put(f); buffer.put(j); buffer.put(n);
+        buffer.put(c); buffer.put(g); buffer.put(k); buffer.put(o);
+        buffer.put(d); buffer.put(h); buffer.put(l); buffer.put(p);
     }
     
     @Override

@@ -1,45 +1,40 @@
 package com.samrj.devil.io;
 
-import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import org.lwjgl.system.MemoryStack;
 
 /**
  * Interface for anything than can be written to memory. (Everything)
  *
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public interface Bufferable
+public interface FloatBufferable extends Bufferable
 {
     /**
      * Reads data from the given buffer and sets this object's fields accordingly.
      * @param buffer The buffer to read from.
      */
-    public void read(ByteBuffer buffer);
+    public void read(FloatBuffer buffer);
     
     /**
      * Writes this object's data into the given buffer.
      * @param buffer The buffer to write into.
      */
-    public void write(ByteBuffer buffer);
+    public void write(FloatBuffer buffer);
     
     /**
-     * @return The size of this Bufferable, in bytes.
-     */
-    public int bufferSize();
-    
-    /**
-     * Allocates a new ByteBuffer that can contain this bufferable, writes this
+     * Allocates a new FloatBuffer that can contain this bufferable, writes this
      * bufferable to it, and then prepares it for a series of read operations
      * and returns it.
      * 
      * @param stack The stack to allocate on.
-     * @return A new ByteBuffer containing this bufferable.
+     * @return A new FloatBuffer containing this bufferable.
      */
-    public default ByteBuffer malloc(MemoryStack stack)
+    public default FloatBuffer mallocFloat(MemoryStack stack)
     {
-        ByteBuffer buffer = stack.malloc(bufferSize());
+        FloatBuffer buffer = stack.mallocFloat(bufferSize() >> 2);
         write(buffer);
         buffer.flip();
         return buffer;
