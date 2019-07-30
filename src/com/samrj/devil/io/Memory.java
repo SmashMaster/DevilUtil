@@ -185,7 +185,8 @@ public final class Memory
     public final ByteBuffer buffer;
     public final long address;
     private boolean free;
-    private final Throwable debugLeakTrace;
+    private Throwable debugLeakTrace;
+    private Thread debugShutdownHook;
     
     public Memory(int size)
     {
@@ -197,7 +198,12 @@ public final class Memory
         if (address == NULL) throw new RuntimeException("Failed to allocate memory.");
         allocations++;
         
-        debugLeakTrace = debug ? new Throwable() : null;
+        if (debug)
+        {
+            debugLeakTrace = new Throwable("DevilUtil - Memory leaked!");
+            debugShutdownHook = new Thread(debugLeakTrace::printStackTrace);
+            Runtime.getRuntime().addShutdownHook(debugShutdownHook);
+        }
     }
     
     public boolean isFree()
@@ -211,6 +217,13 @@ public final class Memory
         memFree(buffer);
         free = true;
         allocations--;
+        
+        if (debug)
+        {
+            Runtime.getRuntime().removeShutdownHook(debugShutdownHook);
+            debugShutdownHook = null;
+            debugLeakTrace = null;
+        }
     }
     
     public ByteBuffer makeView()
@@ -274,10 +287,6 @@ public final class Memory
     @Override
     public void finalize()
     {
-        if (debug && !free)
-        {
-            System.err.println("DevilUtil - Memory leaked: ");
-            debugLeakTrace.printStackTrace();
-        }
+        if (debugLeakTrace != null) debugLeakTrace.printStackTrace();
     }
 }
