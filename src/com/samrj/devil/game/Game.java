@@ -280,12 +280,13 @@ public abstract class Game
     public void onKey(int key, int action, int mods) {};
     
     /**
-     * Called whenever a character is typed. Always called before step() and
+     * Called whenever a character is typed. Always called before step() and 
      * render(). Automatically accounts for modifiers like shift.
      * 
      * @param character The character that was typed.
+     * @param codepoint The unicode codepoint that was typed.
      */
-    public void onCharacter(char character) {};
+    public void onCharacter(char character, int codepoint) {};
     
     /**
      * Steps the simulation by a given amount of time. Called after input and

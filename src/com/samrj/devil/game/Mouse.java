@@ -1,7 +1,11 @@
 package com.samrj.devil.game;
 
 import com.samrj.devil.display.GLFWUtil;
+import com.samrj.devil.math.Vec2;
+import java.nio.DoubleBuffer;
 import java.util.Arrays;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.system.MemoryStack;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -89,14 +93,15 @@ public final class Mouse
         scrollCallback.accept((float)xoffset, (float)yoffset);
     }
     
-    public final float getX()
+    public final Vec2 getPos()
     {
-        return x;
-    }
-    
-    public final float getY()
-    {
-        return y;
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            DoubleBuffer xBuf = stack.mallocDouble(1);
+            DoubleBuffer yBuf = stack.mallocDouble(2);
+            glfwGetCursorPos(window, xBuf, yBuf);
+            return new Vec2((float)xBuf.get(0), (float)yBuf.get(0));
+        }
     }
     
     public final void setPos(float x, float y)
