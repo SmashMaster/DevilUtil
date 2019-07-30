@@ -37,7 +37,7 @@ public final class IOUtil
         in.reset();
         String out = in.readUTF();
         int padding = (4 - (utflen % 4)) % 4;
-        if (in.skip(padding) != padding) throw new IOException("Cannot skip bytes with this stream.");
+        in.skipNBytes(padding);
         return out;
     }
     

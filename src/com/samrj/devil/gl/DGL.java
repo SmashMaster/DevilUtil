@@ -42,6 +42,7 @@ import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL20C.*;
 import static org.lwjgl.opengl.GL30C.*;
 import static org.lwjgl.opengl.GL31C.*;
+import static org.lwjgl.opengl.GL43C.*;
 
 /**
  * DevilGL. A state-based, object-oriented, forward compatible OpenGL wrapper;
@@ -52,10 +53,12 @@ import static org.lwjgl.opengl.GL31C.*;
 public final class DGL
 {
     //Constant fields
-    private static boolean init;
     private static Thread thread;
     private static GLCapabilities capabilities;
     private static Set<DGLObj> objects;
+    private static boolean debug;
+    private static Thread debugShutdownHook;
+    private static boolean init;
     
     //State fields
     private static ShaderProgram boundProgram;
@@ -78,8 +81,17 @@ public final class DGL
         thread = Thread.currentThread();
         capabilities = GL.getCapabilities();
         objects = Collections.newSetFromMap(new IdentityHashMap<>());
+        debug = (glGetInteger(GL_CONTEXT_FLAGS) & GL_CONTEXT_FLAG_DEBUG_BIT) != 0;
         VAO.init();
-        DGLException.init();
+        DGLException.init(debug);
+        if (debug)
+        {
+            debugShutdownHook = new Thread(() ->
+            {
+                if (init) System.err.println("DevilUtil (DGL) - DGL not terminated before JVM shut down!");
+            });
+            Runtime.getRuntime().addShutdownHook(debugShutdownHook);
+        }
         init = true;
     }
     
@@ -90,6 +102,14 @@ public final class DGL
     {
         checkState();
         return capabilities;
+    }
+    
+    /**
+     * Returns whether this OpenGL context has debug enabled.
+     */
+    public static boolean isDebugEnabled()
+    {
+        return debug;
     }
     
     private static <T extends DGLObj> T gen(T obj)
@@ -822,6 +842,7 @@ public final class DGL
     {
         checkState();
         init = false;
+        if (debug) Runtime.getRuntime().removeShutdownHook(debugShutdownHook);
         objects = null;
         VAO.terminate();
         

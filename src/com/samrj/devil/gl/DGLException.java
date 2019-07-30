@@ -6,7 +6,6 @@ import org.lwjgl.system.Callback;
 import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.opengl.GL11C.*;
-import static org.lwjgl.opengl.GL30C.*;
 import static org.lwjgl.opengl.GL43C.*;
 
 /**
@@ -78,7 +77,7 @@ public class DGLException extends RuntimeException
     {
         String message = getMessage(source, type, severity, length, msgAddr);
         if (severity == GL_DEBUG_SEVERITY_HIGH) throw new DGLException(message);
-        System.err.println(message);
+        System.err.println("DevilUtil (DGL) - " + message);
     }
     
     private static void errorKHR(int id, int category, int severity, int length, long message, long userParam)
@@ -89,14 +88,11 @@ public class DGLException extends RuntimeException
     
     private static Callback setupCallback()
     {
-        if ((glGetInteger(GL_CONTEXT_FLAGS) & GL_CONTEXT_FLAG_DEBUG_BIT) == 0)
-            return null;
-        
         GLCapabilities caps = GL.getCapabilities();
 
         if (caps.OpenGL43)
         {
-            System.out.println("DevilUtil - (DGL) OpenGL 4.3 debug enabled.");
+            System.out.println("DevilUtil (DGL) - OpenGL 4.3 debug enabled.");
             
             GLDebugMessageCallback proc = GLDebugMessageCallback.create(DGLException::error);
             glDebugMessageCallback(proc, MemoryUtil.NULL);
@@ -110,7 +106,7 @@ public class DGLException extends RuntimeException
 
         if (caps.GL_KHR_debug)
         {
-            System.out.println("DevilUtil - (DGL) KHR debug enabled.");
+            System.out.println("DevilUtil (DGL) - KHR debug enabled.");
             
             GLDebugMessageCallback proc = GLDebugMessageCallback.create(DGLException::error);
             KHRDebug.glDebugMessageCallback(proc, MemoryUtil.NULL);
@@ -124,7 +120,7 @@ public class DGLException extends RuntimeException
 
         if (caps.GL_ARB_debug_output)
         {
-            System.out.println("DevilUtil - (DGL) ARB debug enabled.");
+            System.out.println("DevilUtil (DGL) - ARB debug enabled.");
             
             GLDebugMessageARBCallback proc = GLDebugMessageARBCallback.create(DGLException::error);
             ARBDebugOutput.glDebugMessageCallbackARB(proc, MemoryUtil.NULL);
@@ -134,22 +130,22 @@ public class DGLException extends RuntimeException
 
         if (caps.GL_AMD_debug_output)
         {
-            System.out.println("DevilUtil - (DGL) AMD debug enabled.");
+            System.out.println("DevilUtil (DGL) - AMD debug enabled.");
             
             GLDebugMessageAMDCallback proc = GLDebugMessageAMDCallback.create(DGLException::errorKHR);
             AMDDebugOutput.glDebugMessageCallbackAMD(proc, MemoryUtil.NULL);
             return proc;
         }
         
-        System.out.println("DevilUtil - (DGL) No debug implementation found.");
+        System.out.println("DevilUtil (DGL) - No debug implementation found.");
         
         return null;
     }
     
-    static void init()
+    static void init(boolean debug)
     {
         if (initialized) throw new IllegalStateException("Already initialized.");
-        callback = setupCallback();
+        if (debug) callback = setupCallback();
         initialized = true;
     }
     

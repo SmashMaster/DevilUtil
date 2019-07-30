@@ -276,7 +276,7 @@ public final class Memory
     {
         if (debug && !free)
         {
-            System.err.println("Memory leaked: ");
+            System.err.println("DevilUtil - Memory leaked: ");
             debugLeakTrace.printStackTrace();
         }
     }
