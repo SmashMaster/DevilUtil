@@ -22,8 +22,8 @@
 
 package com.samrj.devil.display;
 
-import com.samrj.devil.io.MemStack;
 import com.samrj.devil.math.Vec2i;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -38,72 +38,84 @@ public final class GLFWUtil
 {
     public static Vec2i getWindowPos(long window)
     {
-        long x = MemStack.push(4);
-        long y = MemStack.push(4);
-        nglfwGetWindowPos(window, x, y);
-        Vec2i out = new Vec2i(MemoryUtil.memGetInt(x),
-                              MemoryUtil.memGetInt(y));
-        MemStack.pop(2);
-        return out;
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            long x = stack.nmalloc(4);
+            long y = stack.nmalloc(4);
+            nglfwGetWindowPos(window, x, y);
+            Vec2i out = new Vec2i(MemoryUtil.memGetInt(x),
+                                  MemoryUtil.memGetInt(y));
+            return out;
+        }
     }
     
     public static Vec2i getWindowSize(long window)
     {
-        long w = MemStack.push(4);
-        long h = MemStack.push(4);
-        nglfwGetWindowSize(window, w, h);
-        Vec2i out = new Vec2i(MemoryUtil.memGetInt(w),
-                              MemoryUtil.memGetInt(h));
-        MemStack.pop(2);
-        return out;
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            long w = stack.nmalloc(4);
+            long h = stack.nmalloc(4);
+            nglfwGetWindowSize(window, w, h);
+            Vec2i out = new Vec2i(MemoryUtil.memGetInt(w),
+                                  MemoryUtil.memGetInt(h));
+            return out;
+        }
     }
     
     public static final Vec2i getFramebufferSize(long window)
     {
-        long w = MemStack.push(4);
-        long h = MemStack.push(4);
-        nglfwGetFramebufferSize(window, w, h);
-        Vec2i out = new Vec2i(MemoryUtil.memGetInt(w),
-                              MemoryUtil.memGetInt(h));
-        MemStack.pop(2);
-        return out;
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            long w = stack.nmalloc(4);
+            long h = stack.nmalloc(4);
+            nglfwGetFramebufferSize(window, w, h);
+            Vec2i out = new Vec2i(MemoryUtil.memGetInt(w),
+                                  MemoryUtil.memGetInt(h));
+            return out;
+        }
     }
     
     public static final FrameSize getWindowFrameSize(long window)
     {
-        long left = MemStack.push(4);
-        long top = MemStack.push(4);
-        long right = MemStack.push(4);
-        long bottom = MemStack.push(4);
-        nglfwGetWindowFrameSize(window, left, top, right, bottom);
-        FrameSize out =  new FrameSize(MemoryUtil.memGetInt(left),
-                                       MemoryUtil.memGetInt(top),
-                                       MemoryUtil.memGetInt(right),
-                                       MemoryUtil.memGetInt(bottom));
-        MemStack.pop(4);
-        return out;
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            long left = stack.nmalloc(4);
+            long top = stack.nmalloc(4);
+            long right = stack.nmalloc(4);
+            long bottom = stack.nmalloc(4);
+            nglfwGetWindowFrameSize(window, left, top, right, bottom);
+            FrameSize out =  new FrameSize(MemoryUtil.memGetInt(left),
+                                           MemoryUtil.memGetInt(top),
+                                           MemoryUtil.memGetInt(right),
+                                           MemoryUtil.memGetInt(bottom));
+            return out;
+        }
     }
     
     public static Vec2i getMonitorPos(long monitor)
     {
-        long x = MemStack.push(4);
-        long y = MemStack.push(4);
-        nglfwGetMonitorPos(monitor, x, y);
-        Vec2i out = new Vec2i(MemoryUtil.memGetInt(x),
-                              MemoryUtil.memGetInt(y));
-        MemStack.pop(2);
-        return out;
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            long x = stack.nmalloc(4);
+            long y = stack.nmalloc(4);
+            nglfwGetMonitorPos(monitor, x, y);
+            Vec2i out = new Vec2i(MemoryUtil.memGetInt(x),
+                                  MemoryUtil.memGetInt(y));
+            return out;
+        }
     }
     
     public static Vec2i getMonitorPhysicalSize(long monitor)
     {
-        long w = MemStack.push(4);
-        long h = MemStack.push(4);
-        nglfwGetMonitorPhysicalSize(monitor, w, h);
-        Vec2i out = new Vec2i(MemoryUtil.memGetInt(w),
-                              MemoryUtil.memGetInt(h));
-        MemStack.pop(2);
-        return out;
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            long w = stack.nmalloc(4);
+            long h = stack.nmalloc(4);
+            nglfwGetMonitorPhysicalSize(monitor, w, h);
+            Vec2i out = new Vec2i(MemoryUtil.memGetInt(w),
+                                  MemoryUtil.memGetInt(h));
+            return out;
+        }
     }
     
     private GLFWUtil()

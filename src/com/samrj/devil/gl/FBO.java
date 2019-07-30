@@ -22,7 +22,7 @@
 
 package com.samrj.devil.gl;
 
-import com.samrj.devil.io.MemStack;
+import org.lwjgl.system.MemoryStack;
 
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL13C.*;
@@ -162,10 +162,11 @@ public final class FBO extends DGLObj
      */
     public void drawBuffers(int... a)
     {
-        ensureBound();
-        long address = MemStack.wrapi(a);
-        nglDrawBuffers(a.length, address);
-        MemStack.pop();
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            ensureBound();
+            glDrawBuffers(stack.ints(a));
+        }
     }
     
     /**

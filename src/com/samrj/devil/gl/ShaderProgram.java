@@ -22,11 +22,12 @@
 
 package com.samrj.devil.gl;
 
-import com.samrj.devil.io.MemStack;
 import com.samrj.devil.math.*;
 import com.samrj.devil.util.IdentitySet;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.util.*;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.opengl.GL11C.*;
@@ -149,26 +150,29 @@ public final class ShaderProgram extends DGLObj
         ArrayList<Attribute> attList = new ArrayList<>(numAttributes);
         attMap = new HashMap<>(numAttributes);
         
-        int attBytes = 4 + 4 + 4 + 32;
-        long address = MemStack.push(attBytes);
-        ByteBuffer buffer = MemoryUtil.memByteBuffer(address, attBytes);
-        for (int index=0; index<numAttributes; index++)
+        try (MemoryStack stack = MemoryStack.stackPush())
         {
-            long nameAddress = address + 12;
-            nglGetActiveAttrib(id, index, 31, address, address + 4, address + 8, nameAddress);
+            int attBytes = 4 + 4 + 4 + 32;
+            long address = stack.nmalloc(attBytes);
+            ByteBuffer buffer = MemoryUtil.memByteBuffer(address, attBytes);
+            for (int index=0; index<numAttributes; index++)
+            {
+                long nameAddress = address + 12;
+                nglGetActiveAttrib(id, index, 31, address, address + 4, address + 8, nameAddress);
 
-            buffer.rewind();
-            buffer.getInt();
-            int size = buffer.getInt();
-            int type = buffer.getInt();
-            String name = MemoryUtil.memASCII(nameAddress);
-            int location = nglGetAttribLocation(id, nameAddress);
+                buffer.rewind();
+                buffer.getInt();
+                int size = buffer.getInt();
+                int type = buffer.getInt();
+                String name = MemoryUtil.memASCII(nameAddress);
+                int location = nglGetAttribLocation(id, nameAddress);
 
-            Attribute att = new Attribute(name, type, size, location);
-            attList.add(att);
-            attMap.put(name, att);
+                Attribute att = new Attribute(name, type, size, location);
+                attList.add(att);
+                attMap.put(name, att);
+            }
         }
-        MemStack.pop();
+        
         attributes = Collections.unmodifiableList(attList);
         
         state = State.LINKED;
@@ -260,10 +264,11 @@ public final class ShaderProgram extends DGLObj
         int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        long address = MemStack.wrapi(array);
-        nglUniform1iv(loc, array.length, address);
-        MemStack.pop();
-        return true;
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            glUniform1iv(loc, stack.ints(array));
+            return true;
+        }
     }
     
     public boolean uniform1b(String name, boolean b)
@@ -309,10 +314,11 @@ public final class ShaderProgram extends DGLObj
         int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        long address = MemStack.wrapf(array);
-        nglUniform1fv(loc, array.length, address);
-        MemStack.pop();
-        return true;
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            glUniform1fv(loc, stack.floats(array));
+            return true;
+        }
     }
     
     /**
@@ -345,10 +351,11 @@ public final class ShaderProgram extends DGLObj
         int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        long address = MemStack.wrapf(array);
-        nglUniform2fv(loc, array.length/2, address);
-        MemStack.pop();
-        return true;
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            glUniform2fv(loc, stack.floats(array));
+            return true;
+        }
     }
     
     /**
@@ -377,10 +384,14 @@ public final class ShaderProgram extends DGLObj
         int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        long address = MemStack.wrapv(array);
-        nglUniform2fv(loc, array.length, address);
-        MemStack.pop();
-        return true;
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            FloatBuffer buffer = stack.mallocFloat(array.length*2);
+            for (Vec2 v : array) v.write(buffer);
+            buffer.flip();
+            glUniform2fv(loc, buffer);
+            return true;
+        }
     }
     
     /**
@@ -413,10 +424,11 @@ public final class ShaderProgram extends DGLObj
         int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        long address = MemStack.wrapf(array);
-        nglUniform3fv(loc, array.length/3, address);
-        MemStack.pop();
-        return true;
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            glUniform3fv(loc, stack.floats(array));
+            return true;
+        }
     }
     
     /**
@@ -445,10 +457,14 @@ public final class ShaderProgram extends DGLObj
         int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        long address = MemStack.wrapv(array);
-        nglUniform3fv(loc, array.length, address);
-        MemStack.pop();
-        return true;
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            FloatBuffer buffer = stack.mallocFloat(array.length*3);
+            for (Vec3 v : array) v.write(buffer);
+            buffer.flip();
+            glUniform3fv(loc, buffer);
+            return true;
+        }
     }
     
     /**
@@ -481,10 +497,11 @@ public final class ShaderProgram extends DGLObj
         int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        long address = MemStack.wrapf(array);
-        nglUniform4fv(loc, array.length/4, address);
-        MemStack.pop();
-        return true;
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            glUniform4fv(loc, stack.floats(array));
+            return true;
+        }
     }
     
     /**
@@ -513,10 +530,15 @@ public final class ShaderProgram extends DGLObj
         int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        long address = MemStack.wrapv(array);
-        nglUniform4fv(loc, array.length, address);
-        MemStack.pop();
-        return true;
+        
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            FloatBuffer buffer = stack.mallocFloat(array.length*4);
+            for (Vec4 v : array) v.write(buffer);
+            buffer.flip();
+            glUniform4fv(loc, buffer);
+            return true;
+        }
     }
     
     /**
@@ -532,10 +554,11 @@ public final class ShaderProgram extends DGLObj
         int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        long address = MemStack.wrap(matrix);
-        nglUniformMatrix2fv(loc, 1, false, address);
-        MemStack.pop();
-        return true;
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            glUniformMatrix2fv(loc, false, matrix.mallocFloat(stack));
+            return true;
+        }
     }
     
     /**
@@ -552,10 +575,14 @@ public final class ShaderProgram extends DGLObj
         int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        long address = MemStack.wrapv(array);
-        nglUniformMatrix2fv(loc, array.length, false, address);
-        MemStack.pop();
-        return true;
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            FloatBuffer buffer = stack.mallocFloat(array.length*4);
+            for (Mat2 m : array) m.write(buffer);
+            buffer.flip();
+            glUniformMatrix2fv(loc, false, buffer);
+            return true;
+        }
     }
     
     /**
@@ -571,10 +598,11 @@ public final class ShaderProgram extends DGLObj
         int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        long address = MemStack.wrap(matrix);
-        nglUniformMatrix3fv(loc, 1, false, address);
-        MemStack.pop();
-        return true;
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            glUniformMatrix3fv(loc, false, matrix.mallocFloat(stack));
+            return true;
+        }
     }
     
     /**
@@ -591,10 +619,14 @@ public final class ShaderProgram extends DGLObj
         int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        long address = MemStack.wrapv(array);
-        nglUniformMatrix3fv(loc, array.length, false, address);
-        MemStack.pop();
-        return true;
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            FloatBuffer buffer = stack.mallocFloat(array.length*9);
+            for (Mat3 m : array) m.write(buffer);
+            buffer.flip();
+            glUniformMatrix3fv(loc, false, buffer);
+            return true;
+        }
     }
     
     /**
@@ -610,10 +642,11 @@ public final class ShaderProgram extends DGLObj
         int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        long address = MemStack.wrap(matrix);
-        nglUniformMatrix4fv(loc, 1, false, address);
-        MemStack.pop();
-        return true;
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            glUniformMatrix4fv(loc, false, matrix.mallocFloat(stack));
+            return true;
+        }
     }
     
     /**
@@ -630,10 +663,14 @@ public final class ShaderProgram extends DGLObj
         int loc = glGetUniformLocation(id, name);
         if (loc < 0) return false;
         
-        long address = MemStack.wrapv(array);
-        nglUniformMatrix4fv(loc, array.length, false, address);
-        MemStack.pop();
-        return true;
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            FloatBuffer buffer = stack.mallocFloat(array.length*16);
+            for (Mat4 m : array) m.write(buffer);
+            buffer.flip();
+            glUniformMatrix4fv(loc, false, buffer);
+            return true;
+        }
     }
     // </editor-fold>
     

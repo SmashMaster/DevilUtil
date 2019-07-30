@@ -22,18 +22,19 @@
 
 package com.samrj.devil.al;
 
-import com.samrj.devil.io.MemStack;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.res.Resource;
 import com.samrj.devil.util.IdentitySet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Locale;
 import java.util.Set;
 import org.kc7bfi.jflac.FLACDecoder;
 import org.lwjgl.openal.*;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
 /**
@@ -107,9 +108,14 @@ public class DAL
     
     public static void setListenDir(Vec3 look, Vec3 up)
     {
-        long address = MemStack.wrapv(look, up);
-        AL10.nalListenerfv(AL10.AL_ORIENTATION, address);
-        MemStack.pop();
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            FloatBuffer buffer = stack.mallocFloat(6);
+            look.write(buffer);
+            up.write(buffer);
+            buffer.flip();
+            AL10.alListenerfv(AL10.AL_ORIENTATION, buffer);
+        }
     }
     
     public static SoundBuffer decodeFlac(InputStream in) throws IOException

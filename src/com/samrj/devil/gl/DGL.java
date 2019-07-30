@@ -23,7 +23,6 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.graphics.TexUtil;
-import com.samrj.devil.io.MemStack;
 import com.samrj.devil.math.Util.PrimType;
 import com.samrj.devil.res.Resource;
 import java.awt.image.BufferedImage;
@@ -36,6 +35,7 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.opengl.GL11C.*;
@@ -294,23 +294,19 @@ public final class DGL
      */
     public static Image screenshotImage()
     {
-        int x, y, w, h;
+        try (MemoryStack stack = MemoryStack.stackPush())
         {
-            long xAddr = MemStack.push(4);
-            long yAddr = MemStack.push(4);
-            long wAddr = MemStack.push(4);
-            long hAddr = MemStack.push(4);
-            nglGetIntegerv(GL_VIEWPORT, xAddr);
-            x = MemoryUtil.memGetInt(xAddr);
-            y = MemoryUtil.memGetInt(yAddr);
-            w = MemoryUtil.memGetInt(wAddr);
-            h = MemoryUtil.memGetInt(hAddr);
-            MemStack.pop(4);
+            long addr = stack.nmalloc(16);
+            nglGetIntegerv(GL_VIEWPORT, addr);
+            int x = MemoryUtil.memGetInt(addr);
+            int y = MemoryUtil.memGetInt(addr + 4);
+            int w = MemoryUtil.memGetInt(addr + 8);
+            int h = MemoryUtil.memGetInt(addr + 12);
+
+            Image out = genImage(w, h, 3, PrimType.BYTE);
+            nglReadPixels(x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE, out.address());
+            return out;
         }
-        
-        Image out = genImage(w, h, 3, PrimType.BYTE);
-        nglReadPixels(x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE, out.address());
-        return out;
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Texture methods">

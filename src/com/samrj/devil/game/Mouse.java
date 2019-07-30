@@ -4,7 +4,6 @@ import com.samrj.devil.display.GLFWUtil;
 import com.samrj.devil.math.Vec2;
 import java.nio.DoubleBuffer;
 import java.util.Arrays;
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
 
 import static org.lwjgl.glfw.GLFW.*;
