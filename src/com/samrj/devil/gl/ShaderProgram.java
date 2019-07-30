@@ -23,7 +23,6 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.math.*;
-import com.samrj.devil.util.IdentitySet;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.*;
@@ -62,7 +61,7 @@ public final class ShaderProgram extends DGLObj
         if (!DGL.getCapabilities().OpenGL20)
             throw new UnsupportedOperationException("Shader programs unsupported in OpenGL < 2.0");
         id = glCreateProgram();
-        shaders = new IdentitySet<>();
+        shaders = Collections.newSetFromMap(new IdentityHashMap<>());
         state = State.NEW;
     }
     

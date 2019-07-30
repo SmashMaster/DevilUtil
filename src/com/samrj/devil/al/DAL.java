@@ -24,12 +24,13 @@ package com.samrj.devil.al;
 
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.res.Resource;
-import com.samrj.devil.util.IdentitySet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Set;
 import org.kc7bfi.jflac.FLACDecoder;
@@ -77,7 +78,7 @@ public class DAL
         ALC10.alcMakeContextCurrent(context);
         
         capabilities = AL.createCapabilities(deviceCaps);
-        objects = new IdentitySet<>();
+        objects = Collections.newSetFromMap(new IdentityHashMap<>());
         init = true;
     }
     

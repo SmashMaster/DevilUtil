@@ -1,11 +1,7 @@
 package com.samrj.devil.gl;
 
-import com.samrj.devil.util.IdentitySet;
 import com.samrj.devil.util.Pair;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.lwjgl.opengl.GL15C.*;
 import static org.lwjgl.opengl.GL20C.*;
@@ -36,7 +32,7 @@ final class VAO
         Set<VAO> set = map.get(obj);
         if (set == null)
         {
-            set = new IdentitySet<>();
+            set = Collections.newSetFromMap(new IdentityHashMap<>());
             map.put(obj, set);
         }
         set.add(vao);
