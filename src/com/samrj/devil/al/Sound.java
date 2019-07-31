@@ -7,7 +7,7 @@ import org.lwjgl.openal.AL10;
  * Contains sound data for use by OpenAL.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class Sound extends DALObj
@@ -40,7 +40,7 @@ public class Sound extends DALObj
         int format = getFormat(buffer.channels, buffer.type);
         if (format == -1) throw new IllegalArgumentException("Illegal sound format.");
         
-        AL10.nalBufferData(id, format, buffer.address(), buffer.size, buffer.rate);
+        AL10.alBufferData(id, format, buffer.buffer, buffer.rate);
     }
     
     @Override

@@ -1,14 +1,14 @@
 package com.samrj.devil.al;
 
-import com.samrj.devil.io.Memory;
 import com.samrj.devil.math.Util.PrimType;
 import java.nio.ByteBuffer;
+import org.lwjgl.system.MemoryUtil;
 
 /**
  * Sound buffer. Stores raw sound data.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class SoundBuffer extends DALObj
@@ -19,7 +19,6 @@ public class SoundBuffer extends DALObj
     public final int rate;
     public final int size;
     
-    private final Memory mem;
     public final ByteBuffer buffer;
     
     SoundBuffer(PCMBuffer pcm)
@@ -38,16 +37,14 @@ public class SoundBuffer extends DALObj
             if (rate <= 0)
                 throw new IllegalArgumentException("Illegal sound rate specified.");
         }
-        catch (IllegalArgumentException e)
+        catch (Throwable t)
         {
-            pcm.close().free();
-            throw e;
+            MemoryUtil.memFree(pcm.close());
+            throw t;
         }
         
-        mem = pcm.close();
-        buffer = mem.buffer;
-        
-        size = buffer.position();
+        buffer = pcm.close();
+        size = buffer.remaining();
         samples = size/(channels*type.size);
     }
     
@@ -56,12 +53,12 @@ public class SoundBuffer extends DALObj
      */
     public long address()
     {
-        return mem.address;
+        return MemoryUtil.memAddress(buffer);
     }
     
     @Override
     void delete()
     {
-        mem.free();
+        MemoryUtil.memFree(buffer);
     }
 }

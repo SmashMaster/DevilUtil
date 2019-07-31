@@ -22,8 +22,8 @@
 
 package com.samrj.devil.gl;
 
-import com.samrj.devil.io.Memory;
 import java.nio.ByteBuffer;
+import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL15C.*;
@@ -40,13 +40,12 @@ public final class VertexBuffer extends VertexBuilder
     private State state;
     
     //Fields for 'ready' state
-    private Memory vertexBlock, indexBlock;
     private ByteBuffer vertexBuffer, indexBuffer;
     private int numVertices, numIndices;
     
     //Fields for 'complete' state
     private int vbo, ibo;
-    private long vramUsage;
+    private long debugVRAMUsage;
     
     VertexBuffer(int maxVertices, int maxIndices)
     {
@@ -67,14 +66,8 @@ public final class VertexBuffer extends VertexBuilder
     @Override
     void onBegin()
     {
-        vertexBlock = new Memory(maxVertices*vertexSize());
-        vertexBuffer = vertexBlock.buffer;
-        
-        if (maxIndices > 0)
-        {
-            indexBlock = new Memory(maxIndices*4);
-            indexBuffer = indexBlock.buffer;
-        }
+        vertexBuffer = MemoryUtil.memAlloc(maxVertices*vertexSize());
+        if (maxIndices > 0) indexBuffer = MemoryUtil.memAlloc(maxIndices*4);
         
         state = State.READY;
     }
@@ -111,37 +104,37 @@ public final class VertexBuffer extends VertexBuilder
         ensureState(State.READY);
         if (numVertices <= 0) throw new IllegalStateException("No vertices emitted.");
         
+        vertexBuffer.flip();
         vbo = glGenBuffers();
         int prevBinding = glGetInteger(GL_ARRAY_BUFFER_BINDING);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        nglBufferData(GL_ARRAY_BUFFER, numVertices*vertexSize(), vertexBlock.address, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, prevBinding);
         
-        vramUsage += vertexBlock.size*8L;
-        vertexBlock.free();
-        vertexBlock = null;
+        debugVRAMUsage += vertexBuffer.remaining()*8L;
+        MemoryUtil.memFree(vertexBuffer);
         vertexBuffer = null;
 
         if (maxIndices > 0)
         {
             if (numIndices > 0)
             {
+                indexBuffer.flip();
                 ibo = glGenBuffers();
                 prevBinding = glGetInteger(GL_ELEMENT_ARRAY_BUFFER_BINDING);
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-                nglBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices*4, indexBlock.address, GL_STATIC_DRAW);
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBuffer, GL_STATIC_DRAW);
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevBinding);
             }
             
-            vramUsage += indexBlock.size*8L;
-            indexBlock.free();
-            indexBlock = null;
+            debugVRAMUsage += indexBuffer.remaining()*8L;
+            MemoryUtil.memFree(indexBuffer);
             indexBuffer = null;
         }
         
         state = State.COMPLETE;
         
-        Profiler.addUsedVRAM(vramUsage);
+        Profiler.addUsedVRAM(debugVRAMUsage);
     }
     
     @Override
@@ -175,14 +168,12 @@ public final class VertexBuffer extends VertexBuilder
     {
         if (state == State.READY)
         {
-            vertexBlock.free();
-            vertexBlock = null;
+            MemoryUtil.memFree(vertexBuffer);
             vertexBuffer = null;
             
             if (maxIndices > 0)
             {
-                indexBlock.free();
-                indexBlock = null;
+                MemoryUtil.memFree(indexBuffer);
                 indexBuffer = null;
             }
         }
@@ -194,6 +185,6 @@ public final class VertexBuffer extends VertexBuilder
         
         state = State.DELETED;
         
-        Profiler.removeUsedVRAM(vramUsage);
+        Profiler.removeUsedVRAM(debugVRAMUsage);
     }
 }

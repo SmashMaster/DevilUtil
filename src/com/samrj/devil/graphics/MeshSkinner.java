@@ -2,13 +2,12 @@ package com.samrj.devil.graphics;
 
 import com.samrj.devil.gl.ShaderProgram;
 import com.samrj.devil.io.IOUtil;
-import com.samrj.devil.io.Memory;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.model.ArmatureSolver;
 import com.samrj.devil.model.ArmatureSolver.BoneSolver;
 import com.samrj.devil.model.Mesh;
 import com.samrj.devil.model.ModelObject;
-import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.util.List;
 import org.lwjgl.system.MemoryUtil;
 
@@ -26,18 +25,16 @@ public class MeshSkinner
     public final int numGroups;
     
     private final List<BoneSolver> bones;
-    private final Memory matBlock;
-    private final ByteBuffer matData;
+    private final FloatBuffer matData;
     
-    private Memory prevMatBlock;
+    private FloatBuffer prevMatData;
     private boolean onFirstFrame = true;
     
     public MeshSkinner(ModelObject<Mesh> object, ArmatureSolver solver)
     {
         numGroups = object.data.get().numGroups;
         bones = IOUtil.mapList(object.vertexGroups, solver::getBone);
-        matBlock = new Memory(bones.size()*16*4);
-        matData = matBlock.buffer;
+        matData = MemoryUtil.memAllocFloat(bones.size()*16);
     }
     
     /**
@@ -47,18 +44,19 @@ public class MeshSkinner
     public void update()
     {
         if (prevMatricesEnabled())
-            MemoryUtil.memCopy(matBlock.address, prevMatBlock.address, matBlock.size);
+            MemoryUtil.memCopy(matData, prevMatData);
         
-        matData.rewind();
+        matData.clear();
         bones.forEach(bone ->
         {
             if (bone == null) new Mat4().write(matData);
             else bone.skinMatrix.write(matData);
         });
+        matData.flip();
         
         if (onFirstFrame && prevMatricesEnabled())
         {
-            MemoryUtil.memCopy(matBlock.address, prevMatBlock.address, matBlock.size);
+            MemoryUtil.memCopy(matData, prevMatData);
             onFirstFrame = false;
         }
     }
@@ -72,7 +70,7 @@ public class MeshSkinner
     public void uniformMats(ShaderProgram shader, String arrayName)
     {
         int loc = shader.getUniformLocation(arrayName);
-        nglUniformMatrix4fv(loc, bones.size(), false, matBlock.address);
+        glUniformMatrix4fv(loc, false, matData);
     }
     
     /**
@@ -80,7 +78,7 @@ public class MeshSkinner
      */
     public boolean prevMatricesEnabled()
     {
-        return prevMatBlock != null;
+        return prevMatData != null;
     }
     
     /**
@@ -91,7 +89,7 @@ public class MeshSkinner
     {
         if (prevMatricesEnabled()) throw new IllegalStateException();
         
-        prevMatBlock = new Memory(matBlock.size);
+        prevMatData = MemoryUtil.memAllocFloat(matData.capacity());
     }
     
     public void uniformPrevMats(ShaderProgram shader, String arrayName)
@@ -99,7 +97,7 @@ public class MeshSkinner
         if (!prevMatricesEnabled()) throw new IllegalStateException();
         
         int loc = shader.getUniformLocation(arrayName);
-        nglUniformMatrix4fv(loc, bones.size(), false, prevMatBlock.address);
+        glUniformMatrix4fv(loc, false, prevMatData);
     }
     
     /**
@@ -107,7 +105,7 @@ public class MeshSkinner
      */
     public final void destroy()
     {
-        matBlock.free();
-        if (prevMatricesEnabled()) prevMatBlock.free();
+        MemoryUtil.memFree(matData);
+        if (prevMatricesEnabled()) MemoryUtil.memFree(prevMatData);
     }
 }

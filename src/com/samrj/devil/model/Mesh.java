@@ -24,7 +24,6 @@ package com.samrj.devil.model;
 
 import com.samrj.devil.geo2d.Earcut;
 import com.samrj.devil.geo3d.Vertex3;
-import com.samrj.devil.io.Memory;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
@@ -38,6 +37,7 @@ import java.util.Map;
 import java.util.function.IntFunction;
 import org.blender.dna.*;
 import org.cakelab.blender.nio.CPointer;
+import org.lwjgl.system.MemoryUtil;
 
 /**
  * Blender mesh object.
@@ -64,11 +64,9 @@ public final class Mesh extends DataBlock
     
     public final String[] uvLayers, colorLayers;
     public final int numVertices;
-    public final Memory vertexBlock;
     public final ByteBuffer vertexData;
     
     public final int numTriangles;
-    public final Memory indexBlock;
     public final ByteBuffer indexData;
     
     public final int positionOffset, normalOffset;
@@ -339,8 +337,7 @@ public final class Mesh extends DataBlock
          * ALLOCATE AND FILL BUFFERS
          */
         
-        vertexBlock = numVertices != 0 ? new Memory(intOffset*4) : null;
-        vertexData = numVertices != 0 ? vertexBlock.buffer : null;
+        vertexData = numVertices != 0 ? MemoryUtil.memAlloc(intOffset*4) : null;
         if (vertexData != null)
         {
             vertexData.position(positionOffset);
@@ -430,12 +427,11 @@ public final class Mesh extends DataBlock
                     vertexData.putInt(loopMats[i]);
             }
             
-            vertexData.rewind();
+            vertexData.flip();
         }
         
         int triangleIndexInts = numTriangles*3;
-        indexBlock = numTriangles != 0 ? new Memory(triangleIndexInts*4) : null;
-        indexData = numTriangles != 0 ? indexBlock.buffer : null;
+        indexData = numTriangles != 0 ? MemoryUtil.memAlloc(triangleIndexInts*4) : null;
         if (indexData != null)
         {
             for (LoopTri loopTri : loopTris)
@@ -444,7 +440,7 @@ public final class Mesh extends DataBlock
                 indexData.putInt(loopTri.vb);
                 indexData.putInt(loopTri.vc);
             }
-            indexData.rewind();
+            indexData.flip();
         }
     }
     
@@ -524,8 +520,8 @@ public final class Mesh extends DataBlock
     @Override
     void destroy()
     {
-        if (vertexBlock != null) vertexBlock.free();
-        if (indexBlock != null) indexBlock.free();
+        if (vertexData != null) MemoryUtil.memFree(vertexData);
+        if (indexData != null) MemoryUtil.memFree(indexData);
     }
     
     public class MeshVertex implements Vertex3

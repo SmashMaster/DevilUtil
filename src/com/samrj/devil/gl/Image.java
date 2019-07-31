@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2019 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,13 +22,13 @@
 
 package com.samrj.devil.gl;
 
-import com.samrj.devil.io.Memory;
 import com.samrj.devil.math.Util.PrimType;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.nio.ByteBuffer;
+import org.lwjgl.system.MemoryUtil;
 
 /**
  * Raster image buffer. Used to load or generate images to main memory. Does not
@@ -80,7 +80,6 @@ public final class Image extends DGLObj
     public final int size;
     public final ByteBuffer buffer;
     
-    private final Memory mem;
     private boolean deleted;
     
     Image(int width, int height, int bands, PrimType type)
@@ -99,8 +98,7 @@ public final class Image extends DGLObj
         this.type = type;
         size = width*height*bands*type.size;
         
-        mem = new Memory(size);
-        buffer = mem.buffer;
+        buffer = MemoryUtil.memAlloc(size);
     }
     
     /**
@@ -184,7 +182,10 @@ public final class Image extends DGLObj
             default: throw new IllegalArgumentException();
         }
         
-        return sample(s).rewind();
+        buffer.clear();
+        sample(s);
+        buffer.flip();
+        return this;
     }
     
     /**
@@ -208,7 +209,10 @@ public final class Image extends DGLObj
             default: throw new IllegalArgumentException();
         }
         
-        return sample(s).rewind();
+        buffer.clear();
+        sample(s);
+        buffer.flip();
+        return this;
     }
     
     /**
@@ -237,7 +241,10 @@ public final class Image extends DGLObj
             default: throw new IllegalArgumentException();
         }
         
-        return sample(s).rewind();
+        buffer.rewind();
+        sample(s);
+        buffer.rewind();
+        return this;
     }
     
     /**
@@ -259,22 +266,11 @@ public final class Image extends DGLObj
     }
     
     /**
-     * Rewinds this image's underlying buffer.
-     * 
-     * @return This image.
-     */
-    public Image rewind()
-    {
-        buffer.rewind();
-        return this;
-    }
-    
-    /**
      * @return The native memory location for this image buffer. Unsafe!
      */
     public long address()
     {
-        return mem.address;
+        return MemoryUtil.memAddress(buffer);
     }
     
     /**
@@ -288,7 +284,7 @@ public final class Image extends DGLObj
     @Override
     void delete()
     {
-        mem.free();
+        MemoryUtil.memFree(buffer);
         deleted = true;
     }
     

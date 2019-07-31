@@ -113,8 +113,7 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         int primType = TexUtil.getPrimitiveType(format);
         
         int oldID = tempBind();
-        nglTexImage2D(target, 0, format, width, height, 0,
-                dataFormat, primType, image.address());
+        glTexImage2D(target, 0, format, width, height, 0, dataFormat, primType, image.buffer);
         tempUnbind(oldID);
         
         setVRAMUsage(TexUtil.getBits(format)*width*height);
@@ -183,8 +182,7 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         
         int primType = TexUtil.getPrimitiveType(format);
         int oldID = tempBind();
-        nglTexSubImage2D(target, 0, 0, 0, width, height,
-                dataFormat, primType, image.address());
+        glTexSubImage2D(target, 0, 0, 0, width, height, dataFormat, primType, image.buffer);
         tempUnbind(oldID);
         return getThis();
     }
@@ -211,7 +209,8 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         int dataFormat = TexUtil.getBaseFormat(format);
         int primType = TexUtil.getPrimitiveType(format);
         int oldID = tempBind();
-        nglGetTexImage(target, 0, dataFormat, primType, image.address());
+        image.buffer.clear();
+        glGetTexImage(target, 0, dataFormat, primType, image.buffer);
         tempUnbind(oldID);
         return getThis();
     }

@@ -63,7 +63,7 @@ public final class Texture1D extends Texture<Texture1D>
         int primType = TexUtil.getPrimitiveType(format);
         
         int oldID = tempBind();
-        nglTexImage1D(target, 0, format, width, 0, dataFormat, primType, image.address());
+        glTexImage1D(target, 0, format, width, 0, dataFormat, primType, image.buffer);
         tempUnbind(oldID);
         
         setVRAMUsage(TexUtil.getBits(format)*width);

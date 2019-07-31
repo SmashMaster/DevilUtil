@@ -8,19 +8,17 @@ import org.lwjgl.system.MemoryUtil;
  * buffer every time the capacity is reached.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class DynamicBuffer
 {
     private ByteBuffer buffer;
-    private Memory memory;
     private boolean closed;
     
     public DynamicBuffer(int size)
     {
-        memory = new Memory(size);
-        buffer = memory.buffer;
+        buffer = MemoryUtil.memAlloc(size);
     }
     
     public DynamicBuffer()
@@ -40,12 +38,12 @@ public class DynamicBuffer
     
     private void ensureCapacity(int minCapacity)
     {
-        if (minCapacity - memory.size > 0) grow(minCapacity);
+        if (minCapacity - buffer.capacity() > 0) grow(minCapacity);
     }
     
     private void grow(int minCapacity)
     {
-        int newCapacity = memory.size << 1;
+        int newCapacity = buffer.capacity() << 1;
         if (newCapacity - minCapacity < 0) newCapacity = minCapacity;
         if (newCapacity < 0)
         {
@@ -53,15 +51,15 @@ public class DynamicBuffer
             newCapacity = Integer.MAX_VALUE;
         }
         
-        Memory newMem = new Memory(newCapacity);
-        
         int size = buffer.position();
-        buffer = newMem.buffer;
-        buffer.position(size);
+        buffer.flip();
         
-        MemoryUtil.memCopy(memory.address, newMem.address, size);
-        memory.free();
-        memory = newMem;
+        ByteBuffer newBuffer = MemoryUtil.memAlloc(newCapacity);
+        MemoryUtil.memCopy(buffer, newBuffer);
+        MemoryUtil.memFree(buffer);
+        
+        buffer = newBuffer;
+        buffer.position(size);
     }
     
     public void put(byte b)
@@ -139,14 +137,15 @@ public class DynamicBuffer
      * This is the only way to access the data inside the data stored in this
      * buffer.
      * 
+     * The returned ByteBuffer must be explicitly freed.
+     * 
      * @return The memory block that backs this buffer.
      */
-    public Memory close()
+    public ByteBuffer close()
     {
         ensureOpen();
-        Memory out = memory;
+        ByteBuffer out = buffer.flip();
         buffer = null;
-        memory = null;
         closed = true;
         return out;
     }

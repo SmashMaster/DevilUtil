@@ -1,11 +1,11 @@
 package com.samrj.devil.al;
 
 import com.samrj.devil.io.DynamicBuffer;
-import com.samrj.devil.io.Memory;
+import java.nio.ByteBuffer;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 class PCMBuffer
@@ -18,7 +18,7 @@ class PCMBuffer
         buffer = new DynamicBuffer();
     }
     
-    Memory close()
+    ByteBuffer close()
     {
         return buffer.close();
     }

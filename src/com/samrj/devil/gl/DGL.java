@@ -324,7 +324,8 @@ public final class DGL
             int h = MemoryUtil.memGetInt(addr + 12);
 
             Image out = genImage(w, h, 3, PrimType.BYTE);
-            nglReadPixels(x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE, out.address());
+            glReadPixels(x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE, out.buffer);
+            out.buffer.limit(out.buffer.capacity());
             return out;
         }
     }

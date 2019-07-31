@@ -22,8 +22,8 @@
 
 package com.samrj.devil.gl;
 
-import com.samrj.devil.io.Memory;
 import java.nio.ByteBuffer;
+import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL15C.*;
@@ -41,9 +41,8 @@ public final class VertexStream extends VertexBuilder
     
     //Fields for 'ready' state
     private int vboSize, eboSize;
-    private Memory vertexBlock, indexBlock;
     private ByteBuffer vertexBuffer, indexBuffer;
-    private int vbo, ibo;
+    private int vbo, ebo;
     private int bufferedVerts, bufferedInds;
     private int uploadedVerts, uploadedInds;
     
@@ -67,8 +66,7 @@ public final class VertexStream extends VertexBuilder
     void onBegin()
     {
         vboSize = maxVertices*vertexSize();
-        vertexBlock = new Memory(vboSize);
-        vertexBuffer = vertexBlock.buffer;
+        vertexBuffer = MemoryUtil.memAlloc(vboSize);
         vbo = glGenBuffers();
         int prevBinding = glGetInteger(GL_ARRAY_BUFFER_BINDING);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -78,11 +76,10 @@ public final class VertexStream extends VertexBuilder
         if (maxIndices > 0)
         {
             eboSize = maxIndices*4;
-            indexBlock = new Memory(eboSize);
-            indexBuffer = indexBlock.buffer;
-            ibo = glGenBuffers();
+            indexBuffer = MemoryUtil.memAlloc(eboSize);
+            ebo = glGenBuffers();
             prevBinding = glGetInteger(GL_ELEMENT_ARRAY_BUFFER_BINDING);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, eboSize, GL_STREAM_DRAW);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevBinding);
         }
@@ -99,12 +96,12 @@ public final class VertexStream extends VertexBuilder
      */
     public void clear()
     {
-        vertexBuffer.rewind();
+        vertexBuffer.clear();
         bufferedVerts = 0;
         
         if (maxIndices > 0)
         {
-            indexBuffer.rewind();
+            indexBuffer.clear();
             bufferedInds = 0;
         }
     }
@@ -141,18 +138,20 @@ public final class VertexStream extends VertexBuilder
         ensureState(State.READY);
         
         //Allocate new stores, orphaning the old ones to allow for asynchronous drawing.
+        vertexBuffer.flip();
         int prevBinding = glGetInteger(GL_ARRAY_BUFFER_BINDING);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, vboSize, GL_STREAM_DRAW);
-        nglBufferSubData(GL_ARRAY_BUFFER, 0, bufferedVerts*vertexSize(), vertexBlock.address);
+        nglBufferData(GL_ARRAY_BUFFER, vboSize, MemoryUtil.NULL, GL_STREAM_DRAW);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, vertexBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, prevBinding);
         
         if (maxIndices > 0)
         {
+            indexBuffer.flip();
             prevBinding = glGetInteger(GL_ELEMENT_ARRAY_BUFFER_BINDING);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, eboSize, GL_STREAM_DRAW);
-            nglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, bufferedInds*4, indexBlock.address);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+            nglBufferData(GL_ELEMENT_ARRAY_BUFFER, eboSize, MemoryUtil.NULL, GL_STREAM_DRAW);
+            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indexBuffer);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevBinding);
         }
         
@@ -173,7 +172,7 @@ public final class VertexStream extends VertexBuilder
     public int ibo()
     {
         ensureState(State.READY);
-        return ibo;
+        return ebo;
     }
 
     @Override
@@ -193,17 +192,15 @@ public final class VertexStream extends VertexBuilder
     {
         if (state == State.READY)
         {
-            vertexBlock.free();
-            vertexBlock = null;
+            MemoryUtil.memFree(vertexBuffer);
             vertexBuffer = null;
             glDeleteBuffers(vbo);
             
             if (maxIndices > 0)
             {
-                indexBlock.free();
-                indexBlock = null;
+                MemoryUtil.memFree(indexBuffer);
                 indexBuffer = null;
-                glDeleteBuffers(ibo);
+                glDeleteBuffers(ebo);
             }
         }
         

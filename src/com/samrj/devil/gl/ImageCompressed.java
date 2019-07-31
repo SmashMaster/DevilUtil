@@ -1,6 +1,5 @@
 package com.samrj.devil.gl;
 
-import com.samrj.devil.io.Memory;
 import java.nio.ByteBuffer;
 import org.lwjgl.system.MemoryUtil;
 
@@ -8,7 +7,7 @@ import org.lwjgl.system.MemoryUtil;
  * Data container for compressed images.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class ImageCompressed extends DGLObj
@@ -17,7 +16,7 @@ public class ImageCompressed extends DGLObj
     public final int format;
     
     private int size = -1;
-    private Memory memory;
+    private ByteBuffer buffer;
     private boolean deleted;
     
     /**
@@ -49,10 +48,10 @@ public class ImageCompressed extends DGLObj
     public ImageCompressed allocate(int size)
     {
         if (deleted) throw new IllegalStateException("Image deleted.");
-        if (memory != null) throw new IllegalStateException("Buffer already allocated.");
+        if (buffer != null) throw new IllegalStateException("Buffer already allocated.");
         
         this.size = size;
-        memory = new Memory(size);
+        buffer = MemoryUtil.memAlloc(size);
         return this;
     }
     
@@ -61,15 +60,15 @@ public class ImageCompressed extends DGLObj
      */
     public ByteBuffer buffer()
     {
-        return memory != null ? memory.buffer : null;
+        return buffer;
     }
     
     /**
-     * @return The native memory location for this image buffer. Unsafe!
+     * @return The native memory location for this image buffer.
      */
     public long address()
     {
-        return memory != null ? memory.address : MemoryUtil.NULL;
+        return MemoryUtil.memAddressSafe(buffer);
     }
     
     /**
@@ -92,8 +91,8 @@ public class ImageCompressed extends DGLObj
     void delete()
     {
         size = -1;
-        memory.free();
-        memory = null;
+        MemoryUtil.memFree(buffer);
+        buffer = null;
         deleted = true;
     }
 }

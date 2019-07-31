@@ -104,8 +104,7 @@ abstract class Texture3DAbstract<T extends Texture3DAbstract<T>> extends Texture
         
         int primType = TexUtil.getPrimitiveType(format);
         int oldID = tempBind();
-        nglTexSubImage3D(target, 0, 0, 0, depth, width, height, 1,
-                dataFormat, primType, image.address());
+        glTexSubImage3D(target, 0, 0, 0, depth, width, height, 1, dataFormat, primType, image.buffer);
         tempUnbind(oldID);
         return getThis();
     }

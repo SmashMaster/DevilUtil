@@ -128,9 +128,9 @@ public class DAL
             decoder.addPCMProcessor(buffer);
             decoder.decode();
         }
-        catch (Throwable t) //Catch all possible exceptions/errors.
+        catch (Throwable t) //Prevent memory leaks by passing through throwables.
         {
-            buffer.close().free();
+            MemoryUtil.memFree(buffer.close());
             throw t;
         }
         return gen(new SoundBuffer(buffer));

@@ -1,6 +1,5 @@
 package com.samrj.devil.gl;
 
-import com.samrj.devil.io.Memory;
 import com.samrj.devil.res.Resource;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,22 +51,18 @@ public final class Shader extends DGLObj
     {
         if (state != State.NEW) throw new IllegalStateException("Shader must be new.");
         
-        //Source to memory
-        int sourceLength = in.available();
-        Memory sourceBlock = new Memory(sourceLength);
-        ByteBuffer sourceBuffer = sourceBlock.buffer;
-        for (int i=0; i<sourceLength; i++) sourceBuffer.put((byte)in.read());
-
         try (MemoryStack stack = MemoryStack.stackPush())
         {
-            PointerBuffer string = stack.pointers(sourceBlock.address);
-            IntBuffer length = stack.ints(sourceLength);
+            byte[] bytes = in.readAllBytes();
+            ByteBuffer source = stack.malloc(bytes.length);
+            source.put(bytes);
+            source.flip();
+            PointerBuffer string = stack.pointers(source);
+            IntBuffer length = stack.ints(bytes.length);
 
             //Load shader source
             glShaderSource(id, string, length);
         }
-        
-        sourceBlock.free();
         
         //Compile
         glCompileShader(id);

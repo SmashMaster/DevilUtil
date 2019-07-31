@@ -95,19 +95,19 @@ public class MeshDrawer implements VertexData
         vbo = glGenBuffers();
         int prevBinding = glGetInteger(GL_ARRAY_BUFFER_BINDING);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        nglBufferData(GL_ARRAY_BUFFER, mesh.vertexBlock.size, mesh.vertexBlock.address, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, mesh.vertexData, GL_STATIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, prevBinding);
         
         ibo = glGenBuffers();
         prevBinding = glGetInteger(GL_ELEMENT_ARRAY_BUFFER_BINDING);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-        nglBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.indexBlock.size, mesh.indexBlock.address, GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.indexData, GL_STATIC_DRAW);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevBinding);
         
         attributes = new HashMap<>();
         
-        Profiler.addUsedVRAM(mesh.vertexBlock.size*8L);
-        Profiler.addUsedVRAM(mesh.indexBlock.size*8L);
+        Profiler.addUsedVRAM(mesh.vertexData.remaining()*8L);
+        Profiler.addUsedVRAM(mesh.indexData.remaining()*8L);
     }
     
     private void setName(Attribute att, String name)
@@ -178,8 +178,8 @@ public class MeshDrawer implements VertexData
     
     public void destroy()
     {
-        Profiler.removeUsedVRAM(mesh.vertexBlock.size*8L);
-        Profiler.removeUsedVRAM(mesh.indexBlock.size*8L);
+        Profiler.removeUsedVRAM(mesh.vertexData.remaining()*8L);
+        Profiler.removeUsedVRAM(mesh.indexData.remaining()*8L);
         
         glDeleteBuffers(vbo);
         glDeleteBuffers(ibo);
