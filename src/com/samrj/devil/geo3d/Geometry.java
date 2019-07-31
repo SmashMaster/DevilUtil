@@ -9,7 +9,7 @@ import java.util.stream.Stream;
  * Interface for any kind of geometry which accepts collision tests.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public interface Geometry
@@ -67,6 +67,8 @@ public interface Geometry
     {
         return false;
     }
+    
+    void markBoundsDirty();
     
     default void updateBounds()
     {

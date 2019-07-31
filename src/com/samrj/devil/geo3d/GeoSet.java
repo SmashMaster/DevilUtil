@@ -9,7 +9,7 @@ import java.util.stream.Stream;
  * other GeoSets to act as a bounding volume hierarchy.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class GeoSet implements Geometry
@@ -51,6 +51,7 @@ public class GeoSet implements Geometry
     @Override
     public Box3 getBounds()
     {
+        if (areBoundsDirty()) updateBounds();
         return new Box3(bounds);
     }
     
@@ -58,6 +59,12 @@ public class GeoSet implements Geometry
     public boolean areBoundsDirty()
     {
         return provider.get().anyMatch(Geometry::areBoundsDirty);
+    }
+    
+    @Override
+    public void markBoundsDirty()
+    {
+        provider.get().forEach(Geometry::markBoundsDirty);
     }
     
     @Override

@@ -12,7 +12,7 @@ import java.util.stream.Stream;
  * @param <V> The type of vertex this soup contains.
  * @param <E> The type of edge this soup contains.
  * @param <F> The type of face this soup contains.
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class GeoSoup<V extends Vertex3, E extends Edge3, F extends Triangle3> implements Geometry
@@ -22,6 +22,8 @@ public class GeoSoup<V extends Vertex3, E extends Edge3, F extends Triangle3> im
     private final Supplier<Stream<F>> faceProvider;
     
     private final Box3 bounds = Box3.infinite();
+    
+    private boolean boundsDirty = true;
     
     public GeoSoup(Supplier<Stream<V>> vProvider, Supplier<Stream<E>> eProvider, Supplier<Stream<F>> fProvider)
     {
@@ -91,13 +93,20 @@ public class GeoSoup<V extends Vertex3, E extends Edge3, F extends Triangle3> im
     @Override
     public Box3 getBounds()
     {
+        if (boundsDirty) updateBounds();
         return new Box3(bounds);
     }
     
     @Override
     public boolean areBoundsDirty()
     {
-        return true;
+        return boundsDirty;
+    }
+    
+    @Override
+    public void markBoundsDirty()
+    {
+        boundsDirty = true;
     }
     
     @Override
@@ -107,5 +116,6 @@ public class GeoSoup<V extends Vertex3, E extends Edge3, F extends Triangle3> im
         verts().forEach(bounds::expand);
         edges().forEach(bounds::expand);
         faces().forEach(bounds::expand);
+        boundsDirty = false;
     }
 }
