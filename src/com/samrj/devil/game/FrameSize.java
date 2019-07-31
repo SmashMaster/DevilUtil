@@ -1,4 +1,4 @@
-package com.samrj.devil.display;
+package com.samrj.devil.game;
 
 /**
  * Class representing the size, in screen coordinates, of each edge of the frame
@@ -11,7 +11,7 @@ package com.samrj.devil.display;
  * or positive.</p>
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class FrameSize
@@ -43,5 +43,15 @@ public final class FrameSize
         this.top = top;
         this.right = right;
         this.bottom = bottom;
+    }
+    
+    public int width()
+    {
+        return Math.max(top, bottom);
+    }
+    
+    public int height()
+    {
+        return Math.max(left, right);
     }
 }

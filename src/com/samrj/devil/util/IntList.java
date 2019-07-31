@@ -110,16 +110,21 @@ public class IntList
     }
     
     /**
-     * Returns the backing array for this list. Only valid for the current state
-     * of this list; Adding an entry may or may not update the returned array,
-     * and modifying the returned array may not update the list after any
-     * entries have been added.
-     * 
-     * @return The backing array of this list.
+     * Returns a new array representing the contents of this int list.
      */
-    public int[] data()
+    public int[] toArray()
     {
-        return array;
+        int[] out = new int[size];
+        System.arraycopy(array, 0, out, 0, size);
+        return out;
+    }
+    
+    /**
+     * Sets the size of this IntList to zero, making it effectively empty.
+     */
+    public void clear()
+    {
+        size = 0;
     }
     
     /**

@@ -13,7 +13,7 @@ package com.samrj.devil.game.step;
  *  * Suffers from temporal aliasing unless interpolation is used.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class StepFixedAccum extends TimeStepper
@@ -33,7 +33,7 @@ public final class StepFixedAccum extends TimeStepper
     }
     
     @Override
-    public void step(TimeStep stepFunc, float frameTime)
+    public void step(float frameTime, TimeStep stepFunc)
     {
         accumulator += frameTime;
         

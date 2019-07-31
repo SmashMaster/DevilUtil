@@ -22,9 +22,6 @@
 
 package com.samrj.devil.game;
 
-import com.samrj.devil.display.DisplayException;
-import com.samrj.devil.display.GLFWUtil;
-import com.samrj.devil.display.HintSet;
 import com.samrj.devil.game.step.TimeStepper;
 import com.samrj.devil.game.sync.Sync;
 import com.samrj.devil.math.Vec2i;
@@ -365,7 +362,7 @@ public abstract class Game
                 else lastFrameTime = frameStart - lastFrameStart;
                 onLongFrame = false;
                 float dt = (float)(lastFrameTime/1_000_000_000.0);
-                stepper.step(this::step, dt);
+                stepper.step(dt, this::step);
                 lastFrameStart = frameStart;
 
                 render();

@@ -13,13 +13,13 @@ package com.samrj.devil.game.step;
  *  * Long steps can cause physics instability.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class StepDynamic extends TimeStepper
 {
     @Override
-    public void step(TimeStep stepFunc, float dt)
+    public void step(float dt, TimeStep stepFunc)
     {
         stepFunc.step(dt);
         time += dt;

@@ -1,6 +1,5 @@
 package com.samrj.devil.game;
 
-import com.samrj.devil.display.GLFWUtil;
 import com.samrj.devil.math.Vec2;
 import java.nio.DoubleBuffer;
 import java.util.Arrays;
@@ -128,19 +127,19 @@ public final class Mouse
     }
     
     @FunctionalInterface
-    public interface CursorCallback
+    public static interface CursorCallback
     {
         public void accept(float x, float y, float dx, float dy);
     }
     
     @FunctionalInterface
-    public interface ButtonCallback
+    public static interface ButtonCallback
     {
         public void accept(int button, int action, int mods);
     }
     
     @FunctionalInterface
-    public interface ScrollCallback
+    public static interface ScrollCallback
     {
         public void accept(float dx, float dy);
     }

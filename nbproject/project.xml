@@ -32,6 +32,7 @@
             <word>keyframe's</word>
             <word>multisampled</word>
             <word>shaders</word>
+            <word>vsync</word>
         </spellchecker-wordlist>
     </configuration>
 </project>

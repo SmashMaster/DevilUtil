@@ -1,27 +1,36 @@
 package com.samrj.devil.game.sync;
 
+import java.util.Objects;
+
 /**
  * Frame synchronization class, for game loops without v-sync.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Sync
+public final class Sync
 {
-    private final long dt;
-    private final SleepMethod sleepMethod;
+    private long dt;
+    private SleepMethod sleepMethod;
     private boolean initialized;
     private long frameStart; //AKA the end of the previous frame
     
     public Sync(int fps, SleepMethod sleepMethod)
     {
-        if (fps <= 0) throw new IllegalArgumentException();
-        if (sleepMethod == null) throw new NullPointerException();
-        
+        setFPS(fps);
+        setSleeper(sleepMethod);
+    }
+    
+    public void setFPS(int fps)
+    {
         dt = Math.round(1_000_000_000.0/fps);
-        
-        this.sleepMethod = sleepMethod;
+        initialized = false;
+    }
+    
+    public void setSleeper(SleepMethod sleeper)
+    {
+        sleepMethod = Objects.requireNonNull(sleeper);
     }
     
     /**
@@ -35,6 +44,7 @@ public class Sync
     public final long sync() throws InterruptedException
     {
         long t = System.nanoTime();
+        if (dt <= 0) return t;
         
         if (initialized)
         {

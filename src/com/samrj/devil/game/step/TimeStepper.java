@@ -5,7 +5,7 @@ package com.samrj.devil.game.step;
  * and what time step to use.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public abstract class TimeStepper
@@ -18,7 +18,7 @@ public abstract class TimeStepper
      * @param stepFunc What to do during each step.
      * @param dt The time of the previous frame, in seconds.
      */
-    public abstract void step(TimeStep stepFunc, float dt);
+    public abstract void step(float dt, TimeStep stepFunc);
     
     /**
      * Returns the time, in seconds, since the simulation began. This not the

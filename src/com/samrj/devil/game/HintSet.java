@@ -1,4 +1,4 @@
-package com.samrj.devil.display;
+package com.samrj.devil.game;
 
 import com.samrj.devil.util.IntList;
 
@@ -20,20 +20,28 @@ public final class HintSet
     private final IntList targets, hints;
     private int size;
     
-    public HintSet()
+    HintSet()
     {
         targets = new IntList();
         hints = new IntList();
     }
     
-    public void hint(int target, int hint)
+    public HintSet hint(int target, int hint)
     {
         targets.add(target);
         hints.add(hint);
         size++;
+        return this;
     }
     
-    public void glfw()
+    public void clear()
+    {
+        targets.clear();
+        hints.clear();
+        size = 0;
+    }
+    
+    void glfw()
     {
         for (int i=0; i<size; i++) glfwWindowHint(targets.get(i), hints.get(i));
     }

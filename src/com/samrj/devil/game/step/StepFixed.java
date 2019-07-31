@@ -12,7 +12,7 @@ package com.samrj.devil.game.step;
  *  * Simulation speed tied to frame rate.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class StepFixed extends TimeStepper
@@ -30,7 +30,7 @@ public final class StepFixed extends TimeStepper
     }
     
     @Override
-    public void step(TimeStep stepFunc, float frameTime)
+    public void step(float frameTime, TimeStep stepFunc)
     {
         stepFunc.step(dt);
         time += dt;

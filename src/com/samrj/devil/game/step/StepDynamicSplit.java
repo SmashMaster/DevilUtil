@@ -13,7 +13,7 @@ package com.samrj.devil.game.step;
  *  * Non-deterministic simulation.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class StepDynamicSplit extends TimeStepper
@@ -36,7 +36,7 @@ public class StepDynamicSplit extends TimeStepper
     }
 
     @Override
-    public void step(TimeStep stepFunc, float dt)
+    public void step(float dt, TimeStep stepFunc)
     {
         if (dt <= mindt) stepFunc.step(dt);
         else

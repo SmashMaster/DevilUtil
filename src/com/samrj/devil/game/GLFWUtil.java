@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-package com.samrj.devil.display;
+package com.samrj.devil.game;
 
 import com.samrj.devil.math.Vec2i;
 import org.lwjgl.system.MemoryStack;

@@ -1,4 +1,4 @@
-package com.samrj.devil.display;
+package com.samrj.devil.game;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.MemoryUtil.*;
