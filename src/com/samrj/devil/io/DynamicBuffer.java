@@ -1,7 +1,8 @@
 package com.samrj.devil.io;
 
 import java.nio.ByteBuffer;
-import org.lwjgl.system.MemoryUtil;
+
+import static org.lwjgl.system.MemoryUtil.*;
 
 /**
  * A dynamically resizing direct byte buffer. Automatically allocates a bigger
@@ -18,7 +19,7 @@ public class DynamicBuffer
     
     public DynamicBuffer(int size)
     {
-        buffer = MemoryUtil.memAlloc(size);
+        buffer = memAlloc(size);
     }
     
     public DynamicBuffer()
@@ -54,9 +55,9 @@ public class DynamicBuffer
         int size = buffer.position();
         buffer.flip();
         
-        ByteBuffer newBuffer = MemoryUtil.memAlloc(newCapacity);
-        MemoryUtil.memCopy(buffer, newBuffer);
-        MemoryUtil.memFree(buffer);
+        ByteBuffer newBuffer = memAlloc(newCapacity);
+        memCopy(buffer, newBuffer);
+        memFree(buffer);
         
         buffer = newBuffer;
         buffer.position(size);

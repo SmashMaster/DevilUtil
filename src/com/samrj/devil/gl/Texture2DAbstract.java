@@ -23,10 +23,10 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.graphics.TexUtil;
-import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL13C.*;
+import static org.lwjgl.system.MemoryUtil.*;
 
 /**
  * Abstract class for 2D textures.
@@ -83,7 +83,7 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         
         int oldID = tempBind();
         nglTexImage2D(target, 0, format, width, height, 0,
-                baseFormat, primType, MemoryUtil.NULL);
+                baseFormat, primType, NULL);
         tempUnbind(oldID);
         
         setVRAMUsage(TexUtil.getBits(format)*width*height);

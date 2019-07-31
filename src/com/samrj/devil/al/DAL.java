@@ -36,7 +36,8 @@ import java.util.Set;
 import org.kc7bfi.jflac.FLACDecoder;
 import org.lwjgl.openal.*;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
+
+import static org.lwjgl.system.MemoryUtil.*;
 
 /**
  * DevilAL. An object-oriented OpenAL wrapper.
@@ -69,7 +70,7 @@ public class DAL
         thread = Thread.currentThread();
         
         device = ALC10.alcOpenDevice((ByteBuffer)null);
-        if (device == MemoryUtil.NULL)
+        if (device == NULL)
             throw new RuntimeException("Failed to create OpenAL context.");
         
         ALCCapabilities deviceCaps = ALC.createCapabilities(device);
@@ -130,7 +131,7 @@ public class DAL
         }
         catch (Throwable t) //Prevent memory leaks by passing through throwables.
         {
-            MemoryUtil.memFree(buffer.close());
+            memFree(buffer.close());
             throw t;
         }
         return gen(new SoundBuffer(buffer));

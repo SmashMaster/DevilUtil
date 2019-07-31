@@ -3,10 +3,10 @@ package com.samrj.devil.gl;
 import java.nio.IntBuffer;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.Callback;
-import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL43C.*;
+import static org.lwjgl.system.MemoryUtil.*;
 
 /**
  * Automatically handles OpenGL debugging and exceptions.
@@ -19,11 +19,6 @@ public class DGLException extends RuntimeException
 {
     private static Callback callback;
     private static boolean initialized;
-    
-    private static String memUTF8(long address, int length)
-    {
-        return MemoryUtil.memUTF8(MemoryUtil.memByteBuffer(address, length));
-    }
     
     private static String getSource(int source)
     {
@@ -68,9 +63,14 @@ public class DGLException extends RuntimeException
         }
     }
     
+    private static String utf8(long address, int length)
+    {
+        return memUTF8(memByteBuffer(address, length));
+    }
+    
     private static String getMessage(int source, int type, int severity, int length, long msgAddr)
     {
-        return "from: " + getSource(source) + ", type: " + getType(type) + ", severity: " + getSeverity(severity) + " - \"" + memUTF8(msgAddr, length) + "\"";
+        return "from: " + getSource(source) + ", type: " + getType(type) + ", severity: " + getSeverity(severity) + " - \"" + utf8(msgAddr, length) + "\"";
     }
     
     private static void error(int source, int type, int id, int severity, int length, long msgAddr, long userParam)
@@ -83,7 +83,7 @@ public class DGLException extends RuntimeException
     private static void errorKHR(int id, int category, int severity, int length, long message, long userParam)
     {
         if (category == AMDDebugOutput.GL_DEBUG_CATEGORY_API_ERROR_AMD)
-            throw new DGLException(memUTF8(message, length));
+            throw new DGLException(utf8(message, length));
     }
     
     private static Callback setupCallback()
@@ -95,7 +95,7 @@ public class DGLException extends RuntimeException
             System.out.println("DevilUtil (DGL) - OpenGL 4.3 debug enabled.");
             
             GLDebugMessageCallback proc = GLDebugMessageCallback.create(DGLException::error);
-            glDebugMessageCallback(proc, MemoryUtil.NULL);
+            glDebugMessageCallback(proc, NULL);
             glEnable(GL_DEBUG_OUTPUT);
             glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
             glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, (IntBuffer)null, false);
@@ -109,7 +109,7 @@ public class DGLException extends RuntimeException
             System.out.println("DevilUtil (DGL) - KHR debug enabled.");
             
             GLDebugMessageCallback proc = GLDebugMessageCallback.create(DGLException::error);
-            KHRDebug.glDebugMessageCallback(proc, MemoryUtil.NULL);
+            KHRDebug.glDebugMessageCallback(proc, NULL);
             glEnable(GL_DEBUG_OUTPUT);
             glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
             KHRDebug.glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, (IntBuffer)null, false);
@@ -123,7 +123,7 @@ public class DGLException extends RuntimeException
             System.out.println("DevilUtil (DGL) - ARB debug enabled.");
             
             GLDebugMessageARBCallback proc = GLDebugMessageARBCallback.create(DGLException::error);
-            ARBDebugOutput.glDebugMessageCallbackARB(proc, MemoryUtil.NULL);
+            ARBDebugOutput.glDebugMessageCallbackARB(proc, NULL);
             glEnable(ARBDebugOutput.GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
             return proc;
         }
@@ -133,7 +133,7 @@ public class DGLException extends RuntimeException
             System.out.println("DevilUtil (DGL) - AMD debug enabled.");
             
             GLDebugMessageAMDCallback proc = GLDebugMessageAMDCallback.create(DGLException::errorKHR);
-            AMDDebugOutput.glDebugMessageCallbackAMD(proc, MemoryUtil.NULL);
+            AMDDebugOutput.glDebugMessageCallbackAMD(proc, NULL);
             return proc;
         }
         

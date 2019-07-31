@@ -1,7 +1,8 @@
 package com.samrj.devil.gl;
 
 import java.nio.ByteBuffer;
-import org.lwjgl.system.MemoryUtil;
+
+import static org.lwjgl.system.MemoryUtil.*;
 
 /**
  * Data container for compressed images.
@@ -51,7 +52,7 @@ public class ImageCompressed extends DGLObj
         if (buffer != null) throw new IllegalStateException("Buffer already allocated.");
         
         this.size = size;
-        buffer = MemoryUtil.memAlloc(size);
+        buffer = memAlloc(size);
         return this;
     }
     
@@ -68,7 +69,7 @@ public class ImageCompressed extends DGLObj
      */
     public long address()
     {
-        return MemoryUtil.memAddressSafe(buffer);
+        return memAddressSafe(buffer);
     }
     
     /**
@@ -91,7 +92,7 @@ public class ImageCompressed extends DGLObj
     void delete()
     {
         size = -1;
-        MemoryUtil.memFree(buffer);
+        memFree(buffer);
         buffer = null;
         deleted = true;
     }

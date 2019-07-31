@@ -27,11 +27,11 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.*;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL20C.*;
 import static org.lwjgl.opengl.GL30C.*;
+import static org.lwjgl.system.MemoryUtil.*;
 
 /**
  * OpenGL shader program wrapper.
@@ -153,7 +153,7 @@ public final class ShaderProgram extends DGLObj
         {
             int attBytes = 4 + 4 + 4 + 32;
             long address = stack.nmalloc(attBytes);
-            ByteBuffer buffer = MemoryUtil.memByteBuffer(address, attBytes);
+            ByteBuffer buffer = memByteBuffer(address, attBytes);
             for (int index=0; index<numAttributes; index++)
             {
                 long nameAddress = address + 12;
@@ -163,7 +163,7 @@ public final class ShaderProgram extends DGLObj
                 buffer.getInt();
                 int size = buffer.getInt();
                 int type = buffer.getInt();
-                String name = MemoryUtil.memASCII(nameAddress);
+                String name = memASCII(nameAddress);
                 int location = nglGetAttribLocation(id, nameAddress);
 
                 Attribute att = new Attribute(name, type, size, location);

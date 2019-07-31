@@ -9,9 +9,9 @@ import com.samrj.devil.model.Mesh;
 import com.samrj.devil.model.ModelObject;
 import java.nio.FloatBuffer;
 import java.util.List;
-import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.opengl.GL20C.*;
+import static org.lwjgl.system.MemoryUtil.*;
 
 /**
  * Class that performs mesh deformation for armatures.
@@ -34,7 +34,7 @@ public class MeshSkinner
     {
         numGroups = object.data.get().numGroups;
         bones = IOUtil.mapList(object.vertexGroups, solver::getBone);
-        matData = MemoryUtil.memAllocFloat(bones.size()*16);
+        matData = memAllocFloat(bones.size()*16);
     }
     
     /**
@@ -44,7 +44,7 @@ public class MeshSkinner
     public void update()
     {
         if (prevMatricesEnabled())
-            MemoryUtil.memCopy(matData, prevMatData);
+            memCopy(matData, prevMatData);
         
         matData.clear();
         bones.forEach(bone ->
@@ -56,7 +56,7 @@ public class MeshSkinner
         
         if (onFirstFrame && prevMatricesEnabled())
         {
-            MemoryUtil.memCopy(matData, prevMatData);
+            memCopy(matData, prevMatData);
             onFirstFrame = false;
         }
     }
@@ -89,7 +89,7 @@ public class MeshSkinner
     {
         if (prevMatricesEnabled()) throw new IllegalStateException();
         
-        prevMatData = MemoryUtil.memAllocFloat(matData.capacity());
+        prevMatData = memAllocFloat(matData.capacity());
     }
     
     public void uniformPrevMats(ShaderProgram shader, String arrayName)
@@ -105,7 +105,7 @@ public class MeshSkinner
      */
     public final void destroy()
     {
-        MemoryUtil.memFree(matData);
-        if (prevMatricesEnabled()) MemoryUtil.memFree(prevMatData);
+        memFree(matData);
+        if (prevMatricesEnabled()) memFree(prevMatData);
     }
 }

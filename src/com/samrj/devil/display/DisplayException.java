@@ -1,8 +1,7 @@
 package com.samrj.devil.display;
 
-import org.lwjgl.system.MemoryUtil;
-
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.system.MemoryUtil.*;
 
 /**
  * Exception class for GLFW errors.
@@ -32,7 +31,7 @@ public class DisplayException extends RuntimeException
     
     public static final void glfwThrow(int error, long description)
     {
-        throw new DisplayException(getName(error) + ": " + MemoryUtil.memUTF8(description));
+        throw new DisplayException(getName(error) + ": " + memUTF8(description));
     }
     
     private DisplayException(String message)

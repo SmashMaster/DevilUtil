@@ -24,9 +24,9 @@ package com.samrj.devil.display;
 
 import com.samrj.devil.math.Vec2i;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.system.MemoryUtil.*;
 
 /**
  * Utility class for GLFW. GLFW must be initialized for most of these methods to
@@ -43,8 +43,8 @@ public final class GLFWUtil
             long x = stack.nmalloc(4);
             long y = stack.nmalloc(4);
             nglfwGetWindowPos(window, x, y);
-            Vec2i out = new Vec2i(MemoryUtil.memGetInt(x),
-                                  MemoryUtil.memGetInt(y));
+            Vec2i out = new Vec2i(memGetInt(x),
+                                  memGetInt(y));
             return out;
         }
     }
@@ -56,8 +56,8 @@ public final class GLFWUtil
             long w = stack.nmalloc(4);
             long h = stack.nmalloc(4);
             nglfwGetWindowSize(window, w, h);
-            Vec2i out = new Vec2i(MemoryUtil.memGetInt(w),
-                                  MemoryUtil.memGetInt(h));
+            Vec2i out = new Vec2i(memGetInt(w),
+                                  memGetInt(h));
             return out;
         }
     }
@@ -69,8 +69,8 @@ public final class GLFWUtil
             long w = stack.nmalloc(4);
             long h = stack.nmalloc(4);
             nglfwGetFramebufferSize(window, w, h);
-            Vec2i out = new Vec2i(MemoryUtil.memGetInt(w),
-                                  MemoryUtil.memGetInt(h));
+            Vec2i out = new Vec2i(memGetInt(w),
+                                  memGetInt(h));
             return out;
         }
     }
@@ -84,10 +84,10 @@ public final class GLFWUtil
             long right = stack.nmalloc(4);
             long bottom = stack.nmalloc(4);
             nglfwGetWindowFrameSize(window, left, top, right, bottom);
-            FrameSize out =  new FrameSize(MemoryUtil.memGetInt(left),
-                                           MemoryUtil.memGetInt(top),
-                                           MemoryUtil.memGetInt(right),
-                                           MemoryUtil.memGetInt(bottom));
+            FrameSize out =  new FrameSize(memGetInt(left),
+                                           memGetInt(top),
+                                           memGetInt(right),
+                                           memGetInt(bottom));
             return out;
         }
     }
@@ -99,8 +99,8 @@ public final class GLFWUtil
             long x = stack.nmalloc(4);
             long y = stack.nmalloc(4);
             nglfwGetMonitorPos(monitor, x, y);
-            Vec2i out = new Vec2i(MemoryUtil.memGetInt(x),
-                                  MemoryUtil.memGetInt(y));
+            Vec2i out = new Vec2i(memGetInt(x),
+                                  memGetInt(y));
             return out;
         }
     }
@@ -112,8 +112,8 @@ public final class GLFWUtil
             long w = stack.nmalloc(4);
             long h = stack.nmalloc(4);
             nglfwGetMonitorPhysicalSize(monitor, w, h);
-            Vec2i out = new Vec2i(MemoryUtil.memGetInt(w),
-                                  MemoryUtil.memGetInt(h));
+            Vec2i out = new Vec2i(memGetInt(w),
+                                  memGetInt(h));
             return out;
         }
     }

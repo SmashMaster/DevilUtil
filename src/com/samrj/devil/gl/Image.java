@@ -28,7 +28,8 @@ import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.nio.ByteBuffer;
-import org.lwjgl.system.MemoryUtil;
+
+import static org.lwjgl.system.MemoryUtil.*;
 
 /**
  * Raster image buffer. Used to load or generate images to main memory. Does not
@@ -98,7 +99,7 @@ public final class Image extends DGLObj
         this.type = type;
         size = width*height*bands*type.size;
         
-        buffer = MemoryUtil.memAlloc(size);
+        buffer = memAlloc(size);
     }
     
     /**
@@ -270,7 +271,7 @@ public final class Image extends DGLObj
      */
     public long address()
     {
-        return MemoryUtil.memAddress(buffer);
+        return memAddress(buffer);
     }
     
     /**
@@ -284,7 +285,7 @@ public final class Image extends DGLObj
     @Override
     void delete()
     {
-        MemoryUtil.memFree(buffer);
+        memFree(buffer);
         deleted = true;
     }
     

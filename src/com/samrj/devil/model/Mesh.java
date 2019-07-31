@@ -37,7 +37,8 @@ import java.util.Map;
 import java.util.function.IntFunction;
 import org.blender.dna.*;
 import org.cakelab.blender.nio.CPointer;
-import org.lwjgl.system.MemoryUtil;
+
+import static org.lwjgl.system.MemoryUtil.*;
 
 /**
  * Blender mesh object.
@@ -337,7 +338,7 @@ public final class Mesh extends DataBlock
          * ALLOCATE AND FILL BUFFERS
          */
         
-        vertexData = numVertices != 0 ? MemoryUtil.memAlloc(intOffset*4) : null;
+        vertexData = numVertices != 0 ? memAlloc(intOffset*4) : null;
         if (vertexData != null)
         {
             vertexData.position(positionOffset);
@@ -431,7 +432,7 @@ public final class Mesh extends DataBlock
         }
         
         int triangleIndexInts = numTriangles*3;
-        indexData = numTriangles != 0 ? MemoryUtil.memAlloc(triangleIndexInts*4) : null;
+        indexData = numTriangles != 0 ? memAlloc(triangleIndexInts*4) : null;
         if (indexData != null)
         {
             for (LoopTri loopTri : loopTris)
@@ -520,8 +521,8 @@ public final class Mesh extends DataBlock
     @Override
     void destroy()
     {
-        if (vertexData != null) MemoryUtil.memFree(vertexData);
-        if (indexData != null) MemoryUtil.memFree(indexData);
+        if (vertexData != null) memFree(vertexData);
+        if (indexData != null) memFree(indexData);
     }
     
     public class MeshVertex implements Vertex3

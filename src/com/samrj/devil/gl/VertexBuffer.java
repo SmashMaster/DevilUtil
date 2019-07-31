@@ -23,10 +23,10 @@
 package com.samrj.devil.gl;
 
 import java.nio.ByteBuffer;
-import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL15C.*;
+import static org.lwjgl.system.MemoryUtil.*;
 
 /**
  * Vertex data for unmodifiable vertex data. Suitable for data that is built
@@ -66,8 +66,8 @@ public final class VertexBuffer extends VertexBuilder
     @Override
     void onBegin()
     {
-        vertexBuffer = MemoryUtil.memAlloc(maxVertices*vertexSize());
-        if (maxIndices > 0) indexBuffer = MemoryUtil.memAlloc(maxIndices*4);
+        vertexBuffer = memAlloc(maxVertices*vertexSize());
+        if (maxIndices > 0) indexBuffer = memAlloc(maxIndices*4);
         
         state = State.READY;
     }
@@ -112,7 +112,7 @@ public final class VertexBuffer extends VertexBuilder
         glBindBuffer(GL_ARRAY_BUFFER, prevBinding);
         
         debugVRAMUsage += vertexBuffer.remaining()*8L;
-        MemoryUtil.memFree(vertexBuffer);
+        memFree(vertexBuffer);
         vertexBuffer = null;
 
         if (maxIndices > 0)
@@ -128,7 +128,7 @@ public final class VertexBuffer extends VertexBuilder
             }
             
             debugVRAMUsage += indexBuffer.remaining()*8L;
-            MemoryUtil.memFree(indexBuffer);
+            memFree(indexBuffer);
             indexBuffer = null;
         }
         
@@ -168,12 +168,12 @@ public final class VertexBuffer extends VertexBuilder
     {
         if (state == State.READY)
         {
-            MemoryUtil.memFree(vertexBuffer);
+            memFree(vertexBuffer);
             vertexBuffer = null;
             
             if (maxIndices > 0)
             {
-                MemoryUtil.memFree(indexBuffer);
+                memFree(indexBuffer);
                 indexBuffer = null;
             }
         }

@@ -36,13 +36,13 @@ import javax.imageio.ImageIO;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL20C.*;
 import static org.lwjgl.opengl.GL30C.*;
 import static org.lwjgl.opengl.GL31C.*;
 import static org.lwjgl.opengl.GL43C.*;
+import static org.lwjgl.system.MemoryUtil.*;
 
 /**
  * DevilGL. A state-based, object-oriented, forward compatible OpenGL wrapper;
@@ -318,10 +318,10 @@ public final class DGL
         {
             long addr = stack.nmalloc(16);
             nglGetIntegerv(GL_VIEWPORT, addr);
-            int x = MemoryUtil.memGetInt(addr);
-            int y = MemoryUtil.memGetInt(addr + 4);
-            int w = MemoryUtil.memGetInt(addr + 8);
-            int h = MemoryUtil.memGetInt(addr + 12);
+            int x = memGetInt(addr);
+            int y = memGetInt(addr + 4);
+            int w = memGetInt(addr + 8);
+            int h = memGetInt(addr + 12);
 
             Image out = genImage(w, h, 3, PrimType.BYTE);
             glReadPixels(x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE, out.buffer);

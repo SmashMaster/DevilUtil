@@ -1,9 +1,9 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.graphics.TexUtil;
-import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.opengl.GL12C.*;
+import static org.lwjgl.system.MemoryUtil.*;
 
 /**
  * Abstract class for 3D textures.
@@ -71,7 +71,7 @@ abstract class Texture3DAbstract<T extends Texture3DAbstract<T>> extends Texture
         this.depth = depth;
         int oldID = tempBind();
         nglTexImage3D(target, 0, format, width, height, depth, 0,
-                baseFormat, primType, MemoryUtil.NULL);
+                baseFormat, primType, NULL);
         tempUnbind(oldID);
         
         setVRAMUsage(TexUtil.getBits(format)*width*height*depth);

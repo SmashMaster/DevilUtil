@@ -23,10 +23,10 @@
 package com.samrj.devil.gl;
 
 import java.nio.ByteBuffer;
-import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL15C.*;
+import static org.lwjgl.system.MemoryUtil.*;
 
 /**
  * Vertex data for streaming vertex data. Suitable for data that is built and
@@ -66,7 +66,7 @@ public final class VertexStream extends VertexBuilder
     void onBegin()
     {
         vboSize = maxVertices*vertexSize();
-        vertexBuffer = MemoryUtil.memAlloc(vboSize);
+        vertexBuffer = memAlloc(vboSize);
         vbo = glGenBuffers();
         int prevBinding = glGetInteger(GL_ARRAY_BUFFER_BINDING);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -76,7 +76,7 @@ public final class VertexStream extends VertexBuilder
         if (maxIndices > 0)
         {
             eboSize = maxIndices*4;
-            indexBuffer = MemoryUtil.memAlloc(eboSize);
+            indexBuffer = memAlloc(eboSize);
             ebo = glGenBuffers();
             prevBinding = glGetInteger(GL_ELEMENT_ARRAY_BUFFER_BINDING);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
@@ -141,7 +141,7 @@ public final class VertexStream extends VertexBuilder
         vertexBuffer.flip();
         int prevBinding = glGetInteger(GL_ARRAY_BUFFER_BINDING);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        nglBufferData(GL_ARRAY_BUFFER, vboSize, MemoryUtil.NULL, GL_STREAM_DRAW);
+        nglBufferData(GL_ARRAY_BUFFER, vboSize, NULL, GL_STREAM_DRAW);
         glBufferSubData(GL_ARRAY_BUFFER, 0, vertexBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, prevBinding);
         
@@ -150,7 +150,7 @@ public final class VertexStream extends VertexBuilder
             indexBuffer.flip();
             prevBinding = glGetInteger(GL_ELEMENT_ARRAY_BUFFER_BINDING);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-            nglBufferData(GL_ELEMENT_ARRAY_BUFFER, eboSize, MemoryUtil.NULL, GL_STREAM_DRAW);
+            nglBufferData(GL_ELEMENT_ARRAY_BUFFER, eboSize, NULL, GL_STREAM_DRAW);
             glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indexBuffer);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevBinding);
         }
@@ -192,13 +192,13 @@ public final class VertexStream extends VertexBuilder
     {
         if (state == State.READY)
         {
-            MemoryUtil.memFree(vertexBuffer);
+            memFree(vertexBuffer);
             vertexBuffer = null;
             glDeleteBuffers(vbo);
             
             if (maxIndices > 0)
             {
-                MemoryUtil.memFree(indexBuffer);
+                memFree(indexBuffer);
                 indexBuffer = null;
                 glDeleteBuffers(ebo);
             }

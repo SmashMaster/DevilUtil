@@ -2,7 +2,8 @@ package com.samrj.devil.al;
 
 import com.samrj.devil.math.Util.PrimType;
 import java.nio.ByteBuffer;
-import org.lwjgl.system.MemoryUtil;
+
+import static org.lwjgl.system.MemoryUtil.*;
 
 /**
  * Sound buffer. Stores raw sound data.
@@ -39,7 +40,7 @@ public class SoundBuffer extends DALObj
         }
         catch (Throwable t)
         {
-            MemoryUtil.memFree(pcm.close());
+            memFree(pcm.close());
             throw t;
         }
         
@@ -53,12 +54,12 @@ public class SoundBuffer extends DALObj
      */
     public long address()
     {
-        return MemoryUtil.memAddress(buffer);
+        return memAddress(buffer);
     }
     
     @Override
     void delete()
     {
-        MemoryUtil.memFree(buffer);
+        memFree(buffer);
     }
 }
