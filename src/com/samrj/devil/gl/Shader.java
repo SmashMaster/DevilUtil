@@ -40,26 +40,21 @@ public final class Shader extends DGLObj
     }
     
     /**
-     * Loads shader sources from the given input stream and then compiles this
-     * shader. Buffers the source in native memory.
+     * Loads shader sources from the given native ByteBuffer and then compiles
+     * this shader.
      * 
-     * @param in The input stream to load sources from.
+     * @param buffer The ByteBuffer to load the source from.
      * @return This shader.
      * @throws IOException If an I/O error occurs.
      */
-    public Shader source(InputStream in) throws IOException
+    public Shader source(ByteBuffer buffer)
     {
         if (state != State.NEW) throw new IllegalStateException("Shader must be new.");
         
         try (MemoryStack stack = MemoryStack.stackPush())
         {
-            byte[] bytes = in.readAllBytes();
-            in.close();
-            ByteBuffer source = stack.malloc(bytes.length);
-            source.put(bytes);
-            source.flip();
-            PointerBuffer string = stack.pointers(source);
-            IntBuffer length = stack.ints(bytes.length);
+            PointerBuffer string = stack.pointers(buffer);
+            IntBuffer length = stack.ints(buffer.remaining());
 
             //Load shader source
             glShaderSource(id, string, length);
@@ -81,6 +76,37 @@ public final class Shader extends DGLObj
     }
     
     /**
+     * Loads shader source code from the given stream, and then closes it.
+     * 
+     * @param in The InputStream to load the source from.
+     * @return This shader.
+     * @throws IOException If an I/O error occurs.
+     */
+    public Shader source(InputStream in) throws IOException
+    {
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            byte[] bytes = in.readAllBytes();
+            in.close();
+            ByteBuffer buffer = stack.malloc(bytes.length);
+            buffer.put(bytes);
+            buffer.flip();
+            return source(buffer);
+        }
+    }
+    
+    /**
+     * Loads shader source code from the given String.
+     */
+    public Shader source(String string)
+    {
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            return source(stack.ASCIISafe(string));
+        }
+    }
+    
+    /**
      * Loads shader sources from the given resource path and then compiles this
      * shader. Buffers the source in native memory.
      * 
@@ -88,7 +114,7 @@ public final class Shader extends DGLObj
      * @return This shader.
      * @throws IOException If an I/O error occurs.
      */
-    public Shader source(String path) throws IOException
+    public Shader sourceFromRes(String path) throws IOException
     {
         this.path = path;
         return source(Resource.open(path));

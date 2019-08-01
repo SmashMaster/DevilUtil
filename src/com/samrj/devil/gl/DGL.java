@@ -23,6 +23,7 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.graphics.TexUtil;
+import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Util.PrimType;
 import com.samrj.devil.res.Resource;
 import java.awt.image.BufferedImage;
@@ -142,7 +143,7 @@ public final class DGL
      */
     public static Shader loadShader(String path, int type) throws IOException
     {
-        return genShader(type).source(path);
+        return genShader(type).sourceFromRes(path);
     }
     
     /**
@@ -165,6 +166,24 @@ public final class DGL
     public static ShaderProgram loadProgram(Shader... shaders)
     {
         return genProgram().attach(shaders).link().detachAll();
+    }
+    
+    /**
+     * Loads a shader using the given strings as its source code.
+     * 
+     * @param vertSource The vertex shader source code.
+     * @param fragSource The fragment shader source code.
+     * @return A new, complete shader program.
+     */
+    public static ShaderProgram loadProgram(String vertSource, String fragSource)
+    {
+        Shader vert = DGL.genShader(GL_VERTEX_SHADER);
+        vert.source(vertSource);
+        Shader frag = DGL.genShader(GL_FRAGMENT_SHADER);
+        frag.source(fragSource);
+        ShaderProgram shader = loadProgram(vert, frag);
+        delete(vert, frag);
+        return shader;
     }
     
     /**
