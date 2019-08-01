@@ -72,7 +72,7 @@ public final class EZDraw
      */
     public static void init(int maxVertices)
     {
-        if (initialized) return;
+        if (initialized) throw new IllegalStateException("EZDraw already initialized.");
         if (maxVertices <= 0) throw new IllegalArgumentException();
         
         try
@@ -380,7 +380,7 @@ public final class EZDraw
      */
     public static void destroy()
     {
-        if (!initialized) return;
+        ensureInitialized();
         initialized = false;
         
         DGL.delete(stream, shader);

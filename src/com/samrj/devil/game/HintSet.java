@@ -7,15 +7,11 @@ import static org.lwjgl.glfw.GLFW.*;
 /**
  * Display hint class.
  * 
- * See GLFW documentation for a list of valid hints:
- * 
- * http://www.glfw.org/docs/latest/window.html#window_hints
- * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class HintSet
+final class HintSet
 {
     private final IntList targets, hints;
     private int size;
@@ -26,7 +22,7 @@ public final class HintSet
         hints = new IntList();
     }
     
-    public HintSet hint(int target, int hint)
+    HintSet hint(int target, int hint)
     {
         targets.add(target);
         hints.add(hint);
@@ -34,7 +30,7 @@ public final class HintSet
         return this;
     }
     
-    public void clear()
+    void clear()
     {
         targets.clear();
         hints.clear();

@@ -45,11 +45,17 @@ public final class FrameSize
         this.bottom = bottom;
     }
     
+    /**
+     * Returns width of this frame.
+     */
     public int width()
     {
         return Math.max(top, bottom);
     }
     
+    /**
+     * Returns the height of this frame.
+     */
     public int height()
     {
         return Math.max(left, right);

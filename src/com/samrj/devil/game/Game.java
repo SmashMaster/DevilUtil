@@ -22,415 +22,538 @@
 
 package com.samrj.devil.game;
 
+import com.samrj.devil.game.step.StepDynamicSplit;
 import com.samrj.devil.game.step.TimeStepper;
+import com.samrj.devil.game.sync.SleepHybrid;
+import com.samrj.devil.game.sync.SleepMethod;
 import com.samrj.devil.game.sync.Sync;
 import com.samrj.devil.math.Vec2i;
+import java.io.IOException;
+import java.util.Objects;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11C.*;
-import static org.lwjgl.opengl.GL13C.*;
+import static org.lwjgl.system.MemoryUtil.*;
 
 /**
- * Utility game class.
- * 
- * @author Samuel Johnson (SmashMaster)
+ * Improved utility game class. To start up a game, simply call Game.run().
  */
-public abstract class Game
+public final class Game
 {
-    private static boolean errorCallInit;
-    private static boolean initialized;
-    private static Thread mainThread;
+    private static final StepCallback NULL_STEP_CALLBACK = (dt) -> {};
+    private static final HintSet HINTS = new HintSet();
     
-    private static void ensureMainThread()
-    {
-        if (Thread.currentThread() !=  mainThread)
-            throw new IllegalThreadStateException("Not on main thread " + mainThread);
-    }
+    private static TimeStepper stepper = new StepDynamicSplit(1.0f/480.0f, 1.0f/120.0f);
+    private static SleepMethod sleeper = new SleepHybrid();
+    private static final Vec2i RESOLUTION = new Vec2i(1280, 720);
+    private static boolean vsync = true, fullscreen = false;
+    private static int fpsLimit = 60;
+    private static String title = "DevilUtil Game";
     
+    private static long window = NULL;
+    private static GLCapabilities capabilities;
+    private static Sync sync;
+    private static Mouse mouse;
+    private static Keyboard keyboard;
+    private static Gamepads gamepads;
+    private static boolean running;
+    
+    private static long lastFrameTime;
+    
+    private static InitCallback initCallback;
+    private static ResizeCallback resizeCallback;
+    private static Mouse.CursorCallback mouseCursorCallback;
+    private static Mouse.ButtonCallback mouseButtonCallback;
+    private static Mouse.ScrollCallback mouseScrollCallback;
+    private static Keyboard.KeyCallback keyCallback;
+    private static Keyboard.CharacterCallback characterCallback;
+    private static Runnable beforeInputCallback;
+    private static Runnable afterInputCallback;
+    private static StepCallback stepCallback = NULL_STEP_CALLBACK;
+    private static Runnable renderCallback;
+    private static Runnable destroyCallback;
+    
+    // <editor-fold defaultstate="collapsed" desc="Setters">
     /**
-     * Initializes the windowing system. Whichever thread calls this becomes
-     * the main thread, and only classes on the main thread may construct and
-     * run games.
-     */
-    public static final void init()
-    {
-        if (initialized) throw new IllegalStateException("Already initialized.");
-        
-        if (!errorCallInit)
-        {
-            glfwSetErrorCallback(DisplayException::glfwThrow);
-            errorCallInit = true;
-        }
-        
-        glfwInit();
-        Gamepads.init();
-        mainThread = Thread.currentThread();
-        initialized = true;
-    }
-    
-    /**
-     * Terminates the windowing system. Must be called on the main thread.
-     */
-    public static final void terminate()
-    {
-        ensureMainThread();
-        initialized = false;
-        mainThread = null;
-        glfwTerminate();
-    }
-    
-    /**
-     * Provides a simple and convenient way to run a game. The game must have a
-     * zero-argument constructor.
+     * Sets a given GLFW window hint, that will be passed to the window when the
+     * game is created. See GLFW documentation for a list of valid hints:
      * 
-     * To use this method, simply call Game.run(YourGameClass::new);
-     * 
-     * @param constructor Any method which constructs and returns a Game.
+     * http://www.glfw.org/docs/latest/window.html#window_hints
      */
-    public static final void run(GameConstructor constructor) throws Exception
+    public static void hint(int target, int hint)
     {
-        Game.init();
-        Game instance = constructor.construct();
-        instance.run();
-        instance.destroy();
-        Game.terminate();
-    }
-    
-    private boolean running;
-    private long lastFrameTime;
-    private long frameStart;
-    
-    public final long monitor, window;
-    public final GLCapabilities capabilities;
-    public final Sync sync;
-    public final Mouse mouse;
-    public final Keyboard keyboard;
-    public final TimeStepper stepper;
-    
-    private final long frameTime;
-    
-    private boolean onLongFrame;
-    private boolean destroyed;
-    
-    /**
-     * Creates a new game object. Initializes the window with the given config.
-     * 
-     * @param title The title of the window.
-     * @param hints The window hints to use.
-     * @param config The configuration to use.
-     */
-    public Game(String title, HintSet hints, GameConfig config)
-    {
-        if (title == null || config == null) throw new NullPointerException();
-        if (!initialized) throw new IllegalStateException("Game.init() not called.");
-        ensureMainThread();
-        
-        // <editor-fold defaultstate="collapsed" desc="Initialize Window">
-        {
-            glfwDefaultWindowHints();
-            glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-            glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
-            glfwWindowHint(GLFW_DECORATED, config.borderless ? GL_FALSE : GL_TRUE);
-            glfwWindowHint(GLFW_FLOATING, GL_FALSE);
-            glfwWindowHint(GLFW_STENCIL_BITS, 0);
-            if (config.msaa > 0) glfwWindowHint(GLFW_SAMPLES, config.msaa);
-            if (hints != null) hints.glfw();
-            
-            monitor = config.fullscreen ? glfwGetPrimaryMonitor() : 0;
-            window = glfwCreateWindow(config.resolution.x, config.resolution.y, title, monitor, 0);
-            
-            glfwMakeContextCurrent(window);
-            glfwSwapInterval(config.vsync ? 1 : 0);
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            glfwSetWindowSizeCallback(window, (window, width, height) ->
-            {
-                config.resolution.set(width, height);
-                glViewport(0, 0, width, height);
-                onResized(width, height);
-            });
-        }
-        
-        if (!config.fullscreen) //Center window
-        {
-            Vec2i windowSize = GLFWUtil.getWindowSize(window);
-            GLFWVidMode mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-            
-            glfwSetWindowPos(window, (mode.width() - windowSize.x)/2,
-                                          (mode.height() - windowSize.y)/2);
-        }
-        // </editor-fold>
-        // <editor-fold defaultstate="collapsed" desc="Initialize OpenGL Context">
-        {
-            capabilities = GL.createCapabilities();
-            glViewport(0, 0, config.resolution.x, config.resolution.y);
-            glDisable(GL_MULTISAMPLE);
-        }
-        // </editor-fold>
-        // <editor-fold defaultstate="collapsed" desc="Initialize Sync">
-        {
-            if (!config.vsync && config.fps > 0)
-            {
-                sync = new Sync(config.fps, config.sleeper);
-                frameTime = sync.getFrameTime();
-            }
-            else
-            {
-                sync = null;
-                GLFWVidMode mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-                frameTime = Math.round(1_000_000_000.0/mode.refreshRate());
-            }
-        }
-        // </editor-fold>
-        // <editor-fold defaultstate="collapsed" desc="Initialize Input">
-        {
-            mouse = new Mouse(window, this::onMouseMoved, this::onMouseButton, this::onMouseScroll);
-            mouse.setGrabbed(false);
-            keyboard = new Keyboard(window, this::onKey, this::onCharacter);
-        }
-        // </editor-fold>
-        stepper = config.stepper;
+        if (running) throw new IllegalStateException();
+        HINTS.hint(target, hint);
     }
     
     /**
-     * Creates a new game object. Initializes the window with the given config.
-     * 
-     * @param title The title of the window.
-     * @param config The configuration to use.
+     * Clears all GLFW hints passed to the game so that only default hints are
+     * passed.
      */
-    public Game(String title, GameConfig config)
+    public static void clearHints()
     {
-        this(title, null, config);
+        HINTS.clear();
     }
     
     /**
-     * Creates a new game window with the default title "Game" and the default
-     * configuration. The default config creates a decorated window at 1280p.
+     * Sets the frame split behavior. By default, onStep() may be called
+     * multiple times per frame, and has minimum and maximum timesteps that it
+     * can pass. This method may be used to change this.
      */
-    public Game()
+    public static void setStepper(TimeStepper stepper)
     {
-        this("Game", new GameConfig());
+        Game.stepper = Objects.requireNonNull(stepper);
+    }
+    
+    /**
+     * Sets the frame synchronization behavior. If vsync is not enabled, after a
+     * frame has been rendered, the given
+     * sleeper will spend some time to wait for the correct time to display the
+     * latest frame. If vsync is enabled, the given sleeper will not be used.
+     */
+    public static void setSleeper(SleepMethod sleeper)
+    {
+        Game.sleeper = Objects.requireNonNull(sleeper);
+        if (running) sync.setSleeper(sleeper);
+    }
+    
+    /**
+     * This sets the resolution of the window. If the window has already been
+     * created, it will be resized and an onResize event will be generated.
+     */
+    public static void setResolution(int width, int height)
+    {
+        RESOLUTION.set(width, height);
+        if (running)
+        {
+            glfwSetWindowSize(window, width, height);
+            glViewport(0, 0, width, height);
+            if (resizeCallback != null) resizeCallback.resize(width, height);
+        }
+    }
+    
+    /**
+     * This sets the resolution of the window. If the window has already been
+     * created, it will be resized and an onResize event will be generated.
+     */
+    public static void setResolution(Vec2i resolution)
+    {
+        setResolution(resolution.x, resolution.y);
+    }
+    
+    /**
+     * Sets whether or not the window will be fullscreen.
+     */
+    public static void setFullscreen(boolean fullscreen)
+    {
+        if (running) throw new UnsupportedOperationException("Not implemented yet.");
+        Game.fullscreen = fullscreen;
+    }
+    
+    /**
+     * This sets whether or not vsync is enabled. If it is enabled, each new
+     * frame will be displayed precisely when the monitor refreshes, preventing
+     * screen tearing. This may introduce some latency or reduce frame rates.
+     * 
+     * Defaults to true.
+     */
+    public static void setVsync(boolean vsync)
+    {
+        if (running) glfwSwapInterval(vsync ? 1 : 0);
+        Game.vsync = vsync;
+    }
+    
+    /**
+     * Sets the maximum frames per second that the game is allowed to render at.
+     * This is not used if vsync is enabled. Set to 0 or lower to disable.
+     * 
+     * Defaults to 60.
+     */
+    public static void setFPSLimit(int fpsLimit)
+    {
+        if (running) sync.setFPS(fpsLimit);
+        Game.fpsLimit = fpsLimit;
     }
     
     /**
      * Sets the title of this window.
-     * 
-     * @param title The title to set to.
      */
-    public final void setTitle(String title)
+    public static void setTitle(String title)
     {
-        ensureMainThread();
-        glfwSetWindowTitle(window, title);
+        if (running) glfwSetWindowTitle(window, title);
+        Game.title = Objects.requireNonNull(title);
     }
-    
-    public final Vec2i getResolution()
-    {
-        return GLFWUtil.getWindowSize(window);
-    }
-    
-    // <editor-fold defaultstate="collapsed" desc="Overridable Methods">
-    /**
-     * Called whenever the mouse is moved. Always called before step() and
-     * render(). The coordinates are relative to the bottom left corner of the
-     * display.
-     * 
-     * @param x The x position of the mouse.
-     * @param y The y position of the mouse.
-     * @param dx The amount the x position has changed since the last call.
-     * @param dy The amount the y position has changed since the last call.
-     */
-    public void onMouseMoved(float x, float y, float dx, float dy) {};
-    
-    /**
-     * Called whenever a mouse button is pressed. Always called before step()
-     * and render(). The key modifier bit field is defined by GLFW:
-     * 
-     * http://www.glfw.org/docs/latest/group__mods.html
-     * 
-     * @param button The GLFW enum representing which button was affected.
-     * @param action One of GLFW_PRESS or GLFW_RELEASE.
-     * @param mods Bit field describing which modifier keys were held down.
-     */
-    public void onMouseButton(int button, int action, int mods) {};
-    
-    /**
-     * Called whenever the scroll wheel is moved. Always called before step()
-     * and render().
-     * 
-     * @param dx The horizontal scroll offset.
-     * @param dy The vertical scroll offset.
-     */
-    public void onMouseScroll(float dx, float dy) {};
-    
-    /**
-     * Called whenever a key is pressed. Always called before step() and
-     * render(). The key modifier bit field is defined by GLFW:
-     * 
-     * http://www.glfw.org/docs/latest/group__mods.html
-     * 
-     * @param key The GLFW enum representing which key was affected.
-     * @param action One of GLFW_PRESS, GLFW_RELEASE or GLFW_REPEAT.
-     * @param mods Bit field describing which modifier keys were held down.
-     */
-    public void onKey(int key, int action, int mods) {};
-    
-    /**
-     * Called whenever a character is typed. Always called before step() and 
-     * render(). Automatically accounts for modifiers like shift.
-     * 
-     * @param character The character that was typed.
-     * @param codepoint The unicode codepoint that was typed.
-     */
-    public void onCharacter(char character, int codepoint) {};
-    
-    /**
-     * Steps the simulation by a given amount of time. Called after input and
-     * before rendering. The duration and number of time steps depends on the
-     * time step method chosen.
-     * 
-     * @param dt The time step, in seconds.
-     */
-    public void step(float dt) {};
-    
-    /**
-     * Called once per frame after all input and time steps, should be used for
-     * any rendering code with OpenGL.
-     */
-    public void render() {};
-    
-    /**
-     * Called when the game window is resized.
-     */
-    public void onResized(int width, int height) {};
-    
-    /**
-     * Called when this game is destroyed. Should release any system resources
-     * associated with this game.
-     */
-    public void onDestroy() {};
     // </editor-fold>
-    
+    // <editor-fold defaultstate="collapsed" desc="Getters">
     /**
-     * Flushes the keyboard/mouse input queues and discards all events. Also
-     * releases any held buttons and invalidates the mouse position.
+     * Returns the GLFW handle to this window, or 0 if the game is not running.
      */
-    @Deprecated
-    public final void discardInput()
+    public static long getWindow()
     {
+        return window;
     }
     
     /**
-     * Marks the current frame as taking a long time, so that excessively long
-     * steps are not called next frame. Pairs well with discardInput() in order
-     * to combat jumpy state after long frames, such as after loading screens.
+     * Returns this game's OpenGL capabilities, or null if it's not running.
      */
-    public final void markLongFrame()
+    public static GLCapabilities getGLCapabilities()
     {
-        onLongFrame = true;
+        return capabilities;
     }
     
     /**
-     * Runs the game, showing the window and beginning the game loop. Must be
-     * called on the main thread, and the game cannot be destroyed.
+     * Returns the desired frame time of this game in nanoseconds, or 0 if
+     * either the FPS limit and vsync are both disabled, or the game is not
+     * running. This is not the same as the actual frame rate of the game.
      */
-    public final void run()
+    public static long getFrameTargetNano()
     {
-        if (!initialized) throw new IllegalStateException("Game.init() not called.");
-        ensureMainThread();
-        if (destroyed) throw new IllegalStateException("Game has been destroyed.");
+        if (!running) return 0;
+        if (!vsync && fpsLimit <= 0) return 0;
         
-        try
-        {
-            running = true;
-            glfwShowWindow(window);
-
-            long lastFrameStart = System.nanoTime() - frameTime;
-
-            while (running)
-            {
-                frameStart = System.nanoTime();
-
-                //Input
-                glfwPollEvents();
-                Gamepads.update();
-                if (glfwWindowShouldClose(window)) stop();
-                
-                //Step
-                if (onLongFrame) lastFrameTime = frameTime;
-                else lastFrameTime = frameStart - lastFrameStart;
-                onLongFrame = false;
-                float dt = (float)(lastFrameTime/1_000_000_000.0);
-                stepper.step(dt, this::step);
-                lastFrameStart = frameStart;
-
-                render();
-                
-                if (sync != null) sync.sync();
-                glfwSwapBuffers(window);
-            }
-        }
-        catch (InterruptedException e)
-        {
-            throw new RuntimeException("Thread interrupted.", e);
-        }
-        finally
-        {
-            stop();
-        }
+        GLFWVidMode mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+        if (vsync && mode != null) return Math.round(1_000_000_000.0/mode.refreshRate());
+        
+        return sync.getFrameTime();
     }
     
     /**
-     * Stops this game. May be called from any thread.
+     * Returns the length of the previous frame in nanoseconds, or 0 if a frame
+     * hasn't yet elapsed.
      */
-    public final void stop()
-    {
-        running = false;
-    }
-    
-    /**
-     * @return How long, in nanoseconds, the duration of the previous frame.
-     */
-    public final long lastFrameTime()
+    public static long getLastFrameNano()
     {
         return lastFrameTime;
     }
     
     /**
-     * @return The time, as measured by System.nanoTime(), when this frame
-     *         started. This is also the time that the previous frame ended.
+     * Returns the current resolution of this game's window, or null if it's
+     * not running.
      */
-    public final long frameStart()
+    public static Vec2i getResolution()
     {
-        return frameStart;
+        return running ? GLFWUtil.getWindowSize(window) : null;
     }
     
     /**
-     * Destroys this game and window, and releases any resources associated
-     * resources.
+     * Returns the game's mouse, or null if the game is not running.
      */
-    public final void destroy()
+    public static Mouse getMouse()
     {
-        ensureMainThread();
-        if (destroyed) return;
-        destroyed = true;
-        
-        onDestroy();
-        glfwDestroyWindow(window);
+        return mouse;
     }
     
     /**
-     * @return Whether this game has been destroyed.
+     * Returns the game's keyboard, or null if the game is not running.
      */
-    public final boolean isDestroyed()
+    public static Keyboard getKeyboard()
     {
-        return destroyed;
+        return keyboard;
+    }
+    
+    /**
+     * Returns the game's Gamepads, or null if the game is not running.
+     */
+    public static Gamepads getGamepads()
+    {
+        return gamepads;
+    }
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Callbacks">
+    
+    @FunctionalInterface
+    public static interface InitCallback
+    {
+        public void init() throws IOException;
+    }
+    
+    /**
+     * The given callback is run once, after the window amd OpenGL context have
+     * been created and before the game runs. Any previous callback is
+     * overwritten.
+     */
+    public static void onInit(InitCallback callback)
+    {
+        initCallback = callback;
     }
     
     @FunctionalInterface
-    public interface GameConstructor
+    public static interface ResizeCallback
     {
-        Game construct() throws Exception;
+        public void resize(int width, int height);
+    }
+    
+    /**
+     * The given callback is run any time the window has been resized. Any
+     * previous callback is overwritten.
+     */
+    public static void onResize(ResizeCallback callback)
+    {
+        resizeCallback = callback;
+    }
+    
+    /**
+     * The given callback is run any time the mouse is moved. Any previous
+     * callback is overwritten.
+     */
+    public static void onMouseMoved(Mouse.CursorCallback callback)
+    {
+        mouseCursorCallback = callback;
+    }
+    
+    /**
+     * The given callback is run any time a mouse button's state changes. Any
+     * previous callback is overwritten.
+     */
+    public static void onMouseButton(Mouse.ButtonCallback callback)
+    {
+        mouseButtonCallback = callback;
+    }
+    
+    /**
+     * The given callback is run any time the mouse wheel is scrolled. Any
+     * previous callback is overwritten.
+     */
+    public static void onMouseScroll(Mouse.ScrollCallback callback)
+    {
+        mouseScrollCallback = callback;
+    }
+    
+    /**
+     * The given callback is run any time a key's state changes. Any previous
+     * callback is overwritten.
+     */
+    public static void onKey(Keyboard.KeyCallback callback)
+    {
+        keyCallback = callback;
+    }
+    
+    /**
+     * The given callback is run any time the keyboard outputs a unicode
+     * character. This does not correspond with keystrokes in a one-to-one
+     * manner. Any previous callback is overwritten.
+     */
+    public static void onCharacter(Keyboard.CharacterCallback callback)
+    {
+        characterCallback = callback;
+    }
+    
+    /**
+     * The given callback is run once per frame, at the start of every frame,
+     * before input has been polled.
+     */
+    public static void beforeInput(Runnable callback)
+    {
+        beforeInputCallback = callback;
+    }
+    
+    /**
+     * The given callback is run once per frame, after input is polled and
+     * before the step callback is run.
+     */
+    public static void afterInput(Runnable callback)
+    {
+        afterInputCallback = callback;
+    }
+    
+    @FunctionalInterface
+    public static interface StepCallback
+    {
+        public void step(float dt);
+    }
+    
+    /**
+     * The given callback is run at least once per frame, before the frame is
+     * rendered. The number of times this callback is run, and the timesteps
+     * passed into it are determined by this game's TimeStepper.
+     */
+    public static void onStep(StepCallback callback)
+    {
+        if (callback == null) stepCallback = NULL_STEP_CALLBACK;
+        else stepCallback = callback;
+    }
+    
+    /**
+     * The given callback is run once at the end of each frame, before the frame
+     * buffer is swapped.
+     */
+    public static void onRender(Runnable callback)
+    {
+        renderCallback = callback;
+    }
+    
+    /**
+     * The given callback is run once, when this game has finished running, but
+     * before the associated window and OpenGL context have been destroyed. This
+     * should be used to free native resources.
+     */
+    public static void onDestroy(Runnable callback)
+    {
+        destroyCallback = callback;
+    }
+    // </editor-fold>
+    
+    /**
+     * Creates a window and runs the game using the currently set callbacks and
+     * settings.
+     */
+    public static void run()
+    {
+        if (running) throw new IllegalStateException();
+        
+        glfwSetErrorCallback(DisplayException::glfwThrow);
+        glfwInit();
+        
+        //Create window
+        glfwDefaultWindowHints();
+        glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
+        HINTS.glfw();
+        
+        long monitor = fullscreen ? glfwGetPrimaryMonitor() : 0L;
+        window = glfwCreateWindow(RESOLUTION.x, RESOLUTION.y, title, monitor, 0);
+
+        glfwMakeContextCurrent(window);
+        glfwSwapInterval(vsync ? 1 : 0);
+        glfwSetWindowSizeCallback(window, (window, width, height) ->
+        {
+            glViewport(0, 0, width, height);
+            RESOLUTION.set(width, height);
+            if (resizeCallback != null) resizeCallback.resize(width, height);
+        });
+        
+        //Center window
+        GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+        if (vidMode != null && !fullscreen)
+        {
+            Vec2i windowSize = GLFWUtil.getWindowSize(window);
+            glfwSetWindowPos(window, (vidMode.width() - windowSize.x)/2, (vidMode.height() - windowSize.y)/2);
+        }
+        
+        //Setup input
+        mouse = new Mouse(window, (x, y, dx, dy) ->
+        {
+            if (mouseCursorCallback != null) mouseCursorCallback.accept(x, y, dx, dy);
+        },
+        (button, action, mods) ->
+        {
+            if (mouseButtonCallback != null) mouseButtonCallback.accept(button, action, mods);
+        },
+        (dx, dy) ->
+        {
+            if (mouseScrollCallback != null) mouseScrollCallback.accept(dx, dy);
+        });
+        
+        keyboard = new Keyboard(window, (key, action, mods) ->
+        {
+            if (keyCallback != null) keyCallback.accept(key, action, mods);
+        },
+        (character, codepoint) ->
+        {
+            if (characterCallback != null) characterCallback.accept(character, codepoint);
+        });
+        
+        gamepads = new Gamepads();
+        
+        //Create OpenGL context
+        capabilities = GL.createCapabilities();
+        glViewport(0, 0, RESOLUTION.x, RESOLUTION.y);
+        
+        //Create Sync
+        sync = new Sync(fpsLimit, sleeper);
+        
+        boolean exceptionCaught = false;
+        
+        try //Main game loop
+        {
+            running = true;
+            if (initCallback != null) initCallback.init();
+            glfwShowWindow(window);
+            
+            long lastFrameStart = System.nanoTime() - getFrameTargetNano();
+            while (running)
+            {
+                long frameStart = System.nanoTime();
+
+                //Input
+                if (beforeInputCallback != null) beforeInputCallback.run();
+                glfwPollEvents();
+                gamepads.update();
+                if (afterInputCallback != null) afterInputCallback.run();
+                if (glfwWindowShouldClose(window)) stop();
+
+                //Step
+                lastFrameTime = frameStart - lastFrameStart;
+                float dt = (float)(lastFrameTime/1_000_000_000.0);
+                stepper.step(dt, stepCallback::step);
+                lastFrameStart = frameStart;
+
+                if (renderCallback != null) renderCallback.run();
+
+                if (!vsync && fpsLimit > 0) sync.sync();
+                glfwSwapBuffers(window);
+            }
+        }
+        catch (IOException e)
+        {
+            exceptionCaught = true;
+            throw new RuntimeException("Init failed.", e);
+        }
+        catch (InterruptedException e)
+        {
+            exceptionCaught = true;
+            throw new RuntimeException("Thread interrupted.", e);
+        }
+        catch (Throwable t)
+        {
+            exceptionCaught = true;
+            throw t;
+        }
+        finally //Cleanup
+        {
+            running = false;
+            
+            try
+            {
+                if (destroyCallback != null) destroyCallback.run();
+            }
+            catch (Throwable t)
+            {
+                //If both try blocks catch an exception, we cannot throw both.
+                //We must swallow the second exception to throw the first.
+                if (!exceptionCaught) throw t;
+            }
+            finally
+            {
+                glfwSetErrorCallback(null).free();
+                glfwSetWindowSizeCallback(window, null).free();
+                mouse.destroy();
+                keyboard.destroy();
+                gamepads.destroy();
+                GL.setCapabilities(null);
+
+                glfwDestroyWindow(window);
+                glfwTerminate();
+
+                window = NULL;
+                capabilities = null;
+                sync = null;
+                mouse = null;
+                keyboard = null;
+                gamepads = null;
+                lastFrameTime = 0;
+            }
+        }
+    }
+    
+    public static void stop()
+    {
+        running = false;
+    }
+    
+    private Game()
+    {
     }
 }

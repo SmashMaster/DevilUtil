@@ -2,7 +2,7 @@ package com.samrj.devil.game;
 
 import com.samrj.devil.math.Vec2;
 import java.nio.DoubleBuffer;
-import java.util.Arrays;
+import java.util.Objects;
 import org.lwjgl.system.MemoryStack;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -17,7 +17,6 @@ import static org.lwjgl.glfw.GLFW.*;
 public final class Mouse
 {
     private final long window;
-    private final boolean[] states;
     private final CursorCallback cursorCallback;
     private final ButtonCallback buttonCallback;
     private final ScrollCallback scrollCallback;
@@ -25,14 +24,12 @@ public final class Mouse
     private boolean posDirty = true;
     private float x, y;
     
-    public Mouse(long window, CursorCallback cursorCallback,
-            ButtonCallback buttonCallback, ScrollCallback scrollCallback)
+    Mouse(long window, CursorCallback cursorCallback, ButtonCallback buttonCallback, ScrollCallback scrollCallback)
     {
         this.window = window;
-        states = new boolean[GLFW_MOUSE_BUTTON_LAST + 1];
-        this.cursorCallback = cursorCallback;
-        this.buttonCallback = buttonCallback;
-        this.scrollCallback = scrollCallback;
+        this.cursorCallback = Objects.requireNonNull(cursorCallback);
+        this.buttonCallback = Objects.requireNonNull(buttonCallback);
+        this.scrollCallback = Objects.requireNonNull(scrollCallback);
         
         glfwSetCursorPosCallback(window, this::cursorPos);
         glfwSetMouseButtonCallback(window, this::button);
@@ -42,13 +39,6 @@ public final class Mouse
     public final void setPosDirty()
     {
         posDirty = true;
-    }
-    
-    @Deprecated
-    public final void reset()
-    {
-        posDirty = true;
-        Arrays.fill(states, false);
     }
     
     private void cursorPos(long window, double xpos, double ypos)
@@ -77,12 +67,6 @@ public final class Mouse
     
     private void button(long window, int button, int action, int mods)
     {
-        switch (action)
-        {
-            case GLFW_PRESS: states[button] = true; break;
-            case GLFW_RELEASE: states[button] = false; break;
-        }
-        
         buttonCallback.accept(button, action, mods);
     }
     
@@ -112,7 +96,7 @@ public final class Mouse
     public final boolean isButtonDown(int button)
     {
         if (button < 0 || button > GLFW_MOUSE_BUTTON_LAST) throw new IllegalArgumentException();
-        return states[button];
+        return glfwGetMouseButton(window, button) == GLFW_PRESS;
     }
     
     public void setGrabbed(boolean grabbed)
@@ -124,6 +108,13 @@ public final class Mouse
     public boolean isGrabbed()
     {
         return glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
+    }
+    
+    void destroy()
+    {
+        glfwSetCursorPosCallback(window, null).free();
+        glfwSetMouseButtonCallback(window, null).free();
+        glfwSetScrollCallback(window, null).free();
     }
     
     @FunctionalInterface

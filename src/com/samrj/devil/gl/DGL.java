@@ -822,7 +822,8 @@ public final class DGL
     }
     
     /**
-     * Deletes each DevilGL object in the given array.
+     * Deletes each DevilGL object in the given array, freeing any native
+     * resources associated with those objects.
      * 
      * @param objects An array of DevilGL objects to delete.
      */
@@ -837,7 +838,9 @@ public final class DGL
     }
     
     /**
-     * Destroys DevilGL and releases all associated resources.
+     * Destroys DGL and releases native resources allocated through DGL.init().
+     * Native resources allocated through DGL.genXXX or DGL.loadXXX functions
+     * must be freed explicitly through DGL.delete().
      */
     public static void destroy()
     {
@@ -855,8 +858,6 @@ public final class DGL
         
         thread = null;
         capabilities = null;
-        
-        GL.destroy();
     }
     
     private DGL()

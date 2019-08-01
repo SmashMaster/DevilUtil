@@ -1,5 +1,7 @@
 package com.samrj.devil.game;
 
+import java.util.Objects;
+
 import static org.lwjgl.glfw.GLFW.*;
 
 /**
@@ -18,12 +20,11 @@ public final class Keyboard
     Keyboard(long window, KeyCallback keyCallback, CharacterCallback charCallback)
     {
         this.window = window;
-        if (keyCallback == null) throw new NullPointerException();
-        if (charCallback == null) throw new NullPointerException();
+        this.keyCallback = Objects.requireNonNull(keyCallback);
+        this.charCallback = Objects.requireNonNull(charCallback);
+        
         glfwSetKeyCallback(window, this::key);
-        this.keyCallback = keyCallback;
         glfwSetCharCallback(window, this::character);
-        this.charCallback = charCallback;
     }
     
     private void key(long window, int key, int scancode, int action, int mods)
@@ -39,6 +40,12 @@ public final class Keyboard
     public final boolean isKeyDown(int key)
     {
         return glfwGetKey(window, key) == GLFW_PRESS;
+    }
+    
+    void destroy()
+    {
+        glfwSetKeyCallback(window, null).free();
+        glfwSetCharCallback(window, null).free();
     }
     
     @FunctionalInterface
