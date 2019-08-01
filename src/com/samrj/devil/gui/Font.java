@@ -22,6 +22,9 @@ import static org.lwjgl.system.MemoryUtil.*;
 /**
  * Loads TTF fonts using STB, and then converts them for Nuklear.
  * 
+ * Adopted from LWJGL demo code, Copyright 2019 LWJGL, under this license:
+ * https://www.lwjgl.org/license
+ * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
@@ -34,6 +37,11 @@ public class Font
     private final STBTTFontinfo fontInfo;
     private final STBTTPackedchar.Buffer cdata;
     
+    /**
+     * loads a TTF font using the given InputStream and properties. The stream
+     * is read completely and then closed. An OpenGL context must exist on the
+     * calling thread.
+     */
     public Font(InputStream in, FontProperties properties) throws IOException
     {
         nkFont = NkUserFont.malloc();
@@ -144,11 +152,18 @@ public class Font
         .texture(it -> it.id(glTexID));
     }
     
+    /**
+     * loads a TTF font using the given InputStream, with the default font
+     * properties. The stream is read completely and then closed.
+     */
     public Font(InputStream in) throws IOException
     {
         this(in, new FontProperties());
     }
     
+    /**
+     * Frees up and native resources associated with this font.
+     */
     public void destroy()
     {
         glDeleteTextures(nkFont.texture().id());
@@ -159,13 +174,16 @@ public class Font
         cdata.free();
     }
     
+    /**
+     * Defines the unicode range and bitmap rendering parameters for this font.
+     */
     public static class FontProperties
     {
-        public float height = 18.0f;
-        public int first = 32;
-        public int count = 95;
-        public int bitmapWidth = 1024, bitmapHeight = 1024;
-        public int supersampling = 4;
+        public float height;
+        public int first;
+        public int count;
+        public int bitmapWidth, bitmapHeight;
+        public int supersampling;
         
         public FontProperties(FontProperties props)
         {
@@ -179,6 +197,12 @@ public class Font
         
         public FontProperties()
         {
+            height = 18.0f;
+            first = 32;
+            count = 95;
+            bitmapWidth = 1024;
+            bitmapHeight = 1024;
+            supersampling = 4;
         }
     }
 }
