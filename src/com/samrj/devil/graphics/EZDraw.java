@@ -4,15 +4,11 @@ import com.samrj.devil.geo3d.Box3;
 import com.samrj.devil.geo3d.Ellipsoid;
 import com.samrj.devil.geo3d.OBox3;
 import com.samrj.devil.gl.DGL;
-import com.samrj.devil.gl.Shader;
 import com.samrj.devil.gl.ShaderProgram;
 import com.samrj.devil.gl.VertexStream;
-import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.*;
-import java.io.IOException;
 
 import static org.lwjgl.opengl.GL11C.*;
-import static org.lwjgl.opengl.GL20C.*;
 
 /**
  * Utility class for forward-compatible primitive drawing.

@@ -23,7 +23,6 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.graphics.TexUtil;
-import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Util.PrimType;
 import com.samrj.devil.res.Resource;
 import java.awt.image.BufferedImage;
