@@ -75,23 +75,9 @@ public final class EZDraw
         if (initialized) throw new IllegalStateException("EZDraw already initialized.");
         if (maxVertices <= 0) throw new IllegalArgumentException();
         
-        try
-        {
-            Shader vert = DGL.genShader(GL_VERTEX_SHADER);
-            vert.source(IOUtil.stringStream(VERT_SOURCE));
-            Shader frag = DGL.genShader(GL_FRAGMENT_SHADER);
-            frag.source(IOUtil.stringStream(FRAG_SOURCE));
-            shader = DGL.loadProgram(vert, frag);
-            DGL.delete(vert, frag);
-            
-            projMat = Mat4.identity();
-            stack = new MatStack();
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e); //Should never reasonably fail.
-        }
-        
+        shader = DGL.loadProgram(VERT_SOURCE, FRAG_SOURCE);
+        projMat = Mat4.identity();
+        stack = new MatStack();
         stream = DGL.genVertexStream(maxVertices, -1);
         pos = stream.vec3("in_pos");
         color = stream.vec4("in_color");
