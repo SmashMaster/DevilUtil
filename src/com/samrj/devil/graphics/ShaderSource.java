@@ -34,19 +34,21 @@ class ShaderSource
         
         InputStream in = res.open();
         if (in == null) throw new FileNotFoundException(res.path);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         
-        while (reader.ready())
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in)))
         {
-            String line = reader.readLine();
-            String lowerLine = line.toLowerCase(Locale.ENGLISH);
-            
-            if (lowerLine.startsWith("#include"))
+            while (reader.ready())
             {
-                if (incLine == -1) incLine = lines.size();
-                dependencies.add(lowerLine.substring(line.indexOf(' ')).trim());
+                String line = reader.readLine();
+                String lowerLine = line.toLowerCase(Locale.ENGLISH);
+                
+                if (lowerLine.startsWith("#include"))
+                {
+                    if (incLine == -1) incLine = lines.size();
+                    dependencies.add(lowerLine.substring(line.indexOf(' ')).trim());
+                }
+                else lines.add(line);
             }
-            else lines.add(line);
         }
     }
     

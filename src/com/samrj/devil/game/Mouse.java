@@ -82,7 +82,7 @@ public final class Mouse
             DoubleBuffer xBuf = stack.mallocDouble(1);
             DoubleBuffer yBuf = stack.mallocDouble(2);
             glfwGetCursorPos(window, xBuf, yBuf);
-            return new Vec2((float)xBuf.get(0), (float)yBuf.get(0));
+            return new Vec2((float)xBuf.get(0), GLFWUtil.getWindowSize(window).y - (float)yBuf.get(0));
         }
     }
     

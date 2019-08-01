@@ -54,6 +54,7 @@ public final class Shader extends DGLObj
         try (MemoryStack stack = MemoryStack.stackPush())
         {
             byte[] bytes = in.readAllBytes();
+            in.close();
             ByteBuffer source = stack.malloc(bytes.length);
             source.put(bytes);
             source.flip();
