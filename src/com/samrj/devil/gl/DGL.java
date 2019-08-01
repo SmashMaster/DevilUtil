@@ -186,6 +186,12 @@ public final class DGL
         return program;
     }
     
+    private static void checkProgramState()
+    {
+        if (glGetInteger(GL_CURRENT_PROGRAM) != ShaderProgram.glSafeID(boundProgram))
+            throw new IllegalStateException("Shader state modified outside of DGL.");
+    }
+    
     /**
      * Uses the given shader program for any subsequent draw calls. Pass null to
      * unbind the current shader.
@@ -195,12 +201,11 @@ public final class DGL
      */
     public static ShaderProgram useProgram(ShaderProgram shaderProgram)
     {
-        if (boundProgram != shaderProgram)
-        {
-            if (shaderProgram == null) glUseProgram(0);
-            else shaderProgram.use();
-            boundProgram = shaderProgram;
-        }
+        if (debug) checkProgramState();
+        
+        ShaderProgram.ensureNotDeleted(shaderProgram);
+        glUseProgram(ShaderProgram.glSafeID(shaderProgram));
+        boundProgram = shaderProgram;
         
         return shaderProgram;
     }
@@ -210,6 +215,8 @@ public final class DGL
      */
     public static ShaderProgram currentProgram()
     {
+        if (debug) checkProgramState();
+        
         return boundProgram;
     }
     // </editor-fold>

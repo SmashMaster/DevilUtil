@@ -45,9 +45,17 @@ public final class ShaderProgram extends DGLObj
         NEW, LINKED, COMPLETE, DELETED;
     }
     
-    /**
-     * The OpenGL id of this shader program.
-     */
+    static void ensureNotDeleted(ShaderProgram program)
+    {
+        if (program != null && program.state == State.DELETED)
+            throw new IllegalStateException("Shader has been deleted.");
+    }
+    
+    static int glSafeID(ShaderProgram program)
+    {
+        return program != null ? program.id : 0;
+    }
+    
     final int id;
     
     private final Set<Shader> shaders;
@@ -197,16 +205,6 @@ public final class ShaderProgram extends DGLObj
     }
     
     /**
-     * Use this shader for any subsequent draw calls.
-     */
-    void use()
-    {
-        if (state == State.DELETED) throw new IllegalStateException(
-                "Shader must not be deleted to use.");
-        glUseProgram(id);
-    }
-    
-    /**
      * Returns the location of the attribute with the given name, or -1 if none
      * with the given name exists.
      * 
@@ -228,7 +226,6 @@ public final class ShaderProgram extends DGLObj
      */
     public int getUniformLocation(String name)
     {
-        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
         return glGetUniformLocation(id, name);
     }
     
