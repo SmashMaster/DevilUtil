@@ -122,6 +122,8 @@ public final class GUI
         //Load and set up shader and vertex layout
         shader = DGL.loadProgram(VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE);
         
+        Font.guiInit(shader, window);
+        
         uniformTex = shader.getUniformLocation("Texture");
         uniformProjMat = shader.getUniformLocation("ProjMtx");
         int attribPos = shader.getAttributeLocation("Position");
@@ -508,6 +510,8 @@ public final class GUI
         glDeleteBuffers(vbo);
         glDeleteBuffers(ebo);
         DGL.delete(shader);
+        
+        Font.guiDestroy();
         
         //Free context
         context.clip().copy().free();
