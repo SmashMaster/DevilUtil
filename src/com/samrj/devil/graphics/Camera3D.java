@@ -29,7 +29,7 @@ import com.samrj.devil.math.*;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Camera3D
+public final class Camera3D
 {
     /**
      * Returns an array of eight vectors, each one a vertex of this camera's
@@ -58,19 +58,36 @@ public class Camera3D
         return array;
     }
     
-    public final Vec3 pos = new Vec3();
-    public final Quat dir = Quat.identity();
     public final float zNear, zFar;
     public final float fov;
-    public final float hSlope, vSlope;
-    public final Mat4 projMat, viewMat;
+    public final Vec3 pos = new Vec3();
+    public final Quat dir = Quat.identity();
+    public final Mat4 projMat = new Mat4(), viewMat = new Mat4();
     public final Vec3 right, up, forward;
+    
+    private float hSlope, vSlope;
     
     public Camera3D(float zNear, float zFar, float fov, float aspectRatio)
     {
         this.zNear = zNear;
         this.zFar = zFar;
         this.fov = fov;
+        
+        setAspectRatio(aspectRatio);
+        
+        viewMat.setIdentity();
+        right = new Vec3(1.0f, 0.0f, 0.0f);
+        up = new Vec3(0.0f, 1.0f, 0.0f);
+        forward = new Vec3(0.0f, 0.0f, -1.0f);
+    }
+    
+    public Camera3D(float zNear, float zFar, float fov, Vec2i resolution)
+    {
+        this(zNear, zFar, fov, resolution.y/(float)resolution.x);
+    }
+    
+    public void setAspectRatio(float aspectRatio)
+    {
         float tanFov = (float)Math.tan(fov*0.5f);
         
         if (aspectRatio <= 1.0f) //Width is greater or equal to height.
@@ -84,16 +101,22 @@ public class Camera3D
             vSlope = tanFov;
         }
         
-        projMat = Mat4.frustum(hSlope*zNear, vSlope*zNear, zNear, zFar);
-        viewMat = Mat4.identity();
-        right = new Vec3(1.0f, 0.0f, 0.0f);
-        up = new Vec3(0.0f, 1.0f, 0.0f);
-        forward = new Vec3(0.0f, 0.0f, -1.0f);
+        Mat4.frustum(hSlope*zNear, vSlope*zNear, zNear, zFar, projMat);
     }
     
-    public Camera3D(float zNear, float zFar, float fov, Vec2i resolution)
+    public void setResolution(int width, int height)
     {
-        this(zNear, zFar, fov, resolution.y/(float)resolution.x);
+        setAspectRatio(height/(float)width);
+    }
+    
+    public float getHSlope()
+    {
+        return hSlope;
+    }
+    
+    public float getVSlope()
+    {
+        return vSlope;
     }
     
     /**
