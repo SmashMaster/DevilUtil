@@ -36,6 +36,7 @@ public class Font
     private final FontProperties props;
     private final STBTTFontinfo fontInfo;
     private final STBTTPackedchar.Buffer cdata;
+    private final ByteBuffer ttf;
     
     /**
      * loads a TTF font using the given InputStream and properties. The stream
@@ -45,28 +46,24 @@ public class Font
     public Font(InputStream in, FontProperties properties) throws IOException
     {
         nkFont = NkUserFont.malloc();
-        
         props = new FontProperties(properties);
+        fontInfo = STBTTFontinfo.malloc();
+        cdata = STBTTPackedchar.malloc(props.count);
         
         //Read whole font to buffer.
         byte[] bytes = in.readAllBytes();
         in.close();
-        ByteBuffer ttf = memAlloc(bytes.length);
+        ttf = memAlloc(bytes.length);
         ttf.put(bytes);
         ttf.flip();
         
-        int glTexID = glGenTextures();
-        
-        fontInfo = STBTTFontinfo.malloc();
         stbtt_InitFont(fontInfo, ttf);
         
         float scale = stbtt_ScaleForPixelHeight(fontInfo, props.height);
         float descent;
         
-        cdata = STBTTPackedchar.malloc(props.count);
-        ByteBuffer bitmap = memAlloc(props.bitmapWidth*props.bitmapHeight);
-        
         //Pack font into bitmap.
+        ByteBuffer bitmap = memAlloc(props.bitmapWidth*props.bitmapHeight);
         try (MemoryStack stack = MemoryStack.stackPush())
         {
             IntBuffer d = stack.mallocInt(1);
@@ -75,8 +72,8 @@ public class Font
             
             STBTTPackContext pc = STBTTPackContext.mallocStack(stack);
             stbtt_PackBegin(pc, bitmap, props.bitmapWidth, props.bitmapHeight, 0, 1, NULL);
-            stbtt_PackSetOversampling(pc, 4, 4);
-            stbtt_PackFontRange(pc, ttf, 0, props.height, 32, cdata);
+            stbtt_PackSetOversampling(pc, props.supersampling, props.supersampling);
+            stbtt_PackFontRange(pc, ttf, 0, props.height, props.first, cdata);
             stbtt_PackEnd(pc);
         }
         
@@ -85,16 +82,47 @@ public class Font
         for (int i = 0; i < bitmap.capacity(); i++)
             texture.putInt((bitmap.get(i) << 24) | 0x00FFFFFF);
         texture.flip();
+        memFree(bitmap);
 
         //Upload to GPU and clean up after ourselves.
+        int glTexID = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, glTexID);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, props.bitmapWidth, props.bitmapHeight, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, texture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
+        glBindTexture(GL_TEXTURE_2D, 0);
         memFree(texture);
-        memFree(bitmap);
-        memFree(ttf);
+        
+        //Bake character quads ahead of time so STB doesn't crash the JVM when something inevitably goes wrong.
+        BakedChar nullChar = new BakedChar();
+        BakedChar[] chars = new BakedChar[props.first + props.count];
+        for (int codepoint=0; codepoint<chars.length; codepoint++)
+        {
+            BakedChar c = new BakedChar();
+            chars[codepoint] = c;
+            
+            try (MemoryStack stack = MemoryStack.stackPush())
+            {
+                IntBuffer advance = stack.mallocInt(1);
+                stbtt_GetCodepointHMetrics(fontInfo, codepoint, advance, null);
+                c.advance = advance.get(0)*scale;
+                
+                if (codepoint < props.first) continue;
+                
+                FloatBuffer x = stack.floats(0.0f);
+                FloatBuffer y = stack.floats(0.0f);
+                STBTTAlignedQuad q = STBTTAlignedQuad.callocStack(stack);
+                stbtt_GetPackedQuad(cdata, props.bitmapWidth, props.bitmapHeight, codepoint - props.first, x, y, q, false);
+                c.width = q.x1() - q.x0();
+                c.height = q.y1() - q.y0();
+                c.offsetX = q.x0();
+                c.offsetY = q.y0() + (props.height + descent);
+                c.uvS0 = q.s0();
+                c.uvT0 = q.t0();
+                c.uvS1 = q.s1();
+                c.uvT1 = q.t1();
+            }
+        }
         
         //Give font pack data to Nuklear.
         nkFont.width((handle, h, text, len) ->
@@ -127,27 +155,14 @@ public class Font
         .height(props.height)
         .query((handle, font_height, glyph, codepoint, next_codepoint) ->
         {
-            if (codepoint - props.first >= props.count) return;
-            
-            try (MemoryStack stack = MemoryStack.stackPush())
-            {
-                FloatBuffer x = stack.floats(0.0f);
-                FloatBuffer y = stack.floats(0.0f);
-
-                STBTTAlignedQuad q = STBTTAlignedQuad.mallocStack(stack);
-                IntBuffer advance = stack.mallocInt(1);
-                
-                stbtt_GetPackedQuad(cdata, props.bitmapWidth, props.bitmapHeight, codepoint - props.first, x, y, q, false);
-                stbtt_GetCodepointHMetrics(fontInfo, codepoint, advance, null);
-
-                NkUserFontGlyph ufg = NkUserFontGlyph.create(glyph);
-                ufg.width(q.x1() - q.x0());
-                ufg.height(q.y1() - q.y0());
-                ufg.offset().set(q.x0(), q.y0() + (props.height + descent));
-                ufg.xadvance(advance.get(0) * scale);
-                ufg.uv(0).set(q.s0(), q.t0());
-                ufg.uv(1).set(q.s1(), q.t1());
-            }
+            BakedChar c = codepoint < chars.length ? chars[codepoint] : nullChar;
+            NkUserFontGlyph ufg = NkUserFontGlyph.create(glyph);
+            ufg.width(c.width);
+            ufg.height(c.height);
+            ufg.offset().set(c.offsetX, c.offsetY);
+            ufg.xadvance(c.advance);
+            ufg.uv(0).set(c.uvS0, c.uvT0);
+            ufg.uv(1).set(c.uvS1, c.uvT1);
         })
         .texture(it -> it.id(glTexID));
     }
@@ -172,6 +187,7 @@ public class Font
         nkFont.free();
         fontInfo.free();
         cdata.free();
+        memFree(ttf);
     }
     
     /**
@@ -204,5 +220,14 @@ public class Font
             bitmapHeight = 1024;
             supersampling = 4;
         }
+    }
+    
+    private class BakedChar
+    {
+        private float width, height;
+        private float offsetX, offsetY;
+        private float advance;
+        private float uvS0, uvT0;
+        private float uvS1, uvT1;
     }
 }

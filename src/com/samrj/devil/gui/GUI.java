@@ -186,6 +186,15 @@ public final class GUI
     }
     
     /**
+     * Returns font currently being used the GUI.
+     */
+    public static Font getStyleFont()
+    {
+        if (!init) throw new IllegalStateException("Not initialized.");
+        return currentFont;
+    }
+    
+    /**
      * Returns the underlying Nuklear context for this library. Throws an
      * IllegalStateException if the library has not been initialized, or if no
      * style font has been set.
@@ -372,7 +381,7 @@ public final class GUI
                 nk_input_key(context, NK_KEY_SCROLL_UP, pressed);
                 break;
             case GLFW_KEY_PAGE_DOWN:
-                nk_input_key(context, NK_KEY_SCROLL_UP, pressed);
+                nk_input_key(context, NK_KEY_SCROLL_DOWN, pressed);
                 break;
         }
     }
