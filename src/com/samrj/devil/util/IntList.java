@@ -1,13 +1,14 @@
 package com.samrj.devil.util;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * Automatically resizing integer array.
  */
-public class IntList
+public final class IntList implements Iterable<Integer>
 {
-    private static final int DEFAULT_CAPACITY = 10;
+    private static final int DEFAULT_CAPACITY = 8;
     private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
     
     private static int hugeCapacity(int minCapacity)
@@ -145,5 +146,34 @@ public class IntList
     public int capacity()
     {
         return array.length;
+    }
+    
+    @Override
+    public Iterator<Integer> iterator()
+    {
+        return new IntListIterator();
+    }
+    
+    private final class IntListIterator implements Iterator<Integer>
+    {
+        private int i = 0;
+        
+        @Override
+        public boolean hasNext()
+        {
+            return i < size;
+        }
+
+        @Override
+        public Integer next()
+        {
+            return array[i++];
+        }
+    }
+    
+    @Override
+    public String toString()
+    {
+        return Arrays.toString(toArray());
     }
 }

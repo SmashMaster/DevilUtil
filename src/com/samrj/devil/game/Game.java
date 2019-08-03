@@ -58,7 +58,6 @@ public final class Game
     private static Sync sync;
     private static Mouse mouse;
     private static Keyboard keyboard;
-    private static Gamepads gamepads;
     private static boolean running;
     
     private static long lastFrameTime;
@@ -252,14 +251,6 @@ public final class Game
     public static Keyboard getKeyboard()
     {
         return keyboard;
-    }
-    
-    /**
-     * Returns the game's Gamepads, or null if the game is not running.
-     */
-    public static Gamepads getGamepads()
-    {
-        return gamepads;
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Callbacks">
@@ -455,8 +446,6 @@ public final class Game
             if (characterCallback != null) characterCallback.accept(character, codepoint);
         });
         
-        gamepads = new Gamepads();
-        
         //Create OpenGL context
         capabilities = GL.createCapabilities();
         glViewport(0, 0, RESOLUTION.x, RESOLUTION.y);
@@ -480,7 +469,6 @@ public final class Game
                 //Input
                 if (beforeInputCallback != null) beforeInputCallback.run();
                 glfwPollEvents();
-                gamepads.update();
                 if (afterInputCallback != null) afterInputCallback.run();
                 if (glfwWindowShouldClose(window)) stop();
 
@@ -531,7 +519,6 @@ public final class Game
                 glfwSetWindowSizeCallback(window, null).free();
                 mouse.destroy();
                 keyboard.destroy();
-                gamepads.destroy();
                 GL.setCapabilities(null);
 
                 glfwDestroyWindow(window);
@@ -542,7 +529,6 @@ public final class Game
                 sync = null;
                 mouse = null;
                 keyboard = null;
-                gamepads = null;
                 lastFrameTime = 0;
             }
         }
