@@ -389,6 +389,14 @@ public final class GUI
     }
     
     /**
+     * Returns true if any widget or window is hovered or active.
+     */
+    public static boolean anyActive()
+    {
+        return Nuklear.nk_item_is_any_active(context);
+    }
+    
+    /**
      * Renders all Nuklear state that has been set up this frame. Should only be
      * called once per frame.
      */
