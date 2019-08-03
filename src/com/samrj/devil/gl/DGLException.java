@@ -77,7 +77,7 @@ public class DGLException extends RuntimeException
     {
         String message = getMessage(source, type, severity, length, msgAddr);
         if (severity == GL_DEBUG_SEVERITY_HIGH) throw new DGLException(message);
-        System.err.println("DevilUtil (DGL) - " + message);
+        new Throwable("DevilUtil (DGL) - " + message).printStackTrace();
     }
     
     private static void errorKHR(int id, int category, int severity, int length, long message, long userParam)
