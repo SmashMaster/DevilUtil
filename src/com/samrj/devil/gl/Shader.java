@@ -1,6 +1,6 @@
 package com.samrj.devil.gl;
 
-import com.samrj.devil.res.Resource;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -114,10 +114,10 @@ public final class Shader extends DGLObj
      * @return This shader.
      * @throws IOException If an I/O error occurs.
      */
-    public Shader sourceFromRes(String path) throws IOException
+    public Shader sourceFromFile(String path) throws IOException
     {
         this.path = path;
-        return source(Resource.open(path));
+        return source(new FileInputStream(path));
     }
     
     /**

@@ -24,11 +24,10 @@ package com.samrj.devil.gl;
 
 import com.samrj.devil.graphics.TexUtil;
 import com.samrj.devil.math.Util.PrimType;
-import com.samrj.devil.res.Resource;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Set;
@@ -142,7 +141,7 @@ public final class DGL
      */
     public static Shader loadShader(String path, int type) throws IOException
     {
-        return genShader(type).sourceFromRes(path);
+        return genShader(type).sourceFromFile(path);
     }
     
     /**
@@ -322,7 +321,7 @@ public final class DGL
     public static Image loadImage(String path) throws IOException
     {
         BufferedImage bImage;
-        try (InputStream in = Resource.open(path))
+        try (FileInputStream in = new FileInputStream(path))
         {
             bImage = ImageIO.read(in);
         }

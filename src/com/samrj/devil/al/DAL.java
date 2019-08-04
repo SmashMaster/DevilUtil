@@ -23,7 +23,7 @@
 package com.samrj.devil.al;
 
 import com.samrj.devil.math.Vec3;
-import com.samrj.devil.res.Resource;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -134,12 +134,13 @@ public class DAL
             memFree(buffer.close());
             throw t;
         }
+        in.close();
         return gen(new SoundBuffer(buffer));
     }
     
     public static SoundBuffer decodeFlac(String path) throws IOException
     {
-        return decodeFlac(Resource.open(path));
+        return decodeFlac(new FileInputStream(path));
     }
     
     public static SoundBuffer decodeOgg(InputStream in) throws IOException
@@ -149,7 +150,7 @@ public class DAL
     
     public static SoundBuffer decodeOgg(String path) throws IOException
     {
-        return decodeOgg(Resource.open(path));
+        return decodeOgg(new FileInputStream(path));
     }
     
     public static Sound genSound()
