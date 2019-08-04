@@ -59,21 +59,20 @@ public final class Camera3D
     }
     
     public final float zNear, zFar;
-    public final float fov;
     public final Vec3 pos = new Vec3();
     public final Quat dir = Quat.identity();
     public final Mat4 projMat = new Mat4(), viewMat = new Mat4();
     public final Vec3 right, up, forward;
     
+    private float fov;
     private float hSlope, vSlope;
     
     public Camera3D(float zNear, float zFar, float fov, float aspectRatio)
     {
         this.zNear = zNear;
         this.zFar = zFar;
-        this.fov = fov;
         
-        setAspectRatio(aspectRatio);
+        setFOV(aspectRatio, fov);
         
         viewMat.setIdentity();
         right = new Vec3(1.0f, 0.0f, 0.0f);
@@ -86,8 +85,14 @@ public final class Camera3D
         this(zNear, zFar, fov, resolution.y/(float)resolution.x);
     }
     
-    public void setAspectRatio(float aspectRatio)
+    /**
+     * Sets the field of view of this camera in radians. If the camera frustum
+     * is wider than it is tall, this sets the horizontal FOV. Otherwise, the
+     * vertical FOV is set.
+     */
+    public void setFOV(float aspectRatio, float fov)
     {
+        this.fov = fov;
         float tanFov = (float)Math.tan(fov*0.5f);
         
         if (aspectRatio <= 1.0f) //Width is greater or equal to height.
@@ -95,7 +100,7 @@ public final class Camera3D
             hSlope = tanFov;
             vSlope = tanFov*aspectRatio;
         }
-        else //Widgth is smaller than height.
+        else //Widgth is less than height (unusual.)
         {
             hSlope = tanFov/aspectRatio;
             vSlope = tanFov;
@@ -104,9 +109,14 @@ public final class Camera3D
         Mat4.frustum(hSlope*zNear, vSlope*zNear, zNear, zFar, projMat);
     }
     
-    public void setResolution(int width, int height)
+    public void setFOV(int width, int height, float fov)
     {
-        setAspectRatio(height/(float)width);
+        setFOV(height/(float)width, fov);
+    }
+    
+    public float getFOV()
+    {
+        return fov;
     }
     
     public float getHSlope()
