@@ -87,7 +87,11 @@ public final class DGL
         {
             debugShutdownHook = new Thread(() ->
             {
-                if (init) System.err.println("DevilUtil (DGL) - DGL not terminated before JVM shut down!");
+                if (init)
+                {
+                    for (DGLObj obj : objects) obj.debugLeakTrace();
+                    System.err.println("DevilUtil (DGL) - DGL not terminated before JVM shut down!");
+                }
             });
             Runtime.getRuntime().addShutdownHook(debugShutdownHook);
         }
@@ -870,7 +874,11 @@ public final class DGL
     {
         checkState();
         init = false;
-        if (debug) Runtime.getRuntime().removeShutdownHook(debugShutdownHook);
+        if (debug)
+        {
+            for (DGLObj obj : objects) obj.debugLeakTrace();
+            Runtime.getRuntime().removeShutdownHook(debugShutdownHook);
+        }
         objects = null;
         VAO.terminate();
         
