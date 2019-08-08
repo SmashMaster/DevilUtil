@@ -75,7 +75,7 @@ public final class Game
     private static Runnable renderCallback;
     private static Runnable destroyCallback;
     
-    // <editor-fold defaultstate="collapsed" desc="Setters">
+    // <editor-fold defaultstate="collapsed" desc="Setup">
     /**
      * Sets a given GLFW window hint, that will be passed to the window when the
      * game is created. See GLFW documentation for a list of valid hints:
@@ -115,8 +115,8 @@ public final class Game
      */
     public static void setSleeper(SleepMethod sleeper)
     {
-        Game.sleeper = Objects.requireNonNull(sleeper);
         if (running) sync.setSleeper(sleeper);
+        Game.sleeper = Objects.requireNonNull(sleeper);
     }
     
     /**
@@ -125,13 +125,13 @@ public final class Game
      */
     public static void setResolution(int width, int height)
     {
-        RESOLUTION.set(width, height);
         if (running)
         {
             glfwSetWindowSize(window, width, height);
             glViewport(0, 0, width, height);
             if (resizeCallback != null) resizeCallback.resize(width, height);
         }
+        RESOLUTION.set(width, height);
     }
     
     /**
@@ -144,12 +144,35 @@ public final class Game
     }
     
     /**
+     * Returns the resolution at which this game is running.
+     */
+    public static Vec2i getResolution()
+    {
+        if (running) return GLFWUtil.getFramebufferSize(window);
+        else return new Vec2i(RESOLUTION);
+    }
+    
+    /**
      * Sets whether or not the window will be fullscreen.
      */
     public static void setFullscreen(boolean fullscreen)
     {
-        if (running) throw new UnsupportedOperationException("Not implemented yet.");
+        if (running)
+        {
+            long monitor = glfwGetPrimaryMonitor();
+            GLFWVidMode mode = glfwGetVideoMode(monitor);
+            glfwSetWindowMonitor(window, monitor, 0, 0, RESOLUTION.x, RESOLUTION.y, mode.refreshRate());
+        }
         Game.fullscreen = fullscreen;
+    }
+    
+    /**
+     * Returns whether the game is running in fullscreen or not.
+     */
+    public static boolean getFullscreen()
+    {
+        if (running) return glfwGetWindowMonitor(window) != NULL;
+        else return fullscreen;
     }
     
     /**
@@ -186,7 +209,7 @@ public final class Game
         Game.title = Objects.requireNonNull(title);
     }
     // </editor-fold>
-    // <editor-fold defaultstate="collapsed" desc="Getters">
+    // <editor-fold defaultstate="collapsed" desc="Runtime">
     /**
      * Returns the GLFW handle to this window, or 0 if the game is not running.
      */
@@ -226,15 +249,6 @@ public final class Game
     public static long getLastFrameNano()
     {
         return lastFrameTime;
-    }
-    
-    /**
-     * Returns the current resolution of this game's window, or null if it's
-     * not running.
-     */
-    public static Vec2i getResolution()
-    {
-        return running ? GLFWUtil.getWindowSize(window) : null;
     }
     
     /**
@@ -408,7 +422,7 @@ public final class Game
 
         glfwMakeContextCurrent(window);
         glfwSwapInterval(vsync ? 1 : 0);
-        glfwSetWindowSizeCallback(window, (window, width, height) ->
+        glfwSetFramebufferSizeCallback(window, (window, width, height) ->
         {
             glViewport(0, 0, width, height);
             RESOLUTION.set(width, height);
@@ -448,7 +462,8 @@ public final class Game
         
         //Create OpenGL context
         capabilities = GL.createCapabilities();
-        glViewport(0, 0, RESOLUTION.x, RESOLUTION.y);
+        Vec2i resolution = getResolution(); //Window may have chosen different resolution on creation, if fullscreen.
+        glViewport(0, 0, resolution.x, resolution.y);
         
         //Create Sync
         sync = new Sync(fpsLimit, sleeper);
@@ -516,7 +531,7 @@ public final class Game
             finally
             {
                 glfwSetErrorCallback(null).free();
-                glfwSetWindowSizeCallback(window, null).free();
+                glfwSetFramebufferSizeCallback(window, null).free();
                 mouse.destroy();
                 keyboard.destroy();
                 GL.setCapabilities(null);
