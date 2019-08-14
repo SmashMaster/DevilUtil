@@ -4,17 +4,13 @@ import com.samrj.devil.model.DataBlock.Type;
 import java.io.File;
 import java.io.IOException;
 import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
 import org.blender.dna.Tex;
 import org.blender.dna.bAction;
 import org.blender.dna.bArmature;
 import org.blender.utils.MainLib;
 import org.cakelab.blender.io.BlenderFile;
 import org.cakelab.blender.io.block.Block;
-import org.cakelab.blender.io.dna.DNAModel;
 import org.cakelab.blender.io.dna.DNAStruct;
-import org.cakelab.blender.nio.CPointer;
 
 /**
  * .DVM file loader. Corresponds with the Blender python exporter.
@@ -25,33 +21,7 @@ import org.cakelab.blender.nio.CPointer;
  */
 public final class Model
 {
-    private static boolean debug;
-    
-    /**
-     * Enables or disables debug mode, which stores addresses for every block in
-     * every model, including what type they correspond to.
-     * 
-     * Defaults to false.
-     * 
-     * @param debug Whether to enable debug.
-     */
-    public static void debug(boolean debug)
-    {
-        Model.debug = debug;
-        if (debug) System.out.println("DevilUtil - Model debug enabled.");
-    }
-    
     private final EnumMap<DataBlock.Type, ArrayMap<?>> arraymaps = new EnumMap<>(DataBlock.Type.class);
-    
-    final Map<Long, DebugBlock> debugMap;
-    
-    String debugTypeOf(CPointer ptr) throws IOException
-    {
-        if (ptr == null) return null;
-        DebugBlock block = debugMap.get(ptr.getAddress());
-        if (block == null) return null;
-        return block.struct.getType().getName();
-    }
     
     public final String path;
     
@@ -72,25 +42,10 @@ public final class Model
     {
         this.path = path;
         
-        long t0 = System.nanoTime();
-        
         try (BlenderFile file = new BlenderFile(new File(path), true))
         {
             boolean isCompatible = MainLib.doCompatibilityCheck(file.readFileGlobal());
             if (!isCompatible) throw new java.lang.IllegalArgumentException("Incompatible .blend file");
-            
-            if (debug)
-            {
-                debugMap = new HashMap<>();
-                DNAModel model = file.getBlenderModel();
-
-                for (Block block : file.getBlocks())
-                {
-                    DNAStruct struct = model.getStruct(block.header.getSdnaIndex());
-                    debugMap.put(block.header.getAddress(), new DebugBlock(block, struct));
-                }
-            }
-            else debugMap = null;
             
             MainLib library = new MainLib(file);
             
