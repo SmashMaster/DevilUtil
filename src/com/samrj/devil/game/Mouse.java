@@ -17,12 +17,36 @@ import static org.lwjgl.glfw.GLFW.*;
  */
 public final class Mouse
 {
+    private static Vec2 screenToFramebuffer(long window, double xpos, double ypos)
+    {
+        Vec2i winSize = GLFWUtil.getWindowSize(window);
+        xpos = xpos/winSize.x;
+        ypos = (winSize.y - ypos)/winSize.y;
+        
+        Vec2i fbSize = GLFWUtil.getFramebufferSize(window);
+        xpos = xpos*fbSize.x;
+        ypos = ypos*fbSize.y;
+        
+        return new Vec2((float)xpos, (float)ypos);
+    }
+    
+    private static Vec2 framebufferToScreen(long window, double xpos, double ypos)
+    {
+        Vec2i fbSize = GLFWUtil.getFramebufferSize(window);
+        xpos = xpos/fbSize.x;
+        ypos = ypos/fbSize.y;
+        
+        Vec2i winSize = GLFWUtil.getWindowSize(window);
+        xpos = xpos*winSize.x;
+        ypos = winSize.y - ypos*winSize.y;
+        
+        return new Vec2((float)xpos, (float)ypos);
+    }
+    
     private final long window;
     private final CursorCallback cursorCallback;
     private final ButtonCallback buttonCallback;
     private final ScrollCallback scrollCallback;
-    
-    private float x, y;
     
     Mouse(long window, CursorCallback cursorCallback, ButtonCallback buttonCallback, ScrollCallback scrollCallback)
     {
@@ -36,22 +60,10 @@ public final class Mouse
         glfwSetScrollCallback(window, this::scroll);
     }
     
-    private void cursorPos(long window, double xpos, double ypos)
+    private void cursorPos(long window, double screenX, double screenY)
     {
-        //Window size does not always equal framebuffer size, and we want to
-        //give mouse position in framebuffer coordinates.
-        Vec2i winSize = GLFWUtil.getWindowSize(window);
-        xpos = xpos/winSize.x;
-        ypos = (winSize.y - ypos)/winSize.y;
-        
-        Vec2i fbSize = GLFWUtil.getFramebufferSize(window);
-        xpos = xpos*fbSize.x;
-        ypos = ypos*fbSize.y;
-        
-        x = (float)xpos;
-        y = (float)ypos;
-        
-        cursorCallback.accept(x, y);
+        Vec2 fbPos = screenToFramebuffer(window, screenX, screenY);
+        cursorCallback.accept(fbPos.x, fbPos.y);
     }
     
     private void button(long window, int button, int action, int mods)
@@ -71,15 +83,16 @@ public final class Mouse
             DoubleBuffer xBuf = stack.mallocDouble(1);
             DoubleBuffer yBuf = stack.mallocDouble(2);
             glfwGetCursorPos(window, xBuf, yBuf);
-            return new Vec2((float)xBuf.get(0), GLFWUtil.getWindowSize(window).y - (float)yBuf.get(0));
+            double screenX = xBuf.get(0);
+            double screenY = yBuf.get(0);
+            return screenToFramebuffer(window, screenX, screenY);
         }
     }
     
     public final void setPos(float x, float y)
     {
-        y = GLFWUtil.getWindowSize(window).y - y;
-        glfwSetCursorPos(window, x, y);
-        cursorPos(window, x, y);
+        Vec2 screenPos = framebufferToScreen(window, x, y);
+        glfwSetCursorPos(window, screenPos.x, screenPos.y);
     }
     
     public final boolean isButtonDown(int button)
