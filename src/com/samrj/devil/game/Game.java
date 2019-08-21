@@ -438,9 +438,9 @@ public final class Game
         }
         
         //Setup input
-        mouse = new Mouse(window, (x, y, dx, dy) ->
+        mouse = new Mouse(window, (x, y) ->
         {
-            if (mouseCursorCallback != null) mouseCursorCallback.accept(x, y, dx, dy);
+            if (mouseCursorCallback != null) mouseCursorCallback.accept(x, y);
         },
         (button, action, mods) ->
         {

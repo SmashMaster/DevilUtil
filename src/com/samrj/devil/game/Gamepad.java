@@ -68,7 +68,8 @@ public final class Gamepad
     public final float[] axes = new float[GLFW_GAMEPAD_AXIS_LAST + 1];
     public final int[] buttons = new int[GLFW_GAMEPAD_BUTTON_LAST + 1];
     
-    private final List<ButtonPressInterface> buttonCallbacks;
+    private final List<AxisCallback> axisCallbacks = new ArrayList<>();
+    private final List<ButtonCallback> buttonCallbacks = new ArrayList<>();
     
     /**
      * Creates a new view of the given gamepad ID. If the given gamepad id is
@@ -79,11 +80,9 @@ public final class Gamepad
         this.id = id;
         if (!isPresent()) throw new IllegalStateException();
         name = glfwGetGamepadName(id);
-        
-        buttonCallbacks = new ArrayList<>();
     }
     
-    public void addButtonCallback(ButtonPressInterface callback)
+    public void addButtonCallback(ButtonCallback callback)
     {
         if (callback == null) throw new NullPointerException();
         buttonCallbacks.add(callback);
@@ -102,21 +101,38 @@ public final class Gamepad
         {
             GLFWGamepadState state = GLFWGamepadState.mallocStack(stack);
             glfwGetGamepadState(id, state);
-            for (int i=0; i<axes.length; i++) axes[i] = state.axes(i);
+            
+            for (int i=0; i<axes.length; i++)
+            {
+                float val = state.axes(i);
+                if (val != axes[i])
+                {
+                    for (AxisCallback callback : axisCallbacks) callback.accept(i, val);
+                    axes[i] = val;
+                }
+            }
+            
             for (int i=0; i<buttons.length; i++)
             {
-                int button = i;
-                int action = state.buttons(i);
-                if (action != buttons[i])
-                    buttonCallbacks.forEach(callback -> callback.onButton(button, action));
-                buttons[i] = action;
+                int val = state.buttons(i);
+                if (val != buttons[i])
+                {
+                    for (ButtonCallback callback : buttonCallbacks) callback.accept(i, val);
+                    buttons[i] = val;
+                }
             }
         }
     }
     
     @FunctionalInterface
-    public interface ButtonPressInterface
+    public interface AxisCallback
     {
-        public void onButton(int button, int action);
+        public void accept(int axis, float x);
+    }
+    
+    @FunctionalInterface
+    public interface ButtonCallback
+    {
+        public void accept(int button, int action);
     }
 }

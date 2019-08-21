@@ -158,7 +158,7 @@ public final class Camera3DController
     /**
      * Call to provide this camera with mouse input.
      */
-    public void onMouseMoved(float x, float y, float dx, float dy)
+    public void mouseDelta(float dx, float dy)
     {
         deltaAngles(dy*sensitivity, dx*sensitivity);
     }

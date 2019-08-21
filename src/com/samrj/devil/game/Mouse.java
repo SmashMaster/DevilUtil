@@ -1,6 +1,7 @@
 package com.samrj.devil.game;
 
 import com.samrj.devil.math.Vec2;
+import com.samrj.devil.math.Vec2i;
 import java.nio.DoubleBuffer;
 import java.util.Objects;
 import org.lwjgl.system.MemoryStack;
@@ -21,7 +22,6 @@ public final class Mouse
     private final ButtonCallback buttonCallback;
     private final ScrollCallback scrollCallback;
     
-    private boolean posDirty = true;
     private float x, y;
     
     Mouse(long window, CursorCallback cursorCallback, ButtonCallback buttonCallback, ScrollCallback scrollCallback)
@@ -36,33 +36,22 @@ public final class Mouse
         glfwSetScrollCallback(window, this::scroll);
     }
     
-    public final void setPosDirty()
-    {
-        posDirty = true;
-    }
-    
     private void cursorPos(long window, double xpos, double ypos)
     {
-        ypos = GLFWUtil.getWindowSize(window).y - ypos;
+        //Window size does not always equal framebuffer size, and we want to
+        //give mouse position in framebuffer coordinates.
+        Vec2i winSize = GLFWUtil.getWindowSize(window);
+        xpos = xpos/winSize.x;
+        ypos = (winSize.y - ypos)/winSize.y;
         
-        float dx, dy;
-        
-        if (posDirty)
-        {
-            dx = 0.0f;
-            dy = 0.0f;
-            posDirty = false;
-        }
-        else
-        {
-            dx = (float)xpos - x;
-            dy = (float)ypos - y;
-        }
+        Vec2i fbSize = GLFWUtil.getFramebufferSize(window);
+        xpos = xpos*fbSize.x;
+        ypos = ypos*fbSize.y;
         
         x = (float)xpos;
         y = (float)ypos;
         
-        cursorCallback.accept(x, y, dx, dy);
+        cursorCallback.accept(x, y);
     }
     
     private void button(long window, int button, int action, int mods)
@@ -120,7 +109,7 @@ public final class Mouse
     @FunctionalInterface
     public static interface CursorCallback
     {
-        public void accept(float x, float y, float dx, float dy);
+        public void accept(float x, float y);
     }
     
     @FunctionalInterface
