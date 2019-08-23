@@ -99,6 +99,25 @@ public final class Gamepad
         return glfwJoystickIsGamepad(id);
     }
     
+    /**
+     * If the gamepad has been disconnected, or if focus has been lost, this
+     * method may be used to reset its state for all axes and buttons to zero.
+     */
+    public void zeroOut()
+    {
+        for (int i=0; i<axes.length; i++) if (axes[i] != 0.0f)
+        {
+            axes[i] = 0.0f;
+            for (AxisCallback callback : axisCallbacks) callback.accept(i, 0.0f);
+        }
+
+        for (int i=0; i<buttons.length; i++) if (buttons[i] != GLFW_RELEASE)
+        {
+            buttons[i] = GLFW_RELEASE;
+            for (ButtonCallback callback : buttonCallbacks) callback.accept(i, GLFW_RELEASE);
+        }
+    }
+    
     public void update()
     {
         if (!isPresent()) return;
@@ -113,8 +132,8 @@ public final class Gamepad
                 float val = state.axes(i);
                 if (val != axes[i])
                 {
-                    for (AxisCallback callback : axisCallbacks) callback.accept(i, val);
                     axes[i] = val;
+                    for (AxisCallback callback : axisCallbacks) callback.accept(i, val);
                 }
             }
             
@@ -123,8 +142,8 @@ public final class Gamepad
                 int val = state.buttons(i);
                 if (val != buttons[i])
                 {
-                    for (ButtonCallback callback : buttonCallbacks) callback.accept(i, val);
                     buttons[i] = val;
+                    for (ButtonCallback callback : buttonCallbacks) callback.accept(i, val);
                 }
             }
         }
