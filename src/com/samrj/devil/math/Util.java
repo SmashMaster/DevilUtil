@@ -741,29 +741,19 @@ public final class Util
     }
     
     /**
-     * Creates a "dead zone" around the origin, within which v will be set to
-     * zero. Useful for controller input from analog sticks.
+     * Creates a "dead zone" around the origin, within which the result will be
+     * set to zero. Useful for controller input from analog sticks.
      * 
-     * @param v The vector to alter.
+     * @param v The vector to process.
      * @param threshold The radius of the dead-zone around the origin.
-     * @return The given vector.
+     * @param result The vector in which to store the result.
      */
-    public static Vec3 deadZone(Vec3 v, float threshold)
+    public static void deadZone(Vec2 v, float threshold, Vec2 result)
     {
         float length = v.length();
-        if (length < threshold) v.set();
-        else if (length < 1.0f) v.mult((length - threshold)/(1.0f - threshold));
-        else v.div(length);
-        return v;
-    }
-    
-    public static Vec2 deadZone(Vec2 v, float threshold)
-    {
-        float length = v.length();
-        if (length < threshold) v.set();
-        else if (length < 1.0f) v.mult((length - threshold)/(1.0f - threshold));
-        else v.div(length);
-        return v;
+        if (length < threshold) result.set();
+        else if (length < 1.0f) Vec2.mult(v, (length - threshold)/(1.0f - threshold), result);
+        else Vec2.div(v, length, result);
     }
     
     /**
