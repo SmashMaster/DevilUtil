@@ -82,6 +82,12 @@ public final class Gamepad
         name = glfwGetGamepadName(id);
     }
     
+    public void addAxisCallback(AxisCallback callback)
+    {
+        if (callback == null) throw new NullPointerException();
+        axisCallbacks.add(callback);
+    }
+    
     public void addButtonCallback(ButtonCallback callback)
     {
         if (callback == null) throw new NullPointerException();
