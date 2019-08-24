@@ -105,10 +105,23 @@ public final class Gamepad
      */
     public void zeroOut()
     {
-        for (int i=0; i<axes.length; i++) if (axes[i] != 0.0f)
+        for (int i=0; i<GLFW_GAMEPAD_AXIS_LEFT_TRIGGER; i++) if (axes[i] != 0.0f)
         {
             axes[i] = 0.0f;
             for (AxisCallback callback : axisCallbacks) callback.accept(i, 0.0f);
+        }
+        
+        //'zero' for the triggers is actually -1.0
+        if (axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] != -1.0f)
+        {
+            axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] = -1.0f;
+            for (AxisCallback callback : axisCallbacks) callback.accept(GLFW_GAMEPAD_AXIS_LEFT_TRIGGER, -1.0f);
+        }
+        
+        if (axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] != -1.0f)
+        {
+            axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] = -1.0f;
+            for (AxisCallback callback : axisCallbacks) callback.accept(GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER, -1.0f);
         }
 
         for (int i=0; i<buttons.length; i++) if (buttons[i] != GLFW_RELEASE)
