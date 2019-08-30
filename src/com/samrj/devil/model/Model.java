@@ -42,11 +42,9 @@ public final class Model
     {
         this.path = path;
         
-        try (BlenderFile file = new BlenderFile(new File(path), true))
+        try
         {
-            boolean isCompatible = MainLib.doCompatibilityCheck(file.readFileGlobal());
-            if (!isCompatible) throw new java.lang.IllegalArgumentException("Incompatible .blend file");
-            
+            BlenderFile file = new BlenderFile(new File(path));
             MainLib library = new MainLib(file);
             
             libraries = new ArrayMap<>();
