@@ -203,7 +203,7 @@ public class FCurve
     
     FCurve(org.blender.dna.FCurve bfCurve) throws IOException
     {
-        String rnaPath = Blender.string(bfCurve.getRna_path());
+        String rnaPath = bfCurve.getRna_path().toNullTermString();
         String propertyName;
         
         if (rnaPath.startsWith("pose.bones[\""))

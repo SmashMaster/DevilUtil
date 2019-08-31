@@ -73,26 +73,6 @@ class Blender
         return result;
     }
     
-    static String string(CPointer<Byte> pointer) throws IOException
-    {
-        StringBuilder builder = new StringBuilder();
-        while (true)
-        {
-            char c = (char)pointer.get().byteValue();
-            if (c == '\0') break;
-            builder.append(c);
-            pointer = pointer.plus(1);
-        }
-        return builder.toString();
-    }
-    
-    static String string(CPointer<Byte> pointer, int bytes) throws IOException
-    {
-        StringBuilder builder = new StringBuilder(bytes);
-        for (byte b : pointer.toByteArray(bytes)) builder.append((char)b);
-        return builder.toString();
-    }
-    
     static Vec3 vec3(CArrayFacade<Float> facade) throws IOException
     {
         float[] v = facade.toFloatArray(3);
