@@ -1,5 +1,6 @@
 package com.samrj.devil.model;
 
+import com.samrj.devil.model.BlendFile.Pointer;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -43,6 +44,18 @@ public abstract class DataBlock
         name = bID.getName().asString().substring(2);
         
         IDProperty bProp = bID.getProperties().get();
+        properties = bProp != null ? new Property(bProp).properties : Collections.emptyList();
+    }
+    
+    DataBlock(Model model, BlendFile.Pointer pointer) throws IOException
+    {
+        if (model == null || pointer == null) throw new NullPointerException();
+        this.model = model;
+        
+        Pointer id = pointer.getField(0);
+        name = id.getField("name").asString().substring(2);
+        
+        BlendFile.Pointer bProp = id.getField("properties").dereference();
         properties = bProp != null ? new Property(bProp).properties : Collections.emptyList();
     }
     

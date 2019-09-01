@@ -25,11 +25,11 @@ package com.samrj.devil.model;
 import com.samrj.devil.math.Transform;
 import com.samrj.devil.math.Vec2;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import org.blender.dna.BezTriple;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -201,9 +201,9 @@ public class FCurve
     
     private final TreeMap<Float, Integer> keyInds;
     
-    FCurve(org.blender.dna.FCurve bfCurve) throws IOException
+    FCurve(BlendFile.Pointer pointer) throws IOException
     {
-        String rnaPath = bfCurve.getRna_path().toNullTermString();
+        String rnaPath = pointer.getField("rna_path").dereference().asString();
         String propertyName;
         
         if (rnaPath.startsWith("pose.bones[\""))
@@ -236,13 +236,17 @@ public class FCurve
             default: throw new IllegalArgumentException("Illegal property: " + propertyName);
         }
         
-        propertyIndex = INDEX_MAP[pi][bfCurve.getArray_index()];
+        propertyIndex = INDEX_MAP[pi][pointer.getField("array_index").asInt()];
         
-        int numKeys = bfCurve.getTotvert();
-        BezTriple[] bezts = bfCurve.getBezt().toArray(numKeys);
+        int totvert = pointer.getField("totvert").asInt();
+        BlendFile.Pointer bezts = pointer.getField("bezt").dereference();
         
-        keyframes = new ArrayList<>(bezts.length);
-        for (BezTriple bezt : bezts) keyframes.add(new Keyframe(bezt));
+        keyframes = new ArrayList<>(totvert);
+        for (int i=0; i<totvert; i++)
+        {
+            BlendFile.Pointer bezt = bezts.getElement(i);
+            keyframes.add(new Keyframe(bezt));
+        }
         
         float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY;
         keyInds = new TreeMap<>();
@@ -282,9 +286,9 @@ public class FCurve
         public final Interpolation interpolation;
         public final Vec2 left, co, right;
         
-        Keyframe(BezTriple bezt) throws IOException
+        Keyframe(BlendFile.Pointer bezt) throws IOException
         {
-            switch (bezt.getIpo())
+            switch (bezt.getField("ipo").asByte())
             {
                 case 0: interpolation = Interpolation.CONSTANT; break;
                 case 1: interpolation = Interpolation.LINEAR; break;
@@ -292,12 +296,12 @@ public class FCurve
                 default: interpolation = Interpolation.LINEAR; break;
             }
             
-            float[][] vec = new float[3][];
-            for (int i=0; i<3; i++) vec[i] = bezt.getVec().get(i).toFloatArray(3);
-            
-            left = new Vec2(vec[0][0], vec[0][1]);
-            co = new Vec2(vec[1][0], vec[1][1]);
-            right = new Vec2(vec[2][0], vec[2][1]);
+            ByteBuffer vec = bezt.getField("vec").asBuffer();
+            left = new Vec2(vec.getFloat(), vec.getFloat());
+            vec.getFloat();
+            co = new Vec2(vec.getFloat(), vec.getFloat());
+            vec.getFloat();
+            right = new Vec2(vec.getFloat(), vec.getFloat());
         }
     }
 }

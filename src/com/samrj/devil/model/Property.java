@@ -78,6 +78,64 @@ public final class Property
         }
     }
     
+    Property(BlendFile.Pointer bProp) throws IOException
+    {
+        name = bProp.getField("name").asString();
+        
+        BlendFile.Pointer data = bProp.getField("data");
+        BlendFile.Pointer pointer = data.getField("pointer").dereference();
+        int val = data.getField("val").asInt();
+        int val2 = data.getField("val2").asInt();
+        
+        switch (bProp.getField("type").asByte())
+        {
+            case 0:
+                type = Type.STRING;
+                if (pointer != null)
+                    value = pointer.asString();
+                break;
+            case 1:
+                type = Type.INT;
+                value = val;
+                break;
+            case 2:
+                type = Type.FLOAT;
+                value = Float.intBitsToFloat(val);
+                break;
+            case 5:
+                type = Type.ARRAY;
+                break;
+            case 6:
+                type = Type.GROUP;
+                for (BlendFile.Pointer subBProp : data.getField("group").asList("IDProperty"))
+                    properties.add(new Property(subBProp));
+                break;
+            case 7:
+                type = Type.ID;
+                break;
+            case 8:
+                type = Type.DOUBLE;
+                long bits = (val & 0xFFFFFFFFL) | (((long)val2) << 32L);
+                value = Double.longBitsToDouble(bits);
+                break;
+            case 9:
+                type = Type.IDPARRAY;
+                if (pointer != null)
+                {
+                    int len = bProp.getField("len").asInt();
+                    pointer = pointer.cast("IDProperty");
+                    for (int i=0; i<len; i++)
+                        properties.add(new Property(pointer.getElement(i)));
+                }
+                break;
+            case 10:
+                    type = Type.NUMTYPES;
+                break;
+            default:
+                type = null;
+        }
+    }
+    
     public String getString()
     {
         return type == Type.STRING ? (String)value : null;

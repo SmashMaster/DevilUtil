@@ -5,8 +5,6 @@ import com.samrj.devil.model.Pose.PoseBone;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Stream;
-import org.blender.dna.TimeMarker;
-import org.blender.dna.bAction;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -21,16 +19,16 @@ public final class Action extends DataBlock
     private final List<Marker> markers;
     private final Map<String, Marker> markerMap;
     
-    Action(Model model, bAction bAction) throws IOException
+    Action(Model model, BlendFile.Pointer bAction) throws IOException
     {
-        super(model, bAction.getId());
+        super(model, bAction);
         
         fcurves = new ArrayList<>();
         float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY;
-        for (org.blender.dna.FCurve bfCurve : Blender.list(bAction.getCurves(), org.blender.dna.FCurve.class))
+        for (BlendFile.Pointer curve : bAction.getField("curves").asList("FCurve"))
         {
-            FCurve fCurve = new FCurve(bfCurve);
-            fcurves.add(new FCurve(bfCurve));
+            FCurve fCurve = new FCurve(curve);
+            fcurves.add(fCurve);
             
             if (fCurve.minX < min) min = fCurve.minX;
             if (fCurve.maxX > max) max = fCurve.maxX;
@@ -38,10 +36,10 @@ public final class Action extends DataBlock
         minX = min; maxX = max;
         
         markers = new ArrayList<>();
-        for (TimeMarker bMarker : Blender.list(bAction.getMarkers(), TimeMarker.class))
+        for (BlendFile.Pointer bMarker : bAction.getField("markers").asList("TimeMarker"))
         {
-            float frame = bMarker.getFrame();
-            String[] markerNames = bMarker.getName().asString().split("\\+");
+            int frame = bMarker.getField("frame").asInt();
+            String[] markerNames = bMarker.getField("name").asString().split("\\+");
             for (String markerName : markerNames)
                 markers.add(new Marker(frame, markerName.trim()));
         }
@@ -102,10 +100,10 @@ public final class Action extends DataBlock
     
     public class Marker
     {
-        public final float frame;
+        public final int frame;
         public final String name;
         
-        private Marker(float frame, String name) throws IOException
+        private Marker(int frame, String name) throws IOException
         {
             this.frame = frame;
             this.name = name;

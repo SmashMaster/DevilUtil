@@ -9,9 +9,9 @@ import java.io.IOException;
  */
 public final class Library extends DataBlock
 {
-    Library(Model model, org.blender.dna.Library bLib) throws IOException
+    Library(Model model, BlendFile.Pointer bLib) throws IOException
     {
-        super(model, bLib.getId());
+        super(model, bLib);
         
         //Placeholder
     }

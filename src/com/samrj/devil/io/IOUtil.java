@@ -3,6 +3,7 @@ package com.samrj.devil.io;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -187,6 +188,40 @@ public final class IOUtil
             case 8: buffer.putLong(address); return;
             default: throw new Error("Unknown pointer size on this platform.");
         }
+    }
+    
+    public static String readString(ByteBuffer buffer, int length, Charset charset)
+    {
+        byte[] bytes = new byte[length];
+        buffer.get(bytes);
+        return new String(bytes, charset);
+    }
+    
+    public static String readString(ByteBuffer buffer, int length)
+    {
+        return readString(buffer, length, StandardCharsets.US_ASCII);
+    }
+    
+    public static String readNullTermString(ByteBuffer buffer, Charset charset)
+    {
+        int start = buffer.position();
+        while (true)
+        {
+            char c = (char)buffer.get();
+            if (c == '\0') break;
+        }
+        int end = buffer.position() - 1;
+        
+        buffer.position(start);
+        String result = readString(buffer, end - start, charset);
+        buffer.get(); //Skip null terminator
+        
+        return result;
+    }
+    
+    public static String readNullTermString(ByteBuffer buffer)
+    {
+        return readNullTermString(buffer, StandardCharsets.US_ASCII);
     }
     
     private IOUtil()

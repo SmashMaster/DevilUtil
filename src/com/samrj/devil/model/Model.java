@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.EnumMap;
 import org.blender.dna.Tex;
-import org.blender.dna.bAction;
 import org.blender.dna.bArmature;
 import org.blender.utils.MainLib;
 import org.cakelab.blender.io.BlenderFile;
@@ -45,16 +44,17 @@ public final class Model
         try
         {
             BlenderFile file = new BlenderFile(new File(path));
+            BlendFile fastFile = new BlendFile(new File(path));
             MainLib library = new MainLib(file);
             
             libraries = new ArrayMap<>();
-            for (org.blender.dna.Library bLib : Blender.list(library.getLibrary()))
-                libraries.put(new Library(this, bLib));
+            for (BlendFile.Pointer pointer : fastFile.getLibrary("Library"))
+                libraries.put(new Library(this, pointer));
             arraymaps.put(Type.LIBRARY, libraries);
             
             actions = new ArrayMap<>();
-            for (bAction bAction : Blender.list(library.getBAction()))
-                actions.put(new Action(this, bAction));
+           for (BlendFile.Pointer pointer : fastFile.getLibrary("bAction"))
+                actions.put(new Action(this, pointer));
             arraymaps.put(Type.ACTION, actions);
             
             armatures = new ArrayMap<>();
@@ -98,6 +98,8 @@ public final class Model
             for (Tex bTex : Blender.list(library.getTex()))
                 textures.put(new Texture(this, bTex));
             arraymaps.put(Type.TEXTURE, textures);
+            
+            fastFile.destroy();
         }
         catch (IOException e)
         {
