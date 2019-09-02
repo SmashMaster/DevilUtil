@@ -19,12 +19,17 @@ public final class Lamp extends DataBlock
     public final Type type;
     public final float radius;
     
-    Lamp(Model model, org.blender.dna.Lamp bLamp) throws IOException
+    Lamp(Model model, BlendFile.Pointer bLamp) throws IOException
     {
-        super(model, bLamp.getId());
+        super(model, bLamp);
         
-        color = new Vec3(bLamp.getR(), bLamp.getG(), bLamp.getB()).mult(bLamp.getEnergy());
-        type = Type.values()[bLamp.getType()];
-        radius = type == Type.POINT ? bLamp.getDist() : -1.0f;
+        float r = bLamp.getField("r").asFloat();
+        float g = bLamp.getField("g").asFloat();
+        float b = bLamp.getField("b").asFloat();
+        float energy = bLamp.getField("energy").asFloat();
+        
+        color = new Vec3(r, g, b).mult(energy);
+        type = Type.values()[bLamp.getField("type").asShort()];
+        radius = type == Type.POINT ? bLamp.getField("dist").asFloat() : -1.0f;
     }
 }

@@ -23,6 +23,10 @@
 package com.samrj.devil.model;
 
 import com.samrj.devil.io.IOUtil;
+import com.samrj.devil.math.Mat3;
+import com.samrj.devil.math.Mat4;
+import com.samrj.devil.math.Quat;
+import com.samrj.devil.math.Vec3;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -236,14 +240,25 @@ public final class BlendFile
     {
         public final int position;
         public final StructDNA structDNA;
+        public final int count;
         
         private final int type;
         
-        private Pointer(int position, int type, StructDNA structDNA)
+        private Pointer(int position, int type, StructDNA structDNA, int count)
         {
             this.position = position;
             this.structDNA = structDNA;
             this.type = type;
+            this.count = count;
+        }
+        
+        /**
+         * Increments this pointer's position by the number of given bytes, and
+         * returns the result as a new pointer with the same type.
+         */
+        public Pointer add(int bytes)
+        {
+            return new Pointer(position + bytes, type, structDNA, count);
         }
         
         /**
@@ -275,6 +290,14 @@ public final class BlendFile
         }
         
         /**
+         * Returns the total length, in bytes, of each element this references.
+         */
+        public int getLength()
+        {
+            return getTypeLength()*count;
+        }
+        
+        /**
          * Returns whether this pointer references a C struct.
          */
         public boolean isStruct()
@@ -291,11 +314,33 @@ public final class BlendFile
         }
         
         /**
+         * Casts this pointer to a byte array and returns its value.
+         */
+        public byte[] asBytes(int count)
+        {
+            buffer.position(position);
+            byte[] result = new byte[count];
+            buffer.get(result);
+            return result;
+        }
+        
+        /**
          * Casts this pointer to a short and returns the value it references.
          */
         public short asShort()
         {
             return buffer.getShort(position);
+        }
+        
+        /**
+         * Casts this pointer to a short array and returns its value.
+         */
+        public short[] asShorts(int count)
+        {
+            buffer.position(position);
+            short[] result = new short[count];
+            for (int i=0; i<count; i++) result[i] = buffer.getShort();
+            return result;
         }
         
         /**
@@ -307,11 +352,33 @@ public final class BlendFile
         }
         
         /**
+         * Casts this pointer to an int array and returns its value.
+         */
+        public int[] asInts(int count)
+        {
+            buffer.position(position);
+            int[] result = new int[count];
+            for (int i=0; i<count; i++) result[i] = buffer.getInt();
+            return result;
+        }
+        
+        /**
          * Casts this pointer to a long and returns the value it references.
          */
         public long asLong()
         {
             return buffer.getLong(position);
+        }
+        
+        /**
+         * Casts this pointer to a long array and returns its value.
+         */
+        public long[] asLongs(int count)
+        {
+            buffer.position(position);
+            long[] result = new long[count];
+            for (int i=0; i<count; i++) result[i] = buffer.getLong();
+            return result;
         }
         
         /**
@@ -323,11 +390,92 @@ public final class BlendFile
         }
         
         /**
+         * Casts this pointer to a float array and returns its value.
+         */
+        public float[] asFloats(int count)
+        {
+            buffer.position(position);
+            float[] result = new float[count];
+            for (int i=0; i<count; i++) result[i] = buffer.getFloat();
+            return result;
+        }
+        
+        /**
          * Casts this pointer to a double and returns the value it references.
          */
         public double asDouble()
         {
             return buffer.getDouble(position);
+        }
+        
+        /**
+         * Casts this pointer to a double array and returns its value.
+         */
+        public double[] asDoubles(int count)
+        {
+            buffer.position(position);
+            double[] result = new double[count];
+            for (int i=0; i<count; i++) result[i] = buffer.getDouble();
+            return result;
+        }
+        
+        //Blender uses a different coordinate system than DevilUtil, so we need
+        //to rearrange the components of vectors.
+        
+        /**
+         * Casts this pointer to a 3d vector.
+         */
+        public Vec3 asVec3()
+        {
+            float[] v = asFloats(3);
+            return new Vec3(v[1], v[2], v[0]);
+        }
+        
+        /**
+         * Casts this pointer to a 3d vector of signed shorts.
+         */
+        public Vec3 asNormalVec3()
+        {
+            short[] nrm = asShorts(3);
+            return new Vec3(nrm[1], nrm[2], nrm[0]).div(32768.0f);
+        }
+        
+        /**
+         * Casts this pointer to a quaternion.
+         */
+        public Quat asQuat()
+        {
+            float[] q = asFloats(4);
+            return new Quat(q[0], q[2], q[3], q[1]);
+        }
+        
+        /**
+         * Casts this pointer to a 3x3 matrix.
+         */
+        public Mat3 asMat3()
+        {
+            buffer.position(position);
+            float[][] m = new float[3][3];
+            for (int i0=0; i0<3; i0++) for (int i1=0; i1<3; i1++) m[i0][i1] = buffer.getFloat();
+
+            return new Mat3(m[1][1], m[1][2], m[1][0],
+                            m[2][1], m[2][2], m[2][0],
+                            m[0][1], m[0][2], m[0][0]);
+        }
+        
+        /**
+         * Casts this pointer to a 4x4 matrix.
+         */
+        public Mat4 asMat4()
+        {
+            buffer.position(position);
+            float[][] m = new float[4][4];
+            for (int i0=0; i0<4; i0++) for (int i1=0; i1<4; i1++) m[i0][i1] = buffer.getFloat();
+
+            return new Mat4(m[1][1], m[1][2], m[1][0], m[1][3],
+                            m[2][1], m[2][2], m[2][0], m[2][3],
+                            m[0][1], m[0][2], m[0][0], m[0][3],
+                            m[3][1], m[3][2], m[3][0], m[3][3]);
         }
         
         /**
@@ -338,7 +486,15 @@ public final class BlendFile
             Integer castType = sdnaNamesToTypes.get(typeName);
             if (castType == null) return null;
             
-            return new Pointer(position, castType, sdnaTypesToStructs[castType]);
+            return new Pointer(position, castType, sdnaTypesToStructs[castType], 1);
+        }
+        
+        /**
+         * Returns the size of a pointer address, in bytes.
+         */
+        public int getAddressSize()
+        {
+            return pointer64Bit ? 8 : 4;
         }
         
         /**
@@ -357,7 +513,7 @@ public final class BlendFile
             long offset = address - block.address;
             if (offset < 0 || offset >= block.count) return null;
             
-            return new Pointer(block.start + (int)offset, type, structDNA);
+            return new Pointer(block.start + (int)offset, type, structDNA, 1);
         }
         
         /**
@@ -385,7 +541,17 @@ public final class BlendFile
          */
         public Pointer getElement(int index)
         {
-            return new Pointer(position + getTypeLength()*index, type, structDNA);
+            return new Pointer(position + getTypeLength()*index, type, structDNA, 1);
+        }
+        
+        /**
+         * Casts this pointer to an array with the given number of elements.
+         */
+        public Pointer[] asArray(int count)
+        {
+            Pointer[] result = new Pointer[count];
+            for (int i=0; i<count; i++) result[i] = getElement(i);
+            return result;
         }
         
         /**
@@ -407,7 +573,7 @@ public final class BlendFile
             FieldDNA fieldDNA = structDNA.fieldArray[index];
             if (fieldDNA == null) return null;
             
-            return new Pointer(position + fieldDNA.offset, fieldDNA.type, sdnaTypesToStructs[fieldDNA.type]);
+            return new Pointer(position + fieldDNA.offset, fieldDNA.type, sdnaTypesToStructs[fieldDNA.type], fieldDNA.count);
         }
         
         /**
@@ -420,7 +586,7 @@ public final class BlendFile
             FieldDNA fieldDNA = structDNA.fields.get(name);
             if (fieldDNA == null) return null;
             
-            return new Pointer(position + fieldDNA.offset, fieldDNA.type, sdnaTypesToStructs[fieldDNA.type]);
+            return new Pointer(position + fieldDNA.offset, fieldDNA.type, sdnaTypesToStructs[fieldDNA.type], fieldDNA.count);
         }
         
         /**
@@ -444,7 +610,7 @@ public final class BlendFile
         @Override
         public String toString()
         {
-            return "[pointer to " + getTypeName() + ", " + getTypeLength() + " bytes @ " + position + "]";
+            return "[pointer to " + count + "x " + getTypeName() + ", " + getLength() + " bytes @ " + position + "]";
         }
     }
     
@@ -473,14 +639,13 @@ public final class BlendFile
         }
         
         /**
-         * Returns the a pointer to the first C struct in this block.
-         * @return 
+         * Returns the pointer to this block's element array.
          */
         public Pointer get()
         {
             if (count == 0) throw new ArrayIndexOutOfBoundsException();
             StructDNA structDNA = getStructDNA();
-            return new Pointer(start, structDNA.type, structDNA);
+            return new Pointer(start, structDNA.type, structDNA, count);
         }
         
         /**
@@ -491,7 +656,7 @@ public final class BlendFile
             if (index < 0 || index >= count) throw new ArrayIndexOutOfBoundsException();
             
             StructDNA structDNA = getStructDNA();
-            return new Pointer(start + structDNA.getLength()*index, structDNA.type, structDNA);
+            return new Pointer(start + structDNA.getLength()*index, structDNA.type, structDNA, 1);
         }
         
         /**
@@ -618,6 +783,7 @@ public final class BlendFile
         public final boolean isPointer;
         public final boolean isArray;
         public final int length;
+        public final int count;
         public final int offset;
         
         private final int type;
@@ -631,7 +797,7 @@ public final class BlendFile
             if (rawName.startsWith("*"))
             {
                 isPointer = true;
-                nameStr = nameStr.substring(1);
+                nameStr = nameStr.substring(rawName.lastIndexOf('*') + 1); //Could be faster
             }
             else if (rawName.startsWith("(*"))
             {
@@ -642,23 +808,24 @@ public final class BlendFile
             
             isArray = nameStr.endsWith("]");
             
-            int count = 1;
+            int cnt = 1;
             if (isArray)
             {
                 int arrDimStart = nameStr.indexOf('[');
                 String substr = nameStr.substring(arrDimStart + 1, nameStr.length() - 1);
                 String[] dimStrs = substr.split("\\]\\[");
                 for (String dimStr : dimStrs)
-                    count *= Integer.parseInt(dimStr);
+                    cnt *= Integer.parseInt(dimStr);
                 
                 nameStr = nameStr.substring(0, arrDimStart);
             }
             
             name = nameStr;
             
-            if (isPointer) length = (pointer64Bit ? 8 : 4)*count;
-            else length = sdnaTypeLengths[type]*count;
+            if (isPointer) length = (pointer64Bit ? 8 : 4)*cnt;
+            else length = sdnaTypeLengths[type]*cnt;
             
+            this.count = cnt;
             this.offset = offset;
         }
         

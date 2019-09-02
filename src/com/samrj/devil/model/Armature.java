@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.blender.dna.bArmature;
 
 /**
  * Armature definition class. Can be shared between multiple objects. Give to
@@ -22,13 +21,13 @@ public final class Armature extends DataBlock
     public final List<Bone> bones;
     private final Map<String, Bone> nameMap;
     
-    Armature(Model model, bArmature bArm) throws IOException
+    Armature(Model model, BlendFile.Pointer bArm) throws IOException
     {
-        super(model, bArm.getId());
+        super(model, bArm);
         
         bones = new ArrayList<>();
         nameMap = new HashMap<>();
-        for (org.blender.dna.Bone bBone : Blender.list(bArm.getBonebase(), org.blender.dna.Bone.class))
+        for (BlendFile.Pointer bBone : bArm.getField("bonebase").asList("Bone"))
         {
             Bone bone = new Bone(null, bBone);
             recursiveAdd(bone, bBone);
@@ -37,9 +36,9 @@ public final class Armature extends DataBlock
         }
     }
     
-    private void recursiveAdd(Bone bone, org.blender.dna.Bone bBone) throws IOException
+    private void recursiveAdd(Bone bone, BlendFile.Pointer bBone) throws IOException
     {
-        for (org.blender.dna.Bone bChild : Blender.list(bBone.getChildbase(), org.blender.dna.Bone.class))
+        for (BlendFile.Pointer bChild : bBone.getField("childbase").asList("Bone"))
         {
             Bone child = new Bone(bone, bChild);
             recursiveAdd(child, bChild);
@@ -63,16 +62,16 @@ public final class Armature extends DataBlock
         public final Mat3 matrix; //bone direction -> object rest direction
         public final Mat3 invMat; //object rest direction -> bone direction
         
-        private Bone(Bone parent, org.blender.dna.Bone bBone) throws IOException
+        private Bone(Bone parent, BlendFile.Pointer bBone) throws IOException
         {
-            name = bBone.getName().asString();
+            name = bBone.getField("name").asString();
             this.parent = parent;
             
-            inheritRotation = (bBone.getFlag() & (1 << 9)) == 0; //BONE_HINGE flag
+            inheritRotation = (bBone.getField("flag").asInt() & (1 << 9)) == 0; //BONE_HINGE flag
             
-            head = Blender.vec3(bBone.getArm_head());
-            tail = Blender.vec3(bBone.getArm_tail());
-            invMat = Blender.mat3(bBone.getArm_mat());
+            head = bBone.getField("arm_head").asVec3();
+            tail = bBone.getField("arm_tail").asVec3();
+            invMat = new Mat3(bBone.getField("arm_mat").asMat4());
             matrix = Mat3.invert(invMat);
         }
     }

@@ -4,9 +4,6 @@ import com.samrj.devil.math.Vec3;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.blender.dna.BezTriple;
-import org.blender.dna.Nurb;
-import org.cakelab.blender.nio.CArrayFacade;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -17,12 +14,12 @@ public final class Curve extends DataBlock
 {
     public final List<Spline> splines;
     
-    Curve(Model model, org.blender.dna.Curve bCurve) throws IOException
+    Curve(Model model, BlendFile.Pointer bCurve) throws IOException
     {
-        super(model, bCurve.getId());
+        super(model, bCurve);
         
         splines = new ArrayList<>();
-        for (Nurb bNurb : Blender.list(bCurve.getNurb(), Nurb.class))
+        for (BlendFile.Pointer bNurb : bCurve.getField("nurb").asList("Nurb"))
             splines.add(new Spline(bNurb));
     }
     
@@ -31,15 +28,15 @@ public final class Curve extends DataBlock
         public final boolean cyclic;
         public final List<SplinePoint> points;
         
-        Spline(Nurb bNurb) throws IOException
+        Spline(BlendFile.Pointer bNurb) throws IOException
         {
-            cyclic = (bNurb.getFlagu() & 1) != 0; //CU_NURB_CYCLIC flag
+            cyclic = (bNurb.getField("flagu").asShort() & 1) != 0; //CU_NURB_CYCLIC flag
             
-            int numPoints = bNurb.getPntsu();
-            BezTriple[] bezts = bNurb.getBezt().toArray(numPoints);
-
+            int numPoints = bNurb.getField("pntsu").asInt();
+            BlendFile.Pointer[] bezts = bNurb.getField("bezt").dereference().asArray(numPoints);
+            
             points = new ArrayList<>(bezts.length);
-            for (BezTriple bezt : bezts) points.add(new SplinePoint(bezt));
+            for (BlendFile.Pointer bezt : bezts) points.add(new SplinePoint(bezt));
         }
     }
     
@@ -47,13 +44,13 @@ public final class Curve extends DataBlock
     {
         public final Vec3 left, co, right;
         
-        SplinePoint(BezTriple bezt) throws IOException
+        SplinePoint(BlendFile.Pointer bezt) throws IOException
         {
-            CArrayFacade<CArrayFacade<Float>> vec = bezt.getVec();
+            BlendFile.Pointer vec = bezt.getField("vec");
             
-            left = Blender.vec3(vec.get(0));
-            co = Blender.vec3(vec.get(1));
-            right = Blender.vec3(vec.get(2));
+            left = vec.asVec3();
+            co = vec.add(12).asVec3();
+            right = vec.add(24).asVec3();
         }
     }
 }

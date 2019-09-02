@@ -5,14 +5,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.EnumMap;
 import org.blender.dna.Tex;
-import org.blender.dna.bArmature;
 import org.blender.utils.MainLib;
 import org.cakelab.blender.io.BlenderFile;
 import org.cakelab.blender.io.block.Block;
 import org.cakelab.blender.io.dna.DNAStruct;
 
 /**
- * .DVM file loader. Corresponds with the Blender python exporter.
+ * Loads and parses Blender .blend files.
  * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2019 Samuel Johnson
@@ -48,38 +47,38 @@ public final class Model
             MainLib library = new MainLib(file);
             
             libraries = new ArrayMap<>();
-            for (BlendFile.Pointer pointer : fastFile.getLibrary("Library"))
-                libraries.put(new Library(this, pointer));
+            for (BlendFile.Pointer bLib : fastFile.getLibrary("Library"))
+                libraries.put(new Library(this, bLib));
             arraymaps.put(Type.LIBRARY, libraries);
             
             actions = new ArrayMap<>();
-           for (BlendFile.Pointer pointer : fastFile.getLibrary("bAction"))
-                actions.put(new Action(this, pointer));
+           for (BlendFile.Pointer bAction : fastFile.getLibrary("bAction"))
+                actions.put(new Action(this, bAction));
             arraymaps.put(Type.ACTION, actions);
             
             armatures = new ArrayMap<>();
-            for (bArmature bArm : Blender.list(library.getBArmature()))
+            for (BlendFile.Pointer bArm : fastFile.getLibrary("bArmature"))
                 armatures.put(new Armature(this, bArm));
             arraymaps.put(Type.ARMATURE, armatures);
             
             curves = new ArrayMap<>();
-            for (org.blender.dna.Curve bCurve : Blender.list(library.getCurve()))
+            for (BlendFile.Pointer bCurve : fastFile.getLibrary("Curve"))
                 curves.put(new Curve(this, bCurve));
             arraymaps.put(Type.CURVE, curves);
             
             lamps = new ArrayMap<>();
-            for (org.blender.dna.Lamp bLamp : Blender.list(library.getLamp()))
+            for (BlendFile.Pointer bLamp : fastFile.getLibrary("Lamp"))
                 lamps.put(new Lamp(this, bLamp));
             arraymaps.put(Type.LAMP, lamps);
             
             materials = new ArrayMap<>();
             int i = 0;
-            for (org.blender.dna.Material bMat : Blender.list(library.getMaterial()))
+            for (BlendFile.Pointer bMat : fastFile.getLibrary("Material"))
                 materials.put(new Material(this, i++, bMat));
             arraymaps.put(Type.MATERIAL, materials);
             
             meshes = new ArrayMap<>();
-            for (org.blender.dna.Mesh bMesh : Blender.list(library.getMesh()))
+            for (BlendFile.Pointer bMesh : fastFile.getLibrary("Mesh"))
                 meshes.put(new Mesh(this, bMesh));
             arraymaps.put(Type.MESH, meshes);
             

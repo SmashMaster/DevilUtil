@@ -27,16 +27,11 @@ import com.samrj.devil.geo3d.Vertex3;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
-import com.samrj.devil.model.Material;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.IntFunction;
-import org.blender.dna.*;
-import org.cakelab.blender.nio.CPointer;
 
 import static org.lwjgl.system.MemoryUtil.*;
 
@@ -77,55 +72,55 @@ public final class Mesh extends DataBlock
     public final int groupIndexOffset, groupWeightOffset;
     public final int materialOffset;
     
-    public final List<DataPointer<Material>> materials;
+    public final DataPointer<Material>[] materials;
     
-    Mesh(Model model, org.blender.dna.Mesh bMesh) throws IOException
+    Mesh(Model model, BlendFile.Pointer bMesh) throws IOException
     {
-        super(model, bMesh.getId());
+        super(model, bMesh);
         
         /**
          * PREPARE MESH DATA
          */
         
         //Populate materials list
-        materials = new ArrayList<>();
-        Map<Integer, Integer> materialIndexMap = new HashMap<>();
-        CPointer<org.blender.dna.Material>[] mats = bMesh.getMat().toArray(bMesh.getTotcol());
-        if (mats != null)
+        int totcol = bMesh.getField("totcol").asInt();
+        materials = new DataPointer[totcol];
+        BlendFile.Pointer mats = bMesh.getField("mat").dereference();
+        if (mats != null) for (int i=0; i<totcol; i++)
         {
-            int blenderMatIndex = 0;
-            for (CPointer<org.blender.dna.Material> ptr : mats)
-            {
-                if (!ptr.isNull())
-                {
-                    int matIndex = materials.size();
-                    String matName = ptr.get().getId().getName().asString().substring(2);
-                    materials.add(new DataPointer<>(model, Type.MATERIAL, matName));
-                    materialIndexMap.put(blenderMatIndex, matIndex);
-                }
-                blenderMatIndex++;
-            }
+            //Need special handling because mats is an array of pointers.
+            BlendFile.Pointer mat = mats.add(mats.getAddressSize()*i).dereference();
+            String matName = mat.getField(0).getField("name").asString().substring(2);
+            materials[i] = new DataPointer<>(model, Type.MATERIAL, matName);
         }
         
-        MVert[] mVerts = bMesh.getMvert().toArray(bMesh.getTotvert());
-        Vec3[] verts = new Vec3[mVerts.length];
-        for (int i=0; i<mVerts.length; i++) verts[i] = Blender.vec3(mVerts[i].getCo());
-        Vec3[] normals = new Vec3[mVerts.length];
-        for (int i=0; i<mVerts.length; i++) normals[i] = Blender.normal(mVerts[i].getNo());
+        //Vertex copy could probably be sped up massively by grabbing the whole array with asBuffer().
+        int totvert = bMesh.getField("totvert").asInt();
+        BlendFile.Pointer[] mVerts = bMesh.getField("mvert").dereference().asArray(totvert);
+        Vec3[] verts = new Vec3[totvert];
+        Vec3[] normals = new Vec3[totvert];
+        for (int i=0; i<totvert; i++)
+        {
+            BlendFile.Pointer mVert = mVerts[i];
+            verts[i] = mVert.getField("co").asVec3();
+            normals[i] = mVert.getField("no").asNormalVec3();
+        }
         
-        MLoop[] mLoops = bMesh.getMloop().toArray(bMesh.getTotloop());
-        Vec3[] loopNormals = new Vec3[mLoops.length];
-        int[] loopMats = materials.isEmpty() ? null : new int[mLoops.length];
+        int totloop = bMesh.getField("totloop").asInt();
+        BlendFile.Pointer[] mLoops = bMesh.getField("mloop").dereference().asArray(totloop);
+        Vec3[] loopNormals = new Vec3[totloop];
+        int[] loopMats = materials.length == 0 ? null : new int[totloop];
         
-        MPoly[] mPolys = bMesh.getMpoly().toArray(bMesh.getTotpoly());
+        int totpoly = bMesh.getField("totpoly").asInt();
+        BlendFile.Pointer[] mPolys = bMesh.getField("mpoly").dereference().asArray(totpoly);
         List<LoopTri> loopTris = new ArrayList<>();
         
-        for (int iPoly=0; iPoly<mPolys.length; iPoly++)
+        for (int iPoly=0; iPoly<totpoly; iPoly++)
         {
-            MPoly mPoly = mPolys[iPoly];
+            BlendFile.Pointer mPoly = mPolys[iPoly];
             
-            int start = mPoly.getLoopstart();
-            int count = mPoly.getTotloop();
+            int start = mPoly.getField("loopstart").asInt();
+            int count = mPoly.getField("totloop").asInt();
             int end = start + count;
             
             //Calculate normal by Newell's method
@@ -134,9 +129,9 @@ public final class Mesh extends DataBlock
             {
                 int i1 = i0 + 1;
                 if (i1 == end) i1 = start;
-
-                Vec3 v0 = verts[mLoops[i0].getV()];
-                Vec3 v1 = verts[mLoops[i1].getV()];
+                
+                Vec3 v0 = verts[mLoops[i0].getField("v").asInt()];
+                Vec3 v1 = verts[mLoops[i1].getField("v").asInt()];
 
                 normal.x += (v0.y - v1.y)*(v0.z + v1.z);
                 normal.y += (v0.z - v1.z)*(v0.x + v1.x);
@@ -155,10 +150,10 @@ public final class Mesh extends DataBlock
             }
             else if (count == 4) //Quad; can be split into two tris, but might be concave.
             {
-                Vec3 v0 = verts[mLoops[start].getV()];
-                Vec3 v1 = verts[mLoops[start + 1].getV()];
-                Vec3 v2 = verts[mLoops[start + 2].getV()];
-                Vec3 v3 = verts[mLoops[start + 3].getV()];
+                Vec3 v0 = verts[mLoops[start].getField("v").asInt()];
+                Vec3 v1 = verts[mLoops[start + 1].getField("v").asInt()];
+                Vec3 v2 = verts[mLoops[start + 2].getField("v").asInt()];
+                Vec3 v3 = verts[mLoops[start + 3].getField("v").asInt()];
                 
                 Vec3 e01 = Vec3.sub(v1, v0);
                 Vec3 e02 = Vec3.sub(v2, v0);
@@ -185,7 +180,7 @@ public final class Mesh extends DataBlock
                 double[] projData = new double[count*2];
                 for (int i=0; i<count; i++)
                 {
-                    Vec3 v = verts[mLoops[start + i].getV()];
+                    Vec3 v = verts[mLoops[start + i].getField("v").asInt()];
                     Vec3 projected = Vec3.mult(v, basis);
                     
                     projData[i*2] = projected.x;
@@ -205,17 +200,17 @@ public final class Mesh extends DataBlock
             }
             
             //Store normals
-            boolean isSmooth = (mPoly.getFlag() & 1) != 0;
+            boolean isSmooth = (mPoly.getField("flag").asByte() & 1) != 0;
             if (isSmooth)
                 for (int i=start; i<end; i++)
-                    loopNormals[i] = normals[mLoops[i].getV()];
+                    loopNormals[i] = normals[mLoops[i].getField("v").asInt()];
             else for (int i=start; i<end; i++)
                     loopNormals[i] = normal;
             
             //Store face material
             if (loopMats != null)
             {
-                int polyMat = materials.get(mPoly.getMat_nr()).get().modelIndex;
+                int polyMat = materials[mPoly.getField("mat_nr").asShort()].get().modelIndex;
                 for (int i=start; i<end; i++)
                     loopMats[i] = polyMat;
             }
@@ -223,44 +218,47 @@ public final class Mesh extends DataBlock
         
         //Prepare vertex group data
         int maxGroup = -1;
-        CPointer<MDeformVert> dVertPtr = bMesh.getDvert();
-        MDeformVert[] dVerts = dVertPtr.isNull() ? null : dVertPtr.toArray(mVerts.length);
+        BlendFile.Pointer dVertArr = bMesh.getField("dvert").dereference();
+        BlendFile.Pointer[] dVerts = dVertArr == null ? null : dVertArr.asArray(totvert);
         if (dVerts != null)
             for (int i=0; i<mVerts.length; i++)
-                maxGroup = Math.max(maxGroup, dVerts[i].getTotweight());
+                maxGroup = Math.max(maxGroup, dVerts[i].getField("totweight").asInt());
         
         int[][] groupIndices = new int[mVerts.length][maxGroup + 1];
         float[][] groupWeights = new float[mVerts.length][maxGroup + 1];
         
-        if (dVerts != null && maxGroup >= 0) for (int vi=0; vi<mVerts.length; vi++)
+        if (dVerts != null && maxGroup >= 0) for (int vi=0; vi<totvert; vi++)
         {
-            MDeformVert dVert = dVerts[vi];
-            MDeformWeight[] weights = dVert.getDw().toArray(dVert.getTotweight());
+            BlendFile.Pointer dVert = dVerts[vi];
+            int totweight = dVert.getField("totweight").asInt();
+            BlendFile.Pointer[] weights = dVert.getField("dw").dereference().asArray(totweight);
             
             for (int wi=0; wi<weights.length; wi++)
             {
-                MDeformWeight weight = weights[wi];
-                groupIndices[vi][wi] = weight.getDef_nr();
-                groupWeights[vi][wi] = weight.getWeight();
+                BlendFile.Pointer weight = weights[wi];
+                groupIndices[vi][wi] = weight.getField("def_nr").asInt();
+                groupWeights[vi][wi] = weight.getField("weight").asFloat();
             }
         }
         
         //Loop data: uv and colors
         List<String> uvLayerNames = new ArrayList<>();
-        List<MLoopUV[]> uvLayerData = new ArrayList<>();
+        List<BlendFile.Pointer[]> uvLayerData = new ArrayList<>();
         List<String> colorLayerNames = new ArrayList<>();
-        List<MLoopCol[]> colorLayerData = new ArrayList<>();
-        CustomDataLayer[] layers = bMesh.getLdata().getLayers().toArray(bMesh.getLdata().getTotlayer());
-        if (layers != null)
+        List<BlendFile.Pointer[]> colorLayerData = new ArrayList<>();
+        BlendFile.Pointer ldata = bMesh.getField("ldata");
+        int totlayer = ldata.getField("totlayer").asInt();
+        BlendFile.Pointer layersPtr = ldata.getField("layers").dereference();
+        if (layersPtr != null)
         {
-            for (CustomDataLayer layer : layers)
+            for (BlendFile.Pointer layer : layersPtr.asArray(totlayer))
             {
-                String layerName = layer.getName().asString();
+                String layerName = layer.getField("name").asString();
                 
-                switch (layer.getType())
+                switch (layer.getField("type").asInt())
                 {
                     case 16: //uv
-                        MLoopUV[] uvData = layer.getData().cast(MLoopUV.class).toArray(mLoops.length);
+                        BlendFile.Pointer[] uvData = layer.getField("data").dereference().cast("MLoopUV").asArray(totloop);
                         if (uvData != null)
                         {
                             uvLayerNames.add(layerName);
@@ -268,7 +266,7 @@ public final class Mesh extends DataBlock
                         }
                         break;
                     case 17: //colors
-                        MLoopCol[] colData = layer.getData().cast(MLoopCol.class).toArray(mLoops.length);
+                        BlendFile.Pointer[] colData = layer.getField("data").dereference().cast("MLoopCol").asArray(totloop);
                         if (colData != null)
                         {
                             colorLayerNames.add(layerName);
@@ -344,7 +342,7 @@ public final class Mesh extends DataBlock
             vertexData.position(positionOffset);
             for (int i=0; i<numVertices; i++)
             {
-                Vec3 vert = verts[mLoops[i].getV()];
+                Vec3 vert = verts[mLoops[i].getField("v").asInt()];
                 
                 vertexData.putFloat(vert.x);
                 vertexData.putFloat(vert.y);
@@ -373,10 +371,10 @@ public final class Mesh extends DataBlock
             {
                 vertexData.position(uvOffsets[layer]);
                 
-                MLoopUV[] uvs = uvLayerData.get(layer);
+                BlendFile.Pointer[] uvs = uvLayerData.get(layer);
                 for (int i=0; i<numVertices; i++)
                 {
-                    float[] uv = uvs[i].getUv().toFloatArray(2);
+                    float[] uv = uvs[i].getField("uv").asFloats(2);
                     vertexData.putFloat(uv[0]);
                     vertexData.putFloat(uv[1]);
                 }
@@ -392,13 +390,13 @@ public final class Mesh extends DataBlock
             {
                 vertexData.position(colorOffsets[layer]);
                 
-                MLoopCol[] colors = colorLayerData.get(layer);
+                BlendFile.Pointer[] colors = colorLayerData.get(layer);
                 for (int i=0; i<numVertices; i++)
                 {
-                    MLoopCol color = colors[i];
-                    vertexData.putFloat((color.getR() & 0xFF)/255.0f);
-                    vertexData.putFloat((color.getG() & 0xFF)/255.0f);
-                    vertexData.putFloat((color.getB() & 0xFF)/255.0f);
+                    BlendFile.Pointer color = colors[i];
+                    vertexData.putFloat((color.getField("r").asByte() & 0xFF)/255.0f);
+                    vertexData.putFloat((color.getField("g").asByte() & 0xFF)/255.0f);
+                    vertexData.putFloat((color.getField("b").asByte() & 0xFF)/255.0f);
                 }
             }
             
@@ -407,7 +405,7 @@ public final class Mesh extends DataBlock
                 vertexData.position(groupIndexOffset);
                 for (int lvi=0; lvi<numVertices; lvi++)
                 {
-                    int vi = mLoops[lvi].getV();
+                    int vi = mLoops[lvi].getField("v").asInt();
                     for (int gi=0; gi<numGroups; gi++)
                         vertexData.putInt(groupIndices[vi][gi]);
                 }
@@ -415,7 +413,7 @@ public final class Mesh extends DataBlock
                 vertexData.position(groupWeightOffset);
                 for (int lvi=0; lvi<numVertices; lvi++)
                 {
-                    int vi = mLoops[lvi].getV();
+                    int vi = mLoops[lvi].getField("v").asInt();
                     for (int gi=0; gi<numGroups; gi++)
                         vertexData.putFloat(groupWeights[vi][gi]);
                 }
@@ -451,8 +449,8 @@ public final class Mesh extends DataBlock
      */
     public Material getMaterial()
     {
-        if (materials.isEmpty()) return null;
-        else return materials.get(0).get();
+        if (materials.length == 0) return null;
+        else return materials[0].get();
     }
     
     /**
