@@ -4,8 +4,6 @@ import com.samrj.devil.model.BlendFile.Pointer;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import org.blender.dna.ID;
-import org.blender.dna.IDProperty;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -36,16 +34,6 @@ public abstract class DataBlock
     public final Model model;
     public final String name;
     public final List<Property> properties;
-    
-    DataBlock(Model model, ID bID) throws IOException
-    {
-        if (model == null || bID == null) throw new NullPointerException();
-        this.model = model;
-        name = bID.getName().asString().substring(2);
-        
-        IDProperty bProp = bID.getProperties().get();
-        properties = bProp != null ? new Property(bProp).properties : Collections.emptyList();
-    }
     
     DataBlock(Model model, BlendFile.Pointer pointer) throws IOException
     {

@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.blender.dna.IDProperty;
-import org.blender.dna.IDPropertyData;
 
 /**
  * Allows access to Blender's RNA properties, including custom properties.
@@ -26,57 +24,6 @@ public final class Property
     public final List<Property> properties = new ArrayList<>();
     
     private Object value;
-    
-    Property(IDProperty bProp) throws IOException
-    {
-        name = bProp.getName().asString();
-        
-        IDPropertyData data = bProp.getData();
-        
-        switch (bProp.getType())
-        {
-            case 0:
-                type = Type.STRING;
-                if (data.getPointer().isValid())
-                    value = data.getPointer().cast(Byte.class).toCArrayFacade(bProp.getLen()).asString();
-                break;
-            case 1:
-                type = Type.INT;
-                value = data.getVal();
-                break;
-            case 2:
-                type = Type.FLOAT;
-                value = Float.intBitsToFloat(data.getVal());
-                break;
-            case 5:
-                type = Type.ARRAY;
-                break;
-            case 6:
-                type = Type.GROUP;
-                for (IDProperty subBProp : Blender.list(data.getGroup(), IDProperty.class))
-                    properties.add(new Property(subBProp));
-                break;
-            case 7:
-                type = Type.ID;
-                break;
-            case 8:
-                type = Type.DOUBLE;
-                long bits = (data.getVal() & 0xFFFFFFFFL) | (((long)data.getVal2()) << 32L);
-                value = Double.longBitsToDouble(bits);
-                break;
-            case 9:
-                type = Type.IDPARRAY;
-                if (data.getPointer().isValid())
-                    for (IDProperty subBProp : data.getPointer().cast(IDProperty.class).toArray(bProp.getLen()))
-                        properties.add(new Property(subBProp));
-                break;
-            case 10:
-                    type = Type.NUMTYPES;
-                break;
-            default:
-                type = null;
-        }
-    }
     
     Property(BlendFile.Pointer bProp) throws IOException
     {

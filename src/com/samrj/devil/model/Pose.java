@@ -31,8 +31,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
-import org.blender.dna.bPose;
-import org.blender.dna.bPoseChannel;
 
 /**
  * Class for storing and manipulating bone pose information. Is not tied to
@@ -45,17 +43,17 @@ public class Pose
     private final Map<String, PoseBone> bones;
     private final Collection<PoseBone> bCollection;
     
-    Pose(bPose bPose) throws IOException
+    Pose(BlendFile.Pointer bPose) throws IOException
     {
         bones = new HashMap<>();
         bCollection = Collections.unmodifiableCollection(bones.values());
         
-        for (bPoseChannel bChan : Blender.list(bPose.getChanbase(), bPoseChannel.class))
+        for (BlendFile.Pointer bChan : bPose.getField("chanbase").asList("bPoseChannel"))
         {
-            String name = bChan.getName().asString();
-            Vec3 pos = Blender.vec3(bChan.getLoc());
-            Quat rot = Blender.quat(bChan.getQuat());
-            Vec3 sca = Blender.vec3(bChan.getSize());
+            String name = bChan.getField("name").asString();
+            Vec3 pos = bChan.getField("loc").asVec3();
+            Quat rot = bChan.getField("quat").asQuat();
+            Vec3 sca = bChan.getField("size").asVec3();
             
             PoseBone bone = new PoseBone(name);
             bone.transform.set(pos, rot, sca);

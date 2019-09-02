@@ -4,11 +4,9 @@ import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Transform;
 import com.samrj.devil.math.Vec3;
-import com.samrj.devil.model.Scene;
 import com.samrj.devil.model.constraint.IKConstraint.IKDefinition;
 import java.io.IOException;
 import java.util.*;
-import org.blender.dna.*;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -36,9 +34,9 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
     public final DataPointer<Action> action;
     public final EmptyType emptyType;
     
-    ModelObject(Model model, Scene scene, BlenderObject bObject) throws IOException
+    ModelObject(Model model, Scene scene, BlendFile.Pointer bObject) throws IOException
     {
-        super(model, bObject.getId());
+        super(model, bObject);
         
         this.scene = scene;
         
@@ -51,18 +49,18 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
         }
         
         Quat rot;
-        switch (bObject.getRotmode())
+        switch (bObject.getField("rotmode").asShort())
         {
             case -1: //Axis-angle rotation
-                Vec3 axis = Blender.vec3(bObject.getRotAxis());
-                float ang = bObject.getRotAngle();
+                Vec3 axis = bObject.getField("rotAxis").asVec3(); 
+                float ang = bObject.getField("rotAngle").asFloat();
                 rot = Quat.rotation(axis, ang);
                 break;
             case 0: //Quaternion
-                rot = Blender.quat(bObject.getQuat());
+                rot = bObject.getField("quat").asQuat();
                 break;
             case 1: //XYZ Euler rotation (blender's axes are different)
-                Vec3 angles = Blender.vec3(bObject.getRot());
+                Vec3 angles = bObject.getField("rot").asVec3();
                 rot = Quat.identity();
                 rot.rotate(new Vec3(0, 1, 0), angles.y);
                 rot.rotate(new Vec3(1, 0, 0), angles.x);
@@ -73,65 +71,66 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
                 break;
         }
         
-        Vec3 pos = Blender.vec3(bObject.getLoc());
-        Vec3 sca = Blender.vec3(bObject.getSize());
+        Vec3 pos = bObject.getField("loc").asVec3();
+        Vec3 sca = bObject.getField("size").asVec3();
         transform = new Transform(pos, rot, sca);
         
         vertexGroups = new ArrayList<>();
-        for (bDeformGroup group : Blender.list(bObject.getDefbase(), bDeformGroup.class))
-            vertexGroups.add(group.getName().asString());
+        for (BlendFile.Pointer group : bObject.getField("defbase").asList("bDeformGroup"))
+            vertexGroups.add(group.getField("name").asString());
         
-        bPose bPose = bObject.getPose().get();
+        BlendFile.Pointer bPose = bObject.getField("pose").dereference();
         ikConstraints = new ArrayList<>();
         if (bPose != null)
         {
             pose = new Pose(bPose);
             
-            for (bPoseChannel bChan : Blender.list(bPose.getChanbase(), bPoseChannel.class))
-                for (bConstraint bCons : Blender.list(bChan.getConstraints(), bConstraint.class))
+            for (BlendFile.Pointer bChan : bPose.getField("chanbase").asList("bPoseChannel"))
+                for (BlendFile.Pointer bCons : bChan.getField("constraints").asList("bConstraint"))
             {
-                if (bCons.getType() != 3) continue;
-                bKinematicConstraint bIK = bCons.getData().cast(bKinematicConstraint.class).get();
+                if (bCons.getField("type").asShort() != 3) continue;
+                BlendFile.Pointer bIK = bCons.getField("data").cast("bKinematicConstraint").dereference();
                 
-                if (bIK.getRootbone() != 2) continue; //Only support 2-bone IK at this time
+                if (bIK.getField("rootbone").asShort() != 2) continue; //Only support 2-bone IK at this time
                 
-                BlenderObject target = bIK.getTar().get();
-                String subtarget = bIK.getSubtarget().asString();
+                BlendFile.Pointer target = bIK.getField("tar").dereference();
+                String subtarget = bIK.getField("subtarget").asString();
                 if (target == null || subtarget.isEmpty()) continue;
                 
-                BlenderObject poleTarget = bIK.getPoletar().get();
-                String poleSubtarget = bIK.getPolesubtarget().asString();
+                BlendFile.Pointer poleTarget = bIK.getField("poletar").dereference();
+                String poleSubtarget = bIK.getField("polesubtarget").asString();
                 if (poleTarget == null || poleSubtarget.isEmpty()) continue;
                 
-                String bone = bChan.getName().asString();
-                ikConstraints.add(new IKDefinition(bone, subtarget, poleSubtarget, bIK.getPoleangle()));
+                String bone = bChan.getField("name").asString();
+                float poleAngle = bIK.getField("poleangle").asFloat();
+                ikConstraints.add(new IKDefinition(bone, subtarget, poleSubtarget, poleAngle));
             }
         }
         else pose = null;
         
         Type dataType = null;
         String dataName = null;
-        switch (bObject.getType())
+        switch (bObject.getField("type").asShort())
         {
             case 1:
                 dataType = Type.MESH;
-                org.blender.dna.Mesh bMesh = bObject.getData().cast(org.blender.dna.Mesh.class).get();
-                dataName = bMesh.getId().getName().asString().substring(2);
+                BlendFile.Pointer bMesh = bObject.getField("data").cast("Mesh").dereference();
+                dataName = bMesh.getField(0).getField("name").asString().substring(2);
                 break;
             case 2:
                 dataType = Type.CURVE;
-                org.blender.dna.Curve bCurve = bObject.getData().cast(org.blender.dna.Curve.class).get();
-                dataName = bCurve.getId().getName().asString().substring(2);
+                BlendFile.Pointer bCurve = bObject.getField("data").cast("Curve").dereference();
+                dataName = bCurve.getField(0).getField("name").asString().substring(2);
                 break;
             case 10:
                 dataType = Type.LAMP;
-                org.blender.dna.Lamp bLamp = bObject.getData().cast(org.blender.dna.Lamp.class).get();
-                dataName = bLamp.getId().getName().asString().substring(2);
+                BlendFile.Pointer bLamp = bObject.getField("data").cast("Lamp").dereference();
+                dataName = bLamp.getField(0).getField("name").asString().substring(2);
                 break;
             case 25:
                 dataType = Type.ARMATURE;
-                bArmature bArmature = bObject.getData().cast(bArmature.class).get();
-                dataName = bArmature.getId().getName().asString().substring(2);
+                BlendFile.Pointer bArmature = bObject.getField("data").cast("bArmature").dereference();
+                dataName = bArmature.getField(0).getField("name").asString().substring(2);
                 break;
                 
             //Unimplemented types:
@@ -148,16 +147,16 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
         }
         data = new DataPointer<>(model, dataType, dataName);
         
-        BlenderObject bParent = bObject.getParent().get();
+        BlendFile.Pointer bParent = bObject.getField("parent").dereference();
         if (bParent != null)
         {
-            String parentName = bParent.getId().getName().asString().substring(2);
+            String parentName = bParent.getField(0).getField("name").asString().substring(2);
             parent = new DataPointer<>(model, Type.OBJECT, parentName);
             
-            if (bObject.getPartype() == 7) parentBoneName = bObject.getParsubstr().asString();
+            if (bObject.getField("partype").asShort() == 7) parentBoneName = bObject.getField("parsubstr").asString();
             else parentBoneName = null;
             
-            parentMatrix = Blender.mat4(bObject.getParentinv());
+            parentMatrix = bObject.getField("parentinv").asMat4();
         }
         else
         {
@@ -166,15 +165,15 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
             parentMatrix = null;
         }
         
-        bAction bAction = bObject.getAction().get();
+        BlendFile.Pointer bAction = bObject.getField("action").dereference();
         if (bAction != null)
         {
-            String actionName = bAction.getId().getName().asString().substring(2);
+            String actionName = bAction.getField(0).getField("name").asString().substring(2);
             action = new DataPointer<>(model, Type.ACTION, actionName);
         }
         else action = new DataPointer<>(model, null, null);
         
-        switch(bObject.getEmpty_drawtype())
+        switch(bObject.getField("empty_drawtype").asByte())
         {
             case 2:
                 emptyType = EmptyType.AXES;

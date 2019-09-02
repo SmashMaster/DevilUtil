@@ -1,7 +1,6 @@
 package com.samrj.devil.model;
 
 import java.io.IOException;
-import org.blender.dna.Tex;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -12,11 +11,11 @@ public class Texture extends DataBlock
 {
     public final String filepath;
     
-    Texture(Model model, Tex bTex) throws IOException
+    Texture(Model model, BlendFile.Pointer bTex) throws IOException
     {
-        super(model, bTex.getId());
+        super(model, bTex);
         
-        org.blender.dna.Image bImage = bTex.getIma().get();
-        filepath = bImage != null ? bImage.getName().asString() : null;
+        BlendFile.Pointer bImage = bTex.getField("ima").dereference();
+        filepath = bImage != null ? bImage.getField("name").asString() : null;
     }
 }
