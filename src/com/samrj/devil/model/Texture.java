@@ -1,6 +1,7 @@
 package com.samrj.devil.model;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * @author Samuel Johnson (SmashMaster)
@@ -9,13 +10,23 @@ import java.io.IOException;
  */
 public class Texture extends DataBlock
 {
-    public final String filepath;
+    public final Path relativePath;
+    public final Path path;
     
     Texture(Model model, BlendFile.Pointer bTex) throws IOException
     {
         super(model, bTex);
         
         BlendFile.Pointer bImage = bTex.getField("ima").dereference();
-        filepath = bImage != null ? bImage.getField("name").asString() : null;
+        if (bImage != null)
+        {
+            relativePath = Path.of(bImage.getField("name").asString().substring(2)).normalize();
+            path = model.path.getParent().resolve(relativePath).normalize();
+        }
+        else
+        {
+            relativePath = null;
+            path = null;
+        }
     }
 }

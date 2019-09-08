@@ -42,10 +42,10 @@ public final class Material extends DataBlock
         emit = bMat.getField("emit").asFloat();
         
         textures = new ArrayList<>();
-        BlendFile.Pointer[] mTexs = bMat.getField("mtex").asArray(18); //MAX_MTEX is 18 in blender
+        BlendFile.Pointer mtex = bMat.getField("mtex"); //MAX_MTEX is 18 in blender
         for (int i=0; i<18; i++)
         {
-            BlendFile.Pointer mTex = mTexs[i].dereference();
+            BlendFile.Pointer mTex = mtex.add(mtex.getAddressSize()*i).dereference();
             if (mTex == null) break;
             
             textures.add(new TextureSlot(mTex));

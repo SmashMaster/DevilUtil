@@ -3,6 +3,7 @@ package com.samrj.devil.model;
 import com.samrj.devil.model.DataBlock.Type;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.EnumMap;
 
 /**
@@ -16,7 +17,7 @@ public final class Model
 {
     private final EnumMap<DataBlock.Type, ArrayMap<?>> arraymaps = new EnumMap<>(DataBlock.Type.class);
     
-    public final String path;
+    public final Path path;
     
     public final ArrayMap<Library> libraries;
     public final ArrayMap<Action> actions;
@@ -33,7 +34,7 @@ public final class Model
     
     public Model(String path) throws IOException
     {
-        this.path = path;
+        this.path = Path.of(path);
         
         try
         {
