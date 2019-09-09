@@ -1,9 +1,8 @@
-package com.samrj.devil.phys;
+package com.samrj.devil.geo3d;
 
-import com.samrj.devil.geo3d.*;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
-import com.samrj.devil.util.FloatConsumer;
+import java.util.function.Consumer;
 
 /**
  * Basic class handling collision and movement of a character in a 3D space.
@@ -62,7 +61,7 @@ public final class ActorDriver
     
     //Settable callback functions for jumping, falling, and landing.
     public Runnable jumpCallback, fallCallback;
-    public FloatConsumer landCallback;
+    public Consumer<Float> landCallback;
     
     private final Ellipsoid shape = new Ellipsoid();
     private final Vec3 displacement = new Vec3();

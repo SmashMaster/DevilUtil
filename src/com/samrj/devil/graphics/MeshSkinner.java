@@ -1,12 +1,12 @@
 package com.samrj.devil.graphics;
 
 import com.samrj.devil.gl.ShaderProgram;
-import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.model.ArmatureSolver;
 import com.samrj.devil.model.ArmatureSolver.BoneSolver;
 import com.samrj.devil.model.Mesh;
 import com.samrj.devil.model.ModelObject;
+import com.samrj.devil.util.IOUtil;
 import java.nio.FloatBuffer;
 import java.util.List;
 

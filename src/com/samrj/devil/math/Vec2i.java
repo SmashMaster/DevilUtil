@@ -1,6 +1,6 @@
 package com.samrj.devil.math;
 
-import com.samrj.devil.io.Bufferable;
+import com.samrj.devil.util.Bufferable;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 

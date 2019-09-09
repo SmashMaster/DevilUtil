@@ -22,8 +22,8 @@
 
 package com.samrj.devil.math;
 
-import com.samrj.devil.io.FloatBufferable;
-import com.samrj.devil.io.Streamable;
+import com.samrj.devil.util.DataStreamable;
+import com.samrj.devil.util.FloatBufferable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -35,7 +35,7 @@ import java.nio.FloatBuffer;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Vec2 implements FloatBufferable, Streamable
+public class Vec2 implements FloatBufferable, DataStreamable
 {
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**

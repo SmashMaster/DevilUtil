@@ -1,19 +1,18 @@
-package com.samrj.devil.io;
+package com.samrj.devil.util;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 /**
- * Interface for mutable objects that can be serialized manually to and from
- * data streams. The {@code read()} and {@code write()} methods should read and
- * write the exact same number of bytes, respectively.
+ * Interface for mutable objects that can be written to and read from data
+ * streams.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public interface Streamable
+public interface DataStreamable
 {
     /**
      * Reads data from the given input stream and sets this object's fields

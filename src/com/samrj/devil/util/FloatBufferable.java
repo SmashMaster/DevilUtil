@@ -1,10 +1,10 @@
-package com.samrj.devil.io;
+package com.samrj.devil.util;
 
 import java.nio.FloatBuffer;
 import org.lwjgl.system.MemoryStack;
 
 /**
- * Interface for anything than can be written to memory. (Everything)
+ * Interface for anything than can be written to memory as a sequence of floats.
  *
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2019 Samuel Johnson

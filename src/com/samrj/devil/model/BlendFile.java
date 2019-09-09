@@ -22,11 +22,11 @@
 
 package com.samrj.devil.model;
 
-import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Vec3;
+import com.samrj.devil.util.IOUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

@@ -22,12 +22,10 @@
 
 package com.samrj.devil.model;
 
-import com.samrj.devil.io.IOUtil;
 import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Transform;
 import com.samrj.devil.math.Transform.Property;
 import com.samrj.devil.math.Vec3;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
@@ -201,13 +199,7 @@ public class Pose
     {
         public final String name;
         public final Transform transform;
-
-        private PoseBone(DataInputStream in) throws IOException
-        {
-            name = IOUtil.readPaddedUTF(in);
-            transform = new Transform(in);
-        }
-
+        
         private PoseBone(PoseBone bone)
         {
             name = bone.name;
