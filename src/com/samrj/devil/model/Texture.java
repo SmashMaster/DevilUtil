@@ -18,13 +18,20 @@ public class Texture extends DataBlock
         super(model, bTex);
         
         BlendFile.Pointer bImage = bTex.getField("ima").dereference();
-        if (bImage != null)
+        
+        FIND_PATH: //Path must be null unless all conditions are correct.
         {
-            relativePath = Path.of(bImage.getField("name").asString().substring(2)).normalize();
-            path = model.path.getParent().resolve(relativePath).normalize();
-        }
-        else
-        {
+            if (bImage != null)
+            {
+                String str = bImage.getField("name").asString();
+                if (str.startsWith("//")) //Only support relative paths.
+                {
+                    relativePath = Path.of(str.substring(2)).normalize();
+                    path = model.path.getParent().resolve(relativePath).normalize();
+                    break FIND_PATH;
+                }
+            }
+            
             relativePath = null;
             path = null;
         }
