@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.nio.channels.FileChannel;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 
@@ -107,17 +108,31 @@ public final class Shader extends DGLObj
     }
     
     /**
-     * Loads shader sources from the given resource path and then compiles this
+     * Loads shader sources from the given file path and then compiles this
      * shader. Buffers the source in native memory.
      * 
-     * @param path The class/file path from which to load sources.
+     * @param path The file path from which to load the source.
      * @return This shader.
      * @throws IOException If an I/O error occurs.
      */
     public Shader sourceFromFile(String path) throws IOException
     {
         this.path = path;
-        return source(new FileInputStream(path));
+        
+        try (FileInputStream in = new FileInputStream(path))
+        {
+            FileChannel channel = in.getChannel();
+            long size = channel.size();
+            if (size > Integer.MAX_VALUE) throw new IOException("File size > 2.15GB");
+            
+            try (MemoryStack stack = MemoryStack.stackPush())
+            {
+                ByteBuffer buffer = stack.malloc((int)size);
+                channel.read(buffer);
+                buffer.flip();
+                return source(buffer);
+            }
+        }
     }
     
     /**

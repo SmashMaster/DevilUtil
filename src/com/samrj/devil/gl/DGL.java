@@ -26,6 +26,7 @@ import com.samrj.devil.graphics.TexUtil;
 import com.samrj.devil.math.Util.PrimType;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Collections;
@@ -324,11 +325,8 @@ public final class DGL
      */
     public static Image loadImage(String path) throws IOException
     {
-        BufferedImage bImage;
-        try (FileInputStream in = new FileInputStream(path))
-        {
-            bImage = ImageIO.read(in);
-        }
+        BufferedImage bImage = ImageIO.read(new File(path));
+        
         if (bImage == null) throw new IOException("Cannot read image from " + path);
         
         return loadImage(bImage.getRaster());
