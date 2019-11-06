@@ -286,6 +286,11 @@ public class TexUtil
             case GL_RGB16I:
             case GL_RGBA16I: return GL_SHORT;
             
+            case GL_R16F:
+            case GL_RG16F:
+            case GL_RGB16F:
+            case GL_RGBA16F: return GL_HALF_FLOAT;
+            
             case GL_DEPTH_COMPONENT32F:
             case GL_R32F:
             case GL_RG32F:
