@@ -14,7 +14,10 @@ public final class Material extends DataBlock
 {
     public final int modelIndex;
     
-    public final Vec3 diffuseColor, specularColor;
+    public final Vec3 diffuseColor;
+    public final float diffuseIntensity;
+    public final Vec3 specularColor;
+    public final float specularIntensity;
     public final float specularHardness;
     public final float specularIOR;
     public final float emit;
@@ -35,8 +38,10 @@ public final class Material extends DataBlock
         float specb = bMat.getField("specb").asFloat();
         float spec = bMat.getField("spec").asFloat();
         
-        diffuseColor = new Vec3(r, g, b).mult(ref);
-        specularColor = new Vec3(specr, specg, specb).mult(spec);
+        diffuseColor = new Vec3(r, g, b);
+        diffuseIntensity = ref;
+        specularColor = new Vec3(specr, specg, specb);
+        specularIntensity = spec;
         specularHardness = bMat.getField("har").asShort();
         specularIOR = bMat.getField("refrac").asFloat();
         emit = bMat.getField("emit").asFloat();
@@ -50,6 +55,16 @@ public final class Material extends DataBlock
             
             textures.add(new TextureSlot(mTex));
         }
+    }
+    
+    public Vec3 getDiffuse()
+    {
+        return Vec3.mult(diffuseColor, diffuseIntensity);
+    }
+    
+    public Vec3 getSpecular()
+    {
+        return Vec3.mult(specularColor, specularIntensity);
     }
     
     public class TextureSlot

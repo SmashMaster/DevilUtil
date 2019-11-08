@@ -289,6 +289,12 @@ public final class Image extends DGLObj
         deleted = true;
     }
     
+    @Override
+    public String toString()
+    {
+        return "[w:" + width + ", h: " + height + ", b:" + bands + " type: " + type + "]";
+    }
+    
     /**
      * Functional interface for any per-pixel-per-channel operation.
      */

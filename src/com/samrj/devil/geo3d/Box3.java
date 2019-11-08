@@ -5,10 +5,10 @@ import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 
 /**
- * Utility class for storing and reversing series of matrix multiplications.
+ * Axis-aligned bounding box class.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2016 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class Box3
