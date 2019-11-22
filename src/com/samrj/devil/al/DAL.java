@@ -120,6 +120,11 @@ public class DAL
         }
     }
     
+    public static void setListenGain(float gain)
+    {
+        AL10.alListenerf(AL10.AL_GAIN, gain);
+    }
+    
     public static SoundBuffer decodeFlac(InputStream in) throws IOException
     {
         FLACDecoder decoder = new FLACDecoder(in);
