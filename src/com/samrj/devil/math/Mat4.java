@@ -377,6 +377,25 @@ public class Mat4 implements FloatBufferable, DataStreamable
     }
     
     /**
+     * Sets the given matrix to a reflection matrix about the given plane.
+     * 
+     * @param n The plane's normal vector.
+     * @param d The plane constant.
+     * @param r The matrix in which to store the result.
+     */
+    public static final void reflection(Vec3 n, float d, Mat4 r)
+    {
+        float ab = -2.0f*n.x*n.y;
+        float ac = -2.0f*n.x*n.z;
+        float bc = -2.0f*n.y*n.z;
+        
+        r.a = 1.0f - 2.0f*n.x*n.x; r.b = ab; r.c = ac; r.d = -2.0f*n.x*d;
+        r.e = ab; r.f = 1.0f - 2.0f*n.y*n.y; r.g = bc; r.h = -2.0f*n.y*d;
+        r.i = ac; r.j = bc; r.k = 1.0f - 2.0f*n.z*n.z; r.l = -2.0f*n.z*d;
+        r.m = 0.0f; r.n = 0.0f; r.o = 0.0f; r.p = 1.0f;
+    }
+    
+    /**
      * Rotates {@code m} about the given {@code axis} by the given angle
      * {@code ang} and stores the result in {@code r}. The axis must be
      * normalized.
@@ -794,6 +813,19 @@ public class Mat4 implements FloatBufferable, DataStreamable
         m.d = v.x;
         m.h = v.y;
         m.l = v.z;
+        return m;
+    }
+    
+    /**
+     * Returns a new reflection matrix about the given plane.
+     * @param normal The plane normal.
+     * @param constant The plane constant.
+     * @return A new reflection matrix.
+     */
+    public static final Mat4 reflection(Vec3 normal, float constant)
+    {
+        Mat4 m = new Mat4();
+        reflection(normal, constant, m);
         return m;
     }
     
@@ -1394,6 +1426,19 @@ public class Mat4 implements FloatBufferable, DataStreamable
     public Mat4 setTranslation(Vec3 vec)
     {
         translation(vec, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to the reflection matrix about the given plane.
+     * 
+     * @param normal The plane normal.
+     * @param constant The plane constant.
+     * @return This matrix.
+     */
+    public Mat4 setReflection(Vec3 normal, float constant)
+    {
+        reflection(normal, constant, this);
         return this;
     }
     
