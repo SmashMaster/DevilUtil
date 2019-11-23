@@ -46,6 +46,10 @@ public final class ActorDriver
     //move downward towards the ground when not perfectly touching it.
     public float groundFloatDecay = 32.0f;
     
+    //An exponential rate of decay determining how quickly this driver will be
+    //nudged out of geometry it is interescting with.
+    public float intersectionDecay = 128.0f;
+    
     //The maximum speed at which this driver can move.
     public float maxSpeed = 3.0f;
     
@@ -205,7 +209,6 @@ public final class ActorDriver
             }
 
             //Lock to ground
-            Geo3DUtil.restrain(vel, Vec3.negate(groundNormal));
             applyAcc(adjMoveDir, acceleration*dt);
         }
         else //Falling
@@ -264,9 +267,6 @@ public final class ActorDriver
             {
                 nudge.add(Vec3.sub(isect.point, isect.surface));
 
-                float height = isect.point.y - pos.y + shape.radii.y;
-                if (height > climbHeight) Geo3DUtil.restrain(vel, isect.normal);
-
                 if (isValidGround(isect.normal) && (!onGround() || isect.normal.y > groundNormal.y))
                 {
                     groundObject = isect.object;
@@ -274,11 +274,11 @@ public final class ActorDriver
                 }
             });
             
-            pos.add(nudge);
+            pos.madd(nudge, 1.0f - (float)Math.pow(0.5f, dt*intersectionDecay));
         }
         
         boolean endOnGround = onGround();
-        if (endOnGround) Geo3DUtil.restrain(vel, groundNormal);
+        if (endOnGround) vel.y = Geo3DUtil.restrain(vel, groundNormal).y;
 
         //Check for landing
         if (landCallback != null && !startOnGround && endOnGround)

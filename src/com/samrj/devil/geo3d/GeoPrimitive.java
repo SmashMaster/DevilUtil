@@ -12,5 +12,5 @@ public interface GeoPrimitive
         VERTEX, EDGE, TRIANGLE, VIRTUAL;
     }
     
-    public Type getType();
+    public Type getGeoPrimitiveType();
 }

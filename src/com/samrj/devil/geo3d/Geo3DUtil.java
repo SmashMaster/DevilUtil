@@ -148,7 +148,7 @@ public class Geo3DUtil
     
     /**
      * Reduces the degrees of freedom of the given vector, using the given array
-     * of normal vectors.
+     * of normal vectors. Returns the result as a new vector.
      */
     public static final Vec3 restrain(Vec3 v, Vec3... normals)
     {
@@ -163,10 +163,10 @@ public class Geo3DUtil
         
         switch (num)
         {
-            case 0: return v;
-            case 1: return v.reject(opp[0]);
-            case 2: return v.project(Vec3.cross(opp[0], opp[1]));
-            default: return v.set();
+            case 0: return new Vec3(v);
+            case 1: return Vec3.reject(v, opp[0]);
+            case 2: return Vec3.project(v, Vec3.cross(opp[0], opp[1]));
+            default: return new Vec3();
         }
     }
     

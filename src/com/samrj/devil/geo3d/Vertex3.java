@@ -25,7 +25,7 @@ public interface Vertex3 extends GeoPrimitive
     public Vec3 p();
     
     @Override
-    public default Type getType()
+    public default Type getGeoPrimitiveType()
     {
         return Type.VERTEX;
     }

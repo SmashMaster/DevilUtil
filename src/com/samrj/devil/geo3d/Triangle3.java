@@ -257,7 +257,7 @@ public interface Triangle3<V extends Vertex3> extends GeoPrimitive
     public V c();
     
     @Override
-    public default Type getType()
+    public default Type getGeoPrimitiveType()
     {
         return Type.TRIANGLE;
     }

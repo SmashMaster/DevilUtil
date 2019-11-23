@@ -50,7 +50,7 @@ public interface Edge3<V extends Vertex3> extends GeoPrimitive
     public V b();
     
     @Override
-    public default Type getType()
+    public default Type getGeoPrimitiveType()
     {
         return Type.EDGE;
     }
