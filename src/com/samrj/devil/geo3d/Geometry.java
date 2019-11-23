@@ -12,12 +12,15 @@ import java.util.stream.Stream;
  * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public interface Geometry
+public interface Geometry<V extends Vertex3, E extends Edge3, F extends Triangle3>
 {
     //Base methods
     Stream<RaycastResult> raycastUnsorted(Vec3 p0, Vec3 dp, boolean terminated);
     Stream<IsectResult> intersectUnsorted(ConvexShape shape);
     Stream<SweepResult> sweepUnsorted(ConvexShape shape, Vec3 dp);
+    Stream<V> verts();
+    Stream<E> edges();
+    Stream<F> faces();
     
     //Ordered streams
     default Stream<RaycastResult> raycast(Vec3 p0, Vec3 dp, boolean terminated)

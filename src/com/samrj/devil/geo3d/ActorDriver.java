@@ -24,7 +24,7 @@ public final class ActorDriver
     
     //The geometry that this driver will use for collision detection. Defaults
     //to null, with collision disabled.
-    public Geometry geom;
+    public Geometry<?, ?, ?> geom;
     
     //The downward acceleration that this driver will experience at all times.
     public float gravity = 9.80665f;

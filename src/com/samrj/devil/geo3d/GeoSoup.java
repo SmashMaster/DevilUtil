@@ -46,16 +46,19 @@ public class GeoSoup<V extends Vertex3, E extends Edge3, F extends Triangle3> im
         this(() -> Stream.of(verts), () -> Stream.of(edges), () -> Stream.of(faces));
     }
     
+    @Override
     public Stream<V> verts()
     {
         return vertProvider.get();
     }
     
+    @Override
     public Stream<E> edges()
     {
         return edgeProvider.get();
     }
     
+    @Override
     public Stream<F> faces()
     {
         return faceProvider.get();

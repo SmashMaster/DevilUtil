@@ -12,12 +12,12 @@ import java.util.stream.Stream;
  * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class GeoSet implements Geometry
+public class GeoSet<V extends Vertex3, E extends Edge3, F extends Triangle3> implements Geometry<V, E, F>
 {
-    private final Supplier<Stream<Geometry>> provider;
+    private final Supplier<Stream<Geometry<V, E, F>>> provider;
     private final Box3 bounds = Box3.infinite();
     
-    public GeoSet(Supplier<Stream<Geometry>> provider)
+    public GeoSet(Supplier<Stream<Geometry<V, E, F>>> provider)
     {
         this.provider = provider;
     }
@@ -46,6 +46,24 @@ public class GeoSet implements Geometry
         return provider.get()
                 .filter(geom -> Box3.touching(shapeBounds, geom.getBounds()))
                 .flatMap(geom -> geom.sweepUnsorted(shape, dp));
+    }
+    
+    @Override
+    public Stream<V> verts()
+    {
+        return provider.get().flatMap(Geometry::verts);
+    }
+
+    @Override
+    public Stream<E> edges()
+    {
+        return provider.get().flatMap(Geometry::edges);
+    }
+    
+    @Override
+    public Stream<F> faces()
+    {
+        return provider.get().flatMap(Geometry::faces);
     }
     
     @Override
