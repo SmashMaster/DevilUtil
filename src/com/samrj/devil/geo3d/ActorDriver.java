@@ -120,6 +120,22 @@ public final class ActorDriver
     }
     
     /**
+     * Returns half the width of this driver's collision volume.
+     */
+    public float getHRadius()
+    {
+        return shape.radii.x;
+    }
+    
+    /**
+     * Returns half the height of this driver's collision volume.
+     */
+    public float getVRadius()
+    {
+        return shape.radii.y;
+    }
+    
+    /**
      * @return Whether or not the player is currently on walkable ground.
      */
     public boolean onGround()
