@@ -282,6 +282,9 @@ public final class ActorDriver
             geom.intersectUnsorted(shape).forEach(isect ->
             {
                 nudge.add(Vec3.sub(isect.point, isect.surface));
+                
+                float height = isect.point.y - pos.y + shape.radii.y;
+                if (height > climbHeight) vel.set(Geo3DUtil.restrain(vel, isect.normal));
 
                 if (isValidGround(isect.normal) && (!onGround() || isect.normal.y > groundNormal.y))
                 {
