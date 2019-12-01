@@ -37,6 +37,7 @@ import org.kc7bfi.jflac.FLACDecoder;
 import org.lwjgl.openal.*;
 import org.lwjgl.system.MemoryStack;
 
+import static org.lwjgl.openal.AL10.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -52,6 +53,8 @@ public class DAL
     private static Thread thread;
     private static ALCapabilities capabilities;
     private static Set<DALObj> objects;
+    private static boolean debug;
+    private static Thread debugShutdownHook;
     
     static void checkState()
     {
@@ -80,7 +83,40 @@ public class DAL
         
         capabilities = AL.createCapabilities(deviceCaps);
         objects = Collections.newSetFromMap(new IdentityHashMap<>());
+        
+        if (debug)
+        {
+            System.out.println("DevilUtil (DAL) - OpenAL debug enabled.");
+            
+            debugShutdownHook = new Thread(() ->
+            {
+                if (init)
+                {
+                    for (DALObj obj : objects) obj.debugLeakTrace();
+                    System.err.println("DevilUtil (DAL) - DAL not terminated before JVM shut down!");
+                }
+            });
+            Runtime.getRuntime().addShutdownHook(debugShutdownHook);
+        }
+        
         init = true;
+    }
+    
+    /**
+     * Enables error-checking and resource leak tracking.
+     */
+    public static void setDebug(boolean debug)
+    {
+        if (init) throw new IllegalStateException("DAL already initialized.");
+        DAL.debug = debug;
+    }
+    
+    /**
+     * Returns whether this DAL context has debug enabled.
+     */
+    public static boolean isDebugEnabled()
+    {
+        return debug;
     }
     
     /**
@@ -100,12 +136,14 @@ public class DAL
     
     public static void setListenPos(Vec3 v)
     {
-        AL10.alListener3f(AL10.AL_POSITION, v.x, v.y, v.z);
+        alListener3f(AL10.AL_POSITION, v.x, v.y, v.z);
+        checkError();
     }
     
     public static void setListenVel(Vec3 v)
     {
-        AL10.alListener3f(AL10.AL_POSITION, v.x, v.y, v.z);
+        alListener3f(AL10.AL_POSITION, v.x, v.y, v.z);
+        checkError();
     }
     
     public static void setListenDir(Vec3 look, Vec3 up)
@@ -116,13 +154,15 @@ public class DAL
             look.write(buffer);
             up.write(buffer);
             buffer.flip();
-            AL10.alListenerfv(AL10.AL_ORIENTATION, buffer);
+            alListenerfv(AL10.AL_ORIENTATION, buffer);
         }
+        checkError();
     }
     
     public static void setListenGain(float gain)
     {
-        AL10.alListenerf(AL10.AL_GAIN, gain);
+        alListenerf(AL10.AL_GAIN, gain);
+        checkError();
     }
     
     public static SoundBuffer decodeFlac(InputStream in) throws IOException
@@ -226,6 +266,15 @@ public class DAL
         return gen(new Filter());
     }
     
+    public static void checkError()
+    {
+        if (debug)
+        {
+            int errorCode = alGetError();
+            if (errorCode != AL_NO_ERROR) throw new DALException(errorCode);
+        }
+    }
+    
     /**
      * Deletes each DevilGL object in the given array.
      * 
@@ -241,14 +290,32 @@ public class DAL
     }
     
     /**
+     * Ends playback for all current sources and detaches their sounds. Useful
+     * for ending playback before cleaning up resources, as a Sound cannot be
+     * deleted if it is attached to any Source.
+     */
+    public static void detachAllSounds()
+    {
+        for (DALObj obj : objects) if (obj instanceof Source)
+        {
+            Source source = (Source)obj;
+            source.stop();
+            source.setSound(null);
+        }
+    }
+    
+    /**
      * Destroys DevilAL and releases all associated resources.
      */
     public static void destroy()
     {
         checkState();
         init = false;
-        
-        objects.clear();
+        if (debug)
+        {
+            for (DALObj obj : objects) obj.debugLeakTrace();
+            Runtime.getRuntime().removeShutdownHook(debugShutdownHook);
+        }
         objects = null;
         
         ALC10.alcDestroyContext(context);
@@ -259,5 +326,7 @@ public class DAL
         
         thread = null;
         capabilities = null;
+        
+        debug = false;
     }
 }

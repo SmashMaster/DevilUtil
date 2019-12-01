@@ -1,15 +1,16 @@
 package com.samrj.devil.al;
 
 import com.samrj.devil.math.Vec3;
-import org.lwjgl.openal.AL10;
-import org.lwjgl.openal.AL11;
-import org.lwjgl.openal.EXTEfx;
+
+import static org.lwjgl.openal.AL10.*;
+import static org.lwjgl.openal.AL11.*;
+import static org.lwjgl.openal.EXTEfx.*;
 
 /**
  * An OpenAL sound source.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class Source extends DALObj
@@ -18,60 +19,72 @@ public class Source extends DALObj
     
     Source()
     {
-        id = AL10.alGenSources();
+        id = alGenSources();
+        DAL.checkError();
     }
     
     public void setSound(Sound sound)
     {
-        AL10.alSourcei(id, AL10.AL_BUFFER, sound.id);
+        int bufferID = sound != null ? sound.id : AL_NONE;
+        alSourcei(id, AL_BUFFER, bufferID);
+        DAL.checkError();
     }
     
     public void setPitch(float f)
     {
-        AL10.alSourcef(id, AL10.AL_PITCH, f);
+        alSourcef(id, AL_PITCH, f);
+        DAL.checkError();
     }
     
     public void setGain(float f)
     {
-        AL10.alSourcef(id, AL10.AL_GAIN, f);
+        alSourcef(id, AL_GAIN, f);
+        DAL.checkError();
     }
     
     public void setPos(Vec3 v)
     {
-        AL10.alSource3f(id, AL10.AL_POSITION, v.x, v.y, v.z);
+        alSource3f(id, AL_POSITION, v.x, v.y, v.z);
+        DAL.checkError();
     }
     
     public void setVel(Vec3 v)
     {
-        AL10.alSource3f(id, AL10.AL_VELOCITY, v.x, v.y, v.z);
+        alSource3f(id, AL_VELOCITY, v.x, v.y, v.z);
+        DAL.checkError();
     }
     
     public void setLooping(boolean looping)
     {
-        AL10.alSourcei(id, AL10.AL_LOOPING, looping ? AL10.AL_TRUE : AL10.AL_FALSE);
+        alSourcei(id, AL_LOOPING, looping ? AL_TRUE : AL_FALSE);
+        DAL.checkError();
     }
     
     public void paramf(int param, float value)
     {
-        AL10.alSourcef(id, param, value);
+        alSourcef(id, param, value);
+        DAL.checkError();
     }
     
     public void parami(int param, int value)
     {
-        AL10.alSourcei(id, param, value);
+        alSourcei(id, param, value);
+        DAL.checkError();
     }
     
     public void setDirectFilter(Filter filter)
     {
-        int fid = filter != null ? filter.id : EXTEfx.AL_FILTER_NULL;
-        AL10.alSourcei(id, EXTEfx.AL_DIRECT_FILTER, fid);
+        int fid = filter != null ? filter.id : AL_FILTER_NULL;
+        alSourcei(id, AL_DIRECT_FILTER, fid);
+        DAL.checkError();
     }
     
     public void sendToEffectSlot(int localSend, Filter filter, EffectSlot slot)
     {
-        int sid = slot != null ? slot.id :  EXTEfx.AL_EFFECTSLOT_NULL;
-        int fid = filter != null ? filter.id :  EXTEfx.AL_FILTER_NULL;
-        AL11.alSource3i(id, EXTEfx.AL_AUXILIARY_SEND_FILTER, sid, localSend, fid);
+        int sid = slot != null ? slot.id :  AL_EFFECTSLOT_NULL;
+        int fid = filter != null ? filter.id :  AL_FILTER_NULL;
+        alSource3i(id, AL_AUXILIARY_SEND_FILTER, sid, localSend, fid);
+        DAL.checkError();
     }
     
     public void sendToEffectSlot(int localSend, EffectSlot slot)
@@ -81,17 +94,20 @@ public class Source extends DALObj
     
     public void play()
     {
-        AL10.alSourcePlay(id);
+        alSourcePlay(id);
+        DAL.checkError();
     }
     
     public void pause()
     {
-        AL10.alSourcePause(id);
+        alSourcePause(id);
+        DAL.checkError();
     }
     
     public void stop()
     {
-        AL10.alSourceStop(id);
+        alSourceStop(id);
+        DAL.checkError();
     }
     
     /**
@@ -99,12 +115,15 @@ public class Source extends DALObj
      */
     public int getState()
     {
-        return AL10.alGetSourcei(id, AL10.AL_SOURCE_STATE);
+        int state = alGetSourcei(id, AL_SOURCE_STATE);
+        DAL.checkError();
+        return state;
     }
     
     @Override
     void delete()
     {
-        AL10.alDeleteSources(id);
+        alDeleteSources(id);
+        DAL.checkError();
     }
 }
