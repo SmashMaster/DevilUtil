@@ -14,6 +14,7 @@ import com.samrj.devil.math.Vec2;
 public class Window
 {
     private static final float TITLE_BAR_HEIGHT = 30.0f;
+    private static final float TITLE_PADDING = 5.0f;
     private static final float EDGE_CLAMP_MARGIN = TITLE_BAR_HEIGHT;
     
     Window above, below; //Doubly-linked list
@@ -177,6 +178,8 @@ public class Window
             dragStartY = y0 - y;
         }
         
+        titleBarHovered = false;
+        
         if (x < x0 || x > x1 || y < y0 || y > y1) return null;
         
         if (y >= y1 - titleBarHeight())
@@ -184,7 +187,6 @@ public class Window
             titleBarHovered = true;
             return this;
         }
-        else titleBarHovered = false;
         
         if (content != null)
         {
@@ -193,6 +195,13 @@ public class Window
         }
         
         return this;
+    }
+    
+    ScrollBox findSrollbox(float x, float y)
+    {
+        if (x < x0 || x > x1 || y < y0 || y > y1) return null;
+        if (content == null) return null;
+        return content.findSrollbox(x, y);
     }
     
     boolean activate()
@@ -257,20 +266,26 @@ public class Window
         drawer.color(0.75f, 0.75f, 0.75f, 1.0f);
         drawer.rect(x0, x1, y0, y1);
         
+        if (content != null) content.render(drawer);
+        
         if (titleBarVisible)
         {
-            drawer.line(x0, x1, y1 - titleBarHeight(), y1 - titleBarHeight());
+            float titleBarColor = (titleBarHovered && draggable) ? 1.0f : 0.75f;
+            
+            drawer.color(0.375f, 0.375f, 0.375f, 1.0f);
+            drawer.rectFill(x0, x1, y1 - titleBarHeight(), y1);
+            drawer.color(titleBarColor, titleBarColor, titleBarColor, 1.0f);
+            drawer.rect(x0, x1, y1 - titleBarHeight(), y1);
+            
             if (title != null)
             {
                 Font font = DUI.font();
                 Vec2 titleSize = font.getSize(title);
                 Vec2 aligned = Align.insideBounds(titleSize,
-                        x0 + padding, x1 - padding, y1 + padding - titleBarHeight(), y1 - padding, Align.W.vector());
-                drawer.color(1.0f, 1.0f, 1.0f, 1.0f);
+                        x0 + TITLE_PADDING, x1 - TITLE_PADDING,
+                        y1 + TITLE_PADDING - titleBarHeight(), y1 - TITLE_PADDING, Align.W.vector());
                 drawer.text(title, font, aligned.x, aligned.y);
             }
         }
-        
-        if (content != null) content.render(drawer);
     }
 }

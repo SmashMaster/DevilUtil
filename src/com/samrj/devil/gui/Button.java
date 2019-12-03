@@ -103,7 +103,6 @@ public class Button extends Form
         
         Font font = DUI.font();
         Vec2 aligned = Align.insideBounds(font.getSize(text), x0 + padding, x1 - padding, y0 + padding, y1 - padding, alignment);
-        drawer.color(1.0f, 1.0f, 1.0f, 1.0f);
         drawer.text(text, font, aligned.x, aligned.y);
     }
 }

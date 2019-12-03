@@ -15,6 +15,8 @@ import static org.lwjgl.glfw.GLFW.*;
  */
 public class TextField extends Form
 {
+    private static int CHAR_LIMIT = 128;
+    
     private String text = "";
     private String previewText;
     private float x0, y0;
@@ -23,7 +25,7 @@ public class TextField extends Form
     private int caret, select;
     private Consumer<TextField> onFocus, onLoseFocus, onConfirm, onChanged;
     
-    private float dragStartX, dragStartY; //For drag selection
+    private float dragStartX; //For drag selection
     private boolean dragged;
     
     public TextField()
@@ -147,11 +149,7 @@ public class TextField extends Form
             
             if (caret != oldCaret) DUI.resetCaretBlinkTimer();
         }
-        else
-        {
-            dragStartX = x - x0;
-            dragStartY = y - y0;
-        }
+        else dragStartX = x - x0;
         
         if (x < this.x0 || x > this.x0 + width || y < this.y0 || y > this.y0 + height) return null;
         return this;
@@ -303,6 +301,8 @@ public class TextField extends Form
         
         float outline = (DUI.getFocusedForm() == this || DUI.getHoveredForm() == this) ? 1.0f : 0.75f;
         
+        if (text.length() > CHAR_LIMIT) setText(text.substring(0, CHAR_LIMIT));
+        
         drawer.color(0.1875f, 0.1875f, 0.1875f, 1.0f);
         drawer.rectFill(x0, x1, y0, y1);
         drawer.color(outline, outline, outline, 1.0f);
@@ -336,13 +336,13 @@ public class TextField extends Form
         else if (!text.isEmpty())
         {
             Vec2 aligned = Align.insideBounds(font.getSize(text), x0 + padding, x1 - padding, y0 + padding, y1 - padding, alignment);
-            drawer.color(1.0f, 1.0f, 1.0f, 1.0f);
+            drawer.color(outline, outline, outline, 1.0f);
             drawer.text(text, font, aligned.x, aligned.y);
         }
         else if (previewText != null)
         {
             Vec2 aligned = Align.insideBounds(font.getSize(previewText), x0 + padding, x1 - padding, y0 + padding, y1 - padding, alignment);
-            drawer.color(0.5f, 0.5f, 0.5f, 1.0f);
+            drawer.color(outline*0.5f, outline*0.5f, outline*0.5f, 1.0f);
             drawer.text(previewText, font, aligned.x, aligned.y);
         }
     }

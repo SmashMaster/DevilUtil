@@ -78,6 +78,17 @@ public class LayoutRows extends Form
         }
         return null;
     }
+    
+    @Override
+    ScrollBox findSrollbox(float x, float y)
+    {
+        for (Form form : forms)
+        {
+            ScrollBox result = form.findSrollbox(x, y);
+            if (result != null) return result;
+        }
+        return null;
+    }
 
     @Override
     void render(DUIDrawer drawer)

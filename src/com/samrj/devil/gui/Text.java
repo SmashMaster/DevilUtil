@@ -42,7 +42,7 @@ public class Text extends Form
     @Override
     void render(DUIDrawer drawer)
     {
-        drawer.color(1.0f, 1.0f, 1.0f, 1.0f);
+        drawer.color(0.75f, 0.75f, 0.75f, 1.0f);
         drawer.text(text, DUI.font(), x0, y0);
     }
 }

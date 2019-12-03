@@ -44,6 +44,7 @@ public class DUI
     private static Window hoveredWindow, activeWindow;
     private static Form hoveredForm, activeForm;
     private static Form focusedForm;
+    private static ScrollBox hoveredScrollBox;
     
     /**
      * Initializes DevilUI.
@@ -179,8 +180,11 @@ public class DUI
      */
     public static void mouseMoved(float x, float y)
     {
+        mouseX = x; mouseY = y;
+        
         hoveredForm = null;
         hoveredWindow = null;
+        hoveredScrollBox = null;
         
         if (activeForm != null)
         {
@@ -194,28 +198,28 @@ public class DUI
             return;
         }
         
-        
         Window window = topWindow;
         while (window != null)
         {
             Object hovered = window.hover(x, y);
+            ScrollBox scrollBox = window.findSrollbox(x, y);
             if (hovered instanceof Form)
             {
                 hoveredForm = (Form)hovered;
                 hoveredWindow = window;
+                hoveredScrollBox = scrollBox;
                 break;
             }
             else if (hovered instanceof Window)
             {
                 hoveredForm = null;
                 hoveredWindow = window;
+                hoveredScrollBox = scrollBox;
                 break;
             }
             
             window = window.below;
         }
-        
-        mouseX = x; mouseY = y;
     }
     
     /**
@@ -234,7 +238,11 @@ public class DUI
      */
     public static void mouseButton(int button, int action, int mods)
     {
-        if (button == GLFW_MOUSE_BUTTON_LEFT) switch (action)
+        if (button != GLFW_MOUSE_BUTTON_LEFT) return;
+        
+        mouseMoved(mouseX, mouseY); //Make sure hovered items are up to date.
+        
+        switch (action)
         {
             case GLFW_PRESS:
                 
@@ -282,6 +290,12 @@ public class DUI
      */
     public static void mouseScroll(float dx, float dy)
     {
+        if (hoveredScrollBox != null)
+        {
+            hoveredScrollBox.mouseScroll(dx, dy);
+            hoveredWindow.layout();
+            mouseMoved(mouseX, mouseY);
+        }
     }
     
     /**

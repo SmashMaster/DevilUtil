@@ -28,6 +28,11 @@ public abstract class Form
         return null;
     }
     
+    ScrollBox findSrollbox(float x, float y)
+    {
+        return null;
+    }
+    
     boolean activate()
     {
         return false;
