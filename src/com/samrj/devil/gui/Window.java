@@ -201,7 +201,7 @@ public class Window
     {
         if (x < x0 || x > x1 || y < y0 || y > y1) return null;
         if (content == null) return null;
-        return content.findSrollbox(x, y);
+        return content.findScrollBox(x, y);
     }
     
     boolean activate()
@@ -255,7 +255,7 @@ public class Window
             content.updateSize();
             Vec2 aligned = Align.insideBounds(new Vec2(content.width, content.height),
                     x0 + padding, x1 - padding, y0 + padding, y1 - titleBarHeight() - padding, alignment);
-            content.setAbsPos(aligned.x, aligned.y);
+            content.layout(aligned.x, aligned.y);
         }
     }
     

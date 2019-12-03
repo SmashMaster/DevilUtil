@@ -65,32 +65,32 @@ public class Button extends Form
     }
     
     @Override
-    void updateSize()
+    protected void updateSize()
     {
     }
     
     @Override
-    void setAbsPos(float x, float y)
+    protected void layout(float x, float y)
     {
         x0 = x; y0 = y;
     }
 
     @Override
-    Form hover(float x, float y)
+    protected Form hover(float x, float y)
     {
         if (x < this.x0 || x > this.x0 + width || y < this.y0 || y > this.y0 + height) return null;
         return this;
     }
 
     @Override
-    boolean activate()
+    protected boolean activate()
     {
         if (onActivate != null) onActivate.accept(this);
         return false;
     }
     
     @Override
-    void render(DUIDrawer drawer)
+    protected void render(DUIDrawer drawer)
     {
         float x1 = x0 + width, y1 = y0 + height;
         

@@ -39,7 +39,7 @@ public class LayoutColumns extends Form
     }
     
     @Override
-    void updateSize()
+    protected void updateSize()
     {
         width = spacing*Util.max(0.0f, forms.size() - 1.0f);
         height = 0.0f;
@@ -53,7 +53,7 @@ public class LayoutColumns extends Form
     }
 
     @Override
-    void setAbsPos(float x0, float y0)
+    protected void layout(float x0, float y0)
     {
         float x = x0;
         float y1 = y0 + height;
@@ -63,13 +63,13 @@ public class LayoutColumns extends Form
             Vec2 size = new Vec2(form.width, form.height);
             float nextX = x + form.width;
             Vec2 aligned = Align.insideBounds(size, x, nextX, y0, y1, alignment);
-            form.setAbsPos(aligned.x, aligned.y);
+            form.layout(aligned.x, aligned.y);
             x = nextX + spacing;
         }
     }
 
     @Override
-    Form hover(float x, float y)
+    protected Form hover(float x, float y)
     {
         for (Form form : forms)
         {
@@ -80,18 +80,18 @@ public class LayoutColumns extends Form
     }
     
     @Override
-    ScrollBox findSrollbox(float x, float y)
+    protected ScrollBox findScrollBox(float x, float y)
     {
         for (Form form : forms)
         {
-            ScrollBox result = form.findSrollbox(x, y);
+            ScrollBox result = form.findScrollBox(x, y);
             if (result != null) return result;
         }
         return null;
     }
 
     @Override
-    void render(DUIDrawer drawer)
+    protected void render(DUIDrawer drawer)
     {
         for (Form form : forms) form.render(drawer);
     }

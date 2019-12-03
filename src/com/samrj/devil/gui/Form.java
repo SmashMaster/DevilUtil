@@ -12,47 +12,102 @@ import com.samrj.devil.math.Vec2;
  */
 public abstract class Form
 {
-    Window window;
-    float width, height;
+    /**
+     * Every form should belong to no more than 1 window. This is enforced by
+     * container forms like layouts, which will throw an exception if a form is
+     * added to them which already has a window.
+     */
+    protected Window window;
     
+    /**
+     * The size of a form is determined from the bottom of the form tree, up to
+     * the top. This means there are two kinds of forms: ones of fixed size, and
+     * ones that calculate their size from their children.
+     */
+    protected float width, height;
+    
+    /**
+     * Gets the current size of this form.
+     */
     public final Vec2 getSize()
     {
         return new Vec2(width, height);
     }
     
-    abstract void updateSize();
-    abstract void setAbsPos(float x, float y);
+    /**
+     * Calculates the size of this form based on its children.
+     */
+    abstract protected void updateSize();
     
-    Form hover(float x, float y)
+    /**
+     * Sets the southwest (or bottom-left) position of this form to the given
+     * coordinates, and updates all of its children recursively.
+     */
+    abstract protected void layout(float x, float y);
+    
+    /**
+     * Any form that may be clicked (activated) may be hovered. This method
+     * recursively finds the currently hovered form, or null if no form was
+     * found. Non-interactive forms may return null when the mouse is over them.
+     */
+    protected Form hover(float x, float y)
     {
         return null;
     }
     
-    ScrollBox findSrollbox(float x, float y)
+    /**
+     * Recursively finds whichever scrollbox the mouse is over. This is used to
+     * send mouse scroll wheel. ScrollBox returns itself, and leaf forms (those
+     * with no children) return null.
+     */
+    protected ScrollBox findScrollBox(float x, float y)
     {
         return null;
     }
     
-    boolean activate()
+    /**
+     * When a hovered form is clicked, this method is called on it. Some forms
+     * may have behavior that occurs when they are clicked, such as buttons and
+     * sliders. If a form has a click-and-drag behavior, this method should
+     * return true. It is often useful to grab focus from within this method,
+     * using DUI.focus().
+     */
+    protected boolean activate()
     {
         return false;
     }
     
-    void deactivate()
+    /**
+     * This method is called when a clicked-and-dragged form is released. It is
+     * not called if activate() returns false, as the form never becomes active.
+     */
+    protected void deactivate()
     {
     }
     
-    void character(char character, int codepoint)
+    /**
+     * Whichever form has focus will receive all character and key events.
+     */
+    protected void character(char character, int codepoint)
     {
     }
     
-    void key(int key, int action, int mods)
+    /**
+     * Whichever form has focus will receive all character and key events.
+     */
+    protected void key(int key, int action, int mods)
     {
     }
     
-    void defocus()
+    /**
+     * This method is called when a form loses focus.
+     */
+    protected void defocus()
     {
     }
 
-    abstract void render(DUIDrawer drawer);
+    /**
+     * This method is called to render a form to the screen.
+     */
+    protected abstract void render(DUIDrawer drawer);
 }

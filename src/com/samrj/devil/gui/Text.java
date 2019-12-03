@@ -26,7 +26,7 @@ public class Text extends Form
     }
     
     @Override
-    void updateSize()
+    protected void updateSize()
     {
         Font font = DUI.font();
         width = font.getWidth(text);
@@ -34,13 +34,13 @@ public class Text extends Form
     }
     
     @Override
-    void setAbsPos(float x, float y)
+    protected void layout(float x, float y)
     {
         x0 = x; y0 = y;
     }
     
     @Override
-    void render(DUIDrawer drawer)
+    protected void render(DUIDrawer drawer)
     {
         drawer.color(0.75f, 0.75f, 0.75f, 1.0f);
         drawer.text(text, DUI.font(), x0, y0);

@@ -122,18 +122,18 @@ public class TextField extends Form
     }
     
     @Override
-    void updateSize()
+    protected void updateSize()
     {
     }
 
     @Override
-    void setAbsPos(float x, float y)
+    protected void layout(float x, float y)
     {
         x0 = x; y0 = y;
     }
 
     @Override
-    Form hover(float x, float y)
+    protected Form hover(float x, float y)
     {
         if (dragged)
         {
@@ -156,7 +156,7 @@ public class TextField extends Form
     }
 
     @Override
-    boolean activate()
+    protected boolean activate()
     {
         dragged = true;
         
@@ -171,13 +171,13 @@ public class TextField extends Form
     }
 
     @Override
-    void deactivate()
+    protected void deactivate()
     {
         dragged = false;
     }
     
     @Override
-    void character(char character, int codepoint)
+    protected void character(char character, int codepoint)
     {
         int s0 = Math.min(caret, select);
         int s1 = Math.max(caret, select);
@@ -201,7 +201,7 @@ public class TextField extends Form
     }
     
     @Override
-    void key(int key, int action, int mods)
+    protected void key(int key, int action, int mods)
     {
         if (action != GLFW_PRESS && action != GLFW_REPEAT) return;
         
@@ -289,13 +289,13 @@ public class TextField extends Form
     }
     
     @Override
-    void defocus()
+    protected void defocus()
     {
         if (onLoseFocus != null) onLoseFocus.accept(this);
     }
 
     @Override
-    void render(DUIDrawer drawer)
+    protected void render(DUIDrawer drawer)
     {
         float x1 = x0 + width, y1 = y0 + height;
         

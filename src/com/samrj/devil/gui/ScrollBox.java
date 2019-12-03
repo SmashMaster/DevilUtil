@@ -68,13 +68,13 @@ public class ScrollBox extends Form
     }
     
     @Override
-    void updateSize()
+    protected void updateSize()
     {
         if (content != null) content.updateSize();
     }
 
     @Override
-    void setAbsPos(float x, float y)
+    protected void layout(float x, float y)
     {
         x0 = x; y0 = y;
         
@@ -85,12 +85,12 @@ public class ScrollBox extends Form
             Vec2 size = new Vec2(content.width, content.height);
             Vec2 aligned = Align.insideBounds(size, x0 + padding, x0 + width - SCROLLBAR_WIDTH,
                     y1 - content.height, y1, alignment);
-            content.setAbsPos(aligned.x, aligned.y + scrollY);
+            content.layout(aligned.x, aligned.y + scrollY);
         }
     }
     
     @Override
-    Form hover(float x, float y)
+    protected Form hover(float x, float y)
     {
         float cHeight = content != null ? content.height + padding*2.0f : 0.0f;
         float sbRatio = height/cHeight;
@@ -130,7 +130,7 @@ public class ScrollBox extends Form
     }
     
     @Override
-    boolean activate()
+    protected boolean activate()
     {
         if (scrollBarHovered)
         {
@@ -142,20 +142,20 @@ public class ScrollBox extends Form
     }
     
     @Override
-    void deactivate()
+    protected void deactivate()
     {
         scrollBarDragged = false;
     }
     
     @Override
-    ScrollBox findSrollbox(float x, float y)
+    protected ScrollBox findScrollBox(float x, float y)
     {
         if (x < this.x0 || x > this.x0 + width || y < this.y0 || y > this.y0 + height) return null;
         return this;
     }
 
     @Override
-    void render(DUIDrawer drawer)
+    protected void render(DUIDrawer drawer)
     {
         float x1 = x0 + width, y1 = y0 + height;
         float scrollBarX = x1 - SCROLLBAR_WIDTH;
