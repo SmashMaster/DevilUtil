@@ -1,0 +1,276 @@
+package com.samrj.devil.gui;
+
+import com.samrj.devil.math.Util;
+import com.samrj.devil.math.Vec2;
+
+/**
+ * The base class in which interfaces are created with DevilUI. The root form
+ * of a window may be anything, but is usually a layout or a scroll box.
+ * 
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2019 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
+ */
+public class Window
+{
+    private static final float TITLE_BAR_HEIGHT = 30.0f;
+    private static final float EDGE_CLAMP_MARGIN = TITLE_BAR_HEIGHT;
+    
+    Window above, below; //Doubly-linked list
+    boolean isVisible;
+    
+    private Form content;
+    private float x0, x1, y0, y1;
+    private String title;
+    private final Vec2 alignment = Align.NW.vector();
+    private float padding = 10.0f;
+    
+    private float dragStartX, dragStartY;
+    private boolean titleBarVisible = true, titleBarHovered;
+    private boolean draggable = true, dragged;
+    
+    public Window()
+    {
+    }
+    
+    /**
+     * Returns true if the DevilUI window stack contains this window.
+     */
+    public boolean isVisible()
+    {
+        return isVisible;
+    }
+    
+    /**
+     * Sets the content of this window to the given form.
+     */
+    public Window setContent(Form form)
+    {
+        if (form.window != null) throw new IllegalArgumentException("Supplied form already belongs to a window.");
+        content = form;
+        form.window = this;
+        return this;
+    }
+    
+    /**
+     * Sets the position and size of this window manually.
+     */
+    public Window setBounds(float x0, float x1, float y0, float y1)
+    {
+        this.x0 = x0; this.x1 = x1; this.y0 = y0; this.y1 = y1;
+        return this;
+    }
+    
+    /**
+     * Aligns this window to the viewport. Useful for centering, or putting in
+     * a corner or against an edge.
+     */
+    public Window setPosAlignToViewport(Vec2 alignment)
+    {
+        Vec2 size = new Vec2(x1 - x0, y1 - y0);
+        Vec2 viewport = DUI.viewport();
+        Vec2 aligned = Align.insideBounds(size, 0.0f, viewport.x, 0.0f, viewport.y, alignment);
+        x0 = aligned.x;
+        x1 = x0 + size.x;
+        y0 = aligned.y;
+        y1 = y0 + size.y;
+        return this;
+    }
+    
+    /**
+     * Puts this window smack dab in the middle of the screen. Make sure to set
+     * its size first, partner.
+     */
+    public Window setPosCenterViewport()
+    {
+        return setPosAlignToViewport(Align.C.vector());
+    }
+    
+    /**
+     * Sets whether this window may be repositioned by dragging the title bar.
+     */
+    public Window setDraggable(boolean draggable)
+    {
+        this.draggable = draggable;
+        return this;
+    }
+    
+    private float titleBarHeight()
+    {
+        return titleBarVisible ? TITLE_BAR_HEIGHT : 0.0f;
+    }
+    
+    /**
+     * Sets this window to the smallest size that will fit its content.
+     */
+    public Window setSizeFromContent()
+    {
+        float width = 0;
+        float height = 0;
+        
+        if (content != null)
+        {
+            content.updateSize();
+            width = Util.max(width, content.width + padding*2.0f);
+            height = Util.max(height, content.height + padding*2.0f + titleBarHeight());
+        }
+        
+        if (title != null) width = Util.max(width, DUI.font().getWidth(title) + padding*2.0f);
+        
+        height = Util.max(height, titleBarHeight());
+        
+        x1 = x0 + width;
+        y1 = y0 + height;
+        
+        return this;
+    }
+    
+    /**
+     * Sets whether this window has a visible title bar.
+     */
+    public Window setTitleBarVisible(boolean titleBarVisible)
+    {
+        this.titleBarVisible = titleBarVisible;
+        return this;
+    }
+    
+    /**
+     * Sets the title of this window to the given string, which may be null.
+     */
+    public Window setTitle(String string)
+    {
+        title = string;
+        return this;
+    }
+    
+    /**
+     * Sets the content alignment for this window to the given vector. Defaults
+     * to northwest, or (0, 1).
+     */
+    public Window setAlignment(Vec2 alignment)
+    {
+        this.alignment.set(alignment);
+        return this;
+    }
+    
+    public Window setPadding(float padding)
+    {
+        if (padding < 0.0f) throw new IllegalArgumentException();
+        this.padding = padding;
+        return this;
+    }
+    
+    //Used mostly to determine what is hovered.
+    Object hover(float x, float y)
+    {
+        if (dragged)
+        {
+            float w = x1 - x0, h = y1 - y0;
+            x0 = x + dragStartX;
+            x1 = x0 + w;
+            y0 = y + dragStartY;
+            y1 = y0 + h;
+        }
+        else
+        {
+            dragStartX = x0 - x;
+            dragStartY = y0 - y;
+        }
+        
+        if (x < x0 || x > x1 || y < y0 || y > y1) return null;
+        
+        if (y >= y1 - titleBarHeight())
+        {
+            titleBarHovered = true;
+            return this;
+        }
+        else titleBarHovered = false;
+        
+        if (content != null)
+        {
+            Form form = content.hover(x, y);
+            if (form != null) return form;
+        }
+        
+        return this;
+    }
+    
+    boolean activate()
+    {
+        if (titleBarHovered && draggable)
+        {
+            dragged = true;
+            return true;
+        }
+        return false;
+    }
+    
+    void deactivate()
+    {
+        dragged = false;
+    }
+    
+    void layout()
+    {
+        Vec2 viewport = DUI.viewport();
+        
+        //Clamp to edges of viewport, and make sure title bar is always visible.
+        if (x1 < EDGE_CLAMP_MARGIN)
+        {
+            float w = x1 - x0;
+            x1 = EDGE_CLAMP_MARGIN;
+            x0 = x1 - w;
+        }
+        else if (x0 > viewport.x - EDGE_CLAMP_MARGIN)
+        {
+            float w = x1 - x0;
+            x0 = viewport.x - EDGE_CLAMP_MARGIN;
+            x1 = x0 + w;
+        }
+        
+        if (y1 >= viewport.y)
+        {
+            float h = y1 - y0;
+            y1 = viewport.y;
+            y0 = y1 - h;
+        }
+        else if (y1 < EDGE_CLAMP_MARGIN)
+        {
+            float h = y1 - y0;
+            y1 = EDGE_CLAMP_MARGIN;
+            y0 = y1 - h;
+        }
+        
+        if (content != null)
+        {
+            content.updateSize();
+            Vec2 aligned = Align.insideBounds(new Vec2(content.width, content.height),
+                    x0 + padding, x1 - padding, y0 + padding, y1 - titleBarHeight() - padding, alignment);
+            content.setAbsPos(aligned.x, aligned.y);
+        }
+    }
+    
+    void render(DUIDrawer drawer)
+    {
+        drawer.color(0.25f, 0.25f, 0.25f, 1.0f);
+        drawer.rectFill(x0, x1, y0, y1);
+        drawer.color(0.75f, 0.75f, 0.75f, 1.0f);
+        drawer.rect(x0, x1, y0, y1);
+        
+        if (titleBarVisible)
+        {
+            drawer.line(x0, x1, y1 - titleBarHeight(), y1 - titleBarHeight());
+            if (title != null)
+            {
+                Font font = DUI.font();
+                Vec2 titleSize = font.getSize(title);
+                Vec2 aligned = Align.insideBounds(titleSize,
+                        x0 + padding, x1 - padding, y1 + padding - titleBarHeight(), y1 - padding, Align.W.vector());
+                drawer.color(1.0f, 1.0f, 1.0f, 1.0f);
+                drawer.text(title, font, aligned.x, aligned.y);
+            }
+        }
+        
+        if (content != null) content.render(drawer);
+    }
+}

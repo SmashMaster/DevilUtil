@@ -27,7 +27,6 @@ import com.samrj.devil.math.Util.PrimType;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.IdentityHashMap;

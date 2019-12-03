@@ -24,6 +24,7 @@
             <word>multisampled</word>
             <word>shader</word>
             <word>shaders</word>
+            <word>viewport</word>
             <word>vsync</word>
         </spellchecker-wordlist>
     </configuration>

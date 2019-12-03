@@ -22,6 +22,7 @@
 
 package com.samrj.devil.game;
 
+import com.samrj.devil.al.DAL;
 import com.samrj.devil.game.step.StepDynamicSplit;
 import com.samrj.devil.game.step.TimeStepper;
 import com.samrj.devil.game.sync.SleepHybrid;
@@ -33,6 +34,7 @@ import java.util.Objects;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
+import org.lwjgl.system.Configuration;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11C.*;
@@ -76,6 +78,23 @@ public final class Game
     private static Runnable destroyCallback;
     
     // <editor-fold defaultstate="collapsed" desc="Setup">
+    /**
+     * Sets whether the context created by this game will be in debug mode. Adds
+     * error checking to many DevilUtil libraries, including DGL and DAL.
+     * 
+     * Defaults to false.
+     */
+    public static void setDebug(boolean debug)
+    {
+        if (running) throw new IllegalStateException("Debug must be set before running game.");
+        
+        Configuration.DEBUG.set(debug);
+        Configuration.DEBUG_STACK.set(debug);
+        Configuration.DEBUG_MEMORY_ALLOCATOR.set(debug);
+        hint(GLFW_OPENGL_DEBUG_CONTEXT, debug ? GLFW_TRUE : GLFW_FALSE);
+        DAL.setDebug(debug);
+    }
+    
     /**
      * Sets a given GLFW window hint, that will be passed to the window when the
      * game is created. See GLFW documentation for a list of valid hints:
