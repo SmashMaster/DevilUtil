@@ -38,12 +38,6 @@ public class Text extends Form
     }
     
     @Override
-    protected void layout(float x, float y)
-    {
-        x0 = x; y0 = y;
-    }
-    
-    @Override
     protected void render(DUIDrawer drawer)
     {
         drawer.color(0.75f, 0.75f, 0.75f, 1.0f);

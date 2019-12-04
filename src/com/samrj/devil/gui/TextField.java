@@ -124,13 +124,7 @@ public class TextField extends Form
     protected void updateSize()
     {
     }
-
-    @Override
-    protected void layout(float x, float y)
-    {
-        x0 = x; y0 = y;
-    }
-
+    
     @Override
     protected Form hover(float x, float y)
     {

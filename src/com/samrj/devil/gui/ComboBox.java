@@ -104,12 +104,6 @@ public class ComboBox extends Form
         this.height = DUI.font().getHeight() + padding*2.0f;
         this.width = dropDown.getSize().x + height - ScrollBox.SCROLLBAR_WIDTH;
     }
-
-    @Override
-    protected void layout(float x, float y)
-    {
-        x0 = x; y0 = y;
-    }
     
     @Override
     protected Form hover(float x, float y)

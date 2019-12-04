@@ -50,7 +50,10 @@ public abstract class Form
      * Sets the southwest (or bottom-left) position of this form to the given
      * coordinates, and updates all of its children recursively.
      */
-    abstract protected void layout(float x, float y);
+    protected void layout(float x, float y)
+    {
+        x0 = x; y0 = y;
+    }
     
     /**
      * Any form that may be clicked (activated) may be hovered. This method

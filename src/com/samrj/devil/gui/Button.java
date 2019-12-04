@@ -69,12 +69,6 @@ public class Button extends Form
     }
     
     @Override
-    protected void layout(float x, float y)
-    {
-        x0 = x; y0 = y;
-    }
-
-    @Override
     protected Form hover(float x, float y)
     {
         if (x < this.x0 || x > this.x0 + width || y < this.y0 || y > this.y0 + height) return null;
