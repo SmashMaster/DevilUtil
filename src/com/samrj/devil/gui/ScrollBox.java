@@ -212,7 +212,7 @@ public class ScrollBox extends Form
         
         //Nested scrollboxes not supported yet. Could use a scissor stack.
         glEnable(GL_SCISSOR_TEST);
-        glScissor((int)x0, (int)y0, (int)(width - SCROLLBAR_WIDTH), (int)height - 1);
+        glScissor(Util.ceil(x0), Util.ceil(y0), Util.floor(width - SCROLLBAR_WIDTH), Util.floor(height));
         
         if (content != null) content.render(drawer);
         

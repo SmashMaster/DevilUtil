@@ -161,6 +161,36 @@ public final class DUI
     }
     
     /**
+     * Deactivates any active forms or windows (such as anything being dragged),
+     * unhovers all windows and forms, closes any dropdowns, and unfocuses any
+     * focused form. Useful for when a window is manually closed by the
+     * application.
+     */
+    public static void deactivateAll()
+    {
+        if (hoveredWindow != null) hoveredWindow = null;
+        if (activeWindow != null)
+        {
+            activeWindow.deactivate();
+            activeWindow = null;
+        }
+        if (hoveredForm != null) hoveredForm = null;
+        if (activeForm != null)
+        {
+            activeForm.deactivate();
+            activeForm = null;
+        }
+        if (focusedForm != null)
+        {
+            focusedForm.defocus();
+            focusedForm = null;
+        }
+        hoveredScrollBox = null;
+        dropDown = null;
+        dropDownHovered = false;
+    }
+    
+    /**
      * Returns the topmost window the mouse is currently over, or null if no
      * such window exists.
      */
@@ -283,13 +313,11 @@ public final class DUI
     {
         if (button != GLFW_MOUSE_BUTTON_LEFT) return;
         
-        mouseMoved(mouseX, mouseY); //Make sure hovered items are up to date.
-        
         switch (action)
         {
             case GLFW_PRESS:
-                
                 focus(null);
+                mouseMoved(mouseX, mouseY); //Make sure hovered items are up to date.
                 
                 if (!dropDownHovered) closeDropDown();
                 
@@ -319,12 +347,14 @@ public final class DUI
                 if (activeForm != null)
                 {
                     activeForm.deactivate();
-                    activeForm =  null;
+                    activeForm = null;
+                    mouseMoved(mouseX, mouseY);
                 }
                 else if (activeWindow != null)
                 {
                     activeWindow.deactivate();
                     activeWindow = null;
+                    mouseMoved(mouseX, mouseY);
                 }
                 break;
         }
