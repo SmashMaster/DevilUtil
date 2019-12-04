@@ -131,6 +131,19 @@ public final class DUIDrawer
         return this;
     }
     
+    public DUIDrawer triFill(float ax, float ay, float bx, float by, float cx, float cy)
+    {
+        pos.set(ax, ay); texCoord.set(0.0f, 0.0f); stream.vertex();
+        pos.set(bx, by); texCoord.set(0.0f, 1.0f); stream.vertex();
+        pos.set(cx, cy); texCoord.set(1.0f, 1.0f); stream.vertex();
+        
+        stream.upload();
+        nullTexture.bind(GL_TEXTURE0);
+        DGL.draw(stream, GL_TRIANGLES);
+        
+        return this;
+    }
+    
     /**
      * Draws a rectangle outline at the given position.
      */

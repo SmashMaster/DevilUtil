@@ -3,6 +3,7 @@ package com.samrj.devil.gui;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * A layout of horizontal rows, with forms being added from top to bottom.
@@ -14,7 +15,8 @@ import java.util.ArrayList;
 public class LayoutRows extends Form
 {
     private final ArrayList<Form> forms = new ArrayList<>();
-    private final Vec2 alignment = Align.NW.vector();
+    private final ArrayList<Vec2> alignments = new ArrayList<>();
+    private final Vec2 defaultAlignment;
     private float spacing = 10.0f;
     
     public LayoutRows clear()
@@ -23,22 +25,31 @@ public class LayoutRows extends Form
         return this;
     }
     
+    public LayoutRows(Vec2 defaultAlignment)
+    {
+        this.defaultAlignment = Objects.requireNonNull(defaultAlignment);
+    }
+    
+    public LayoutRows()
+    {
+        this(Align.NW.vector());
+    }
+    
+    public LayoutRows add(Form form, Vec2 alignment)
+    {
+        forms.add(Objects.requireNonNull(form));
+        alignments.add(Objects.requireNonNull(alignment));
+        return this;
+    }
+    
     public LayoutRows add(Form form)
     {
-        forms.add(form);
-        return this;
+        return add(form, defaultAlignment);
     }
     
-    public LayoutRows setContent(Form... formArray)
+    public LayoutRows setAllAlignments(Vec2 alignment)
     {
-        clear();
-        for (Form form : formArray) add(form);
-        return this;
-    }
-    
-    public LayoutRows setAlignment(Vec2 alignment)
-    {
-        this.alignment.set(alignment);
+        for (Vec2 a : alignments) a.set(alignment);
         return this;
     }
     
@@ -75,8 +86,11 @@ public class LayoutRows extends Form
         float x1 = x0 + width;
         float y = y0 + height;
         
-        for (Form form : forms)
+        for (int i=0; i<forms.size(); i++)
         {
+            Form form = forms.get(i);
+            Vec2 alignment = alignments.get(i);
+            
             Vec2 size = new Vec2(form.width, form.height);
             float nextY = y - form.height;
             Vec2 aligned = Align.insideBounds(size, x0, x1, nextY, y, alignment);

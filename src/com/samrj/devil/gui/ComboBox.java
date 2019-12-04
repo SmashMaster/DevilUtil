@@ -14,6 +14,9 @@ import java.util.function.Consumer;
  */
 public class ComboBox extends Form
 {
+    private static final float ICON_W = 0.40f;
+    private static final float ICON_H = 0.20f;
+    
     private final DropDown dropDown = new DropDown(this);
     private final ScrollBox scroll = new ScrollBox();
     private final LayoutRows rows = new LayoutRows();
@@ -59,7 +62,7 @@ public class ComboBox extends Form
     {
         int index = options.size();
         options.add(option);
-        rows.add(new Option(index, option));
+        rows.add(new Option(index, option), alignment);
         return this;
     }
     
@@ -79,7 +82,7 @@ public class ComboBox extends Form
     public ComboBox setAlignment(Vec2 alignment)
     {
         this.alignment.set(alignment);
-        rows.setAlignment(alignment);
+        rows.setAllAlignments(alignment);
         return this;
     }
     
@@ -156,13 +159,17 @@ public class ComboBox extends Form
         drawer.color(outline, outline, outline, 1.0f);
         drawer.rect(x0, x1, y0, y1);
         
-        float iconSize = height - padding*2.0f;
-        float iconX1 = x1 - padding;
-        float iconX0 = iconX1 - iconSize;
-        float iconXMid = iconX1 - iconSize*0.5f;
+        float iconW = height*ICON_W;
+        float iconX1 = x1 - (height - iconW)*0.5f;
+        float iconX0 = iconX1 - iconW;
+        float iconXMid = iconX1 - iconW*0.5f;
         
-        drawer.tri(iconX0, y1 - padding, iconXMid, y0 + padding, iconX1, y1 - padding);
+        float iconH = height*ICON_H;
+        float iconY0 = y0 + (height - iconH)*0.5f;
+        float iconY1 = iconY0 + iconH;
+        
         drawer.line(x1 - height, x1 - height, y0, y1);
+        drawer.triFill(iconX0, iconY1, iconXMid, iconY0, iconX1, iconY1);
         
         if (!options.isEmpty())
         {
