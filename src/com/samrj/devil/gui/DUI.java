@@ -156,7 +156,8 @@ public final class DUI
     public static boolean anyActive()
     {
         return hoveredWindow != null || activeWindow != null ||
-               hoveredForm != null || activeForm != null;
+               hoveredForm != null || activeForm != null ||
+               (dropDown != null && dropDownHovered);
     }
     
     /**

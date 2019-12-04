@@ -20,7 +20,7 @@ public class TextField extends Form
     private String text = "";
     private String previewText;
     private final Vec2 alignment = Align.NW.vector();
-    private float padding = 5.0f;
+    private float padding = 3.0f;
     private int caret, select;
     private Consumer<TextField> onFocus, onLoseFocus, onConfirm, onChanged;
     
@@ -118,11 +118,6 @@ public class TextField extends Form
         select = caret;
         DUI.resetCaretBlinkTimer();
         return this;
-    }
-    
-    @Override
-    protected void updateSize()
-    {
     }
     
     @Override

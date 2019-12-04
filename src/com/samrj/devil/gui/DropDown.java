@@ -16,9 +16,9 @@ public final class DropDown
 {
     private final Form parent;
     private Form content;
-    private float x0, y0, width, height;
+    private float x0 = 128.0f, y0 = 128.0f, width, height;
     private final Vec2 alignment = Align.NW.vector();
-    private float padding = 10.0f;
+    private float padding = 0.0f;
     
     public DropDown(Form parent)
     {

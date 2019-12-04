@@ -21,7 +21,7 @@ public class ComboBox extends Form
     private int selection;
     private final Vec2 alignment = Align.W.vector();
     private float dropDownHeight = 128.0f;
-    private float padding = 5.0f;
+    private float padding = 3.0f;
     private Consumer<ComboBox> onSelect;
     
     public ComboBox()
@@ -96,13 +96,30 @@ public class ComboBox extends Form
         return this;
     }
     
-    @Override
-    protected void updateSize()
+    public ComboBox setSize(float width)
     {
+        this.width = width;
+        this.height = DUI.font().getHeight() + padding*2.0f;
+        rows.updateSize();
+        scroll.setSizeFromContent(dropDownHeight).setWidth(width - height + ScrollBox.SCROLLBAR_WIDTH);
+        dropDown.setSizeFromContent();
+        return this;
+    }
+    
+    public ComboBox setSizeFromContent()
+    {
+        rows.updateSize();
         scroll.setSizeFromContent(dropDownHeight);
         dropDown.setSizeFromContent();
         this.height = DUI.font().getHeight() + padding*2.0f;
         this.width = dropDown.getSize().x + height - ScrollBox.SCROLLBAR_WIDTH;
+        return this;
+    }
+    
+    @Override
+    protected void updateSize()
+    {
+        scroll.updateSize();
     }
     
     @Override

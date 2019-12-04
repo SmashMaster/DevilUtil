@@ -31,8 +31,8 @@ public class LayoutColumns extends Form
     
     public LayoutColumns setContent(Form... formArray)
     {
-        forms.clear();
-        for (Form form : formArray) forms.add(form);
+        clear();
+        for (Form form : formArray) add(form);
         return this;
     }
     

@@ -44,11 +44,6 @@ public class Slider extends Form
     }
     
     @Override
-    protected void updateSize()
-    {
-    }
-
-    @Override
     protected Form hover(float x, float y)
     {
         float boxW = height/2.0f;

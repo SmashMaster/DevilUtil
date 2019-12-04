@@ -15,7 +15,7 @@ public class Button extends Form
 {
     private String text;
     private final Vec2 alignment = Align.C.vector();
-    private float padding = 5.0f;
+    private float padding = 3.0f;
     private Consumer<Button> onActivate;
     
     public Button(String text)
@@ -33,6 +33,13 @@ public class Button extends Form
     {
         this.width = width;
         this.height = height;
+        return this;
+    }
+    
+    public Button setSize(float width)
+    {
+        this.width = width;
+        this.height = DUI.font().getHeight() + padding*2.0f;
         return this;
     }
     
@@ -61,11 +68,6 @@ public class Button extends Form
     {
         this.onActivate = onActivate;
         return this;
-    }
-    
-    @Override
-    protected void updateSize()
-    {
     }
     
     @Override

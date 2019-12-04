@@ -21,7 +21,7 @@ public final class Window
     boolean isVisible;
     
     private Form content;
-    private float x0, x1, y0, y1;
+    private float x0, x1 = 256.0f, y0, y1 = 256.0f;
     private String title;
     private final Vec2 alignment = Align.NW.vector();
     private float padding = 10.0f;

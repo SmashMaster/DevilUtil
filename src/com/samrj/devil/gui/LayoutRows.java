@@ -31,8 +31,8 @@ public class LayoutRows extends Form
     
     public LayoutRows setContent(Form... formArray)
     {
-        forms.clear();
-        for (Form form : formArray) forms.add(form);
+        clear();
+        for (Form form : formArray) add(form);
         return this;
     }
     

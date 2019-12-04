@@ -40,12 +40,24 @@ public class ScrollBox extends Form
         return this;
     }
     
-    public ScrollBox setSizeFromContent(float height)
+    public ScrollBox setWidth(float width)
+    {
+        this.width = width;
+        return this;
+    }
+    
+    public ScrollBox setHeight(float height)
+    {
+        this.height = height;
+        return this;
+    }
+    
+    public ScrollBox setSizeFromContent(float maxHeight)
     {
         if (content == null) return this;
         content.updateSize();
         this.width = content.width + padding*2.0f + SCROLLBAR_WIDTH;
-        this.height = height;
+        this.height = Util.min(content.height + padding*2.0f, maxHeight);
         return this;
     }
     
@@ -200,7 +212,7 @@ public class ScrollBox extends Form
         
         //Nested scrollboxes not supported yet. Could use a scissor stack.
         glEnable(GL_SCISSOR_TEST);
-        glScissor((int)x0, (int)y0, (int)(width - SCROLLBAR_WIDTH + 1), (int)height - 1);
+        glScissor((int)x0, (int)y0, (int)(width - SCROLLBAR_WIDTH), (int)height - 1);
         
         if (content != null) content.render(drawer);
         

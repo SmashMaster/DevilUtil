@@ -23,7 +23,7 @@ public abstract class Form
      * the top. This means there are two kinds of forms: ones of fixed size, and
      * ones that calculate their size from their children.
      */
-    protected float width = 256.0f, height = 256.0f;
+    protected float width = 128.0f, height = 32.0f;
     
     /**
      * Returns the current southwest (bottom-left) corner of this form.
@@ -44,7 +44,9 @@ public abstract class Form
     /**
      * Calculates the size of this form based on its children.
      */
-    abstract protected void updateSize();
+    protected void updateSize()
+    {
+    }
     
     /**
      * Sets the southwest (or bottom-left) position of this form to the given
