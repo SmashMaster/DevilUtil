@@ -23,6 +23,7 @@
 package com.samrj.devil.gui;
 
 import com.samrj.devil.math.Vec2;
+import java.util.Objects;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11C.*;
@@ -32,7 +33,7 @@ import static org.lwjgl.opengl.GL11C.*;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class DUI
+public final class DUI
 {
     private static DUIDrawer drawer;
     private static Font font;
@@ -45,6 +46,8 @@ public class DUI
     private static Form hoveredForm, activeForm;
     private static Form focusedForm;
     private static ScrollBox hoveredScrollBox;
+    private static DropDown dropDown;
+    private static boolean dropDownHovered;
     
     /**
      * Initializes DevilUI.
@@ -175,6 +178,30 @@ public class DUI
     }
     
     /**
+     * Shows the given DropDown. It will be visible above all windows until a
+     * click event happens anywhere outside its bounds.
+     */
+    public static void dropDown(DropDown dropDown, float parentX, float parentY, Vec2 parentSize)
+    {
+        DUI.dropDown = Objects.requireNonNull(dropDown);
+        if (dropDown != null)
+        {
+            Vec2 ddSize = dropDown.getSize();
+            dropDown.layout(parentX, parentY - ddSize.y);
+        }
+    }
+    
+    public static DropDown getDropDown()
+    {
+        return dropDown;
+    }
+    
+    public static void closeDropDown()
+    {
+        DUI.dropDown = null;
+    }
+    
+    /**
      * Sends a mouse move event to DevilUI. These events are needed to determine
      * which window or form is currently hovered.
      */
@@ -198,11 +225,26 @@ public class DUI
             return;
         }
         
+        if (dropDown != null)
+        {
+            Object hovered = dropDown.hover(x, y);
+            ScrollBox scrollBox = dropDown.findScrollBox(x, y);
+            
+            if (hovered instanceof Form) hoveredForm = (Form)hovered;
+            
+            dropDownHovered = hovered != null;
+            if (dropDownHovered)
+            {
+                hoveredScrollBox = scrollBox;
+                return;
+            }
+        }
+        
         Window window = topWindow;
         while (window != null)
         {
             Object hovered = window.hover(x, y);
-            ScrollBox scrollBox = window.findSrollbox(x, y);
+            ScrollBox scrollBox = window.findScrollBox(x, y);
             if (hovered instanceof Form)
             {
                 hoveredForm = (Form)hovered;
@@ -248,6 +290,8 @@ public class DUI
                 
                 focus(null);
                 
+                if (!dropDownHovered) closeDropDown();
+                
                 if (activeForm == null && activeWindow == null)
                 {
                     if (hoveredWindow != null) bringToTop(hoveredWindow);
@@ -290,10 +334,11 @@ public class DUI
      */
     public static void mouseScroll(float dx, float dy)
     {
+        if (dropDown != null && !dropDownHovered && hoveredForm != dropDown.getParent()) dropDown = null;
+        
         if (hoveredScrollBox != null)
         {
             hoveredScrollBox.mouseScroll(dx, dy);
-            hoveredWindow.layout();
             mouseMoved(mouseX, mouseY);
         }
     }
@@ -393,6 +438,8 @@ public class DUI
             window.render(drawer);
             window = window.above;
         }
+        
+        if (dropDown != null) dropDown.render(drawer);
     }
     
     /**
@@ -403,5 +450,9 @@ public class DUI
         if (!init) throw new IllegalStateException("Not initialized.");
         drawer.destroy();
         init = false;
+    }
+    
+    private DUI()
+    {
     }
 }

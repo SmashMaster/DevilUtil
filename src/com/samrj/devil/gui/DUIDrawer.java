@@ -13,7 +13,7 @@ import static org.lwjgl.opengl.GL13C.*;
 /**
  * Used for internal DevilUI draw calls, but also exposed for convenience.
  */
-public class DUIDrawer
+public final class DUIDrawer
 {
     private static final String VERTEX_SHADER_SOURCE =
             "#version 140\n" +
@@ -110,6 +110,19 @@ public class DUIDrawer
     {
         pos.set(x0, y0); texCoord.set(0.0f, 0.0f); stream.vertex();
         pos.set(x1, y1); texCoord.set(1.0f, 1.0f); stream.vertex();
+        
+        stream.upload();
+        nullTexture.bind(GL_TEXTURE0);
+        DGL.draw(stream, GL_LINE_LOOP);
+        
+        return this;
+    }
+    
+    public DUIDrawer tri(float ax, float ay, float bx, float by, float cx, float cy)
+    {
+        pos.set(ax, ay); texCoord.set(0.0f, 0.0f); stream.vertex();
+        pos.set(bx, by); texCoord.set(0.0f, 1.0f); stream.vertex();
+        pos.set(cx, cy); texCoord.set(1.0f, 1.0f); stream.vertex();
         
         stream.upload();
         nullTexture.bind(GL_TEXTURE0);

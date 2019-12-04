@@ -13,18 +13,25 @@ import com.samrj.devil.math.Vec2;
 public abstract class Form
 {
     /**
-     * Every form should belong to no more than 1 window. This is enforced by
-     * container forms like layouts, which will throw an exception if a form is
-     * added to them which already has a window.
+     * The position of the southwest (bottom-left) corner of this Form in
+     * viewport space.
      */
-    protected Window window;
+    protected float x0, y0;
     
     /**
      * The size of a form is determined from the bottom of the form tree, up to
      * the top. This means there are two kinds of forms: ones of fixed size, and
      * ones that calculate their size from their children.
      */
-    protected float width, height;
+    protected float width = 256.0f, height = 256.0f;
+    
+    /**
+     * Returns the current southwest (bottom-left) corner of this form.
+     */
+    public final Vec2 getPos()
+    {
+        return new Vec2(x0, y0);
+    }
     
     /**
      * Gets the current size of this form.

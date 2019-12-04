@@ -14,7 +14,6 @@ import java.util.function.Consumer;
 public class Button extends Form
 {
     private String text;
-    private float x0, y0;
     private final Vec2 alignment = Align.C.vector();
     private float padding = 5.0f;
     private Consumer<Button> onActivate;
@@ -37,7 +36,7 @@ public class Button extends Form
         return this;
     }
     
-    public Button shrinkToText()
+    public Button setSizeFromText()
     {
         Font font = DUI.font();
         width = font.getWidth(text) + padding*2.0f;

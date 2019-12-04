@@ -12,7 +12,6 @@ import java.util.Objects;
 public class Text extends Form
 {
     private String text;
-    private float x0, y0;
     
     public Text(String text)
     {
@@ -23,6 +22,11 @@ public class Text extends Form
     {
         this.text = Objects.requireNonNull(text);
         return this;
+    }
+    
+    public String getText()
+    {
+        return text;
     }
     
     @Override

@@ -15,11 +15,11 @@ import static org.lwjgl.opengl.GL11C.*;
  */
 public class ScrollBox extends Form
 {
-    private static final float SCROLLBAR_WIDTH = 20.0f;
+    public static final float SCROLLBAR_WIDTH = 20.0f;
+    
     private static final float SCROLL_RATE = 53.0f;
     
     private Form content;
-    private float x0, y0;
     private final Vec2 alignment = Align.NW.vector();
     private float padding = 10.0f;
     private float scrollY;
@@ -27,14 +27,9 @@ public class ScrollBox extends Form
     private float dragStartY;
     private boolean scrollBarHovered, scrollBarDragged;
     
-    /**
-     * Sets the content of this window to the given form.
-     */
     public ScrollBox setContent(Form form)
     {
-        if (form.window != null) throw new IllegalArgumentException("Supplied form already belongs to a window.");
         content = form;
-        form.window = window;
         return this;
     }
     
@@ -89,16 +84,33 @@ public class ScrollBox extends Form
         }
     }
     
+    private void clampScroll()
+    {
+        //Could try to implement alignment here, as this works only for NW.
+        float cHeight = content != null ? content.height + padding*2.0f : 0.0f;
+        float max = cHeight - height;
+        
+        if (max < 0.0f)
+        {
+            scrollY = 0.0f;
+            return;
+        }
+        
+        scrollY = Util.clamp(scrollY, 0.0f, max);
+    }
+    
     @Override
     protected Form hover(float x, float y)
     {
+        
         float cHeight = content != null ? content.height + padding*2.0f : 0.0f;
         float sbRatio = height/cHeight;
         
         if (scrollBarDragged)
         {
             scrollY = dragStartY + (y0 - y)/sbRatio;
-            scrollY = Util.clamp(scrollY, 0.0f, cHeight - height);
+            clampScroll();
+            layout(x0, y0);
         }
         else dragStartY = scrollY - (y0 - y)/sbRatio;
         
@@ -125,8 +137,9 @@ public class ScrollBox extends Form
     
     void mouseScroll(float dx, float dy)
     {
-        float cHeight = content != null ? content.height + padding*2.0f : 0.0f;
-        scrollY = Util.clamp(scrollY - dy*SCROLL_RATE, 0.0f, cHeight - height);
+        scrollY -= dy*SCROLL_RATE;
+        clampScroll();
+        layout(x0, y0);
     }
     
     @Override
@@ -151,6 +164,13 @@ public class ScrollBox extends Form
     protected ScrollBox findScrollBox(float x, float y)
     {
         if (x < this.x0 || x > this.x0 + width || y < this.y0 || y > this.y0 + height) return null;
+        
+        if (content != null)
+        {
+            ScrollBox inner = content.findScrollBox(x, y);
+            if (inner != null) return inner;
+        }
+        
         return this;
     }
 
@@ -165,20 +185,22 @@ public class ScrollBox extends Form
         drawer.color(0.75f, 0.75f, 0.75f, 1.0f);
         drawer.line(scrollBarX, scrollBarX, y0, y1);
         
-        float sbColor = (scrollBarDragged || (DUI.getHoveredForm() == this && scrollBarHovered)) ? 1.0f : 0.75f;
-        
         float cHeight = content != null ? content.height + padding*2.0f : 0.0f;
-        float sbRatio = height/cHeight;
-        float sbY1 = y1 - scrollY*sbRatio;
-        float sbY0 = sbY1 - height*sbRatio;
-        drawer.color(0.375f, 0.375f, 0.375f, 1.0f);
-        drawer.rectFill(scrollBarX, x1, sbY0, sbY1);
-        drawer.color(sbColor, sbColor, sbColor, 1.0f);
-        drawer.rect(scrollBarX, x1, sbY0, sbY1);
+        if (height < cHeight)
+        {
+            float sbColor = (scrollBarDragged || (DUI.getHoveredForm() == this && scrollBarHovered)) ? 1.0f : 0.75f;
+            float sbRatio = height/cHeight;
+            float sbY1 = y1 - scrollY*sbRatio;
+            float sbY0 = sbY1 - height*sbRatio;
+            drawer.color(0.375f, 0.375f, 0.375f, 1.0f);
+            drawer.rectFill(scrollBarX, x1, sbY0, sbY1);
+            drawer.color(sbColor, sbColor, sbColor, 1.0f);
+            drawer.rect(scrollBarX, x1, sbY0, sbY1);
+        }
         
         //Nested scrollboxes not supported yet. Could use a scissor stack.
         glEnable(GL_SCISSOR_TEST);
-        glScissor((int)x0, (int)y0, (int)(width - SCROLLBAR_WIDTH - 1), (int)height - 1);
+        glScissor((int)x0, (int)y0, (int)(width - SCROLLBAR_WIDTH + 1), (int)height - 1);
         
         if (content != null) content.render(drawer);
         

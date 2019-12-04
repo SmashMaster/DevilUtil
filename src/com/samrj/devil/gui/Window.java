@@ -11,7 +11,7 @@ import com.samrj.devil.math.Vec2;
  * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Window
+public final class Window
 {
     private static final float TITLE_BAR_HEIGHT = 30.0f;
     private static final float TITLE_PADDING = 5.0f;
@@ -47,9 +47,7 @@ public class Window
      */
     public Window setContent(Form form)
     {
-        if (form.window != null) throw new IllegalArgumentException("Supplied form already belongs to a window.");
         content = form;
-        form.window = this;
         return this;
     }
     
@@ -197,7 +195,7 @@ public class Window
         return this;
     }
     
-    ScrollBox findSrollbox(float x, float y)
+    ScrollBox findScrollBox(float x, float y)
     {
         if (x < x0 || x > x1 || y < y0 || y > y1) return null;
         if (content == null) return null;

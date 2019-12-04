@@ -17,11 +17,22 @@ public class LayoutColumns extends Form
     private final Vec2 alignment = Align.NW.vector();
     private float spacing = 10.0f;
     
+    public LayoutColumns clear()
+    {
+        forms.clear();
+        return this;
+    }
+    
     public LayoutColumns add(Form form)
     {
-        if (form.window != null) throw new IllegalArgumentException("Supplied form already belongs to a window.");
         forms.add(form);
-        form.window = window;
+        return this;
+    }
+    
+    public LayoutColumns setContent(Form... formArray)
+    {
+        forms.clear();
+        for (Form form : formArray) forms.add(form);
         return this;
     }
     
@@ -36,6 +47,11 @@ public class LayoutColumns extends Form
         if (spacing < 0.0f) throw new IllegalArgumentException();
         this.spacing = spacing;
         return this;
+    }
+    
+    public float getSpacing()
+    {
+        return spacing;
     }
     
     @Override
@@ -55,6 +71,7 @@ public class LayoutColumns extends Form
     @Override
     protected void layout(float x0, float y0)
     {
+        this.x0 = x0; this.y0 = y0;
         float x = x0;
         float y1 = y0 + height;
         

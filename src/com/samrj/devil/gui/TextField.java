@@ -19,7 +19,6 @@ public class TextField extends Form
     
     private String text = "";
     private String previewText;
-    private float x0, y0;
     private final Vec2 alignment = Align.NW.vector();
     private float padding = 5.0f;
     private int caret, select;
