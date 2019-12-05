@@ -21,6 +21,7 @@
  ******************************************************************************/
 package com.eclipsesource.json;
 
+import java.io.File;
 import java.io.IOException;
 
 
@@ -39,25 +40,26 @@ final class JsonLiteral extends JsonValue {
     }
   }
   
-  static JsonLiteral makeNull() {
-    return new JsonLiteral(Type.NULL);
+  static JsonLiteral makeNull(File source) {
+    return new JsonLiteral(source, Type.NULL);
   }
   
-  static JsonLiteral makeTrue() {
-    return new JsonLiteral(Type.TRUE);
+  static JsonLiteral makeTrue(File source) {
+    return new JsonLiteral(source, Type.TRUE);
   }
   
-  static JsonLiteral makeFalse() {
-    return new JsonLiteral(Type.FALSE);
+  static JsonLiteral makeFalse(File source) {
+    return new JsonLiteral(source, Type.FALSE);
   }
   
-  static JsonLiteral makeBoolean(boolean value) {
-    return value ? makeTrue() : makeFalse();
+  static JsonLiteral makeBoolean(File source, boolean value) {
+    return value ? makeTrue(source) : makeFalse(source);
   }
   
   private final Type type;
 
-  private JsonLiteral(Type type) {
+  private JsonLiteral(File source, Type type) {
+    super(source);
     this.type = type;
   }
   

@@ -22,6 +22,7 @@
 package com.eclipsesource.json;
 
 import com.eclipsesource.json.JsonObject.Member;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -79,7 +80,8 @@ public final class JsonObject extends JsonValue implements Iterable<Member> {
   /**
    * Creates a new empty JsonObject.
    */
-  public JsonObject() {
+  JsonObject(File source) {
+    super(source);
     names = new ArrayList<>();
     values = new ArrayList<>();
     table = new HashIndexTable();
@@ -91,11 +93,12 @@ public final class JsonObject extends JsonValue implements Iterable<Member> {
    * @param object
    *          the JSON object to get the initial contents from, must not be <code>null</code>
    */
-  public JsonObject(JsonObject object) {
-    this(object, false);
+  JsonObject(File source, JsonObject object) {
+    this(source, object, false);
   }
 
-  private JsonObject(JsonObject object, boolean unmodifiable) {
+  private JsonObject(File source, JsonObject object, boolean unmodifiable) {
+    super(source);
     if (object == null) {
       throw new NullPointerException("object is null");
     }
@@ -124,7 +127,7 @@ public final class JsonObject extends JsonValue implements Iterable<Member> {
    * @return an unmodifiable view of the specified JsonObject
    */
   public static JsonObject unmodifiableObject(JsonObject object) {
-    return new JsonObject(object, true);
+    return new JsonObject(object.getSource(), object, true);
   }
 
   /**

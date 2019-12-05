@@ -21,6 +21,7 @@
  ******************************************************************************/
 package com.eclipsesource.json;
 
+import java.io.File;
 import java.io.IOException;
 
 
@@ -29,7 +30,8 @@ final class JsonNumber extends JsonValue {
 
   private final String string;
 
-  JsonNumber(String string) {
+  JsonNumber(File source, String string) {
+    super(source);
     if (string == null) {
       throw new NullPointerException("string is null");
     }

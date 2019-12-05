@@ -21,7 +21,10 @@
  ******************************************************************************/
 package com.eclipsesource.json;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 
 
@@ -65,7 +68,7 @@ public final class Json {
    * @return a JSON value that represents the given value
    */
   public static JsonValue value(int value) {
-    return new JsonNumber(Integer.toString(value, 10));
+    return new JsonNumber(null, Integer.toString(value, 10));
   }
 
   /**
@@ -76,7 +79,7 @@ public final class Json {
    * @return a JSON value that represents the given value
    */
   public static JsonValue value(long value) {
-    return new JsonNumber(Long.toString(value, 10));
+    return new JsonNumber(null, Long.toString(value, 10));
   }
 
   /**
@@ -90,7 +93,7 @@ public final class Json {
     if (Float.isInfinite(value) || Float.isNaN(value)) {
       throw new IllegalArgumentException("Infinite and NaN values not permitted in JSON");
     }
-    return new JsonNumber(cutOffPointZero(Float.toString(value)));
+    return new JsonNumber(null, cutOffPointZero(Float.toString(value)));
   }
 
   /**
@@ -104,7 +107,7 @@ public final class Json {
     if (Double.isInfinite(value) || Double.isNaN(value)) {
       throw new IllegalArgumentException("Infinite and NaN values not permitted in JSON");
     }
-    return new JsonNumber(cutOffPointZero(Double.toString(value)));
+    return new JsonNumber(null, cutOffPointZero(Double.toString(value)));
   }
 
   /**
@@ -115,7 +118,7 @@ public final class Json {
    * @return a JSON value that represents the given string
    */
   public static JsonValue value(String string) {
-    return string == null ? JsonLiteral.makeNull() : new JsonString(string);
+    return string == null ? JsonLiteral.makeNull(null) : new JsonString(null, string);
   }
 
   /**
@@ -126,7 +129,7 @@ public final class Json {
    * @return a JSON value that represents the given value
    */
   public static JsonValue value(boolean value) {
-    return JsonLiteral.makeBoolean(value);
+    return JsonLiteral.makeBoolean(null, value);
   }
 
   /**
@@ -136,7 +139,7 @@ public final class Json {
    * @return a new empty JSON array
    */
   public static JsonArray array() {
-    return new JsonArray();
+    return new JsonArray(null);
   }
 
   /**
@@ -151,7 +154,7 @@ public final class Json {
     if (values == null) {
       throw new NullPointerException("values is null");
     }
-    JsonArray array = new JsonArray();
+    JsonArray array = new JsonArray(null);
     for (int value : values) {
       array.add(value);
     }
@@ -170,7 +173,7 @@ public final class Json {
     if (values == null) {
       throw new NullPointerException("values is null");
     }
-    JsonArray array = new JsonArray();
+    JsonArray array = new JsonArray(null);
     for (long value : values) {
       array.add(value);
     }
@@ -189,7 +192,7 @@ public final class Json {
     if (values == null) {
       throw new NullPointerException("values is null");
     }
-    JsonArray array = new JsonArray();
+    JsonArray array = new JsonArray(null);
     for (float value : values) {
       array.add(value);
     }
@@ -208,7 +211,7 @@ public final class Json {
     if (values == null) {
       throw new NullPointerException("values is null");
     }
-    JsonArray array = new JsonArray();
+    JsonArray array = new JsonArray(null);
     for (double value : values) {
       array.add(value);
     }
@@ -227,7 +230,7 @@ public final class Json {
     if (values == null) {
       throw new NullPointerException("values is null");
     }
-    JsonArray array = new JsonArray();
+    JsonArray array = new JsonArray(null);
     for (boolean value : values) {
       array.add(value);
     }
@@ -245,7 +248,7 @@ public final class Json {
     if (strings == null) {
       throw new NullPointerException("values is null");
     }
-    JsonArray array = new JsonArray();
+    JsonArray array = new JsonArray(null);
     for (String value : strings) {
       array.add(value);
     }
@@ -259,7 +262,7 @@ public final class Json {
    * @return a new empty JSON object
    */
   public static JsonObject object() {
-    return new JsonObject();
+    return new JsonObject(null);
   }
 
   /**
@@ -276,7 +279,7 @@ public final class Json {
     if (string == null) {
       throw new NullPointerException("string is null");
     }
-    return new JsonParser().parse(string);
+    return new JsonParser(null).parse(string);
   }
 
   /**
@@ -299,7 +302,25 @@ public final class Json {
     if (reader == null) {
       throw new NullPointerException("reader is null");
     }
-    return new JsonParser().parse(reader);
+    return new JsonParser(null).parse(reader);
+  }
+  
+  /**
+   * Reads the entire input from the given file and parses it as JSON. The input must contain a
+   * valid JSON value, optionally padded with whitespace.
+   * 
+   * @param file
+   *          the file to read the JSON value from
+   * @return a value that represents the parsed JSON
+   * @throws IOException
+   *           if an I/O error occurs in the reader
+   * @throws ParseException
+   *           if the input is not valid JSON
+   */
+  public static JsonValue parse(File file) throws IOException {
+    try (Reader r = new InputStreamReader(new FileInputStream(file))) {
+      return new JsonParser(file).parse(r);
+    }
   }
 
   private static String cutOffPointZero(String string) {

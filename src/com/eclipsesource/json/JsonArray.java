@@ -21,6 +21,7 @@
  ******************************************************************************/
 package com.eclipsesource.json;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,21 +68,13 @@ public final class JsonArray extends JsonValue implements Iterable<JsonValue> {
   /**
    * Creates a new empty JsonArray.
    */
-  public JsonArray() {
+  JsonArray(File source) {
+    super(source);
     values = new ArrayList<>();
   }
 
-  /**
-   * Creates a new JsonArray with the contents of the specified JSON array.
-   *
-   * @param array
-   *          the JsonArray to get the initial contents from, must not be <code>null</code>
-   */
-  public JsonArray(JsonArray array) {
-    this(array, false);
-  }
-
-  private JsonArray(JsonArray array, boolean unmodifiable) {
+  JsonArray(File source, JsonArray array, boolean unmodifiable) {
+    super(source);
     if (array == null) {
       throw new NullPointerException("array is null");
     }
@@ -90,6 +83,16 @@ public final class JsonArray extends JsonValue implements Iterable<JsonValue> {
     } else {
       values = new ArrayList<>(array.values);
     }
+  }
+  
+  /**
+   * Creates a new JsonArray with the contents of the specified JSON array.
+   *
+   * @param array
+   *          the JsonArray to get the initial contents from, must not be <code>null</code>
+   */
+  JsonArray(File source, JsonArray array) {
+    this(source, array, false);
   }
   
   /**
@@ -105,7 +108,7 @@ public final class JsonArray extends JsonValue implements Iterable<JsonValue> {
    * @return an unmodifiable view of the specified JsonArray
    */
   public static JsonArray unmodifiableArray(JsonArray array) {
-    return new JsonArray(array, true);
+    return new JsonArray(array.getSource(), array, true);
   }
 
   /**

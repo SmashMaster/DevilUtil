@@ -21,6 +21,7 @@
  ******************************************************************************/
 package com.eclipsesource.json;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
@@ -62,10 +63,11 @@ import java.io.Writer;
 @SuppressWarnings("serial") // use default serial UID
 public abstract class JsonValue implements Serializable {
     
+  private final File source;
   private Location location;
   
-  JsonValue() {
-    // prevent subclasses outside of this package
+  JsonValue(File source) {
+    this.source = source;
   }
   
   void setLocation(Location location)
@@ -77,6 +79,16 @@ public abstract class JsonValue implements Serializable {
       throw new IllegalStateException("already has location");
     }
     this.location = location;
+  }
+  
+  /**
+   * Returns the file from which this JSON value was loaded, or null if it was
+   * not loaded from a file.
+   * 
+   * @return the file from which this value was created
+   */
+  public final File getSource() {
+    return source;
   }
   
   /**

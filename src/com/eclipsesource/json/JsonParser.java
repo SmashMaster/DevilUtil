@@ -21,6 +21,7 @@
  ******************************************************************************/
 package com.eclipsesource.json;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -35,6 +36,7 @@ final class JsonParser {
   private static final int MIN_BUFFER_SIZE = 10;
   private static final int DEFAULT_BUFFER_SIZE = 1024;
 
+  private final File source;
   private Reader reader;
   private char[] buffer;
   private int bufferOffset;
@@ -59,8 +61,8 @@ final class JsonParser {
   /**
    * Creates a new JsonParser.
    */
-  JsonParser() {
-    
+  JsonParser(File source) {
+    this.source = source;
   }
 
   /**
@@ -174,7 +176,7 @@ final class JsonParser {
   }
 
   private JsonArray readArray() throws IOException {
-    JsonArray array = new JsonArray();
+    JsonArray array = new JsonArray(source);
     array.setLocation(getLocation());
     read();
     if (++nestingLevel > MAX_NESTING_LEVEL) {
@@ -199,7 +201,7 @@ final class JsonParser {
   }
 
   private JsonObject readObject() throws IOException {
-    JsonObject object = new JsonObject();
+    JsonObject object = new JsonObject(source);
     object.setLocation(getLocation());
     read();
     if (++nestingLevel > MAX_NESTING_LEVEL) {
@@ -242,7 +244,7 @@ final class JsonParser {
     readRequiredChar('u');
     readRequiredChar('l');
     readRequiredChar('l');
-    JsonValue value = JsonLiteral.makeNull();
+    JsonValue value = JsonLiteral.makeNull(source);
     value.setLocation(location);
     return value;
   }
@@ -253,7 +255,7 @@ final class JsonParser {
     readRequiredChar('r');
     readRequiredChar('u');
     readRequiredChar('e');
-    JsonValue value = JsonLiteral.makeTrue();
+    JsonValue value = JsonLiteral.makeTrue(source);
     value.setLocation(location);
     return value;
   }
@@ -265,7 +267,7 @@ final class JsonParser {
     readRequiredChar('l');
     readRequiredChar('s');
     readRequiredChar('e');
-    JsonValue value = JsonLiteral.makeFalse();
+    JsonValue value = JsonLiteral.makeFalse(source);
     value.setLocation(location);
     return value;
   }
@@ -278,7 +280,7 @@ final class JsonParser {
 
   private JsonString readString() throws IOException {
     Location location = getLocation();
-    JsonString string = new JsonString(readStringInternal());
+    JsonString string = new JsonString(source, readStringInternal());
     string.setLocation(location);
     return string;
   }
@@ -356,7 +358,7 @@ final class JsonParser {
     }
     readFraction();
     readExponent();
-    JsonNumber number = new JsonNumber(endCapture());
+    JsonNumber number = new JsonNumber(source, endCapture());
     number.setLocation(location);
     return number;
   }
