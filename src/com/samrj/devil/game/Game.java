@@ -31,6 +31,7 @@ import com.samrj.devil.game.sync.Sync;
 import com.samrj.devil.math.Vec2i;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.function.Consumer;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
@@ -75,7 +76,7 @@ public final class Game
     private static Runnable afterInputCallback;
     private static StepCallback stepCallback = NULL_STEP_CALLBACK;
     private static Runnable renderCallback;
-    private static Runnable destroyCallback;
+    private static Consumer<Boolean> destroyCallback;
     
     // <editor-fold defaultstate="collapsed" desc="Setup">
     /**
@@ -92,7 +93,7 @@ public final class Game
         Configuration.DEBUG_STACK.set(debug);
         Configuration.DEBUG_MEMORY_ALLOCATOR.set(debug);
         hint(GLFW_OPENGL_DEBUG_CONTEXT, debug ? GLFW_TRUE : GLFW_FALSE);
-        DAL.setDebug(debug);
+        DAL.setDebugEnabled(debug);
     }
     
     /**
@@ -393,6 +394,8 @@ public final class Game
      * The given callback is run at least once per frame, before the frame is
      * rendered. The number of times this callback is run, and the timesteps
      * passed into it are determined by this game's TimeStepper.
+     * 
+     * The timestep, in seconds as a float, is passed to the given callback.
      */
     public static void onStep(StepCallback callback)
     {
@@ -413,8 +416,11 @@ public final class Game
      * The given callback is run once, when this game has finished running, but
      * before the associated window and OpenGL context have been destroyed. This
      * should be used to free native resources.
+     * 
+     * True is passed to the given callback if the game ended due to an
+     * exception; otherwise, false is passed.
      */
-    public static void onDestroy(Runnable callback)
+    public static void onDestroy(Consumer<Boolean> callback)
     {
         destroyCallback = callback;
     }
@@ -539,7 +545,7 @@ public final class Game
             
             try
             {
-                if (destroyCallback != null) destroyCallback.run();
+                if (destroyCallback != null) destroyCallback.accept(exceptionCaught);
             }
             catch (Throwable t)
             {

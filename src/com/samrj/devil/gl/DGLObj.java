@@ -14,7 +14,7 @@ public abstract class DGLObj
     
     DGLObj()
     {
-        debugLeakTrace = DGL.isDebugEnabled() ?
+        debugLeakTrace = DGL.getDebugLeakTracking() ?
                 new Throwable("DevilUtil (DGL) - " + this.getClass().getSimpleName() + " leaked!") :
                 null;
     }

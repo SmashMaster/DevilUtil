@@ -474,7 +474,7 @@ public final class DUI
     }
     
     /**
-     * Destroys DevilUI and releases any associated native resources.
+     * Destroys DevilUI and releases all associated native resources.
      */
     public static void destroy()
     {

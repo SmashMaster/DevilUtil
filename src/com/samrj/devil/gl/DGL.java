@@ -55,7 +55,8 @@ public final class DGL
     private static Thread thread;
     private static GLCapabilities capabilities;
     private static Set<DGLObj> objects;
-    private static boolean debug;
+    private static boolean debugContext;
+    private static boolean debugLeak;
     private static Thread debugShutdownHook;
     private static boolean init;
     
@@ -80,22 +81,47 @@ public final class DGL
         thread = Thread.currentThread();
         capabilities = GL.getCapabilities();
         objects = Collections.newSetFromMap(new IdentityHashMap<>());
-        debug = (glGetInteger(GL_CONTEXT_FLAGS) & GL_CONTEXT_FLAG_DEBUG_BIT) != 0;
+        debugContext = (glGetInteger(GL_CONTEXT_FLAGS) & GL_CONTEXT_FLAG_DEBUG_BIT) != 0;
+        debugLeak = debugContext;
         VAO.init();
-        DGLException.init(debug);
-        if (debug)
+        DGLException.init(debugContext);
+        debugShutdownHook = new Thread(() ->
         {
-            debugShutdownHook = new Thread(() ->
+            if (debugLeak && init)
             {
-                if (init)
-                {
-                    for (DGLObj obj : objects) obj.debugLeakTrace();
-                    System.err.println("DevilUtil (DGL) - DGL not terminated before JVM shut down!");
-                }
-            });
-            Runtime.getRuntime().addShutdownHook(debugShutdownHook);
-        }
+                for (DGLObj obj : objects) obj.debugLeakTrace();
+                System.err.println("DevilUtil (DGL) - DGL not terminated before JVM shut down!");
+            }
+        });
+        Runtime.getRuntime().addShutdownHook(debugShutdownHook);
         init = true;
+    }
+    
+    /**
+     * Returns whether the OpenGL context in use by DGL is a debug context.
+     */
+    public static boolean getDebugEnabled()
+    {
+        return debugContext;
+    }
+    
+    /**
+     * Returns whether or not leak tracking is currently enabled for DevilGL.
+     */
+    public static boolean getDebugLeakTracking()
+    {
+        return debugLeak;
+    }
+    
+    /**
+     * Enables resource leak tracking. Note: Leak tracking works only for
+     * objects that were constructed *after* debug was enabled, so it is best to
+     * enable debug before initializing DevilGL. It is enabled by default in
+     * debug OpenGL contexts.
+     */
+    public static void setDebugLeakTracking(boolean debugLeak)
+    {
+        DGL.debugLeak = debugLeak;
     }
     
     /**
@@ -105,14 +131,6 @@ public final class DGL
     {
         checkState();
         return capabilities;
-    }
-    
-    /**
-     * Returns whether this OpenGL context has debug enabled.
-     */
-    public static boolean isDebugEnabled()
-    {
-        return debug;
     }
     
     private static <T extends DGLObj> T gen(T obj)
@@ -222,7 +240,7 @@ public final class DGL
      */
     public static ShaderProgram useProgram(ShaderProgram shaderProgram)
     {
-        if (debug) checkProgramState();
+        if (getDebugEnabled()) checkProgramState();
         
         ShaderProgram.ensureNotDeleted(shaderProgram);
         glUseProgram(ShaderProgram.glSafeID(shaderProgram));
@@ -236,7 +254,7 @@ public final class DGL
      */
     public static ShaderProgram currentProgram()
     {
-        if (debug) checkProgramState();
+        if (getDebugEnabled()) checkProgramState();
         
         return boundProgram;
     }
@@ -863,19 +881,16 @@ public final class DGL
     }
     
     /**
-     * Destroys DGL and releases native resources allocated through DGL.init().
-     * Native resources allocated through DGL.genXXX or DGL.loadXXX functions
-     * must be freed explicitly through DGL.delete().
+     * Destroys DGL and releases native resources allocated through init().
+     * Native resources allocated through the genXXX() or loadXXX() methods
+     * must be freed explicitly through delete() before calling destroy().
      */
     public static void destroy()
     {
         checkState();
         init = false;
-        if (debug)
-        {
-            for (DGLObj obj : objects) obj.debugLeakTrace();
-            Runtime.getRuntime().removeShutdownHook(debugShutdownHook);
-        }
+        if (getDebugLeakTracking()) for (DGLObj obj : objects) obj.debugLeakTrace();
+        Runtime.getRuntime().removeShutdownHook(debugShutdownHook);
         objects = null;
         VAO.terminate();
         

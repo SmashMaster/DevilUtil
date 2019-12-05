@@ -84,30 +84,28 @@ public class DAL
         capabilities = AL.createCapabilities(deviceCaps);
         objects = Collections.newSetFromMap(new IdentityHashMap<>());
         
-        if (debug)
+        debugShutdownHook = new Thread(() ->
         {
-            System.out.println("DevilUtil (DAL) - OpenAL debug enabled.");
-            
-            debugShutdownHook = new Thread(() ->
+            if (debug && init)
             {
-                if (init)
-                {
-                    for (DALObj obj : objects) obj.debugLeakTrace();
-                    System.err.println("DevilUtil (DAL) - DAL not terminated before JVM shut down!");
-                }
-            });
-            Runtime.getRuntime().addShutdownHook(debugShutdownHook);
-        }
+                for (DALObj obj : objects) obj.debugLeakTrace();
+                System.err.println("DevilUtil (DAL) - DAL not terminated before JVM shut down!");
+            }
+        });
+        Runtime.getRuntime().addShutdownHook(debugShutdownHook);
+        
+        if (debug) System.err.println("DevilUtil (DAL) - OpenAL debug enabled.");
         
         init = true;
     }
     
     /**
-     * Enables error-checking and resource leak tracking.
+     * Enables error-checking and resource leak tracking. Note: Leak tracking
+     * works only for objects that were constructed *after* debug was enabled,
+     * so it is best to enable debug before initializing DevilAL.
      */
-    public static void setDebug(boolean debug)
+    public static void setDebugEnabled(boolean debug)
     {
-        if (init) throw new IllegalStateException("DAL already initialized.");
         DAL.debug = debug;
     }
     
@@ -268,7 +266,7 @@ public class DAL
     
     public static void checkError()
     {
-        if (debug)
+        if (isDebugEnabled())
         {
             int errorCode = alGetError();
             if (errorCode != AL_NO_ERROR) throw new DALException(errorCode);
@@ -305,17 +303,16 @@ public class DAL
     }
     
     /**
-     * Destroys DevilAL and releases all associated resources.
+     * Destroys DAL and releases native resources allocated through init().
+     * Native resources allocated through the genXXX() or loadXXX() methods
+     * must be freed explicitly through delete() before calling destroy().
      */
     public static void destroy()
     {
         checkState();
         init = false;
-        if (debug)
-        {
-            for (DALObj obj : objects) obj.debugLeakTrace();
-            Runtime.getRuntime().removeShutdownHook(debugShutdownHook);
-        }
+        if (isDebugEnabled()) for (DALObj obj : objects) obj.debugLeakTrace();
+        Runtime.getRuntime().removeShutdownHook(debugShutdownHook);
         objects = null;
         
         ALC10.alcDestroyContext(context);
