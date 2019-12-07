@@ -46,6 +46,34 @@ public class Sound extends DALObj
         DAL.checkError();
     }
     
+    public int getFrequency()
+    {
+        int frequency = alGetBufferi(id, AL_FREQUENCY);
+        DAL.checkError();
+        return frequency;
+    }
+    
+    public int getSize()
+    {
+        int size = alGetBufferi(id, AL_SIZE);
+        DAL.checkError();
+        return size;
+    }
+    
+    public int getBits()
+    {
+        int bits = alGetBufferi(id, AL_BITS);
+        DAL.checkError();
+        return bits;
+    }
+    
+    public int getChannels()
+    {
+        int channels = alGetBufferi(id, AL_CHANNELS);
+        DAL.checkError();
+        return channels;
+    }
+    
     @Override
     void delete()
     {
