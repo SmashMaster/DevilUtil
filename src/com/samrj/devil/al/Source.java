@@ -1,6 +1,7 @@
 package com.samrj.devil.al;
 
 import com.samrj.devil.math.Vec3;
+import java.util.HashSet;
 
 import static org.lwjgl.openal.AL10.*;
 import static org.lwjgl.openal.AL11.*;
@@ -16,6 +17,8 @@ import static org.lwjgl.openal.EXTEfx.*;
 public class Source extends DALObj
 {
     final int id;
+    
+    private final HashSet<Integer> filterSends = new HashSet<>();
     
     Source()
     {
@@ -83,6 +86,10 @@ public class Source extends DALObj
     {
         int sid = slot != null ? slot.id :  AL_EFFECTSLOT_NULL;
         int fid = filter != null ? filter.id :  AL_FILTER_NULL;
+        
+        if (slot == null && filter == null) filterSends.remove(localSend);
+        else if (slot != null && filter != null) filterSends.add(localSend);
+        
         alSource3i(id, AL_AUXILIARY_SEND_FILTER, sid, localSend, fid);
         DAL.checkError();
     }
@@ -118,6 +125,13 @@ public class Source extends DALObj
         int state = alGetSourcei(id, AL_SOURCE_STATE);
         DAL.checkError();
         return state;
+    }
+    
+    void detatchAll()
+    {
+        setDirectFilter(null);
+        for (int send : filterSends) sendToEffectSlot(send, null);
+        setSound(null);
     }
     
     @Override

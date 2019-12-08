@@ -298,7 +298,7 @@ public class DAL
         {
             Source source = (Source)obj;
             source.stop();
-            source.setSound(null);
+            source.detatchAll();
         }
     }
     
