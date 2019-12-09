@@ -26,63 +26,79 @@ public class Source extends DALObj
         DAL.checkError();
     }
     
-    public void setSound(Sound sound)
+    public Source setSound(Sound sound)
     {
         int bufferID = sound != null ? sound.id : AL_NONE;
         alSourcei(id, AL_BUFFER, bufferID);
         DAL.checkError();
+        return this;
     }
     
-    public void setPitch(float f)
+    public Source setRelative(boolean relative)
+    {
+        alSourcei(id, AL_SOURCE_RELATIVE, relative ? AL_TRUE : AL_FALSE);
+        DAL.checkError();
+        return this;
+    }
+    
+    public Source setPitch(float f)
     {
         alSourcef(id, AL_PITCH, f);
         DAL.checkError();
+        return this;
     }
     
-    public void setGain(float f)
+    public Source setGain(float f)
     {
         alSourcef(id, AL_GAIN, f);
         DAL.checkError();
+        return this;
     }
     
-    public void setPos(Vec3 v)
+    public Source setPos(Vec3 v)
     {
         alSource3f(id, AL_POSITION, v.x, v.y, v.z);
         DAL.checkError();
+        return this;
     }
     
-    public void setVel(Vec3 v)
+    public Source setVel(Vec3 v)
     {
         alSource3f(id, AL_VELOCITY, v.x, v.y, v.z);
         DAL.checkError();
+        return this;
     }
     
-    public void setLooping(boolean looping)
+    public Source setLooping(boolean looping)
     {
         alSourcei(id, AL_LOOPING, looping ? AL_TRUE : AL_FALSE);
         DAL.checkError();
+        return this;
     }
     
-    public void paramf(int param, float value)
+    public Source paramf(int param, float value)
     {
         alSourcef(id, param, value);
         DAL.checkError();
+        return this;
     }
     
-    public void parami(int param, int value)
+    public Source parami(int param, int value)
     {
         alSourcei(id, param, value);
         DAL.checkError();
+        return this;
     }
     
-    public void setDirectFilter(Filter filter)
+    public Source setDirectFilter(Filter filter)
     {
         int fid = filter != null ? filter.id : AL_FILTER_NULL;
         alSourcei(id, AL_DIRECT_FILTER, fid);
         DAL.checkError();
+        return this;
     }
     
-    public void sendToEffectSlot(int localSend, Filter filter, EffectSlot slot)
+    public Source sendToEffectSlot(int localSend, Filter filter, EffectSlot slot)
     {
         int sid = slot != null ? slot.id :  AL_EFFECTSLOT_NULL;
         int fid = filter != null ? filter.id :  AL_FILTER_NULL;
@@ -92,29 +108,33 @@ public class Source extends DALObj
         
         alSource3i(id, AL_AUXILIARY_SEND_FILTER, sid, localSend, fid);
         DAL.checkError();
+        return this;
     }
     
-    public void sendToEffectSlot(int localSend, EffectSlot slot)
+    public Source sendToEffectSlot(int localSend, EffectSlot slot)
     {
-        sendToEffectSlot(localSend, null, slot);
+        return sendToEffectSlot(localSend, null, slot);
     }
     
-    public void play()
+    public Source play()
     {
         alSourcePlay(id);
         DAL.checkError();
+        return this;
     }
     
-    public void pause()
+    public Source pause()
     {
         alSourcePause(id);
         DAL.checkError();
+        return this;
     }
     
-    public void stop()
+    public Source stop()
     {
         alSourceStop(id);
         DAL.checkError();
+        return this;
     }
     
     /**
