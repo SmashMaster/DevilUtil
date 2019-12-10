@@ -264,8 +264,8 @@ public abstract class VertexBuilder extends DGLObj implements VertexData
     public final void begin()
     {
         ensureState(State.NEW);
-        if (attributes.isEmpty()) throw new IllegalStateException(
-                "Must have at least one registered attribute.");
+//        if (attributes.isEmpty()) throw new IllegalStateException(
+//                "Must have at least one registered attribute.");
         
         onBegin();
     }
