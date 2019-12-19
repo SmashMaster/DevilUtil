@@ -65,12 +65,13 @@ public final class ActorDriver
     
     //Settable callback functions for jumping, falling, and landing.
     public Runnable jumpCallback, fallCallback;
-    public Consumer<Float> landCallback;
+    public Consumer<Vec3> landCallback;
     
     private final Ellipsoid shape = new Ellipsoid();
     private final Vec3 displacement = new Vec3();
     private final Vec3 groundNormal = new Vec3(0.0f, 1.0f, 0.0f);
-    private GeoPrimitive groundObject;
+    private final Vec3 slideNormal = new Vec3(0.0f, 1.0f, 0.0f);
+    private GeoPrimitive groundObject, slideObject;
     private boolean applyGravity;
     
     /**
@@ -181,6 +182,32 @@ public final class ActorDriver
     }
     
     /**
+     * Returns true if this driver is sliding on a surface other than solid
+     * ground.
+     */
+    public boolean isSliding()
+    {
+        return slideObject != null;
+    }
+    
+    /**
+     * Returns the object this driver is sliding on.
+     */
+    public GeoPrimitive getSlideObject()
+    {
+        return slideObject;
+    }
+    
+    /**
+     * Returns a new vector with the normal of the last surface this driver was
+     * sliding along, or the ground vector if it is on the ground.
+     */
+    public Vec3 getSlideNormal()
+    {
+        return onGround() ? new Vec3(groundNormal) : new Vec3(slideNormal);
+    }
+    
+    /**
      * Returns the position of this driver's feet.
      */
     public Vec3 getFeetPos()
@@ -209,7 +236,7 @@ public final class ActorDriver
     {
         boolean startOnGround = onGround();
         Vec3 avgVel = new Vec3(vel);
-        float vertVel = vel.y;
+        Vec3 startVel = new Vec3(vel);
         
         boolean wantToMove = !moveDir.isZero(0.0f);
         Vec3 adjMoveDir = new Vec3(moveDir);
@@ -248,35 +275,53 @@ public final class ActorDriver
         
         applyGravity = true;
         groundObject = null;
+        slideObject = null;
         
-        //Find the ground
-        if (geom != null && startOnGround)
-        {
-            float oldY = pos.y;
-            pos.y += climbHeight;
-            
-            Vec3 step = new Vec3(0.0f, -2.0f*climbHeight, 0.0f);
-            SweepResult sweep = geom.sweepUnsorted(shape, step)
-                    .filter(e -> isValidGround(e.normal))
-                    .reduce((a, b) -> a.time < b.time ? a : b)
-                    .orElse(null);
-
-            pos.y = oldY;
-            
-            if (sweep != null)
-            {
-                float groundDist = (sweep.time*2.0f - 1.0f)*climbHeight;
-                pos.y -= groundDist*(1.0f - (float)Math.pow(0.5f, dt*groundFloatDecay));
-                applyGravity = (sweep.time - 0.5f)*2.0f > groundThreshold;
-                
-                groundObject = sweep.object;
-                groundNormal.set(sweep.normal);
-            }
-        }
-        
-        //Clip against the level
         if (geom != null)
         {
+            if (startOnGround) //Find the ground
+            {
+                float oldY = pos.y;
+                pos.y += climbHeight;
+
+                Vec3 step = new Vec3(0.0f, -2.0f*climbHeight, 0.0f);
+                SweepResult sweep = geom.sweepUnsorted(shape, step)
+                        .filter(e -> isValidGround(e.normal))
+                        .reduce((a, b) -> a.time < b.time ? a : b)
+                        .orElse(null);
+
+                pos.y = oldY;
+
+                if (sweep != null)
+                {
+                    float groundDist = (sweep.time*2.0f - 1.0f)*climbHeight;
+                    pos.y -= groundDist*(1.0f - (float)Math.pow(0.5f, dt*groundFloatDecay));
+                    applyGravity = (sweep.time - 0.5f)*2.0f > groundThreshold;
+
+                    groundObject = sweep.object;
+                    groundNormal.set(sweep.normal);
+                }
+            }
+            else //Find whatever we're sliding on.
+            {
+                float oldY = pos.y;
+                pos.y += climbHeight;
+
+                Vec3 step = new Vec3(0.0f, -2.0f*climbHeight, 0.0f);
+                SweepResult sweep = geom.sweepUnsorted(shape, step)
+                        .reduce((a, b) -> a.time < b.time ? a : b)
+                        .orElse(null);
+                
+                pos.y = oldY;
+                
+                if (sweep != null)
+                {
+                    slideObject = sweep.object;
+                    slideNormal.set(sweep.normal);
+                }
+            }
+            
+            //Clip against the level
             Vec3 nudge = new Vec3();
             
             geom.intersectUnsorted(shape).forEach(isect ->
@@ -301,7 +346,7 @@ public final class ActorDriver
 
         //Check for landing
         if (landCallback != null && !startOnGround && endOnGround)
-            landCallback.accept(vel.y - vertVel);
+            landCallback.accept(Vec3.sub(vel, startVel));
 
         //Check for falling
         if (fallCallback != null && startOnGround && !endOnGround)
