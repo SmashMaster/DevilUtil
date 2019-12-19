@@ -80,9 +80,9 @@ public class LayoutRows extends Form
     }
 
     @Override
-    protected void layout(float x0, float y0)
+    protected void layout(Window window, float x0, float y0)
     {
-        this.x0 = x0; this.y0 = y0;
+        super.layout(window, x0, y0);
         float x1 = x0 + width;
         float y = y0 + height;
         
@@ -94,7 +94,7 @@ public class LayoutRows extends Form
             Vec2 size = new Vec2(form.width, form.height);
             float nextY = y - form.height;
             Vec2 aligned = Align.insideBounds(size, x0, x1, nextY, y, alignment);
-            form.layout(aligned.x, aligned.y);
+            form.layout(window, aligned.x, aligned.y);
             y = nextY - spacing;
         }
     }

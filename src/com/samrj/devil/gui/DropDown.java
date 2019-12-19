@@ -30,6 +30,11 @@ public final class DropDown
         return parent;
     }
     
+    public Window getParentWindow()
+    {
+        return parent.getWindow();
+    }
+    
     public Vec2 getPos()
     {
         return new Vec2(x0, y0);
@@ -105,7 +110,7 @@ public final class DropDown
             content.updateSize();
             Vec2 aligned = Align.insideBounds(new Vec2(content.width, content.height),
                     x0 + padding, x1 - padding, y0 + padding, y1 - padding, alignment);
-            content.layout(aligned.x, aligned.y);
+            content.layout(getParentWindow(), aligned.x, aligned.y);
         }
     }
     

@@ -92,23 +92,40 @@ public final class DUI
         return font;
     }
     
+    //Adds window to top of linked list
+    private static void addLinked(Window window)
+    {
+        if (topWindow != null)
+        {
+            topWindow.above = window;
+            window.below = topWindow;
+        }
+        else bottomWindow = window;
+        topWindow = window;
+    }
+    
     /**
-     * Displays the given window, and puts it at the top of the window stack.
+     * Displays the given window, putting it at the top of the window stack.
      * Does nothing if the window is already visible.
      */
     public static void show(Window window)
     {
         if (!window.isVisible)
         {
-            if (topWindow != null)
-            {
-                topWindow.above = window;
-                window.below = topWindow;
-            }
-            else bottomWindow = window;
-            topWindow = window;
+            addLinked(window);
             window.isVisible = true;
         }
+    }
+    
+    //Removes window from linked list
+    private static void removeLinked(Window window)
+    {
+        if (window == topWindow) topWindow = window.below;
+        if (window == bottomWindow) bottomWindow = window.above;
+        if (window.above != null) window.above.below = window.below;
+        if (window.below != null) window.below.above = window.above;
+        window.above = null;
+        window.below = null;
     }
     
     /**
@@ -118,26 +135,35 @@ public final class DUI
     {
         if (window.isVisible)
         {
-            if (window == topWindow) topWindow = window.below;
-            if (window == bottomWindow) bottomWindow = window.above;
-            if (window.above != null) window.above.below = window.below;
-            if (window.below != null) window.below.above = window.above;
-            window.above = null;
-            window.below = null;
+            //Update any related state
+            if (hoveredWindow == window) hoveredWindow = null;
+            if (activeWindow == window)
+            {
+                activeWindow.deactivate();
+                activeWindow = null;
+            }
+            if (hoveredForm != null && hoveredForm.getWindow() == window) hoveredForm = null;
+            if (activeForm != null && activeForm.getWindow() == window)
+            {
+                activeForm.deactivate();
+                activeForm = null;
+            }
+            if (focusedForm != null && focusedForm.getWindow() == window)
+            {
+                focusedForm.defocus();
+                focusedForm = null;
+            }
+            if (hoveredScrollBox != null && hoveredScrollBox.getWindow() == window) hoveredScrollBox = null;
+            if (dropDown != null && dropDown.getParentWindow() == window)
+            {
+                dropDown = null;
+                dropDownHovered = false;
+            }
+            
+            removeLinked(window);
+            
+            //Finish up
             window.isVisible = false;
-        }
-    }
-    
-    /**
-     * Brings the given window to the top of the window stack. Does nothing if
-     * the window is hidden or already at the top of the stack.
-     */
-    public static void bringToTop(Window window)
-    {
-        if (window.isVisible && window != topWindow)
-        {
-            hide(window);
-            show(window);
         }
     }
     
@@ -158,36 +184,6 @@ public final class DUI
         return hoveredWindow != null || activeWindow != null ||
                hoveredForm != null || activeForm != null ||
                (dropDown != null && dropDownHovered);
-    }
-    
-    /**
-     * Deactivates any active forms or windows (such as anything being dragged),
-     * unhovers all windows and forms, closes any dropdowns, and unfocuses any
-     * focused form. Useful for when a window is manually closed by the
-     * application.
-     */
-    public static void deactivateAll()
-    {
-        if (hoveredWindow != null) hoveredWindow = null;
-        if (activeWindow != null)
-        {
-            activeWindow.deactivate();
-            activeWindow = null;
-        }
-        if (hoveredForm != null) hoveredForm = null;
-        if (activeForm != null)
-        {
-            activeForm.deactivate();
-            activeForm = null;
-        }
-        if (focusedForm != null)
-        {
-            focusedForm.defocus();
-            focusedForm = null;
-        }
-        hoveredScrollBox = null;
-        dropDown = null;
-        dropDownHovered = false;
     }
     
     /**
@@ -229,7 +225,8 @@ public final class DUI
     
     public static void closeDropDown()
     {
-        DUI.dropDown = null;
+        dropDown = null;
+        dropDownHovered = false;
     }
     
     /**
@@ -323,7 +320,12 @@ public final class DUI
                 
                 if (activeForm == null && activeWindow == null)
                 {
-                    if (hoveredWindow != null) bringToTop(hoveredWindow);
+                    //Bring hovered window to top if clicked
+                    if (hoveredWindow != null && hoveredWindow != topWindow)
+                    {
+                        removeLinked(hoveredWindow);
+                        addLinked(hoveredWindow);
+                    }
                     
                     if (hoveredForm != null)
                     {

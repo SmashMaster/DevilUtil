@@ -80,9 +80,9 @@ public class LayoutColumns extends Form
     }
 
     @Override
-    protected void layout(float x0, float y0)
+    protected void layout(Window window, float x0, float y0)
     {
-        this.x0 = x0; this.y0 = y0;
+        super.layout(window, x0, y0);
         float x = x0;
         float y1 = y0 + height;
         
@@ -94,7 +94,7 @@ public class LayoutColumns extends Form
             Vec2 size = new Vec2(form.width, form.height);
             float nextX = x + form.width;
             Vec2 aligned = Align.insideBounds(size, x, nextX, y0, y1, alignment);
-            form.layout(aligned.x, aligned.y);
+            form.layout(window, aligned.x, aligned.y);
             x = nextX + spacing;
         }
     }

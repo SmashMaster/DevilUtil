@@ -2,6 +2,7 @@ package com.samrj.devil.gui;
 
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
+import java.util.function.Consumer;
 
 /**
  * The base class in which interfaces are created with DevilUI. The root form
@@ -253,7 +254,7 @@ public final class Window
             content.updateSize();
             Vec2 aligned = Align.insideBounds(new Vec2(content.width, content.height),
                     x0 + padding, x1 - padding, y0 + padding, y1 - titleBarHeight() - padding, alignment);
-            content.layout(aligned.x, aligned.y);
+            content.layout(this, aligned.x, aligned.y);
         }
     }
     

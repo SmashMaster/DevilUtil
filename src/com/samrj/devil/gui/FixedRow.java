@@ -87,9 +87,9 @@ public class FixedRow extends Form
     }
     
     @Override
-    protected void layout(float x, float y)
+    protected void layout(Window window, float x, float y)
     {
-        x0 = x; y0 = y;
+        super.layout(window, x, y);
         float y1 = y0 + height;
         
         for (int i=0; i<forms.size(); i++)
@@ -98,7 +98,7 @@ public class FixedRow extends Form
             float fx1 = x0 + (i < forms.size() - 1 ? positions.get(i + 1) : width);
             Form form = forms.get(i);
             Vec2 aligned = Align.insideBounds(form.getSize(), fx0, fx1, y0, y1, alignment);
-            form.layout(aligned.x, aligned.y);
+            form.layout(window, aligned.x, aligned.y);
         }
     }
     

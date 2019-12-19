@@ -81,9 +81,9 @@ public class ScrollBox extends Form
     }
 
     @Override
-    protected void layout(float x, float y)
+    protected void layout(Window window, float x, float y)
     {
-        x0 = x; y0 = y;
+        super.layout(window, x, y);
         
         if (content != null)
         {
@@ -92,7 +92,7 @@ public class ScrollBox extends Form
             Vec2 size = new Vec2(content.width, content.height);
             Vec2 aligned = Align.insideBounds(size, x0 + padding, x0 + width - SCROLLBAR_WIDTH,
                     y1 - content.height, y1, alignment);
-            content.layout(aligned.x, aligned.y + scrollY);
+            content.layout(window, aligned.x, aligned.y + scrollY);
         }
     }
     
@@ -122,7 +122,7 @@ public class ScrollBox extends Form
         {
             scrollY = dragStartY + (y0 - y)/sbRatio;
             clampScroll();
-            layout(x0, y0);
+            layout(getWindow(), x0, y0);
         }
         else dragStartY = scrollY - (y0 - y)/sbRatio;
         
@@ -151,7 +151,7 @@ public class ScrollBox extends Form
     {
         scrollY -= dy*SCROLL_RATE;
         clampScroll();
-        layout(x0, y0);
+        layout(getWindow(), x0, y0);
     }
     
     @Override

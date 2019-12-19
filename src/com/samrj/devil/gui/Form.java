@@ -26,6 +26,11 @@ public abstract class Form
     protected float width = 128.0f, height = 32.0f;
     
     /**
+     * Used to keep track of whatever window this form ultimately belongs to.
+     */
+    private Window window;
+    
+    /**
      * Returns the current southwest (bottom-left) corner of this form.
      */
     public final Vec2 getPos()
@@ -41,6 +46,11 @@ public abstract class Form
         return new Vec2(width, height);
     }
     
+    public final Window getWindow()
+    {
+        return window;
+    }
+    
     /**
      * Calculates the size of this form based on its children.
      */
@@ -52,8 +62,9 @@ public abstract class Form
      * Sets the southwest (or bottom-left) position of this form to the given
      * coordinates, and updates all of its children recursively.
      */
-    protected void layout(float x, float y)
+    protected void layout(Window window, float x, float y)
     {
+        this.window = window;
         x0 = x; y0 = y;
     }
     
