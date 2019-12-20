@@ -83,7 +83,8 @@ public class Paragraph extends Form
     {
         rawText = "";
         lines.clear();
-        width = 0.0f;
+        caret = 0;
+        select = 0;
         return this;
     }
     
