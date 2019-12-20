@@ -141,7 +141,7 @@ public class ScrollBox extends Form
         
         if (x >= sbX0) return this;
         
-        Form form = content.hover(x, y);
+        Form form = content != null ? content.hover(x, y) : null;
         if (form != null) return form;
         
         return this;
