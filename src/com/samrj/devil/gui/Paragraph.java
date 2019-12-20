@@ -21,7 +21,6 @@ public class Paragraph extends Form
     private final TreeMap<Integer, Line> lines = new TreeMap<>();
     
     private final Vec2 alignment = Align.NW.vector();
-    private float maxWidth = 256.0f;
     private float linePadding = 0.0f;
     private int caret, select;
     private Consumer<Paragraph> onFocus, onLoseFocus;
@@ -40,7 +39,6 @@ public class Paragraph extends Form
         lines.put(index, line);
         rawText += lineText;
         
-        width = Util.min(Util.max(width, lineWidth), maxWidth);
         height = lines.size()*DUI.font().getHeight() + Util.max((lines.size() - 1)*linePadding, 0.0f);
     }
     
@@ -54,10 +52,10 @@ public class Paragraph extends Form
             
             float lineWidth = DUI.font().getWidth(lineStr);
             
-            while (lineWidth > maxWidth)
+            while (lineWidth > width)
             {
                 //need to split line.
-                int overlapIndex = DUI.font().getCaret(lineStr, maxWidth);
+                int overlapIndex = DUI.font().getCaret(lineStr, width);
                 int splitIndex = Math.min(overlapIndex, lineStr.length() - 1);
                 while (splitIndex > 0 && !Character.isWhitespace(lineStr.charAt(splitIndex))) splitIndex--;
                 
@@ -89,10 +87,10 @@ public class Paragraph extends Form
         return this;
     }
     
-    public Paragraph setMaxWidth(float maxWidth)
+    public Paragraph setWidth(float width)
     {
-        if (maxWidth <= 0.0f) throw new IllegalArgumentException();
-        this.maxWidth = maxWidth;
+        if (width <= 0.0f) throw new IllegalArgumentException();
+        this.width = width;
         return this;
     }
     
