@@ -17,16 +17,26 @@ public enum Align
     
     public final float x, y;
     
+    public static float insideBounds(float size, float x0, float x1, float alignment)
+    {
+        return x0 + (x1 - x0 - size)*alignment;
+    }
+    
     public static Vec2 insideBounds(Vec2 size, float x0, float x1, float y0, float y1, Vec2 alignment)
     {
-        return new Vec2(x0 + (x1 - x0 - size.x)*alignment.x,
-                        y0 + (y1 - y0 - size.y)*alignment.y);
+        return new Vec2(insideBounds(size.x, x0, x1, alignment.x),
+                        insideBounds(size.y, y0, y1, alignment.y));
+    }
+    
+    public static float toEdge(float size, float edgeX, float alignment)
+    {
+        return edgeX + (alignment - 1.0f)*size;
     }
     
     public static Vec2 toEdge(Vec2 size, float edgeX, float edgeY, Vec2 alignment)
     {
-        return new Vec2(edgeX + (alignment.x - 1.0f)*size.x,
-                        edgeY + (alignment.y - 1.0f)*size.y);
+        return new Vec2(toEdge(size.x, edgeX, alignment.x),
+                        toEdge(size.y, edgeY, alignment.y));
     }
     
     private Align(float x, float y)

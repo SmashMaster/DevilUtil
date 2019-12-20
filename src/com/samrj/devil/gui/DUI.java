@@ -238,10 +238,6 @@ public final class DUI
     {
         mouseX = x; mouseY = y;
         
-        hoveredForm = null;
-        hoveredWindow = null;
-        hoveredScrollBox = null;
-        
         if (activeForm != null)
         {
             activeForm.hover(x, y);
@@ -253,6 +249,10 @@ public final class DUI
             activeWindow.hover(x, y);
             return;
         }
+        
+        hoveredForm = null;
+        hoveredWindow = null;
+        hoveredScrollBox = null;
         
         if (dropDown != null)
         {
@@ -388,6 +388,7 @@ public final class DUI
         if (form == focusedForm) return;
         if (focusedForm != null) focusedForm.defocus();
         focusedForm = form;
+        resetCaretBlinkTimer();
     }
     
     /**

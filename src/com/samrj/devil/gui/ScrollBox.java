@@ -74,6 +74,50 @@ public class ScrollBox extends Form
         return this;
     }
     
+    public float getScrollY()
+    {
+        return scrollY;
+    }
+    
+    public boolean isAtTop()
+    {
+        return scrollY == 0.0f;
+    }
+    
+    public boolean isAtBottom()
+    {
+        float cHeight = content != null ? content.height + padding*2.0f : 0.0f;
+        float max = cHeight - height;
+        return max <= 0.0f || scrollY == max;
+    }
+    
+    public ScrollBox setScrollY(float scrollY)
+    {
+        float cHeight = content != null ? content.height + padding*2.0f : 0.0f;
+        float max = cHeight - height;
+        
+        if (max <= 0.0f) this.scrollY = 0.0f;
+        else this.scrollY = Util.clamp(scrollY, 0.0f, max);
+        
+        layout(getWindow(), x0, y0);
+        
+        return this;
+    }
+    
+    public ScrollBox setScrollTop()
+    {
+        scrollY = 0.0f;
+        return this;
+    }
+    
+    public ScrollBox setScrollBottom()
+    {
+        float cHeight = content != null ? content.height + padding*2.0f : 0.0f;
+        float max = cHeight - height;
+        scrollY = max <= 0.0f ? 0.0f : max;
+        return this;
+    }
+    
     @Override
     protected void updateSize()
     {
@@ -87,28 +131,14 @@ public class ScrollBox extends Form
         
         if (content != null)
         {
-            float y1 = y0 + height - padding;
+            float contentX = Align.insideBounds(content.width, x0 + padding, x0 + width - SCROLLBAR_WIDTH - padding, alignment.x);
+            float contentY;
             
-            Vec2 size = new Vec2(content.width, content.height);
-            Vec2 aligned = Align.insideBounds(size, x0 + padding, x0 + width - SCROLLBAR_WIDTH,
-                    y1 - content.height, y1, alignment);
-            content.layout(window, aligned.x, aligned.y + scrollY);
+            if (content.height > height) contentY = y0 + height - padding - content.height; //No alignment.
+            else contentY = Align.insideBounds(content.height, y0 + padding, y0 + height - padding, alignment.y);
+            
+            content.layout(window, contentX, contentY + scrollY);
         }
-    }
-    
-    private void clampScroll()
-    {
-        //Could try to implement alignment here, as this works only for NW.
-        float cHeight = content != null ? content.height + padding*2.0f : 0.0f;
-        float max = cHeight - height;
-        
-        if (max < 0.0f)
-        {
-            scrollY = 0.0f;
-            return;
-        }
-        
-        scrollY = Util.clamp(scrollY, 0.0f, max);
     }
     
     @Override
@@ -118,12 +148,7 @@ public class ScrollBox extends Form
         float cHeight = content != null ? content.height + padding*2.0f : 0.0f;
         float sbRatio = height/cHeight;
         
-        if (scrollBarDragged)
-        {
-            scrollY = dragStartY + (y0 - y)/sbRatio;
-            clampScroll();
-            layout(getWindow(), x0, y0);
-        }
+        if (scrollBarDragged) setScrollY(dragStartY + (y0 - y)/sbRatio);
         else dragStartY = scrollY - (y0 - y)/sbRatio;
         
         scrollBarHovered = false;
@@ -149,9 +174,7 @@ public class ScrollBox extends Form
     
     void mouseScroll(float dx, float dy)
     {
-        scrollY -= dy*SCROLL_RATE;
-        clampScroll();
-        layout(getWindow(), x0, y0);
+        setScrollY(scrollY - dy*SCROLL_RATE);
     }
     
     @Override
