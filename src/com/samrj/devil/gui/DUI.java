@@ -164,6 +164,7 @@ public final class DUI
             
             //Finish up
             window.isVisible = false;
+            if (window.onClose != null) window.onClose.accept(window);
         }
     }
     

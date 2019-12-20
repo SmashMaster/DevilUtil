@@ -21,6 +21,8 @@ public final class Window
     Window above, below; //Doubly-linked list
     boolean isVisible;
     
+    Consumer<Window> onClose;
+    
     private Form content;
     private float x0, x1 = 256.0f, y0, y1 = 256.0f;
     private String title;
@@ -41,6 +43,12 @@ public final class Window
     public boolean isVisible()
     {
         return isVisible;
+    }
+    
+    public Window setCloseCallback(Consumer<Window> onClose)
+    {
+        this.onClose = onClose;
+        return this;
     }
     
     /**
