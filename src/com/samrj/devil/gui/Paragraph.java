@@ -209,6 +209,8 @@ public class Paragraph extends Form
     private void offsetCaretLine(boolean up)
     {
         Entry<Integer, Line> entry = lines.floorEntry(caret);
+        if (entry == null) return;
+        
         Entry<Integer, Line> offsetEntry = up ? lines.lowerEntry(entry.getKey()) : lines.higherEntry(entry.getKey()); 
         if (offsetEntry == null) return;
         
@@ -289,6 +291,8 @@ public class Paragraph extends Form
     @Override
     protected void render(DUIDrawer drawer)
     {
+        if (lines.isEmpty()) return;
+        
         Font font = DUI.font();
         float fontHeight = font.getHeight();
         boolean focused = DUI.getFocusedForm() == this;
