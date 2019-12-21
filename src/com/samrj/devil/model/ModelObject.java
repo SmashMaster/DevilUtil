@@ -21,7 +21,6 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
         AXES, CUBE, SPHERE;
     }
     
-    public final Scene scene;
     public final Map<String, String> arguments;
     public final Transform transform;
     public final List<String> vertexGroups;
@@ -34,11 +33,9 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
     public final DataPointer<Action> action;
     public final EmptyType emptyType;
     
-    ModelObject(Model model, Scene scene, BlendFile.Pointer bObject) throws IOException
+    ModelObject(Model model, BlendFile.Pointer bObject) throws IOException
     {
         super(model, bObject);
-        
-        this.scene = scene;
         
         arguments = new HashMap<>();
         for (Property p : getSubproperties("dvm_args")) for (int i=0; i<p.properties.size();)

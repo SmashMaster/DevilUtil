@@ -26,8 +26,8 @@ public final class Model
     public final ArrayMap<Lamp> lamps;
     public final ArrayMap<Material> materials;
     public final ArrayMap<Mesh> meshes;
-    public final ArrayMap<Scene> scenes;
     public final ArrayMap<ModelObject> objects;
+    public final ArrayMap<Scene> scenes;
     public final ArrayMap<Texture> textures;
     
     private boolean destroyed;
@@ -76,16 +76,15 @@ public final class Model
                 meshes.put(new Mesh(this, bMesh));
             arraymaps.put(Type.MESH, meshes);
             
+            objects = new ArrayMap<>();
+            for (BlendFile.Pointer bObject : blend.getLibrary("Object"))
+                objects.put(new ModelObject(this, bObject));
+            arraymaps.put(Type.OBJECT, objects);
+            
             scenes = new ArrayMap<>();
             for (BlendFile.Pointer bScene : blend.getLibrary("Scene"))
                 scenes.put(new Scene(this, bScene));
             arraymaps.put(Type.SCENE, scenes);
-            
-            objects = new ArrayMap<>();
-            for (Scene scene : scenes)
-                for (ModelObject object : scene.objects)
-                    objects.put(object);
-            arraymaps.put(Type.OBJECT, objects);
             
             textures = new ArrayMap<>();
             for (BlendFile.Pointer bTex : blend.getLibrary("Tex"))

@@ -113,7 +113,7 @@ public final class Mesh extends DataBlock
          */
         
         //Populate materials list
-        int totcol = bMesh.getField("totcol").asInt();
+        int totcol = bMesh.getField("totcol").asShort();
         materials = new DataPointer[totcol];
         BlendFile.Pointer mats = bMesh.getField("mat").dereference();
         if (mats != null) for (int i=0; i<totcol; i++)
