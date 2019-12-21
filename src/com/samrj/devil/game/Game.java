@@ -63,6 +63,7 @@ public final class Game
     private static Keyboard keyboard;
     private static boolean running;
     
+    private static int pauseFrameCounter;
     private static long lastFrameTime;
     
     private static InitCallback initCallback;
@@ -269,6 +270,18 @@ public final class Game
     public static long getLastFrameNano()
     {
         return lastFrameTime;
+    }
+    
+    /**
+     * Pauses the game for the next few frames. The step, render, and input
+     * methods are all called normally, except that zero will be passed as
+     * the time step until the game is unpaused. This is useful for very long
+     * frames, such as loading screens, so that the elapsed time doesn't get
+     * passed into step().
+     */
+    public static void pauseFrames(int frames)
+    {
+        pauseFrameCounter += frames;
     }
     
     /**
@@ -513,7 +526,12 @@ public final class Game
                 if (glfwWindowShouldClose(window)) stop();
 
                 //Step
-                lastFrameTime = frameStart - lastFrameStart;
+                if (pauseFrameCounter > 0)
+                {
+                    lastFrameTime = 0L;
+                    pauseFrameCounter--;
+                }
+                else lastFrameTime = frameStart - lastFrameStart;
                 float dt = (float)(lastFrameTime/1_000_000_000.0);
                 stepper.step(dt, stepCallback::step);
                 lastFrameStart = frameStart;
