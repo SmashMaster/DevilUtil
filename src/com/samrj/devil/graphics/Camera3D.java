@@ -143,24 +143,6 @@ public final class Camera3D
     }
     
     /**
-     * Projects the given vector to this camera's clip space
-     */
-    public void project(Vec3 v, Vec3 result)
-    {
-        Vec4 h = new Vec4(v, 1.0f);
-        h.mult(viewMat);
-        h.mult(projMat);
-        result.set(h.x, h.y, h.z).div(h.w);
-    }
-    
-    public Vec3 project(Vec3 v)
-    {
-        Vec3 out = new Vec3();
-        project(v, out);
-        return out;
-    }
-    
-    /**
      * Updates the matrices and axis directions for this camera.
      */
     public void update()
