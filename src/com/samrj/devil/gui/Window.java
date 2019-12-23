@@ -108,6 +108,25 @@ public final class Window
         return titleBarVisible ? TITLE_BAR_HEIGHT : 0.0f;
     }
     
+    public Window setWidth(float width)
+    {
+        x1 = x0 + width;
+        return this;
+    }
+    
+    public Window setHeight(float height)
+    {
+        y1 = y0 + height;
+        return this;
+    }
+    
+    public Window setSize(float width, float height)
+    {
+        x1 = x0 + width;
+        y1 = y0 + width;
+        return this;
+    }
+    
     /**
      * Sets this window to the smallest size that will fit its content.
      */
