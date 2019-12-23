@@ -223,7 +223,7 @@ public final class Window
         return this;
     }
     
-    ScrollBox findScrollBox(float x, float y)
+    Form findScrollBox(float x, float y)
     {
         if (x < x0 || x > x1 || y < y0 || y > y1) return null;
         if (content == null) return null;

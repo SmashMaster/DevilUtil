@@ -83,7 +83,7 @@ public abstract class Form
      * send mouse scroll wheel. ScrollBox returns itself, and leaf forms (those
      * with no children) return null.
      */
-    protected ScrollBox findScrollBox(float x, float y)
+    protected Form findScrollBox(float x, float y)
     {
         return null;
     }
@@ -93,9 +93,9 @@ public abstract class Form
      * may have behavior that occurs when they are clicked, such as buttons and
      * sliders. If a form has a click-and-drag behavior, this method should
      * return true. It is often useful to grab focus from within this method,
-     * using DUI.focus().
+     * using DUI.focus(). The button is given as a GLFW button constant.
      */
-    protected boolean activate()
+    protected boolean activate(int button)
     {
         return false;
     }
@@ -119,6 +119,10 @@ public abstract class Form
      * Whichever form has focus will receive all character and key events.
      */
     protected void key(int key, int action, int mods)
+    {
+    }
+    
+    protected void mouseScroll(float dx, float dy)
     {
     }
     

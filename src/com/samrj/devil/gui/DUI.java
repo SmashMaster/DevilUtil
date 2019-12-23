@@ -44,10 +44,12 @@ public final class DUI
     
     private static Window hoveredWindow, activeWindow;
     private static Form hoveredForm, activeForm;
+    private static int activeFormButton;
     private static Form focusedForm;
-    private static ScrollBox hoveredScrollBox;
+    private static Form hoveredScrollBox;
     private static DropDown dropDown;
     private static boolean dropDownHovered;
+    private static Form background;
     
     /**
      * Initializes DevilUI.
@@ -231,6 +233,37 @@ public final class DUI
     }
     
     /**
+     * Sets the DUI background form. The background is always behind any open
+     * windows, and does not count as an open window.
+     */
+    public static void setBackground(Form background)
+    {
+        if (background != DUI.background && DUI.background != null)
+        {
+            //The background is the only form which belongs to a null window.
+            if (hoveredForm != null && hoveredForm.getWindow() == null) hoveredForm = null;
+            if (activeForm != null && activeForm.getWindow() == null)
+            {
+                activeForm.deactivate();
+                activeForm = null;
+            }
+            if (focusedForm != null && focusedForm.getWindow() == null)
+            {
+                focusedForm.defocus();
+                focusedForm = null;
+            }
+            if (hoveredScrollBox != null && hoveredScrollBox.getWindow() == null) hoveredScrollBox = null;
+            if (dropDown != null && dropDown.getParentWindow() == null)
+            {
+                dropDown = null;
+                dropDownHovered = false;
+            }
+        }
+        
+        DUI.background = background;
+    }
+    
+    /**
      * Sends a mouse move event to DevilUI. These events are needed to determine
      * which window or form is currently hovered.
      */
@@ -257,7 +290,7 @@ public final class DUI
         if (dropDown != null)
         {
             Object hovered = dropDown.hover(x, y);
-            ScrollBox scrollBox = dropDown.findScrollBox(x, y);
+            Form scrollBox = dropDown.findScrollBox(x, y);
             
             if (hovered instanceof Form) hoveredForm = (Form)hovered;
             
@@ -273,23 +306,28 @@ public final class DUI
         while (window != null)
         {
             Object hovered = window.hover(x, y);
-            ScrollBox scrollBox = window.findScrollBox(x, y);
+            Form scrollBox = window.findScrollBox(x, y);
             if (hovered instanceof Form)
             {
                 hoveredForm = (Form)hovered;
                 hoveredWindow = window;
                 hoveredScrollBox = scrollBox;
-                break;
+                return;
             }
             else if (hovered instanceof Window)
             {
-                hoveredForm = null;
                 hoveredWindow = window;
                 hoveredScrollBox = scrollBox;
-                break;
+                return;
             }
             
             window = window.below;
+        }
+        
+        if (background != null)
+        {
+            hoveredForm = background.hover(x, y);
+            hoveredScrollBox = background.findScrollBox(x, y);
         }
     }
     
@@ -309,18 +347,15 @@ public final class DUI
      */
     public static void mouseButton(int button, int action, int mods)
     {
-        if (button != GLFW_MOUSE_BUTTON_LEFT) return;
-        
         switch (action)
         {
             case GLFW_PRESS:
-                focus(null);
-                mouseMoved(mouseX, mouseY); //Make sure hovered items are up to date.
-                
-                if (!dropDownHovered) closeDropDown();
-                
                 if (activeForm == null && activeWindow == null)
                 {
+                    focus(null);
+                    mouseMoved(mouseX, mouseY); //Make sure hovered items are up to date.
+                    if (!dropDownHovered) closeDropDown();
+                    
                     //Bring hovered window to top if clicked
                     if (hoveredWindow != null && hoveredWindow != topWindow)
                     {
@@ -330,10 +365,11 @@ public final class DUI
                     
                     if (hoveredForm != null)
                     {
-                        if (hoveredForm.activate())
+                        if (hoveredForm.activate(button))
                         {
                             activeForm = hoveredForm;
                             activeForm.hover(mouseX, mouseY);
+                            activeFormButton = button;
                         }
                     }
                     else if (hoveredWindow != null)
@@ -347,7 +383,7 @@ public final class DUI
                 }
                 break;
             case GLFW_RELEASE:
-                if (activeForm != null)
+                if (activeForm != null && button == activeFormButton)
                 {
                     activeForm.deactivate();
                     activeForm = null;
@@ -465,6 +501,13 @@ public final class DUI
         if (!init) throw new IllegalStateException("Not initialized.");
         
         drawer.begin();
+        
+        if (background != null)
+        {
+            background.updateSize();
+            background.layout(null, background.x0, background.y0);
+            background.render(drawer);
+        }
         
         Window window = bottomWindow;
         while (window != null)

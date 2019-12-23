@@ -3,6 +3,8 @@ package com.samrj.devil.gui;
 import com.samrj.devil.math.Util;
 import java.util.function.Consumer;
 
+import static org.lwjgl.glfw.GLFW.*;
+
 /**
  * A slider can be used to choose a numerical value.
  * 
@@ -69,8 +71,9 @@ public class Slider extends Form
     }
     
     @Override
-    protected boolean activate()
+    protected boolean activate(int button)
     {
+        if (button != GLFW_MOUSE_BUTTON_LEFT) return false;
         if (barHovered) dragStartX = 0.0f;
         dragging = true;
         return true;

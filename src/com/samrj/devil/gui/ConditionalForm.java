@@ -64,7 +64,7 @@ public class ConditionalForm extends Form
     }
     
     @Override
-    protected ScrollBox findScrollBox(float x, float y)
+    protected Form findScrollBox(float x, float y)
     {
         if (form != null) return form.findScrollBox(x, y);
         return null;

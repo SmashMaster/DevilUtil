@@ -4,6 +4,8 @@ import com.samrj.devil.math.Vec2;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
+import static org.lwjgl.glfw.GLFW.*;
+
 /**
  * A combo box allows for the selection of one of many options, by using a drop
  * down menu.
@@ -141,8 +143,9 @@ public class ComboBox extends Form
     }
     
     @Override
-    protected boolean activate()
+    protected boolean activate(int button)
     {
+        if (button != GLFW_MOUSE_BUTTON_LEFT) return false;
         DUI.dropDown(dropDown, x0, y0, getSize());
         return false;
     }
@@ -202,8 +205,9 @@ public class ComboBox extends Form
         }
         
         @Override
-        protected boolean activate()
+        protected boolean activate(int button)
         {
+            if (button != GLFW_MOUSE_BUTTON_LEFT) return false;
             if (selection != index)
             {
                 selection = index;

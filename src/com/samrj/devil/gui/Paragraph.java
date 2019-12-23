@@ -186,8 +186,9 @@ public class Paragraph extends Form
     }
 
     @Override
-    protected boolean activate()
+    protected boolean activate(int button)
     {
+        if (button != GLFW_MOUSE_BUTTON_LEFT) return false;
         dragged = true;
         
         if (DUI.getFocusedForm() != this)

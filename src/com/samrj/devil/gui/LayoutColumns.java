@@ -111,11 +111,11 @@ public class LayoutColumns extends Form
     }
     
     @Override
-    protected ScrollBox findScrollBox(float x, float y)
+    protected Form findScrollBox(float x, float y)
     {
         for (Form form : forms)
         {
-            ScrollBox result = form.findScrollBox(x, y);
+            Form result = form.findScrollBox(x, y);
             if (result != null) return result;
         }
         return null;

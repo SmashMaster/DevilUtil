@@ -4,6 +4,7 @@ package com.samrj.devil.gui;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
 
+import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11C.*;
 
 /**
@@ -172,14 +173,16 @@ public class ScrollBox extends Form
         return this;
     }
     
-    void mouseScroll(float dx, float dy)
+    @Override
+    protected void mouseScroll(float dx, float dy)
     {
         setScrollY(scrollY - dy*SCROLL_RATE);
     }
     
     @Override
-    protected boolean activate()
+    protected boolean activate(int button)
     {
+        if (button != GLFW_MOUSE_BUTTON_LEFT) return false;
         if (scrollBarHovered)
         {
             scrollBarDragged = true;
@@ -196,13 +199,13 @@ public class ScrollBox extends Form
     }
     
     @Override
-    protected ScrollBox findScrollBox(float x, float y)
+    protected Form findScrollBox(float x, float y)
     {
         if (x < this.x0 || x > this.x0 + width || y < this.y0 || y > this.y0 + height) return null;
         
         if (content != null)
         {
-            ScrollBox inner = content.findScrollBox(x, y);
+            Form inner = content.findScrollBox(x, y);
             if (inner != null) return inner;
         }
         

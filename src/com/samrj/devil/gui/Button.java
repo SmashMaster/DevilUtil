@@ -4,6 +4,8 @@ import com.samrj.devil.math.Vec2;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import static org.lwjgl.glfw.GLFW.*;
+
 /**
  * A simple button.
  * 
@@ -78,8 +80,9 @@ public class Button extends Form
     }
 
     @Override
-    protected boolean activate()
+    protected boolean activate(int button)
     {
+        if (button != GLFW_MOUSE_BUTTON_LEFT) return false;
         if (onActivate != null) onActivate.accept(this);
         return false;
     }
