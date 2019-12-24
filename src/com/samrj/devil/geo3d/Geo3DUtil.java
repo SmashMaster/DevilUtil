@@ -3,6 +3,7 @@ package com.samrj.devil.geo3d;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.Vec4;
+import com.samrj.devil.util.Pair;
 
 /**
  * 3D geometry utility methods.
@@ -168,6 +169,40 @@ public class Geo3DUtil
             case 2: return Vec3.project(v, Vec3.cross(opp[0], opp[1]));
             default: return new Vec3();
         }
+    }
+    
+    /**
+     * Finds the two closest points between two lines. The result is returned as
+     * an array containing the two interpolation parameters to get the closest
+     * point along both lines.
+     */
+    public static final float[] closestTwoLines(Vec3 ap0, Vec3 ap1, Vec3 bp0, Vec3 bp1)
+    {
+        Vec3 u = Vec3.sub(ap1, ap0);
+        Vec3 v = Vec3.sub(bp1, bp0);
+        Vec3 w = Vec3.sub(ap0, bp0);
+        
+        float uu = u.dot(u);
+        float uv = u.dot(v);
+        float vv = v.dot(v);
+        float uw = u.dot(w);
+        float vw = v.dot(w);
+        
+        float denom = uu*vv - uv*uv;
+        float[] result = new float[2];
+        
+        if (denom < 0.001f)
+        {
+            result[0] = 0.0f;
+            result[1] = (uv>vv ? uw/uv : vw/vv);
+        }
+        else
+        {
+            result[0] = (uv*vw - vv*uw)/denom;
+            result[1] = (uu*vw - uv*uw)/denom;
+        }
+        
+        return result;
     }
     
     private Geo3DUtil()
