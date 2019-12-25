@@ -112,11 +112,7 @@ public class Transform implements FloatBufferable, DataStreamable
      */
     public static final void mult(Transform t0, Transform t1, Transform r)
     {
-        Vec3 temp = Vec3.mult(t0.pos, t1.rot);
-        temp.mult(t1.sca);
-        Vec3.add(temp, t1.pos, r.pos);
-        Quat.mult(t0.rot, t1.rot, r.rot);
-        Vec3.mult(t0.sca, t1.sca, r.sca);
+        r.setDecomposition(Mat4.transform(t1).mult(t0));
     }
     
     /**
