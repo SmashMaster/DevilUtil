@@ -23,6 +23,7 @@
 package com.samrj.devil.model;
 
 import com.samrj.devil.geo2d.Earcut;
+import com.samrj.devil.geo3d.Geo3DUtil;
 import com.samrj.devil.geo3d.Vertex3;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Vec2;
@@ -42,36 +43,6 @@ import static org.lwjgl.system.MemoryUtil.*;
  */
 public final class Mesh extends DataBlock
 {
-    /**
-     * This lets us project points onto a plane defined by a normal, and ignore the z coordinate.
-     */
-    private static void orthogBasis(Vec3 n, Mat3 result)
-    {
-        float len = n.length();
-
-        if (len != 0)
-        {
-            //Todo: Optimize this
-            Vec3 b = Vec3.cross(n, new Vec3(1.0f, 0.0f, 0.0f));
-            if (b.isZero(0.01f)) Vec3.cross(n, new Vec3(0.0f, 1.0f, 0.0f), b);
-            b.normalize();
-            
-            Vec3 t = Vec3.cross(n, b).normalize();
-            
-            result.set(b.x, b.y, b.z,
-                       t.x, t.y, t.z,
-                       0.0f, 0.0f, 0.0f);
-        }
-        else result.setIdentity(); //Cannot create basis from zero vector
-    }
-    
-    private static Mat3 orthogBasis(Vec3 n)
-    {
-        Mat3 result = new Mat3();
-        orthogBasis(n, result);
-        return result;
-    }
-    
     private static class LoopTri
     {
         private final int va, vb, vc;
@@ -206,7 +177,10 @@ public final class Mesh extends DataBlock
             else //Need to triangulate by ear clipping
             {
                 //Project to 2D
-                Mat3 basis = orthogBasis(normal);
+                Mat3 basis = Geo3DUtil.orthonormalBasis(normal);
+                basis.g = 0.0f;
+                basis.h = 0.0f;
+                basis.i = 0.0f;
                 double[] projData = new double[count*2];
                 for (int i=0; i<count; i++)
                 {

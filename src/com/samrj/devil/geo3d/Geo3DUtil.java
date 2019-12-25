@@ -1,8 +1,6 @@
 package com.samrj.devil.geo3d;
 
-import com.samrj.devil.math.Util;
-import com.samrj.devil.math.Vec3;
-import com.samrj.devil.math.Vec4;
+import com.samrj.devil.math.*;
 import com.samrj.devil.util.Pair;
 
 /**
@@ -202,6 +200,37 @@ public class Geo3DUtil
             result[1] = (uu*vw - uv*uw)/denom;
         }
         
+        return result;
+    }
+    
+    /**
+     * Creates a 3D rotation matrix from the given normal vector, which is
+     * assumed to be normalized. The rows of the resulting matrix will form an
+     * orthonormal basis: they will all be perpendicular to one another, and
+     * each have a length of one. The third row will equal the given normal.
+     */
+    public static void orthonormalBasis(Vec3 n, Mat3 result)
+    {
+        float length = n.length();
+
+        if (length != 0.0f)
+        {
+            Vec3 b = new Vec3(0.0f, n.z, -n.y);
+            if (b.isZero(0.01f)) b.set(-n.z, 0.0f, n.x);
+            b.normalize();
+            
+            Vec3 t = Vec3.cross(n, b).normalize();
+            result.set(b.x, b.y, b.z,
+                       t.x, t.y, t.z,
+                       n.x, n.y, n.z);
+        }
+        else result.setIdentity();
+    }
+    
+    public static Mat3 orthonormalBasis(Vec3 n)
+    {
+        Mat3 result = new Mat3();
+        orthonormalBasis(n, result);
         return result;
     }
     
