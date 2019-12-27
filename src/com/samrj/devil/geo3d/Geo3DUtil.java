@@ -1,7 +1,8 @@
 package com.samrj.devil.geo3d;
 
 import com.samrj.devil.math.*;
-import com.samrj.devil.util.Pair;
+import java.util.ArrayDeque;
+import java.util.Collection;
 
 /**
  * 3D geometry utility methods.
@@ -232,6 +233,72 @@ public class Geo3DUtil
         Mat3 result = new Mat3();
         orthonormalBasis(n, result);
         return result;
+    }
+    
+    /**
+     * Returns a bounding sphere that contains all of the given vectors. It is
+     * not necessarily a minimum bounding sphere. The last component of the
+     * returned vector is the sphere's radius.
+     */
+    public static Vec4 boundingSphere(Collection<Vec3> vecs)
+    {
+        //Find bounding sphere by Ritter's algorithm.
+        ArrayDeque<Vec3> remaining = new ArrayDeque<>(vecs.size());
+        remaining.addAll(vecs);
+        
+        //Start with any point.
+        Vec3 start = remaining.peek();
+        if (vecs.size() == 1) return new Vec4(start, 0.0f);
+        
+        //Find the furthest point A from the starting point.
+        Vec3 furthest = null;
+        float furthestDist = Float.NEGATIVE_INFINITY;
+        for (Vec3 vec : remaining)
+        {
+            float dist = vec.squareDist(start);
+            if (dist > furthestDist)
+            {
+                furthest = vec;
+                furthestDist = dist;
+            }
+        }
+        Vec3 a = furthest;
+        
+        //Find the furthest point B from A.
+        furthestDist = Float.NEGATIVE_INFINITY;
+        for (Vec3 vec : remaining)
+        {
+            float dist = vec.squareDist(a);
+            if (dist > furthestDist)
+            {
+                furthest = vec;
+                furthestDist = dist;
+            }
+        }
+        Vec3 b = furthest;
+        
+        //Our initial sphere contains A and B.
+        Vec3 center = Vec3.add(a, b).mult(0.5f);
+        float sqRadius = a.squareDist(b)*0.25f;
+        
+        //Make sure every point is contained by the sphere, expanding it if not.
+        while (!remaining.isEmpty())
+        {
+            Vec3 vec = remaining.removeLast();
+            Vec3 dir = Vec3.sub(vec, center);
+            float sqDist = dir.squareLength();
+            if (sqDist > sqRadius)
+            {
+                float radius = (float)Math.sqrt(sqRadius);
+                float dist = (float)Math.sqrt(sqDist);
+                center.madd(dir, ((dist - radius)*0.5f)/dist);
+                
+                float newRadius = (radius + dist)*0.5f;
+                sqRadius = newRadius*newRadius;
+            }
+        }
+        
+        return new Vec4(center, (float)Math.sqrt(sqRadius));
     }
     
     private Geo3DUtil()
