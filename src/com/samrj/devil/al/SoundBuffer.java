@@ -54,7 +54,7 @@ public class SoundBuffer extends DALObj
      */
     public long address()
     {
-        return memAddress(buffer);
+        return memAddress0(buffer);
     }
     
     @Override

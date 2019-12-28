@@ -271,7 +271,7 @@ public final class Image extends DGLObj
      */
     public long address()
     {
-        return memAddress(buffer);
+        return memAddress0(buffer);
     }
     
     /**

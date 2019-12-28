@@ -130,6 +130,65 @@ public final class VertexStream extends VertexBuilder
     }
     
     /**
+     * Updates a single vertex using the current attribute values. If the vertex
+     * is uploaded, it is also updated on the GPU.
+     */
+    public void updateVertex(int index)
+    {
+        ensureState(State.READY);
+        
+        if (index < 0 || index >= bufferedVerts) throw new ArrayIndexOutOfBoundsException();
+        int curOffset = vertexBuffer.position();
+        int offset = vertexSize()*index;
+        vertexBuffer.position(offset);
+        bufferVertex(vertexBuffer);
+        vertexBuffer.position(curOffset);
+        
+        if (index < uploadedVerts)
+        {
+            int prevBinding = glGetInteger(GL_ARRAY_BUFFER_BINDING);
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            nglBufferSubData(GL_ARRAY_BUFFER, offset, vertexSize(), memAddress0(vertexBuffer) + offset);
+            glBindBuffer(GL_ARRAY_BUFFER, prevBinding);
+        }
+    }
+    
+    /**
+     * Uploads any buffered vertices that have not yet been sent to the GPU.
+     * Much faster than uploading the entire stream for a few new vertices.
+     */
+    public void uploadNew()
+    {
+        if (uploadedVerts < bufferedVerts)
+        {
+            int numNew = bufferedVerts - uploadedVerts;
+            int size = numNew*vertexSize();
+            int offset = uploadedVerts*vertexSize();
+            
+            int prevBinding = glGetInteger(GL_ARRAY_BUFFER_BINDING);
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            nglBufferSubData(GL_ARRAY_BUFFER, offset, size, memAddress0(vertexBuffer) + offset);
+            glBindBuffer(GL_ARRAY_BUFFER, prevBinding);
+            
+            uploadedVerts = bufferedVerts;
+        }
+        
+        if (uploadedInds < bufferedInds)
+        {
+            int numNew = bufferedInds - uploadedInds;
+            int size = numNew*4;
+            int offset = uploadedVerts*4;
+            
+            int prevBinding = glGetInteger(GL_ELEMENT_ARRAY_BUFFER_BINDING);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+            nglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, size, memAddress0(vertexBuffer) + offset);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevBinding);
+            
+            uploadedInds = bufferedInds;
+        }
+    }
+    
+    /**
      * Uploads this vertex data to the GPU and clears the stream, allowing new
      * data to be emitted.
      */
