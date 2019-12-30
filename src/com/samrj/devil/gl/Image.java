@@ -86,7 +86,7 @@ public final class Image extends DGLObj
     Image(int width, int height, int bands, PrimType type)
     {
         DGL.checkState();
-        if (width <= 0 || height <= 0)
+        if (width < 0 || height < 0)
             throw new IllegalArgumentException("Illegal dimensions specified.");
         if (bands <= 0 || bands > 4)
             throw new IllegalArgumentException("Illegal number of image bands specified.");

@@ -72,7 +72,7 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
      */
     public T image(int width, int height, int format)
     {
-        if (width <= 0 || height <= 0) throw new IllegalArgumentException("Illegal image dimensions.");
+        if (width < 0 || height < 0) throw new IllegalArgumentException("Illegal image dimensions.");
         
         int baseFormat = TexUtil.getBaseFormat(format);
         if (baseFormat == -1) throw new IllegalArgumentException("Illegal image format.");

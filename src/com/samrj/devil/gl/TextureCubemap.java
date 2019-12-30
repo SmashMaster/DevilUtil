@@ -49,7 +49,7 @@ public final class TextureCubemap extends Texture<TextureCubemap>
      */
     public TextureCubemap image(int size, int format)
     {
-        if (size <= 0) throw new IllegalArgumentException("Illegal image dimensions.");
+        if (size < 0) throw new IllegalArgumentException("Illegal image dimensions.");
         
         int baseFormat = TexUtil.getBaseFormat(format);
         if (baseFormat == -1) throw new IllegalArgumentException("Illegal image format.");

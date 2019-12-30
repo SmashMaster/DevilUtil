@@ -57,7 +57,7 @@ public class Texture2DMultisample extends Texture<Texture2DMultisample>
      */
     public Texture2DMultisample image(int width, int height, int samples, int format, boolean fixedSampleLocations)
     {
-        if (width <= 0 || height <= 0) throw new IllegalArgumentException("Illegal image dimensions.");
+        if (width < 0 || height < 0) throw new IllegalArgumentException("Illegal image dimensions.");
         
         this.width = width;
         this.height = height;

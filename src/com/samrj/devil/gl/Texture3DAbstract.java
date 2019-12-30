@@ -58,7 +58,7 @@ abstract class Texture3DAbstract<T extends Texture3DAbstract<T>> extends Texture
      */
     public T image(int width, int height, int depth, int format)
     {
-        if (width <= 0 || height <= 0 || depth <= 0)
+        if (width < 0 || height < 0 || depth < 0)
             throw new IllegalArgumentException("Illegal image dimensions.");
         
         int baseFormat = TexUtil.getBaseFormat(format);
