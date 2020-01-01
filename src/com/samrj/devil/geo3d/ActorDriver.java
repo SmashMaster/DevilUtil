@@ -22,6 +22,11 @@ public final class ActorDriver
      */
     public final Vec3 moveDir = new Vec3();
     
+    /**
+     * The shape of this driver used for collision.
+     */
+    public final Ellipsoid shape = new Ellipsoid();
+    
     //The geometry that this driver will use for collision detection. Defaults
     //to null, with collision disabled.
     public Geometry<?, ?, ?> geom;
@@ -67,7 +72,6 @@ public final class ActorDriver
     public Runnable jumpCallback, fallCallback;
     public Consumer<Vec3> landCallback;
     
-    private final Ellipsoid shape = new Ellipsoid();
     private final Vec3 displacement = new Vec3();
     private final Vec3 groundNormal = new Vec3(0.0f, 1.0f, 0.0f);
     private final Vec3 slideNormal = new Vec3(0.0f, 1.0f, 0.0f);
