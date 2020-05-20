@@ -7,7 +7,6 @@ import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.topo.DAG;
 import com.samrj.devil.model.ArmatureSolver;
 import com.samrj.devil.model.ArmatureSolver.BoneSolver;
-import java.io.IOException;
 import java.util.Set;
 
 /**
@@ -118,7 +117,7 @@ public class IKConstraint implements ArmatureSolver.Constraint
         public final String poleName;
         public final float poleAngle;
         
-        public IKDefinition(String boneName, String targetName, String poleName, float poleAngle) throws IOException
+        public IKDefinition(String boneName, String targetName, String poleName, float poleAngle)
         {
             this.boneName = boneName;
             this.targetName = targetName;

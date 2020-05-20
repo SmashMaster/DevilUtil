@@ -4,6 +4,7 @@ import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Transform;
 import com.samrj.devil.math.Vec3;
+import com.samrj.devil.model.constraint.CopyRotationConstraint.CopyRotDef;
 import com.samrj.devil.model.constraint.IKConstraint.IKDefinition;
 import java.io.IOException;
 import java.util.*;
@@ -26,6 +27,7 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
     public final List<String> vertexGroups;
     public final Pose pose;
     public final List<IKDefinition> ikConstraints;
+    public final List<CopyRotDef> copyRotConstraints;
     public final DataPointer<DATA_TYPE> data;
     public final DataPointer<ModelObject<?>> parent;
     public final String parentBoneName;
@@ -78,6 +80,7 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
         
         BlendFile.Pointer bPose = bObject.getField("pose").dereference();
         ikConstraints = new ArrayList<>();
+        copyRotConstraints = new ArrayList<>();
         if (bPose != null)
         {
             pose = new Pose(bPose);
@@ -85,22 +88,41 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
             for (BlendFile.Pointer bChan : bPose.getField("chanbase").asList("bPoseChannel"))
                 for (BlendFile.Pointer bCons : bChan.getField("constraints").asList("bConstraint"))
             {
-                if (bCons.getField("type").asShort() != 3) continue;
-                BlendFile.Pointer bIK = bCons.getField("data").cast("bKinematicConstraint").dereference();
+                switch (bCons.getField("type").asShort())
+                {
+                    case 3:
+                    {
+                        BlendFile.Pointer bIK = bCons.getField("data").cast("bKinematicConstraint").dereference();
                 
-                if (bIK.getField("rootbone").asShort() != 2) continue; //Only support 2-bone IK at this time
-                
-                BlendFile.Pointer target = bIK.getField("tar").dereference();
-                String subtarget = bIK.getField("subtarget").asString();
-                if (target == null || subtarget.isEmpty()) continue;
-                
-                BlendFile.Pointer poleTarget = bIK.getField("poletar").dereference();
-                String poleSubtarget = bIK.getField("polesubtarget").asString();
-                if (poleTarget == null || poleSubtarget.isEmpty()) continue;
-                
-                String bone = bChan.getField("name").asString();
-                float poleAngle = bIK.getField("poleangle").asFloat();
-                ikConstraints.add(new IKDefinition(bone, subtarget, poleSubtarget, poleAngle));
+                        if (bIK.getField("rootbone").asShort() != 2) continue; //Only support 2-bone IK at this time
+
+                        BlendFile.Pointer target = bIK.getField("tar").dereference();
+                        String subtarget = bIK.getField("subtarget").asString();
+                        if (target == null || subtarget.isEmpty()) continue;
+
+                        BlendFile.Pointer poleTarget = bIK.getField("poletar").dereference();
+                        String poleSubtarget = bIK.getField("polesubtarget").asString();
+                        if (poleTarget == null || poleSubtarget.isEmpty()) continue;
+
+                        String bone = bChan.getField("name").asString();
+                        float poleAngle = bIK.getField("poleangle").asFloat();
+                        ikConstraints.add(new IKDefinition(bone, subtarget, poleSubtarget, poleAngle));
+                    }
+                    break;
+                    case 8:
+                    {
+                        BlendFile.Pointer bRotLike = bCons.getField("data").cast("bRotateLikeConstraint").dereference();
+                        
+                        BlendFile.Pointer target = bRotLike.getField("tar").dereference();
+                        String subtarget = bRotLike.getField("subtarget").asString();
+                        if (target == null || subtarget.isEmpty()) continue;
+                        
+                        String bone = bChan.getField("name").asString();
+                        
+                        copyRotConstraints.add(new CopyRotDef(bone, subtarget));
+                    }
+                    break;
+                }
             }
         }
         else pose = null;

@@ -29,6 +29,8 @@ import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.topo.DAG;
 import com.samrj.devil.model.Armature.Bone;
 import com.samrj.devil.model.Pose.PoseBone;
+import com.samrj.devil.model.constraint.CopyRotationConstraint;
+import com.samrj.devil.model.constraint.CopyRotationConstraint.CopyRotDef;
 import com.samrj.devil.model.constraint.IKConstraint;
 import com.samrj.devil.util.IOUtil;
 import java.util.*;
@@ -65,6 +67,8 @@ public final class ArmatureSolver
         
         ikConstraints = IOUtil.mapList(object.ikConstraints, ikDef -> new IKConstraint(ikDef, this));
         constraints = new LinkedList<>();
+        for (CopyRotDef def : object.copyRotConstraints)
+            constraints.add(new CopyRotationConstraint(def, this));
         nonconstrained = Collections.newSetFromMap(new IdentityHashMap<>());
         sortSolvables();
     }
