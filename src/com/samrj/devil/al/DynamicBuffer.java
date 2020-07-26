@@ -9,7 +9,7 @@ import static org.lwjgl.system.MemoryUtil.*;
  * buffer every time the capacity is reached.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2020 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class DynamicBuffer
@@ -145,7 +145,7 @@ public class DynamicBuffer
     public ByteBuffer close()
     {
         ensureOpen();
-        ByteBuffer out = buffer.flip();
+        ByteBuffer out = (ByteBuffer)buffer.flip();
         buffer = null;
         closed = true;
         return out;

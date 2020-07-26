@@ -1,5 +1,6 @@
 package com.samrj.devil.gl;
 
+import com.samrj.devil.util.IOUtil;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +17,7 @@ import static org.lwjgl.opengl.GL20C.*;
  * OpenGL shader object wrapper/loader.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2020 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Shader extends DGLObj
@@ -87,7 +88,7 @@ public final class Shader extends DGLObj
     {
         try (MemoryStack stack = MemoryStack.stackPush())
         {
-            byte[] bytes = in.readAllBytes();
+            byte[] bytes = IOUtil.readAllBytes(in);
             in.close();
             ByteBuffer buffer = stack.malloc(bytes.length);
             buffer.put(bytes);

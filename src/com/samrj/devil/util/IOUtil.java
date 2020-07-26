@@ -1,5 +1,8 @@
 package com.samrj.devil.util;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -16,7 +19,7 @@ import java.util.function.Predicate;
  * Utility methods for data munging.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2020 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class IOUtil
@@ -143,6 +146,17 @@ public final class IOUtil
     public static String readNullTermString(ByteBuffer buffer)
     {
         return readNullTermString(buffer, StandardCharsets.US_ASCII);
+    }
+    
+    public static byte[] readAllBytes(InputStream in) throws IOException
+    {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+        int count;
+        byte[] array = new byte[16384];
+        while ((count = in.read(array, 0, array.length)) != -1) buffer.write(array, 0, count);
+
+        return buffer.toByteArray();
     }
     
     private IOUtil()

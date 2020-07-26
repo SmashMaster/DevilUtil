@@ -3,6 +3,7 @@ package com.samrj.devil.gui;
 import com.samrj.devil.gl.DGL;
 import com.samrj.devil.gl.Texture2D;
 import com.samrj.devil.math.Vec2;
+import com.samrj.devil.util.IOUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -26,7 +27,7 @@ import static org.lwjgl.system.MemoryUtil.*;
  * under this license: https://www.lwjgl.org/license
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2020 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class Font
@@ -55,7 +56,7 @@ public class Font
         fontInfo = STBTTFontinfo.malloc();
         
         //Read whole font to buffer.
-        byte[] bytes = in.readAllBytes();
+        byte[] bytes = IOUtil.readAllBytes(in);
         in.close();
         ttf = memAlloc(bytes.length);
         ttf.put(bytes);

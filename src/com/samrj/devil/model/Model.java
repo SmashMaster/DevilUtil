@@ -4,13 +4,14 @@ import com.samrj.devil.model.DataBlock.Type;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.EnumMap;
 
 /**
  * Loads and parses Blender .blend files.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2020 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Model
@@ -34,7 +35,7 @@ public final class Model
     
     public Model(String path) throws IOException
     {
-        this.path = Path.of(path);
+        this.path = Paths.get(path);
         
         try
         {

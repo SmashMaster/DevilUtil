@@ -2,10 +2,11 @@ package com.samrj.devil.model;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2020 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class Texture extends DataBlock
@@ -26,7 +27,7 @@ public class Texture extends DataBlock
                 String str = bImage.getField("name").asString();
                 if (str.startsWith("//")) //Only support relative paths.
                 {
-                    relativePath = Path.of(str.substring(2)).normalize();
+                    relativePath = Paths.get(str.substring(2)).normalize();
                     path = model.path.getParent().resolve(relativePath).normalize();
                     break FIND_PATH;
                 }
