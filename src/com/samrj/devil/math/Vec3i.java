@@ -70,4 +70,27 @@ public class Vec3i implements Bufferable
     {
         return "(" + x + ", " + y + ", " + z + ")";
     }
+    
+    public boolean equals(Vec3i v)
+    {
+        if (v == null) return false;
+        return x == v.x && y == v.y && z == v.z;
+    }
+    
+    @Override
+    public boolean equals(Object o)
+    {
+        if (o == null) return false;
+        if (o.getClass() != this.getClass()) return false;
+        final Vec3i v = (Vec3i)o;
+        return equals(v);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 57 + this.x;
+        hash = 19*hash + this.y;
+        return 19*hash + this.z;
+    }
 }
