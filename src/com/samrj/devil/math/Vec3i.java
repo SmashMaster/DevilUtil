@@ -29,6 +29,24 @@ public class Vec3i implements Bufferable
         x = v.x; y = v.y; z = v.z;
     }
     
+    public Vec3i set()
+    {
+        x = 0; y = 0; z = 0;
+        return this;
+    }
+    
+    public Vec3i set(int x, int y, int z)
+    {
+        this.x = x; this.y = y; this.z = z;
+        return this;
+    }
+    
+    public Vec3i set(Vec3i v)
+    {
+        x = v.x; y = v.y; z = v.z;
+        return this;
+    }
+    
     @Override
     public void read(ByteBuffer buffer)
     {
