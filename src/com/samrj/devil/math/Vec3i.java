@@ -137,6 +137,11 @@ public class Vec3i implements Bufferable, DataStreamable
         x = v.x; y = v.y; z = v.z;
     }
     
+    public Vec3i(DataInputStream in) throws IOException
+    {
+        Vec3i.this.read(in);
+    }
+    
     public float dot(Vec3i v)
     {
         return dot(this, v);
@@ -249,9 +254,9 @@ public class Vec3i implements Bufferable, DataStreamable
     @Override
     public void write(DataOutputStream out) throws IOException
     {
-        out.writeFloat(x);
-        out.writeFloat(y);
-        out.writeFloat(z);
+        out.writeInt(x);
+        out.writeInt(y);
+        out.writeInt(z);
     }
     
     @Override
