@@ -199,6 +199,19 @@ public class Vec3 implements FloatBufferable, DataStreamable, Vertex3
     }
     
     /**
+     * Copies {@code source} into {@code target}.
+     * 
+     * @param source The vector to copy.
+     * @param target The vector in which to store the result.
+     */
+    public static final void copy(Vec3i source, Vec3 target)
+    {
+        target.x = source.x;
+        target.y = source.y;
+        target.z = source.z;
+    }
+    
+    /**
      * Sets a vector to the given row of a matrix.
      * 
      * @param m The matrix to copy from.
@@ -932,6 +945,16 @@ public class Vec3 implements FloatBufferable, DataStreamable, Vertex3
     }
     
     /**
+     * Converts the given integer vector to a new float vector.
+     * 
+     * @param v The vector to copy.
+     */
+    public Vec3(Vec3i v)
+    {
+        x = v.x; y = v.y; z = v.z;
+    }
+    
+    /**
      * Loads a new vector from the given input stream.
      * 
      * @param in The input stream to read from.
@@ -1053,6 +1076,18 @@ public class Vec3 implements FloatBufferable, DataStreamable, Vertex3
      * @return This vector.
      */
     public Vec3 set(Vec3 v)
+    {
+        copy(v, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to the given vector.
+     * 
+     * @param v The vector to set this to.
+     * @return This vector.
+     */
+    public Vec3 set(Vec3i v)
     {
         copy(v, this);
         return this;

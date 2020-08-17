@@ -155,9 +155,28 @@ public interface Triangle3<V extends Vertex3> extends GeoPrimitive
      * @param c The third vector.
      * @return A new triangle using the given vectors as vertices.
      */
-    public static Triangle3 from(Vec3 a, Vec3 b, Vec3 c)
+    public static Triangle3<Vec3> from(Vec3 a, Vec3 b, Vec3 c)
     {
-        return from(Vertex3.from(a), Vertex3.from(b), Vertex3.from(c));
+        return new Triangle3()
+        {
+            @Override
+            public Vec3 a()
+            {
+                return a;
+            }
+
+            @Override
+            public Vec3 b()
+            {
+                return b;
+            }
+
+            @Override
+            public Vec3 c()
+            {
+                return c;
+            }
+        };
     }
     
     /**

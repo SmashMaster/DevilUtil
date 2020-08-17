@@ -30,9 +30,22 @@ public interface Edge3<V extends Vertex3> extends GeoPrimitive
         };
     }
     
-    public static Edge3 from(Vec3 a, Vec3 b)
+    public static Edge3<Vec3> from(Vec3 a, Vec3 b)
     {
-        return from(Vertex3.from(a), Vertex3.from(b));
+        return new Edge3()
+        {
+            @Override
+            public Vec3 a()
+            {
+                return a;
+            }
+
+            @Override
+            public Vec3 b()
+            {
+                return b;
+            }
+        };
     }
     
     /**
