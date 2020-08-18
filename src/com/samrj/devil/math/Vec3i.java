@@ -132,6 +132,11 @@ public class Vec3i implements Bufferable, DataStreamable
         this.x = x; this.y = y; this.z = z;
     }
     
+    public Vec3i(int value)
+    {
+        x = value; y = value; z = value;
+    }
+    
     public Vec3i(Vec3i v)
     {
         x = v.x; y = v.y; z = v.z;
