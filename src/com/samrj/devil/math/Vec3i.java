@@ -15,7 +15,7 @@ import java.nio.IntBuffer;
  * @copyright 2020 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Vec3i implements Bufferable, DataStreamable
+public class Vec3i implements Bufferable, DataStreamable<Vec3i>
 {
     public static final float dot(Vec3i v0, Vec3i v1)
     {
@@ -249,19 +249,21 @@ public class Vec3i implements Bufferable, DataStreamable
     }
     
     @Override
-    public void read(DataInputStream in) throws IOException
+    public Vec3i read(DataInputStream in) throws IOException
     {
         x = in.readInt();
         y = in.readInt();
         z = in.readInt();
+        return this;
     }
 
     @Override
-    public void write(DataOutputStream out) throws IOException
+    public Vec3i write(DataOutputStream out) throws IOException
     {
         out.writeInt(x);
         out.writeInt(y);
         out.writeInt(z);
+        return this;
     }
     
     @Override

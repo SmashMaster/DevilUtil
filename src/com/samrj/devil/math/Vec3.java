@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sam Johnson
+ * Copyright (c) 2020 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,7 +55,7 @@ import java.nio.FloatBuffer;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Vec3 implements FloatBufferable, DataStreamable, Vertex3
+public class Vec3 implements FloatBufferable, DataStreamable<Vec3>, Vertex3
 {
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
@@ -1461,19 +1461,21 @@ public class Vec3 implements FloatBufferable, DataStreamable, Vertex3
     }
 
     @Override
-    public void read(DataInputStream in) throws IOException
+    public Vec3 read(DataInputStream in) throws IOException
     {
         x = in.readFloat();
         y = in.readFloat();
         z = in.readFloat();
+        return this;
     }
 
     @Override
-    public void write(DataOutputStream out) throws IOException
+    public Vec3 write(DataOutputStream out) throws IOException
     {
         out.writeFloat(x);
         out.writeFloat(y);
         out.writeFloat(z);
+        return this;
     }
     
     @Override

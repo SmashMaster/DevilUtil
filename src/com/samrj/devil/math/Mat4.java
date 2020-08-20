@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sam Johnson
+ * Copyright (c) 2020 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ import java.nio.FloatBuffer;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Mat4 implements FloatBufferable, DataStreamable
+public class Mat4 implements FloatBufferable, DataStreamable<Mat4>
 {
     private static final float SQRT_2 = (float)Math.sqrt(2.0);
     
@@ -1630,21 +1630,23 @@ public class Mat4 implements FloatBufferable, DataStreamable
      * Written to/read from stream in row-major format.
      */
     @Override
-    public void read(DataInputStream in) throws IOException
+    public Mat4 read(DataInputStream in) throws IOException
     {
         a = in.readFloat(); b = in.readFloat(); c = in.readFloat(); d = in.readFloat();
         e = in.readFloat(); f = in.readFloat(); g = in.readFloat(); h = in.readFloat();
         i = in.readFloat(); j = in.readFloat(); k = in.readFloat(); l = in.readFloat();
         m = in.readFloat(); n = in.readFloat(); o = in.readFloat(); p = in.readFloat();
+        return this;
     }
 
     @Override
-    public void write(DataOutputStream out) throws IOException
+    public Mat4 write(DataOutputStream out) throws IOException
     {
         out.writeFloat(a); out.writeFloat(b); out.writeFloat(c); out.writeFloat(d);
         out.writeFloat(e); out.writeFloat(f); out.writeFloat(g); out.writeFloat(h);
         out.writeFloat(i); out.writeFloat(j); out.writeFloat(k); out.writeFloat(l);
         out.writeFloat(m); out.writeFloat(n); out.writeFloat(o); out.writeFloat(p);
+        return this;
     }
     
     @Override

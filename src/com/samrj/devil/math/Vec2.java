@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sam Johnson
+ * Copyright (c) 2020 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ import java.nio.FloatBuffer;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Vec2 implements FloatBufferable, DataStreamable
+public class Vec2 implements FloatBufferable, DataStreamable<Vec2>
 {
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
@@ -1245,17 +1245,19 @@ public class Vec2 implements FloatBufferable, DataStreamable
     }
 
     @Override
-    public void read(DataInputStream in) throws IOException
+    public Vec2 read(DataInputStream in) throws IOException
     {
         x = in.readFloat();
         y = in.readFloat();
+        return this;
     }
 
     @Override
-    public void write(DataOutputStream out) throws IOException
+    public Vec2 write(DataOutputStream out) throws IOException
     {
         out.writeFloat(x);
         out.writeFloat(y);
+        return this;
     }
     
     @Override

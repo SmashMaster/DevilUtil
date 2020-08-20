@@ -12,7 +12,7 @@ import java.io.IOException;
  * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public interface DataStreamable
+public interface DataStreamable<SELF_TYPE>
 {
     /**
      * Reads data from the given input stream and sets this object's fields
@@ -21,7 +21,7 @@ public interface DataStreamable
      * @param in The {@code DataInputStream} to read data from.
      * @throws java.io.IOException Whenever the given stream fails to read.
      */
-    public void read(DataInputStream in) throws IOException;
+    public SELF_TYPE read(DataInputStream in) throws IOException;
     
     /**
      * Writes data from this object's fields into the given output stream.
@@ -29,5 +29,5 @@ public interface DataStreamable
      * @param out The {@code DataOutputStream} to write data to.
      * @throws java.io.IOException Whenever the given stream fails to write.
      */
-    public void write(DataOutputStream out) throws IOException;
+    public SELF_TYPE write(DataOutputStream out) throws IOException;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sam Johnson
+ * Copyright (c) 2020 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ import java.nio.FloatBuffer;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Quat implements FloatBufferable, DataStreamable
+public class Quat implements FloatBufferable, DataStreamable<Quat>
 {
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
@@ -1067,21 +1067,23 @@ public class Quat implements FloatBufferable, DataStreamable
     }
 
     @Override
-    public void read(DataInputStream in) throws IOException
+    public Quat read(DataInputStream in) throws IOException
     {
         w = in.readFloat();
         x = in.readFloat();
         y = in.readFloat();
         z = in.readFloat();
+        return this;
     }
 
     @Override
-    public void write(DataOutputStream out) throws IOException
+    public Quat write(DataOutputStream out) throws IOException
     {
         out.writeFloat(w);
         out.writeFloat(x);
         out.writeFloat(y);
         out.writeFloat(z);
+        return this;
     }
     
     @Override

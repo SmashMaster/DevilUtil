@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sam Johnson
+ * Copyright (c) 2020 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ import java.nio.FloatBuffer;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Transform implements FloatBufferable, DataStreamable
+public class Transform implements FloatBufferable, DataStreamable<Transform>
 {
     public enum Property
     {
@@ -430,19 +430,21 @@ public class Transform implements FloatBufferable, DataStreamable
     }
 
     @Override
-    public void read(DataInputStream in) throws IOException
+    public Transform read(DataInputStream in) throws IOException
     {
         pos.read(in);
         rot.read(in);
         sca.read(in);
+        return this;
     }
 
     @Override
-    public void write(DataOutputStream out) throws IOException
+    public Transform write(DataOutputStream out) throws IOException
     {
         pos.write(out);
         rot.write(out);
         sca.write(out);
+        return this;
     }
     
     @Override

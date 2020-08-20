@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sam Johnson
+ * Copyright (c) 2020 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ import java.nio.FloatBuffer;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Mat2 implements FloatBufferable, DataStreamable 
+public class Mat2 implements FloatBufferable, DataStreamable<Mat2>
 {
     /**
      * Returns the determinant of the given matrix.
@@ -800,17 +800,19 @@ public class Mat2 implements FloatBufferable, DataStreamable
      * Written to/read from stream in row-major format.
      */
     @Override
-    public void read(DataInputStream in) throws IOException
+    public Mat2 read(DataInputStream in) throws IOException
     {
         a = in.readFloat(); b = in.readFloat();
         c = in.readFloat(); d = in.readFloat();
+        return this;
     }
 
     @Override
-    public void write(DataOutputStream out) throws IOException
+    public Mat2 write(DataOutputStream out) throws IOException
     {
         out.writeFloat(a); out.writeFloat(b);
         out.writeFloat(c); out.writeFloat(d);
+        return this;
     }
     
     @Override
