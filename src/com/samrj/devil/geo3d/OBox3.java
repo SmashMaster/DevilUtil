@@ -108,6 +108,39 @@ public class OBox3
     }
     
     /**
+     * Returns the time of intersection of the given ray against the given box,
+     * or POSITIVE_INFINITY if the ray missed.
+     * 
+     * @param box The box to raytrace against.
+     * @param p0 The starting position of the ray.
+     * @param dp The difference between the start and end of the ray.
+     * @param terminated Whether the ray should terminate at the length of dp.
+     * @return Whether the ray hit the box.
+    */
+    public static float raytrace(OBox3 box, Vec3 p0, Vec3 dp, boolean terminated)
+    {
+        Quat invRot = Quat.invert(box.transform.rot);
+        Vec3 localP0 = Vec3.sub(p0, box.transform.pos).mult(invRot);
+        Vec3 localDP = Vec3.mult(dp, invRot);
+        Box3 localBox = new Box3(Vec3.negate(box.transform.sca), box.transform.sca);
+        return Box3.raytrace(localBox, localP0, localDP, terminated);
+    }
+    
+    /**
+     * Returns whether or not the given box is touching the given ray.
+     * 
+     * @param box The box to raytrace against.
+     * @param p0 The starting position of the ray.
+     * @param dp The difference between the start and end of the ray.
+     * @param terminated Whether the ray should terminate at the length of dp.
+     * @return Whether the ray hit the box.
+     */
+    public static boolean touchingRay(OBox3 box, Vec3 p0, Vec3 dp, boolean terminated)
+    {
+        return Float.isFinite(raytrace(box, p0, dp, terminated));
+    }
+    
+    /**
      * Returns whether the given box contains the given vertex.
      * 
      * @param b The box to test.
