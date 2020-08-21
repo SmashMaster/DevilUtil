@@ -164,6 +164,12 @@ public class Vec3i implements Bufferable, DataStreamable<Vec3i>
         return this;
     }
     
+    public Vec3i set(int value)
+    {
+        x = value; y = value; z = value;
+        return this;
+    }
+    
     public Vec3i set(Vec3i v)
     {
         x = v.x; y = v.y; z = v.z;
