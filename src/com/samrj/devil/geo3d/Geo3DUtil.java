@@ -108,9 +108,8 @@ public class Geo3DUtil
      */
     public static RaycastResult raycast(Triangle3 f, Vec3 p0, Vec3 dp, boolean terminated)
     {
-        Vec3 a = f.a().p(), b = f.b().p(), c = f.c().p();
-        Vec3 ab = Vec3.sub(b, a);
-        Vec3 ac = Vec3.sub(c, a);
+        Vec3 ab = Vec3.sub(f.b, f.a);
+        Vec3 ac = Vec3.sub(f.c, f.a);
         
         Vec3 n = Vec3.cross(ab, ac);
         float d = -dp.dot(n);
@@ -123,7 +122,7 @@ public class Geo3DUtil
         }
         
         float ood = 1.0f/d;
-        Vec3 ap = Vec3.sub(p0, a);
+        Vec3 ap = Vec3.sub(p0, f.a);
         float t = ap.dot(n)*ood;
         if (t < 0.0f) return null; //Ray behind triangle.
         if (terminated && t > 1.0f) return null; //Triangle too far.
@@ -140,8 +139,8 @@ public class Geo3DUtil
         
         RaycastResult out = new RaycastResult(f);
         out.time = t;
-        Vec3.mult(a, u, out.point);
-        out.point.madd(b, v).madd(c, w);
+        Vec3.mult(f.a, u, out.point);
+        out.point.madd(f.b, v).madd(f.c, w);
         Vec3.normalize(n, out.normal);
         return out;
     }

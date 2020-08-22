@@ -9,23 +9,20 @@ import java.util.stream.Stream;
  * Basic geometry class which stores unordered, unstructured mesh data.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @param <V> The type of vertex this soup contains.
- * @param <E> The type of edge this soup contains.
- * @param <F> The type of face this soup contains.
  * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class GeoSoup<V extends Vertex3, E extends Edge3, F extends Triangle3> implements Geometry
+public class GeoSoup implements Geometry
 {
-    private final Supplier<Stream<V>> vertProvider;
-    private final Supplier<Stream<E>> edgeProvider;
-    private final Supplier<Stream<F>> faceProvider;
+    private final Supplier<Stream<Vec3>> vertProvider;
+    private final Supplier<Stream<Edge3>> edgeProvider;
+    private final Supplier<Stream<Triangle3>> faceProvider;
     
     private final Box3 bounds = Box3.infinite();
     
     private boolean boundsDirty = true;
     
-    public GeoSoup(Supplier<Stream<V>> vProvider, Supplier<Stream<E>> eProvider, Supplier<Stream<F>> fProvider)
+    public GeoSoup(Supplier<Stream<Vec3>> vProvider, Supplier<Stream<Edge3>> eProvider, Supplier<Stream<Triangle3>> fProvider)
     {
         if (vProvider == null) throw new NullPointerException();
         if (eProvider == null) throw new NullPointerException();
@@ -36,30 +33,30 @@ public class GeoSoup<V extends Vertex3, E extends Edge3, F extends Triangle3> im
         faceProvider = fProvider;
     }
     
-    public GeoSoup(Collection<V> verts, Collection<E> edges, Collection<F> faces)
+    public GeoSoup(Collection<Vec3> verts, Collection<Edge3> edges, Collection<Triangle3> faces)
     {
         this(verts::stream, edges::stream, faces::stream);
     }
     
-    public GeoSoup(V[] verts, E[] edges, F[] faces)
+    public GeoSoup(Vec3[] verts, Edge3[] edges, Triangle3[] faces)
     {
         this(() -> Stream.of(verts), () -> Stream.of(edges), () -> Stream.of(faces));
     }
     
     @Override
-    public Stream<V> verts()
+    public Stream<Vec3> verts()
     {
         return vertProvider.get();
     }
     
     @Override
-    public Stream<E> edges()
+    public Stream<Edge3> edges()
     {
         return edgeProvider.get();
     }
     
     @Override
-    public Stream<F> faces()
+    public Stream<Triangle3> faces()
     {
         return faceProvider.get();
     }

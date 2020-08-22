@@ -13,7 +13,7 @@ import java.util.function.Consumer;
  */
 public final class ActorDriver
 {
-    public static final GeoPrimitive VIRTUAL_GROUND = () -> GeoPrimitive.Type.VIRTUAL;
+    public static final Object VIRTUAL_GROUND = new Object();
     
     public final Vec3 pos, vel = new Vec3();
     
@@ -29,7 +29,7 @@ public final class ActorDriver
     
     //The geometry that this driver will use for collision detection. Defaults
     //to null, with collision disabled.
-    public Geometry<?, ?, ?> geom;
+    public Geometry geom;
     
     //The downward acceleration that this driver will experience at all times.
     public float gravity = 9.80665f;
@@ -75,7 +75,7 @@ public final class ActorDriver
     private final Vec3 displacement = new Vec3();
     private final Vec3 groundNormal = new Vec3(0.0f, 1.0f, 0.0f);
     private final Vec3 slideNormal = new Vec3(0.0f, 1.0f, 0.0f);
-    private GeoPrimitive groundObject, slideObject;
+    private Object groundObject, slideObject;
     private boolean applyGravity;
     
     /**
@@ -171,7 +171,7 @@ public final class ActorDriver
     /**
      * Returns whatever geometry object this actor is currently standing on.
      */
-    public GeoPrimitive getGroundObject()
+    public Object getGroundObject()
     {
         return groundObject;
     }
@@ -197,7 +197,7 @@ public final class ActorDriver
     /**
      * Returns the object this driver is sliding on.
      */
-    public GeoPrimitive getSlideObject()
+    public Object getSlideObject()
     {
         return slideObject;
     }

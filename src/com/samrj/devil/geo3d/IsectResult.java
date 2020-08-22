@@ -6,7 +6,7 @@ import com.samrj.devil.math.Vec3;
  * The results of an intersection test.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2020 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class IsectResult
@@ -35,9 +35,9 @@ public class IsectResult
     /**
      * The object that was intersected.
      */
-    public final GeoPrimitive object;
+    public final Object object;
     
-    IsectResult(GeoPrimitive object)
+    IsectResult(Object object)
     {
         this.object = object;
     }

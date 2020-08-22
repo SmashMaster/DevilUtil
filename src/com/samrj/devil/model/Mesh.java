@@ -24,10 +24,10 @@ package com.samrj.devil.model;
 
 import com.samrj.devil.geo2d.Earcut;
 import com.samrj.devil.geo3d.Geo3DUtil;
-import com.samrj.devil.geo3d.Vertex3;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
+import com.samrj.devil.util.TriConsumer;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -493,7 +493,7 @@ public final class Mesh extends DataBlock
      * @param vertexFunction A function which converts indices into vertices.
      * @param consumer A consumer which accepts three vertices at a time.
      */
-    public <V> void forEachTriangle(IntFunction<V> vertexFunction, TriConsumer<V> consumer)
+    public <V> void forEachTriangle(IntFunction<V> vertexFunction, TriConsumer<V, V, V> consumer)
     {
         if (indexData == null) return;
         
@@ -513,7 +513,7 @@ public final class Mesh extends DataBlock
      * 
      * @param consumer The operation to perform on each triangle.
      */
-    public void forEachTriangle(TriConsumer<MeshVertex> consumer)
+    public void forEachTriangle(TriConsumer<MeshVertex, MeshVertex, MeshVertex> consumer)
     {
         MeshVertex[] vertices = readVertices();
         forEachTriangle(i -> vertices[i], consumer);
@@ -526,7 +526,7 @@ public final class Mesh extends DataBlock
         if (indexData != null) memFree(indexData);
     }
     
-    public class MeshVertex implements Vertex3
+    public class MeshVertex
     {
         public final Vec3 position = new Vec3();
         public final Vec3 normal = new Vec3();
@@ -547,17 +547,5 @@ public final class Mesh extends DataBlock
             groupIndex = new int[numGroups];
             groupWeight = new float[numGroups];
         }
-
-        @Override
-        public Vec3 p()
-        {
-            return position;
-        }
-    }
-    
-    @FunctionalInterface
-    public interface TriConsumer<V>
-    {
-        public void accept(V a, V b, V c);
     }
 }

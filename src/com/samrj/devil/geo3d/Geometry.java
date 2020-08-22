@@ -9,18 +9,18 @@ import java.util.stream.Stream;
  * Interface for any kind of geometry which accepts collision tests.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2020 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public interface Geometry<V extends Vertex3, E extends Edge3, F extends Triangle3>
+public interface Geometry
 {
     //Base methods
     Stream<RaycastResult> raycastUnsorted(Vec3 p0, Vec3 dp, boolean terminated);
     Stream<IsectResult> intersectUnsorted(ConvexShape shape);
     Stream<SweepResult> sweepUnsorted(ConvexShape shape, Vec3 dp);
-    Stream<V> verts();
-    Stream<E> edges();
-    Stream<F> faces();
+    Stream<Vec3> verts();
+    Stream<Edge3> edges();
+    Stream<Triangle3> faces();
     
     //Ordered streams
     default Stream<RaycastResult> raycast(Vec3 p0, Vec3 dp, boolean terminated)

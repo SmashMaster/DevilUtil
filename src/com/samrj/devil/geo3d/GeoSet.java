@@ -9,15 +9,15 @@ import java.util.stream.Stream;
  * other GeoSets to act as a bounding volume hierarchy.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2020 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class GeoSet<V extends Vertex3, E extends Edge3, F extends Triangle3> implements Geometry<V, E, F>
+public class GeoSet implements Geometry
 {
-    private final Supplier<Stream<Geometry<V, E, F>>> provider;
+    private final Supplier<Stream<Geometry>> provider;
     private final Box3 bounds = Box3.infinite();
     
-    public GeoSet(Supplier<Stream<Geometry<V, E, F>>> provider)
+    public GeoSet(Supplier<Stream<Geometry>> provider)
     {
         this.provider = provider;
     }
@@ -49,19 +49,19 @@ public class GeoSet<V extends Vertex3, E extends Edge3, F extends Triangle3> imp
     }
     
     @Override
-    public Stream<V> verts()
+    public Stream<Vec3> verts()
     {
         return provider.get().flatMap(Geometry::verts);
     }
 
     @Override
-    public Stream<E> edges()
+    public Stream<Edge3> edges()
     {
         return provider.get().flatMap(Geometry::edges);
     }
     
     @Override
-    public Stream<F> faces()
+    public Stream<Triangle3> faces()
     {
         return provider.get().flatMap(Geometry::faces);
     }

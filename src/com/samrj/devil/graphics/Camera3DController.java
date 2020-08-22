@@ -42,7 +42,7 @@ public final class Camera3DController
     public final Vec3 offset = new Vec3();
     
     private float pitch, yaw;
-    private Geometry<?, ?, ?> blockGeom;
+    private Geometry blockGeom;
     private Ellipsoid blockShape;
     
     public Camera3DController(Camera3D camera)

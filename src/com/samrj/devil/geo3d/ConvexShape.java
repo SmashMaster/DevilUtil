@@ -17,7 +17,7 @@ public interface ConvexShape
      * @param v The vertex to clip against.
      * @return The results of the clip test, or null if not intersecting.
      */
-    IsectResult isect(Vertex3 v);
+    IsectResult isect(Vec3 v);
     
     /**
      * Intersects this shape against the given line segment.
@@ -42,7 +42,7 @@ public interface ConvexShape
      * @param v The vertex to sweep against.
      * @return The results of the sweep test, or null if missed.
      */
-    SweepResult sweep(Vec3 dp, Vertex3 v);
+    SweepResult sweep(Vec3 dp, Vec3 v);
     
     /**
      * Sweeps this shape in the given direction, against the given line segment.

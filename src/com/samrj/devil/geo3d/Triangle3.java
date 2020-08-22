@@ -4,14 +4,11 @@ import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.Vec4;
 
 /**
- * Interface for triangle-like objects.
- * 
  * @author Samuel Johnson (SmashMaster)
- * @param <V> The type of vertex this triangle stores.
- * @copyright 2016 Samuel Johnson
+ * @copyright 2020 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public interface Triangle3<V extends Vertex3> extends GeoPrimitive
+public class Triangle3
 {
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
@@ -22,8 +19,7 @@ public interface Triangle3<V extends Vertex3> extends GeoPrimitive
      */
     public static float area(Triangle3 t)
     {
-        Vec3 a = t.a().p(), b = t.b().p(), c = t.c().p();
-        return Vec3.sub(b, a).cross(Vec3.sub(c, a)).length()*0.5f;
+        return Vec3.sub(t.b, t.a).cross(Vec3.sub(t.c, t.a)).length()*0.5f;
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static mutator methods">
@@ -36,9 +32,9 @@ public interface Triangle3<V extends Vertex3> extends GeoPrimitive
      */
     public static void copy(Triangle3 source, Triangle3 target)
     {
-        Vec3.copy(source.a().p(), target.a().p());
-        Vec3.copy(source.b().p(), target.b().p());
-        Vec3.copy(source.c().p(), target.c().p());
+        Vec3.copy(source.a, target.a);
+        Vec3.copy(source.b, target.b);
+        Vec3.copy(source.c, target.c);
     }
     
     /**
@@ -51,8 +47,7 @@ public interface Triangle3<V extends Vertex3> extends GeoPrimitive
      */
     public static void barycentric(Triangle3 t, Vec3 p, Vec3 result)
     {
-        Vec3 a = t.a().p(), b = t.b().p(), c = t.c().p();
-        Vec3 v0 = Vec3.sub(b, a), v1 = Vec3.sub(c, a), v2 = Vec3.sub(p, a);
+        Vec3 v0 = Vec3.sub(t.b, t.a), v1 = Vec3.sub(t.c, t.a), v2 = Vec3.sub(p, t.a);
         float d00 = v0.dot(v0);
         float d01 = v0.dot(v1);
         float d11 = v1.dot(v1);
@@ -75,10 +70,9 @@ public interface Triangle3<V extends Vertex3> extends GeoPrimitive
      */
     public static void interpolate(Triangle3 t, Vec3 bary, Vec3 result)
     {
-        Vec3 a = t.a().p(), b = t.b().p(), c = t.c().p();
-        Vec3 out = Vec3.mult(a, bary.x); //Temp var in case bary == result
-        Vec3.madd(out, b, bary.y, out);
-        Vec3.madd(out, c, bary.z, out);
+        Vec3 out = Vec3.mult(t.a, bary.x); //Temp var in case bary == result
+        Vec3.madd(out, t.b, bary.y, out);
+        Vec3.madd(out, t.c, bary.z, out);
         Vec3.copy(out, result);
     }
     
@@ -91,8 +85,7 @@ public interface Triangle3<V extends Vertex3> extends GeoPrimitive
      */
     public static void normal(Triangle3 t, Vec3 result)
     {
-        Vec3 a = t.a().p(), b = t.b().p(), c = t.c().p();
-        Vec3 n = Vec3.sub(c, a).cross(Vec3.sub(b, a));
+        Vec3 n = Vec3.sub(t.c, t.a).cross(Vec3.sub(t.b, t.a));
         Vec3.normalize(n, result);
     }
     
@@ -109,90 +102,23 @@ public interface Triangle3<V extends Vertex3> extends GeoPrimitive
         result.x = n.x;
         result.y = n.y;
         result.z = n.z;
-        result.w = t.a().p().dot(n);
+        result.w = t.a.dot(n);
     }
     // </editor-fold>
-    /**
-     * Creates a new triangle from the three given vertices. Changes to the
-     * vertices will reflect in the created triangle, and vice-versa.
-     * 
-     * @param a The first vertex.
-     * @param b The second vertex.
-     * @param c The third vertex.
-     * @return A new triangle from the given vertex.
-     */
-    public static Triangle3 from(Vertex3 a, Vertex3 b, Vertex3 c)
-    {
-        return new Triangle3()
-        {
-            @Override
-            public Vertex3 a()
-            {
-                return a;
-            }
-
-            @Override
-            public Vertex3 b()
-            {
-                return b;
-            }
-
-            @Override
-            public Vertex3 c()
-            {
-                return c;
-            }
-        };
-    }
-    
-    // <editor-fold defaultstate="collapsed" desc="Static factory methods">
-    /**
-     * Creates a new triangle from the three given vectors. Changes to the
-     * vectors will reflect in the created triangle, and vice-versa.
-     * 
-     * @param a The first vector.
-     * @param b The second vector.
-     * @param c The third vector.
-     * @return A new triangle using the given vectors as vertices.
-     */
-    public static Triangle3<Vec3> from(Vec3 a, Vec3 b, Vec3 c)
-    {
-        return new Triangle3()
-        {
-            @Override
-            public Vec3 a()
-            {
-                return a;
-            }
-
-            @Override
-            public Vec3 b()
-            {
-                return b;
-            }
-
-            @Override
-            public Vec3 c()
-            {
-                return c;
-            }
-        };
-    }
-    
     /**
      * Creates a new triangle with the same current vertex positions as the
      * given triangle. Changes to the new triangle will *not* reflect in the old
      * one, or vice-versa. The new triangle is not guaranteed to be the same
      * class as the given one.
      * 
-     * @param triangle The triangle to copy.
+     * @param t The triangle to copy.
      * @return A new triangle.
      */
-    public static Triangle3 copy(Triangle3 triangle)
+    public static Triangle3 copy(Triangle3 t)
     {
-        return from(new Vec3(triangle.a().p()),
-                    new Vec3(triangle.b().p()),
-                    new Vec3(triangle.c().p()));
+        return new Triangle3(new Vec3(t.a),
+                             new Vec3(t.b),
+                             new Vec3(t.c));
     }
     
     /**
@@ -254,30 +180,12 @@ public interface Triangle3<V extends Vertex3> extends GeoPrimitive
     }
     // </editor-fold>
     
-    /**
-     * Returns the first vertex of this triangle.
-     * 
-     * @return The first vertex of this triangle.
-     */
-    public V a();
+    public final Vec3 a, b, c;
     
-    /**
-     * Returns the second vertex of this triangle.
-     * 
-     * @return The second vertex of this triangle.
-     */
-    public V b();
-    
-    /**
-     * Returns the third vertex of this triangle.
-     * 
-     * @return The third vertex of this triangle.
-     */
-    public V c();
-    
-    @Override
-    public default Type getGeoPrimitiveType()
+    public Triangle3(Vec3 a, Vec3 b, Vec3 c)
     {
-        return Type.TRIANGLE;
+        this.a = a;
+        this.b = b;
+        this.c = c;
     }
 }

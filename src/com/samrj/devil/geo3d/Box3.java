@@ -29,9 +29,9 @@ public class Box3
         Vec3 a = Vec3.cross(axis, edge);
         float r = Math.abs(a.x) + Math.abs(a.y) + Math.abs(a.z);
         
-        float p0 = Vec3.dot(a, triangle.a().p());
-        float p1 = Vec3.dot(a, triangle.b().p());
-        float p2 = Vec3.dot(a, triangle.c().p());
+        float p0 = Vec3.dot(a, triangle.a);
+        float p1 = Vec3.dot(a, triangle.b);
+        float p2 = Vec3.dot(a, triangle.c);
         
         float min = Math.min(Math.min(p0, p1), p2);
         if (min > r) return true;
@@ -54,20 +54,18 @@ public class Box3
      */
     public static boolean touchingUnitBox(Triangle3 t)
     {
-        Vec3 a = t.a().p(), b = t.b().p(), c = t.c().p();
-        
         //AABB test
         if (!touching(contain(t), unit())) return false;
         
         //Plane intersection test
         Vec3 n = Triangle3.normal(t);
-        float pc = Vec3.dot(n, a);
+        float pc = Vec3.dot(n, t.a);
         if (Math.abs(n.x) + Math.abs(n.y) + Math.abs(n.z) < Math.abs(pc)) return false;
         
         //Separating axis tests
-        Vec3 ab = Vec3.sub(b, a);
-        Vec3 bc = Vec3.sub(c, b);
-        Vec3 ca = Vec3.sub(a, c);
+        Vec3 ab = Vec3.sub(t.b, t.a);
+        Vec3 bc = Vec3.sub(t.c, t.b);
+        Vec3 ca = Vec3.sub(t.a, t.c);
         
         if (axisFailTest(t, AXIS_X, ab)) return false;
         if (axisFailTest(t, AXIS_X, bc)) return false;
@@ -94,10 +92,10 @@ public class Box3
         Vec3 center = Vec3.add(box.min, box.max).mult(0.5f);
         Vec3 radius = Vec3.sub(box.max, box.min).mult(0.5f);
         
-        Vec3 a = Vec3.sub(t.a().p(), center).div(radius);
-        Vec3 b = Vec3.sub(t.b().p(), center).div(radius);
-        Vec3 c = Vec3.sub(t.c().p(), center).div(radius);
-        Triangle3 local = Triangle3.from(a, b, c);
+        Vec3 a = Vec3.sub(t.a, center).div(radius);
+        Vec3 b = Vec3.sub(t.b, center).div(radius);
+        Vec3 c = Vec3.sub(t.c, center).div(radius);
+        Triangle3 local = new Triangle3(a, b, c);
         
         return touchingUnitBox(local);
     }
@@ -162,9 +160,7 @@ public class Box3
      */
     public static boolean touching(Box3 box, Edge3 e)
     {
-        Vec3 p0 = e.a().p();
-        Vec3 dp = Vec3.sub(e.b().p(), p0);
-        return touchingRay(box, p0, dp, true);
+        return touchingRay(box, e.a, Vec3.sub(e.b, e.a), true);
     }
     
     /**
@@ -179,11 +175,6 @@ public class Box3
         return v.x >= box.min.x && v.x <= box.max.x &&
                v.y >= box.min.y && v.y <= box.max.y &&
                v.z >= box.min.z && v.z <= box.max.z;
-    }
-    
-    public static boolean touching(Box3 box, Vertex3 v)
-    {
-        return touching(box, v.p());
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static mutator methods">
@@ -265,31 +256,29 @@ public class Box3
      */
     public static final void contain(Triangle3 t, Box3 r)
     {
-        Vec3 a = t.a().p(), b = t.b().p(), c = t.c().p();
-        r.min.x = Math.min(Math.min(a.x, b.x), c.x);
-        r.max.x = Math.max(Math.max(a.x, b.x), c.x);
-        r.min.y = Math.min(Math.min(a.y, b.y), c.y);
-        r.max.y = Math.max(Math.max(a.y, b.y), c.y);
-        r.min.z = Math.min(Math.min(a.z, b.z), c.z);
-        r.max.z = Math.max(Math.max(a.z, b.z), c.z);
+        r.min.x = Math.min(Math.min(t.a.x, t.b.x), t.c.x);
+        r.max.x = Math.max(Math.max(t.a.x, t.b.x), t.c.x);
+        r.min.y = Math.min(Math.min(t.a.y, t.b.y), t.c.y);
+        r.max.y = Math.max(Math.max(t.a.y, t.b.y), t.c.y);
+        r.min.z = Math.min(Math.min(t.a.z, t.b.z), t.c.z);
+        r.max.z = Math.max(Math.max(t.a.z, t.b.z), t.c.z);
     }
     
     /**
      * Sets the given box to the smallest one which can contain the given
      * edge.
      * 
-     * @param t The edge to contain.
+     * @param e The edge to contain.
      * @param r The box in which to store the result.
      */
-    public static final void contain(Edge3 t, Box3 r)
+    public static final void contain(Edge3 e, Box3 r)
     {
-        Vec3 a = t.a().p(), b = t.b().p();
-        r.min.x = Math.min(a.x, b.x);
-        r.max.x = Math.max(a.x, b.x);
-        r.min.y = Math.min(a.y, b.y);
-        r.max.y = Math.max(a.y, b.y);
-        r.min.z = Math.min(a.z, b.z);
-        r.max.z = Math.max(a.z, b.z);
+        r.min.x = Math.min(e.a.x, e.b.x);
+        r.max.x = Math.max(e.a.x, e.b.x);
+        r.min.y = Math.min(e.a.y, e.b.y);
+        r.max.y = Math.max(e.a.y, e.b.y);
+        r.min.z = Math.min(e.a.z, e.b.z);
+        r.max.z = Math.max(e.a.z, e.b.z);
     }
     
     /**
@@ -310,22 +299,17 @@ public class Box3
         r.max.z = Util.max(b.max.z, v.z);
     }
     
-    public static final void expand(Box3 b, Vertex3 v, Box3 r)
-    {
-        expand(b, v.p(), r);
-    }
-    
     public static final void expand(Box3 b, Edge3 e, Box3 r)
     {
-        expand(b, e.a(), r);
-        expand(b, e.b(), r);
+        expand(b, e.a, r);
+        expand(b, e.b, r);
     }
     
     public static final void expand(Box3 b, Triangle3 f, Box3 r)
     {
-        expand(b, f.a(), r);
-        expand(b, f.b(), r);
-        expand(b, f.b(), r);
+        expand(b, f.a, r);
+        expand(b, f.b, r);
+        expand(b, f.b, r);
     }
     
     /**
@@ -596,18 +580,13 @@ public class Box3
         return touching(this, e);
     }
     
-    public boolean touching(Vec3 v)
-    {
-        return touching(this, v);
-    }
-    
     /**
      * Returns whether this is touching the given vertex.
      * 
      * @param v A vertex.
      * @return True if this box touches the vertex.
      */
-    public boolean touching(Vertex3 v)
+    public boolean touching(Vec3 v)
     {
         return touching(this, v);
     }
@@ -673,12 +652,6 @@ public class Box3
      * @return This box.
      */
     public Box3 expand(Vec3 v)
-    {
-        expand(this, v, this);
-        return this;
-    }
-    
-    public Box3 expand(Vertex3 v)
     {
         expand(this, v, this);
         return this;

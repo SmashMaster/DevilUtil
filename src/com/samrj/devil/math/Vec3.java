@@ -22,7 +22,6 @@
 
 package com.samrj.devil.math;
 
-import com.samrj.devil.geo3d.Vertex3;
 import com.samrj.devil.util.DataStreamable;
 import com.samrj.devil.util.FloatBufferable;
 import java.io.DataInputStream;
@@ -55,7 +54,7 @@ import java.nio.FloatBuffer;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Vec3 implements FloatBufferable, DataStreamable<Vec3>, Vertex3
+public class Vec3 implements FloatBufferable, DataStreamable<Vec3>
 {
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
@@ -1475,12 +1474,6 @@ public class Vec3 implements FloatBufferable, DataStreamable<Vec3>, Vertex3
         out.writeFloat(x);
         out.writeFloat(y);
         out.writeFloat(z);
-        return this;
-    }
-    
-    @Override
-    public Vec3 p()
-    {
         return this;
     }
     
