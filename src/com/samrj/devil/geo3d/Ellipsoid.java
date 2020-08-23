@@ -177,7 +177,7 @@ public class Ellipsoid implements ConvexShape
 
         float et = (segDotDP*t - segDotA)/segSqLen;
         if (et < 0.0f || et > 1.0f) return null; //Hit the line but missed the segment.
-        if (!Util.isFinite(et)) return null; //Degenerate segment.
+        if (!Float.isFinite(et)) return null; //Degenerate segment.
         
         SweepResult out = new SweepResult(e);
         out.time = t;

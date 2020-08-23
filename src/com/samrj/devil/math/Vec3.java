@@ -166,21 +166,14 @@ public class Vec3 implements FloatBufferable, DataStreamable<Vec3>
     }
     
     /**
-     * Returns whether or not {@code v0} and {@code v1} are approximately equal,
-     * based on their individual components epsilons and a tolerance factor.
+     * Returns whether the given vector is exactly zero.
      * 
-     * @param v0 The first vector.
-     * @param v1 The second vector.
-     * @param tolerance The number of epsilons by which {@code v0} and {@code v1}
-     *                  may differ and still be approximately equal.
-     * @return Whether the two given vectors are approximately equal.
-     * @see com.samrj.devil.math.Util#getEpsilon(float)
+     * @param v The vector to check.
+     * @return Whether the given vector is zero.
      */
-    public static final boolean epsEqual(Vec3 v0, Vec3 v1, int tolerance)
+    public static final boolean isZero(Vec3 v)
     {
-        return Util.epsEqual(v0.x, v1.x, tolerance) &&
-               Util.epsEqual(v0.y, v1.y, tolerance) &&
-               Util.epsEqual(v0.z, v1.z, tolerance);
+        return v.x == 0.0f && v.y == 0.0f && v.z == 0.0f;
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static mutator methods">
@@ -195,6 +188,19 @@ public class Vec3 implements FloatBufferable, DataStreamable<Vec3>
         target.x = source.x;
         target.y = source.y;
         target.z = source.z;
+    }
+    
+    /**
+     * Copies {@code source} into {@code target}.
+     * 
+     * @param source The vector to copy.
+     * @param target The vector in which to store the result.
+     */
+    public static final void copy(Vec3d source, Vec3 target)
+    {
+        target.x = (float)source.x;
+        target.y = (float)source.y;
+        target.z = (float)source.z;
     }
     
     /**
@@ -944,6 +950,18 @@ public class Vec3 implements FloatBufferable, DataStreamable<Vec3>
     }
     
     /**
+     * Casts the given double vector to a float vector.
+     * 
+     * @param v The vector to copy.
+     */
+    public Vec3(Vec3d v)
+    {
+        x = (float)v.x;
+        y = (float)v.y;
+        z = (float)v.z;
+    }
+    
+    /**
      * Converts the given integer vector to a new float vector.
      * 
      * @param v The vector to copy.
@@ -1053,18 +1071,13 @@ public class Vec3 implements FloatBufferable, DataStreamable<Vec3>
     }
     
     /**
-     * Returns whether or not this and {@code v} are approximately equal,
-     * based on their individual components epsilons and a tolerance factor.
+     * Returns whether this vector is exactly zero.
      * 
-     * @param v A vector.
-     * @param tolerance The number of epsilons by which this and and {@code v}
-     *                  may differ and still be approximately equal.
-     * @return Whether this is approximately equal to the given vector.
-     * @see com.samrj.devil.math.Util#getEpsilon(float)
+     * @return Whether this vector is exactly zero.
      */
-    public boolean epsEqual(Vec3 v, int tolerance)
+    public boolean isZero()
     {
-        return epsEqual(this, v, tolerance);
+        return isZero(this);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Instance mutator methods">
@@ -1075,6 +1088,18 @@ public class Vec3 implements FloatBufferable, DataStreamable<Vec3>
      * @return This vector.
      */
     public Vec3 set(Vec3 v)
+    {
+        copy(v, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to the given vector.
+     * 
+     * @param v The vector to set this to.
+     * @return This vector.
+     */
+    public Vec3 set(Vec3d v)
     {
         copy(v, this);
         return this;

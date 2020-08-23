@@ -159,6 +159,20 @@ public final class Util
     }
     
     /**
+     * Linearly interpolates between {@code f0} and {@code f1} using the scalar
+     * interpolant {@code t}.
+     * 
+     * @param f0 The 'start' value to interpolate from.
+     * @param f1 The 'end' value to interpolate to.
+     * @param t The scalar interpolant.
+     * @return The interpolated value.
+     */
+    public static double lerp(double f0, double f1, double t)
+    {
+        return (f1 - f0)*t + f0;
+    }
+    
+    /**
      * Clamps {@code x} between {@code min} and {@code max} (inclusive) and
      * returns the result. If {@code x} is NaN, returns NaN.
      * 
@@ -653,6 +667,19 @@ public final class Util
     }
     
     /**
+     * Returns whether the two given values are close together.
+     * 
+     * @param f0 The first number to check.
+     * @param f1 The second number to check.
+     * @param threshold The greatest distance at which the values are equal.
+     * @return Whether the two values are close together.
+     */
+    public static boolean equals(float f0, float f1, float threshold)
+    {
+        return Math.abs(f0 - f1) <= threshold;
+    }
+    
+    /**
      * Checks if {@code f} is close to zero. Threshold needs to be managed by
      * the user, because floats are arbitrarily precise near zero and there's no
      * way to tell how much error has accumulated in {@code f}.
@@ -664,71 +691,24 @@ public final class Util
      */
     public static boolean isZero(float f, float threshold)
     {
-        if (threshold <= 0f) return f == 0f;
-        return Math.abs(f) < threshold;
+        if (threshold <= 0.0f) return f == 0.0f;
+        return Math.abs(f) <= threshold;
     }
     
     /**
-     * Returns the epsilon of {@code f}, which is a measure of the precision of
-     * IEEE 754 binary32 relative to {@code f}. It is the smallest power of two
-     * that can added to or subtracted from {@code f} to result in a different
-     * value. If {@code f} is infinite, it has no finite epsilon.
-     * Epsilons may be subnormal.
+     * Checks if {@code f} is close to zero. Threshold needs to be managed by
+     * the user, because floats are arbitrarily precise near zero and there's no
+     * way to tell how much error has accumulated in {@code f}.
      * 
-     * @param f a floating point number.
-     * @return the epsilon of {@code f} if it is finite; Float.NaN if it is NaN;
-     *         or Float.POSITIVE_INFINITY if it is infinite.
+     * @param  f a floating point number.
+     * @param  threshold the number to compare against.
+     * @return {@code true} if the magnitude of {@code f} is less than
+     *         {@code threshold}; {@code false} otherwise.
      */
-    public static float getEpsilon(float f)
+    public static boolean isZero(double f, double threshold)
     {
-        if (Float.isNaN(f)) return Float.NaN;
-        if (Float.isInfinite(f)) return Float.POSITIVE_INFINITY;
-        
-        float finc = Float.intBitsToFloat(Float.floatToRawIntBits(f) + 1);
-        //The first number whose absolute value is greater than f's.
-        
-        return Math.abs(finc - f); //Automatically works on subnormal values.
-    }
-    
-    /**
-     * Returns whether or not {@code a} and {@code b} are approximately equal,
-     * based on their epsilons and a tolerance factor. If the two numbers have
-     * different exponents, then the greater epsilon is used to determine
-     * equality.
-     * 
-     * @param  a the first float to be compare.
-     * @param  b the second float to be compare.
-     * @param  tolerance the number of epsilons by which {@code a} and {@code b}
-     *         may differ and still be approximately equal.
-     * @return {@code true} if {@code a} and {@code b} are approximately equal;
-     *         {@code false} otherwise.
-     * @see    com.samrj.devil.math.Util#getEpsilon(float)
-     */
-    public static boolean epsEqual(float a, float b, int tolerance)
-    {
-        if (a == b) return true;
-        if (tolerance <= 0) return false;
-        
-        //Deal with the near-zero numbers.
-        final boolean sna = isSubnormal(a), snb = isSubnormal(b);
-        if (sna && snb) return true;
-        if (sna || snb) return false;
-        
-        //Simply use the greater number's epsilon.
-        float epsilon = a > b ? getEpsilon(a) : getEpsilon(b);
-        
-        return Math.abs(a - b) <= epsilon*tolerance;
-    }
-    
-    /**
-     * Returns whether or not the given value is finite.
-     * 
-     * @param x Any float.
-     * @return False if the value is infinite or NaN, true otherwise.
-     */
-    public static boolean isFinite(float x)
-    {
-        return !(Float.isInfinite(x) || Float.isNaN(x));
+        if (threshold <= 0.0) return f == 0.0;
+        return Math.abs(f) <= threshold;
     }
     
     /**

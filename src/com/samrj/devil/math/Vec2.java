@@ -157,20 +157,14 @@ public class Vec2 implements FloatBufferable, DataStreamable<Vec2>
     }
     
     /**
-     * Returns whether or not {@code v0} and {@code v1} are approximately equal,
-     * based on their individual components epsilons and a tolerance factor.
+     * Returns whether the given vector is exactly zero.
      * 
-     * @param v0 The first vector.
-     * @param v1 The second vector.
-     * @param tolerance The number of epsilons by which {@code v0} and {@code v1}
-     *                  may differ and still be approximately equal.
-     * @return Whether the two given vectors are approximately equal.
-     * @see com.samrj.devil.math.Util#getEpsilon(float)
+     * @param v The vector to check.
+     * @return Whether the given vector is zero.
      */
-    public static final boolean epsEqual(Vec2 v0, Vec2 v1, int tolerance)
+    public static final boolean isZero(Vec2 v)
     {
-        return Util.epsEqual(v0.x, v1.x, tolerance) &&
-               Util.epsEqual(v0.y, v1.y, tolerance);
+        return v.x == 0.0f && v.y == 0.0f;
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static mutator methods">
@@ -893,18 +887,13 @@ public class Vec2 implements FloatBufferable, DataStreamable<Vec2>
     }
     
     /**
-     * Returns whether or not this and {@code v} are approximately equal,
-     * based on their individual components epsilons and a tolerance factor.
+     * Returns whether this vector is exactly zero.
      * 
-     * @param v A vector.
-     * @param tolerance The number of epsilons by which this and and {@code v}
-     *                  may differ and still be approximately equal.
-     * @return Whether this is approximately equal to the given vector.
-     * @see com.samrj.devil.math.Util#getEpsilon(float)
+     * @return Whether this vector is exactly zero.
      */
-    public boolean epsEqual(Vec2 v, int tolerance)
+    public boolean isZero()
     {
-        return epsEqual(this, v, tolerance);
+        return isZero(this);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Instance mutator methods">

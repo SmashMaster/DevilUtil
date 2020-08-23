@@ -37,6 +37,8 @@ import java.nio.FloatBuffer;
  */
 public class Quat implements FloatBufferable, DataStreamable<Quat>
 {
+    private static final float EPSILON = 1.0f/65536.0f;
+    
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
      * Returns the dot product of the two given quaternions.
@@ -134,7 +136,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
         Vec3 v1 = Vec3.normalize(end);
 
         float dot = v0.dot(v1);
-        if (Util.epsEqual(dot, 1.0f, 1<<6)) //this and v have same direction.
+        if (Util.equals(dot, 1.0f, EPSILON)) //this and v have same direction.
         {
             result.setIdentity();
             return;
@@ -142,7 +144,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
         
         //this and v have opposite direction. Rotate 180 degrees about an
         //arbitrary axis normal to this.
-        if (Util.epsEqual(dot, -1.0f, 1<<6))
+        if (Util.equals(dot, -1.0f, EPSILON))
         {
             Vec3 axis = new Vec3(1.0f, 0.0f, 0.0f).cross(v0);
             //this lies along X axis and v is our opposite, so we can optimize.

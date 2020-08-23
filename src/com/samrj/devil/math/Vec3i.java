@@ -17,9 +17,14 @@ import java.nio.IntBuffer;
  */
 public class Vec3i implements Bufferable, DataStreamable<Vec3i>
 {
-    public static final float dot(Vec3i v0, Vec3i v1)
+    public static final int dot(Vec3i v0, Vec3i v1)
     {
         return v0.x*v1.x + v0.y*v1.y + v0.z*v1.z;
+    }
+    
+    public static final int squareLength(Vec3i v)
+    {
+        return v.x*v.x + v.y*v.y + v.z*v.z;
     }
     
     public static final void add(Vec3i v0, Vec3i v1, Vec3i result)
@@ -147,9 +152,14 @@ public class Vec3i implements Bufferable, DataStreamable<Vec3i>
         Vec3i.this.read(in);
     }
     
-    public float dot(Vec3i v)
+    public int dot(Vec3i v)
     {
         return dot(this, v);
+    }
+    
+    public int squareLength()
+    {
+        return squareLength(this);
     }
     
     public Vec3i set()

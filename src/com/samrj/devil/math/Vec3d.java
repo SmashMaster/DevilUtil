@@ -22,20 +22,19 @@
 
 package com.samrj.devil.math;
 
+import com.samrj.devil.util.Bufferable;
 import com.samrj.devil.util.DataStreamable;
-import com.samrj.devil.util.FloatBufferable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 
 /**
- * 4D vector class.
+ * 3D double vector class.
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
+public class Vec3d implements Bufferable, DataStreamable<Vec3d>
 {
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
@@ -45,14 +44,13 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param i The component to get.
      * @return The component of the vector.
      */
-    public float getComponent(Vec4 v, int i)
+    public double getComponent(Vec3d v, int i)
     {
         switch (i)
         {
             case 0: return v.x;
             case 1: return v.y;
             case 2: return v.z;
-            case 3: return v.w;
             default: throw new ArrayIndexOutOfBoundsException();
         }
     }
@@ -64,9 +62,9 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v1 The second vector.
      * @return The dot product of {@code v0} and {@code v1}.
      */
-    public static final float dot(Vec4 v0, Vec4 v1)
+    public static final double dot(Vec3d v0, Vec3d v1)
     {
-        return v0.x*v1.x + v0.y*v1.y + v0.z*v1.z + v0.w*v1.w;
+        return v0.x*v1.x + v0.y*v1.y + v0.z*v1.z;
     }
     
     /**
@@ -76,9 +74,9 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v The vector to calculate the square length of.
      * @return The square length of {@code v}.
      */
-    public static final float squareLength(Vec4 v)
+    public static final double squareLength(Vec3d v)
     {
-        return v.x*v.x + v.y*v.y + v.z*v.z + v.w*v.w;
+        return v.x*v.x + v.y*v.y + v.z*v.z;
     }
     
     /**
@@ -87,9 +85,9 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v The vector to calculate the length of.
      * @return The length of {@code v}.
      */
-    public static final float length(Vec4 v)
+    public static final double length(Vec3d v)
     {
-        return (float)Math.sqrt(squareLength(v));
+        return Math.sqrt(squareLength(v));
     }
     
     /**
@@ -99,13 +97,12 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v1 The second vector.
      * @return The square distance between {@code v0} and {@code v1}.
      */
-    public static final float squareDist(Vec4 v0, Vec4 v1)
+    public static final double squareDist(Vec3d v0, Vec3d v1)
     {
-        float dx = v1.x - v0.x;
-        float dy = v1.y - v0.y;
-        float dz = v1.z - v0.z;
-        float dw = v1.w - v0.w;
-        return dx*dx + dy*dy + dz*dz + dw*dw;
+        double dx = v1.x - v0.x;
+        double dy = v1.y - v0.y;
+        double dz = v1.z - v0.z;
+        return dx*dx + dy*dy + dz*dz;
     }
     
     /**
@@ -115,9 +112,9 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v1 The second vector.
      * @return The distance between {@code v0} and {@code v1}.
      */
-    public static final float dist(Vec4 v0, Vec4 v1)
+    public static final double dist(Vec3d v0, Vec3d v1)
     {
-        return (float)Math.sqrt(squareDist(v0, v1));
+        return Math.sqrt(squareDist(v0, v1));
     }
     
     /**
@@ -128,7 +125,7 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v1 The vector on which to project.
      * @return The scalar projection of {@code v0} onto {@code v1}.
      */
-    public static final float scalarProject(Vec4 v0, Vec4 v1)
+    public static final double scalarProject(Vec3d v0, Vec3d v1)
     {
         return dot(v0, v1)/length(v1);
     }
@@ -141,12 +138,11 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param threshold The distance from zero the vector can be.
      * @return Whether the given vector is close to zero.
      */
-    public static final boolean isZero(Vec4 v, float threshold)
+    public static final boolean isZero(Vec3d v, double threshold)
     {
         return Util.isZero(v.x, threshold) &&
                Util.isZero(v.y, threshold) &&
-               Util.isZero(v.z, threshold) &&
-               Util.isZero(v.w, threshold);
+               Util.isZero(v.z, threshold);
     }
     
     /**
@@ -155,9 +151,9 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v The vector to check.
      * @return Whether the given vector is zero.
      */
-    public static final boolean isZero(Vec4 v)
+    public static final boolean isZero(Vec3d v)
     {
-        return v.x == 0.0f && v.y == 0.0f && v.z == 0.0f && v.w == 0.0f;
+        return v.x == 0.0 && v.y == 0.0 && v.z == 0.0;
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static mutator methods">
@@ -167,74 +163,37 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param source The vector to copy.
      * @param target The vector in which to store the result.
      */
-    public static final void copy(Vec4 source, Vec4 target)
+    public static final void copy(Vec3d source, Vec3d target)
     {
         target.x = source.x;
         target.y = source.y;
         target.z = source.z;
-        target.w = source.w;
     }
     
     /**
-     * Sets a vector to the given row of a matrix.
+     * Copies {@code source} into {@code target}.
      * 
-     * @param m The matrix to copy from.
-     * @param row A row of the matrix.
-     * @param result The vector in which to store the result.
+     * @param source The vector to copy.
+     * @param target The vector in which to store the result.
      */
-    public static final void copyRow(Mat4 m, int row, Vec4 result)
+    public static final void copy(Vec3 source, Vec3d target)
     {
-        switch (row)
-        {
-            case 0: result.x = m.a;
-                    result.y = m.b;
-                    result.z = m.c;
-                    result.w = m.d; return;
-            case 1: result.x = m.e;
-                    result.y = m.f;
-                    result.z = m.g;
-                    result.w = m.h; return;
-            case 2: result.x = m.i;
-                    result.y = m.j;
-                    result.z = m.k;
-                    result.w = m.l; return;
-            case 3: result.x = m.m;
-                    result.y = m.n;
-                    result.z = m.o;
-                    result.w = m.p; return;
-            default: throw new ArrayIndexOutOfBoundsException();
-        }
+        target.x = source.x;
+        target.y = source.y;
+        target.z = source.z;
     }
     
     /**
-     * Sets a vector to the given column of a matrix.
+     * Copies {@code source} into {@code target}.
      * 
-     * @param m The matrix to copy from.
-     * @param column A column of the matrix.
-     * @param result The vector in which to store the result.
+     * @param source The vector to copy.
+     * @param target The vector in which to store the result.
      */
-    public static final void copyColumn(Mat4 m, int column, Vec4 result)
+    public static final void copy(Vec3i source, Vec3d target)
     {
-        switch (column)
-        {
-            case 0: result.x = m.a;
-                    result.y = m.e;
-                    result.z = m.i;
-                    result.w = m.m; return;
-            case 1: result.x = m.b;
-                    result.y = m.f;
-                    result.z = m.j;
-                    result.w = m.n; return;
-            case 2: result.x = m.c;
-                    result.y = m.g;
-                    result.z = m.k;
-                    result.w = m.o; return;
-            case 3: result.x = m.d;
-                    result.y = m.h;
-                    result.z = m.l;
-                    result.w = m.p; return;
-            default: throw new ArrayIndexOutOfBoundsException();
-        }
+        target.x = source.x;
+        target.y = source.y;
+        target.z = source.z;
     }
     
     /**
@@ -244,12 +203,11 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v1 The second addend.
      * @param result The vector in which to store the sum of {@code v0} and {@code v1}.
      */
-    public static final void add(Vec4 v0, Vec4 v1, Vec4 result)
+    public static final void add(Vec3d v0, Vec3d v1, Vec3d result)
     {
         result.x = v0.x + v1.x;
         result.y = v0.y + v1.y;
         result.z = v0.z + v1.z;
-        result.w = v0.w + v1.w;
     }
     
     /**
@@ -259,12 +217,11 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v1 The vector to subtract by.
      * @param result The vector in which to store the result.
      */
-    public static final void sub(Vec4 v0, Vec4 v1, Vec4 result)
+    public static final void sub(Vec3d v0, Vec3d v1, Vec3d result)
     {
         result.x = v0.x - v1.x;
         result.y = v0.y - v1.y;
         result.z = v0.z - v1.z;
-        result.w = v0.w - v1.w;
     }
     
     /**
@@ -274,12 +231,11 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param s The scalar to multiply the vector by.
      * @param result The vector in which to store the result.
      */
-    public static final void mult(Vec4 v, float s, Vec4 result)
+    public static final void mult(Vec3d v, double s, Vec3d result)
     {
         result.x = v.x*s;
         result.y = v.y*s;
         result.z = v.z*s;
-        result.w = v.w*s;
     }
     
     /**
@@ -290,12 +246,11 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v1 The second vector to multiply.
      * @param result The vector in which to store the result.
      */
-    public static final void mult(Vec4 v0, Vec4 v1, Vec4 result)
+    public static final void mult(Vec3d v0, Vec3d v1, Vec3d result)
     {
         result.x = v0.x*v1.x;
         result.y = v0.y*v1.y;
         result.z = v0.z*v1.z;
-        result.w = v0.w*v1.w;
     }
     
     /**
@@ -307,12 +262,26 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param s The scalar by which to multiply {@code v1}.
      * @param result The vector in which to store the result.
      */
-    public static final void madd(Vec4 v0, Vec4 v1, float s, Vec4 result)
+    public static final void madd(Vec3d v0, Vec3d v1, double s, Vec3d result)
     {
         result.x = v0.x + v1.x*s;
         result.y = v0.y + v1.y*s;
         result.z = v0.z + v1.z*s;
-        result.w = v0.w + v1.w*s;
+    }
+    
+    /**
+     * Multiplies {@code v} by {@code m} and stores the result in {@code result}.
+     * 
+     * @param v The vector to multiply.
+     * @param m The 3x3 matrix to multiply the vector by.
+     * @param result The vector in which to store the result.
+     */
+    public static final void mult(Vec3d v, Mat3 m, Vec3d result)
+    {
+        double x = m.a*v.x + m.b*v.y + m.c*v.z;
+        double y = m.d*v.x + m.e*v.y + m.f*v.z;
+        double z = m.g*v.x + m.h*v.y + m.i*v.z;
+        result.x = x; result.y = y; result.z = z;
     }
     
     /**
@@ -322,13 +291,63 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param m The 4x4 matrix to multiply the vector by.
      * @param result The vector in which to store the result.
      */
-    public static final void mult(Vec4 v, Mat4 m, Vec4 result)
+    public static final void mult(Vec3d v, Mat4 m, Vec3d result)
     {
-        float x = m.a*v.x + m.b*v.y + m.c*v.z + m.d*v.w;
-        float y = m.e*v.x + m.f*v.y + m.g*v.z + m.h*v.w;
-        float z = m.i*v.x + m.j*v.y + m.k*v.z + m.l*v.w;
-        float w = m.m*v.x + m.n*v.y + m.o*v.z + m.p*v.w;
-        result.x = x; result.y = y; result.z = z; result.w = w;
+        double x = m.a*v.x + m.b*v.y + m.c*v.z + m.d;
+        double y = m.e*v.x + m.f*v.y + m.g*v.z + m.h;
+        double z = m.i*v.x + m.j*v.y + m.k*v.z + m.l;
+        result.x = x; result.y = y; result.z = z;
+    }
+    
+    /**
+     * Multiplies {@code v} by {@code t} and stores the result in {@code result}.
+     * 
+     * @param v The vector to multiply.
+     * @param t A transform to multiply by.
+     * @param result The vector in which to store the result.
+     */
+    public static final void mult(Vec3d v, Transform t, Vec3d result)
+    {
+        mult(v, new Vec3d(t.sca), result);
+        mult(result, t.rot, result);
+        add(result, new Vec3d(t.pos), result);
+    }
+    
+    /**
+     * Rotates the given vector by the given quaternion, and stores the result
+     * in {@code result}.
+     * 
+     * @param v The vector to rotate.
+     * @param q The quaternion to rotate by.
+     * @param result The vector in which to store the result.
+     */
+    public static final void mult(Vec3d v, Quat q, Vec3d result)
+    {
+        Vec3d temp1 = new Vec3d(q.x, q.y, q.z);
+        Vec3d temp2 = cross(temp1, v);
+        mult(temp2, 2.0, temp2);
+        
+        copy(v, result);
+        cross(temp1, temp2, temp1);
+        add(result, temp1, result);
+        mult(temp2, q.w, temp2);
+        add(result, temp2, result);
+    }
+    
+    /**
+     * Calculates the cross product between {@code v0} and {@code v1} then stores
+     * the result in {@code result}.
+     * 
+     * @param v0 The vector to multiply.
+     * @param v1 The vector to multiply by.
+     * @param result The vector in which to store the result.
+     */
+    public static final void cross(Vec3d v0, Vec3d v1, Vec3d result)
+    {
+        double x = v0.y*v1.z - v0.z*v1.y;
+        double y = v0.z*v1.x - v0.x*v1.z;
+        double z = v0.x*v1.y - v0.y*v1.x;
+        result.x = x; result.y = y; result.z = z;
     }
     
     /**
@@ -338,12 +357,11 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param s The scalar to divide the vector by.
      * @param result The vector in which to store the result.
      */
-    public static final void div(Vec4 v, float s, Vec4 result)
+    public static final void div(Vec3d v, double s, Vec3d result)
     {
         result.x = v.x/s;
         result.y = v.y/s;
         result.z = v.z/s;
-        result.w = v.w/s;
     }
     
     /**
@@ -354,12 +372,11 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v1 The vector to divide by.
      * @param result The vector in which to store the result.
      */
-    public static final void div(Vec4 v0, Vec4 v1, Vec4 result)
+    public static final void div(Vec3d v0, Vec3d v1, Vec3d result)
     {
         result.x = v0.x/v1.x;
         result.y = v0.y/v1.y;
         result.z = v0.z/v1.z;
-        result.w = v0.w/v1.w;
     }
     
     /**
@@ -368,12 +385,11 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v The vector to negate.
      * @param result The vector in which to store the result.
      */
-    public static final void negate(Vec4 v, Vec4 result)
+    public static final void negate(Vec3d v, Vec3d result)
     {
         result.x = -v.x;
         result.y = -v.y;
         result.z = -v.z;
-        result.w = -v.w;
     }
     
     /**
@@ -384,7 +400,7 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v The vector to normalize.
      * @param result The vector in which to store the result.
      */
-    public static final void normalize(Vec4 v, Vec4 result)
+    public static final void normalize(Vec3d v, Vec3d result)
     {
         div(v, length(v), result);
     }
@@ -397,13 +413,12 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param n The normal vector about which to reflect.
      * @param result The vector in which to store the result.
      */
-    public static final void reflect(Vec4 v, Vec4 n, Vec4 result)
+    public static final void reflect(Vec3d v, Vec3d n, Vec3d result)
     {
-        float m = 2f*dot(v, n);
+        double m = 2.0*dot(v, n);
         result.x = n.x*m - v.x;
         result.y = n.y*m - v.y;
         result.z = n.z*m - v.z;
-        result.w = n.w*m - v.w;
     }
     
     /**
@@ -414,7 +429,7 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v1 The vector on which to project.
      * @param result The vector in which to store the result.
      */
-    public static final void project(Vec4 v0, Vec4 v1, Vec4 result)
+    public static final void project(Vec3d v0, Vec3d v1, Vec3d result)
     {
         mult(v1, dot(v0, v1)/squareLength(v1), result);
     }
@@ -427,11 +442,12 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v1 The vector to reject by.
      * @param result The vector in which to store the result.
      */
-    public static final void reject(Vec4 v0, Vec4 v1, Vec4 result)
+    public static final void reject(Vec3d v0, Vec3d v1, Vec3d result)
     {
-        Vec4 temp = project(v0, v1);
+        Vec3d temp = project(v0, v1);
         sub(v0, temp, result);
     }
+    
     
     /**
      * Interpolates between the two given vectors using the given scalar, and
@@ -442,12 +458,11 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param t The scalar interpolant, between zero and one (inclusive).
      * @param result The vector in which to store the result.
      */
-    public static final void lerp(Vec4 v0, Vec4 v1, float t, Vec4 result)
+    public static final void lerp(Vec3d v0, Vec3d v1, double t, Vec3d result)
     {
         result.x = Util.lerp(v0.x, v1.x, t);
         result.y = Util.lerp(v0.y, v1.y, t);
         result.z = Util.lerp(v0.z, v1.z, t);
-        result.w = Util.lerp(v0.w, v1.w, t);
     }
     
     /**
@@ -461,43 +476,34 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param dist The distance to move by.
      * @param result The vector in which to store the result.
      */
-    public static final void move(Vec4 v, Vec4 dest, float dist, Vec4 result)
+    public static final void move(Vec3d v, Vec3d dest, double dist, Vec3d result)
     {
-        Vec4 dp = sub(dest, v);
-        float d0 = length(dp);
+        Vec3d dp = sub(dest, v);
+        double d0 = length(dp);
         if (d0 <= dist) copy(dest, result);
         else madd(v, dp, dist/d0, result);
     }
+    
+    /**
+     * Rotates {@code v} around the given axis, by the given angle, and stores
+     * the result in {@code result}. Assumes the given axis is normalized.
+     * 
+     * @param v The vector to rotate.
+     * @param axis The unit axis vector to rotate around.
+     * @param angle The angle to rotate by, in radians.
+     * @param result The vector in which to store the result.
+     */
+    public static final void rotate(Vec3d v, Vec3d axis, double angle, Vec3d result)
+    {
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+        
+        Vec3d temp = mult(v, cos);
+        madd(temp, cross(axis, v), sin, temp);
+        madd(temp, axis, dot(axis, v)*(1.0 - cos), result);
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
-    /**
-     * Returns the given row of a matrix in a new vector.
-     * 
-     * @param m The matrix to copy from.
-     * @param row The row to get.
-     * @return A new vector containing the result.
-     */
-    public static final Vec4 fromRow(Mat4 m, int row)
-    {
-        Vec4 result = new Vec4();
-        copyRow(m, row, result);
-        return result;
-    }
-    
-    /**
-     * Returns the given column of a matrix in a new vector.
-     * 
-     * @param m The matrix to copy from.
-     * @param column The column to get.
-     * @return A new vector containing the result.
-     */
-    public static final Vec4 fromColumn(Mat4 m, int column)
-    {
-        Vec4 result = new Vec4();
-        copyColumn(m, column, result);
-        return result;
-    }
-    
     /**
      * Returns the sum of {@code v0} and {@code v1} in a new vector.
      * 
@@ -505,9 +511,9 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v1 The second addend.
      * @return A new vector containing the result.
      */
-    public static final Vec4 add(Vec4 v0, Vec4 v1)
+    public static final Vec3d add(Vec3d v0, Vec3d v1)
     {
-        Vec4 result = new Vec4();
+        Vec3d result = new Vec3d();
         add(v0, v1, result);
         return result;
     }
@@ -519,9 +525,9 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v1 The vector to subtract by.
      * @return A new vector containing the result.
      */
-    public static final Vec4 sub(Vec4 v0, Vec4 v1)
+    public static final Vec3d sub(Vec3d v0, Vec3d v1)
     {
-        Vec4 result = new Vec4();
+        Vec3d result = new Vec3d();
         sub(v0, v1, result);
         return result;
     }
@@ -533,9 +539,9 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param s The scalar to multiply by.
      * @return A new vector containing the result.
      */
-    public static final Vec4 mult(Vec4 v, float s)
+    public static final Vec3d mult(Vec3d v, double s)
     {
-        Vec4 result = new Vec4();
+        Vec3d result = new Vec3d();
         mult(v, s, result);
         return result;
     }
@@ -548,9 +554,9 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v1 The second vector to multiply.
      * @return A new vector containing the result.
      */
-    public static final Vec4 mult(Vec4 v0, Vec4 v1)
+    public static final Vec3d mult(Vec3d v0, Vec3d v1)
     {
-        Vec4 result = new Vec4();
+        Vec3d result = new Vec3d();
         mult(v0, v1, result);
         return result;
     }
@@ -564,10 +570,24 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param s The scalar by which to multiply {@code v1}.
      * @return A new vector containing the result.
      */
-    public static final Vec4 madd(Vec4 v0, Vec4 v1, float s)
+    public static final Vec3d madd(Vec3d v0, Vec3d v1, double s)
     {
-        Vec4 result = new Vec4();
+        Vec3d result = new Vec3d();
         madd(v0, v1, s, result);
+        return result;
+    }
+    
+    /**
+     * Multiplies {@code v} by {@code m} and returns the result in a new vector.
+     * 
+     * @param v The vector to multiply.
+     * @param m The 3x3 matrix to multiply by.
+     * @return A new vector containing the result.
+     */
+    public static final Vec3d mult(Vec3d v, Mat3 m)
+    {
+        Vec3d result = new Vec3d();
+        mult(v, m, result);
         return result;
     }
     
@@ -578,10 +598,54 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param m The 4x4 matrix to multiply by.
      * @return A new vector containing the result.
      */
-    public static final Vec4 mult(Vec4 v, Mat4 m)
+    public static final Vec3d mult(Vec3d v, Mat4 m)
     {
-        Vec4 result = new Vec4();
+        Vec3d result = new Vec3d();
         mult(v, m, result);
+        return result;
+    }
+    
+    /**
+     * Multiplies {@code v} by {@code t} and returns the result in a new vector.
+     * 
+     * @param v The vector to multiply.
+     * @param t The transform to multiply by.
+     * @return A new vector containing the result.
+     */
+    public static final Vec3d mult(Vec3d v, Transform t)
+    {
+        Vec3d result = new Vec3d();
+        mult(v, t, result);
+        return result;
+    }
+    
+    /**
+     * Rotates the given vector by the given quaternion and returns the result
+     * in a new vector.
+     * 
+     * @param v The vector to rotate.
+     * @param q The quaternion to rotate by.
+     * @return A new vector containing the result.
+     */
+    public static final Vec3d mult(Vec3d v, Quat q)
+    {
+        Vec3d result = new Vec3d();
+        mult(v, q, result);
+        return result;
+    }
+    
+    /**
+     * Calculates the cross product between {@code v0} and {@code v1} and returns
+     * the result in a new vector.
+     * 
+     * @param v0 The vector to multiply.
+     * @param v1 The vector to multiply by.
+     * @return A new vector containing the result.
+     */
+    public static final Vec3d cross(Vec3d v0, Vec3d v1)
+    {
+        Vec3d result = new Vec3d();
+        cross(v0, v1, result);
         return result;
     }
     
@@ -592,9 +656,9 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param s The scalar to divide by.
      * @return A new vector containing the result.
      */
-    public static final Vec4 div(Vec4 v, float s)
+    public static final Vec3d div(Vec3d v, double s)
     {
-        Vec4 result = new Vec4();
+        Vec3d result = new Vec3d();
         div(v, s, result);
         return result;
     }
@@ -607,9 +671,9 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v1 The vector to divide by.
      * @return A new vector containing the result.
      */
-    public static final Vec4 div(Vec4 v0, Vec4 v1)
+    public static final Vec3d div(Vec3d v0, Vec3d v1)
     {
-        Vec4 result = new Vec4();
+        Vec3d result = new Vec3d();
         div(v0, v1, result);
         return result;
     }
@@ -620,9 +684,9 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v The vector to negate.
      * @return A new vector containing the result.
      */
-    public static final Vec4 negate(Vec4 v)
+    public static final Vec3d negate(Vec3d v)
     {
-        Vec4 result = new Vec4();
+        Vec3d result = new Vec3d();
         negate(v, result);
         return result;
     }
@@ -633,9 +697,9 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v The vector to normalize.
      * @return The normalized vector.
      */
-    public static final Vec4 normalize(Vec4 v)
+    public static final Vec3d normalize(Vec3d v)
     {
-        Vec4 result = new Vec4();
+        Vec3d result = new Vec3d();
         normalize(v, result);
         return result;
     }
@@ -648,9 +712,9 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param n The normal vector about which to reflect.
      * @return A new vector containing the result.
      */
-    public static final Vec4 reflect(Vec4 v, Vec4 n)
+    public static final Vec3d reflect(Vec3d v, Vec3d n)
     {
-        Vec4 result = new Vec4();
+        Vec3d result = new Vec3d();
         reflect(v, n, result);
         return result;
     }
@@ -663,9 +727,9 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v1 The vector on which to project.
      * @return A new vector containing the result.
      */
-    public static final Vec4 project(Vec4 v0, Vec4 v1)
+    public static final Vec3d project(Vec3d v0, Vec3d v1)
     {
-        Vec4 result = new Vec4();
+        Vec3d result = new Vec3d();
         project(v0, v1, result);
         return result;
     }
@@ -678,126 +742,54 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v1 The vector to reject by.
      * @return A new vector containing the result.
      */
-    public static final Vec4 reject(Vec4 v0, Vec4 v1)
+    public static final Vec3d reject(Vec3d v0, Vec3d v1)
     {
-        Vec4 result = new Vec4();
+        Vec3d result = new Vec3d();
         reject(v0, v1, result);
         return result;
     }
     
     /**
-     * Interpolates between the two given vectors using the given scalar and
-     * returns a new vector containing the result.
+     * Rotates {@code v} around the given axis, by the given angle, and returns
+     * the result in a new vector. Assumes the given axis is normalized.
      * 
-     * @param v0 The 'start' vector to interpolate from.
-     * @param v1 The 'end' vector to interpolate to.
-     * @param t The scalar interpolant, between zero and one (inclusive).
+     * @param v The vector to rotate.
+     * @param axis The unit axis vector to rotate around.
+     * @param angle The angle to rotate by, in radians.
      * @return A new vector containing the result.
      */
-    public static final Vec4 lerp(Vec4 v0, Vec4 v1, float t)
+    public static final Vec3d rotate(Vec3d v, Vec3d axis, double angle)
     {
-        Vec4 result = new Vec4();
-        lerp(v0, v1, t, result);
-        return result;
-    }
-    
-    /**
-     * Linearly moves {@code v} towards the given destination, by specified
-     * distance, and returns the result in a new vector. If the starting
-     * distance to the destination equals or is lower than {@code dist}, sets
-     * the result to {@code dest}.
-     * 
-     * @param v The vector to move.
-     * @param dest The destination to move towards.
-     * @param dist The distance to move by.
-     * @return A new vector containing the result.
-     */
-    public static final Vec4 move(Vec4 v, Vec4 dest, float dist)
-    {
-        Vec4 result = new Vec4();
-        move(v, dest, dist, result);
+        Vec3d result = new Vec3d();
+        rotate(v, axis, angle, result);
         return result;
     }
     // </editor-fold>
     
-    public float x, y, z, w;
+    public double x, y, z;
     
     // <editor-fold defaultstate="collapsed" desc="Constructors">
     /**
      * Creates a new zero vector.
      */
-    public Vec4()
+    public Vec3d()
     {
     }
     
     /**
      * Creates a new vector with the given coordinates.
      */
-    public Vec4(float x, float y, float z, float w)
+    public Vec3d(double x, double y, double z)
     {
-        this.x = x; this.y = y; this.z = z; this.w = w;
-    }
-    
-    /**
-     * Creates a new vector with the given data. Each coordinate is set to one
-     * of the given values, in order.
-     */
-    public Vec4(float x, float y, Vec2 v)
-    {
-        this.x = x; this.y = y; z = v.x; w = v.y;
-    }
-    
-    /**
-     * Creates a new vector with the given data. Each coordinate is set to one
-     * of the given values, in order.
-     */
-    public Vec4(float x, Vec2 v, float w)
-    {
-        this.x = x; y = v.x; z = v.y; this.w = w;
-    }
-    
-    /**
-     * Creates a new vector with the given data. Each coordinate is set to one
-     * of the given values, in order.
-     */
-    public Vec4(Vec2 v, float z, float w)
-    {
-        x = v.x; y = v.y; this.z = z; this.w = w;
-    }
-    
-    /**
-     * Creates a new vector with the given data. Each coordinate is set to one
-     * of the given values, in order.
-     */
-    public Vec4(Vec2 v0, Vec2 v1)
-    {
-        x = v0.x; y = v0.y; z = v1.x; w = v1.y;
-    }
-    
-    /**
-     * Creates a new vector with the given data. Each coordinate is set to one
-     * of the given values, in order.
-     */
-    public Vec4(float x, Vec3 v)
-    {
-        this.x = x; y = v.x; z = v.y; w = v.z;
-    }
-    
-    /**
-     * Creates a new vector with the given data. Each coordinate is set to one
-     * of the given values, in order.
-     */
-    public Vec4(Vec3 v, float w)
-    {
-        x = v.x; y = v.y; z = v.z; this.w = w;
+        this.x = x; this.y = y; this.z = z;
     }
     
     /**
      * Creates a new vector with each coordinate set to the given scalar.
      */
-    public Vec4(float s)
+    public Vec3d(double s)
     {
-        x = s; y = s; z = s; w = s;
+        x = s; y = s; z = s;
     }
     
     /**
@@ -805,9 +797,29 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * 
      * @param v The vector to copy.
      */
-    public Vec4(Vec4 v)
+    public Vec3d(Vec3d v)
     {
-        x = v.x; y = v.y; z = v.z; w = v.w;
+        x = v.x; y = v.y; z = v.z;
+    }
+    
+    /**
+     * Copies the given vector.
+     * 
+     * @param v The vector to copy.
+     */
+    public Vec3d(Vec3 v)
+    {
+        x = v.x; y = v.y; z = v.z;
+    }
+    
+    /**
+     * Converts the given integer vector to a new double vector.
+     * 
+     * @param v The vector to copy.
+     */
+    public Vec3d(Vec3i v)
+    {
+        x = v.x; y = v.y; z = v.z;
     }
     
     /**
@@ -816,30 +828,19 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param in The input stream to read from.
      * @throws IOException If an io error occurred.
      */
-    public Vec4(DataInputStream in) throws IOException
+    public Vec3d(DataInputStream in) throws IOException
     {
-        Vec4.this.read(in);
+        Vec3d.this.read(in);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Instance accessor methods">
-    /**
-     * Gets the component of this vector specified by the given index.
-     * 
-     * @param i The index of the component to get.
-     * @return The component.
-     */
-    public float getComponent(int i)
-    {
-        return getComponent(this, i);
-    }
-    
     /**
      * Returns the dot product of this and the given vector.
      * 
      * @param v The vector with which to calculate the dot product.
      * @return The dot product of this and the given vector.
      */
-    public float dot(Vec4 v)
+    public double dot(Vec3d v)
     {
         return dot(this, v);
     }
@@ -849,7 +850,7 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * 
      * @return The square length of this vector.
      */
-    public float squareLength()
+    public double squareLength()
     {
         return squareLength(this);
     }
@@ -859,7 +860,7 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * 
      * @return the length of this vector.
      */
-    public float length()
+    public double length()
     {
         return length(this);
     }
@@ -870,7 +871,7 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v The vector to calculate the square distance from.
      * @return The square distance between this and the given vector.
      */
-    public float squareDist(Vec4 v)
+    public double squareDist(Vec3d v)
     {
         return squareDist(this, v);
     }
@@ -881,7 +882,7 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v The vector to calculate the distance from.
      * @return The distance between this and the given vector.
      */
-    public float dist(Vec4 v)
+    public double dist(Vec3d v)
     {
         return dist(this, v);
     }
@@ -892,7 +893,7 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v The vector on which to project.
      * @return The scalar projection of this onto the given vector.
      */
-    public float scalarProject(Vec4 v)
+    public double scalarProject(Vec3d v)
     {
         return scalarProject(this, v);
     }
@@ -904,7 +905,7 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param threshold The distance from zero the vector can be.
      * @return Whether this vector is close to zero.
      */
-    public boolean isZero(float threshold)
+    public boolean isZero(double threshold)
     {
         return isZero(this, threshold);
     }
@@ -926,7 +927,31 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v The vector to set this to.
      * @return This vector.
      */
-    public Vec4 set(Vec4 v)
+    public Vec3d set(Vec3d v)
+    {
+        copy(v, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to the given vector.
+     * 
+     * @param v The vector to set this to.
+     * @return This vector.
+     */
+    public Vec3d set(Vec3 v)
+    {
+        copy(v, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to the given vector.
+     * 
+     * @param v The vector to set this to.
+     * @return This vector.
+     */
+    public Vec3d set(Vec3i v)
     {
         copy(v, this);
         return this;
@@ -937,9 +962,9 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * 
      * @return This vector.
      */
-    public Vec4 set(float x, float y, float z, float w)
+    public Vec3d set(double x, double y, double z)
     {
-        this.x = x; this.y = y; this.z = z; this.w = w;
+        this.x = x; this.y = y; this.z = z;
         return this;
     }
     
@@ -949,9 +974,9 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param s The scalar to set this to.
      * @return This vector.
      */
-    public Vec4 set(float s)
+    public Vec3d set(double s)
     {
-        x = s; y = s; z = s; w = s;
+        x = s; y = s; z = s;
         return this;
     }
     
@@ -960,55 +985,28 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * 
      * @return This vector.
      */
-    public Vec4 set()
+    public Vec3d set()
     {
-        x = 0.0f; y = 0.0f; z = 0.0f; w = 0.0f;
+        x = 0.0; y = 0.0; z = 0.0;
         return this;
     }
     
     /**
-     * Sets the component specified by the given index to the given float.
+     * Sets the component specified by the given index to the given double.
      * 
      * @param i The index of the component to set.
-     * @param f The value to set the component to.
+     * @param value The value to set the component to.
      * @return This vector.
      */
-    public Vec4 setComponent(int i, float f)
+    public Vec3d setComponent(int i, double value)
     {
         switch (i)
         {
-            case 0: x = f; return this;
-            case 1: y = f; return this;
-            case 2: z = f; return this;
-            case 3: w = f; return this;
-            default: throw new ArrayIndexOutOfBoundsException();
+            case 0: x = value; return this;
+            case 1: y = value; return this;
+            case 2: z = value; return this;
+            default: throw new ArrayIndexOutOfBoundsException(i);
         }
-    }
-    
-    /**
-     * Copies the given row of a matrix into this vector.
-     * 
-     * @param m The matrix to copy from.
-     * @param row The row to copy.
-     * @return This vector.
-     */
-    public Vec4 setAsRow(Mat4 m, int row)
-    {
-        copyRow(m, row, this);
-        return this;
-    }
-    
-    /**
-     * Copies the given row of a matrix into this vector.
-     * 
-     * @param m The matrix to copy from.
-     * @param column The column to copy.
-     * @return This vector.
-     */
-    public Vec4 setAsColumn(Mat4 m, int column)
-    {
-        copyColumn(m, column, this);
-        return this;
     }
     
     /**
@@ -1017,7 +1015,7 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v The vector to add to this.
      * @return This vector.
      */
-    public Vec4 add(Vec4 v)
+    public Vec3d add(Vec3d v)
     {
         add(this, v, this);
         return this;
@@ -1029,7 +1027,7 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v The vector to subtract from this.
      * @return This vector.
      */
-    public Vec4 sub(Vec4 v)
+    public Vec3d sub(Vec3d v)
     {
         sub(this, v, this);
         return this;
@@ -1041,7 +1039,7 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param s The scalar to multiply this by.
      * @return This vector.
      */
-    public Vec4 mult(float s)
+    public Vec3d mult(double s)
     {
         mult(this, s, this);
         return this;
@@ -1054,7 +1052,7 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v The vector to multiply this by.
      * @return This vector.
      */
-    public Vec4 mult(Vec4 v)
+    public Vec3d mult(Vec3d v)
     {
         mult(this, v, this);
         return this;
@@ -1068,9 +1066,21 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param s The scalar to multiply {@code v} by.
      * @return This vector.
      */
-    public Vec4 madd(Vec4 v, float s)
+    public Vec3d madd(Vec3d v, double s)
     {
         madd(this, v, s, this);
+        return this;
+    }
+    
+    /**
+     * Multiplies this by the given 3x3 matrix.
+     * 
+     * @param m The 3x3 matrix to multiply this by.
+     * @return This vector.
+     */
+    public Vec3d mult(Mat3 m)
+    {
+        mult(this, m, this);
         return this;
     }
     
@@ -1080,9 +1090,45 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param m The 4x4 matrix to multiply this by.
      * @return This vector.
      */
-    public Vec4 mult(Mat4 m)
+    public Vec3d mult(Mat4 m)
     {
         mult(this, m, this);
+        return this;
+    }
+    
+    /**
+     * Multiplies this by the given transform.
+     * 
+     * @param t The transform to multiply this by.
+     * @return This vector.
+     */
+    public Vec3d mult(Transform t)
+    {
+        mult(this, t, this);
+        return this;
+    }
+    
+    /**
+     * Rotates this vector by the given quaternion.
+     * 
+     * @param q The quaternion to rotate by.
+     * @return This vector.
+     */
+    public Vec3d mult(Quat q)
+    {
+        mult(this, q, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to the cross product between this and the given vector.
+     * 
+     * @param v The vector to multiply this by.
+     * @return This vector.
+     */
+    public Vec3d cross(Vec3d v)
+    {
+        cross(this, v, this);
         return this;
     }
     
@@ -1092,7 +1138,7 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param s The scalar to divide by.
      * @return This vector.
      */
-    public Vec4 div(float s)
+    public Vec3d div(double s)
     {
         div(this, s, this);
         return this;
@@ -1105,7 +1151,7 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v The vector to divide this by.
      * @return This vector.
      */
-    public Vec4 div(Vec4 v)
+    public Vec3d div(Vec3d v)
     {
         div(this, v, this);
         return this;
@@ -1116,7 +1162,7 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * 
      * @return This vector.
      */
-    public Vec4 negate()
+    public Vec3d negate()
     {
         negate(this, this);
         return this;
@@ -1128,7 +1174,7 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * 
      * @return This vector.
      */
-    public Vec4 normalize()
+    public Vec3d normalize()
     {
         normalize(this, this);
         return this;
@@ -1140,7 +1186,7 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param n The normal vector about which to reflect.
      * @return This vector.
      */
-    public Vec4 reflect(Vec4 n)
+    public Vec3d reflect(Vec3d n)
     {
         reflect(this, n, this);
         return this;
@@ -1152,7 +1198,7 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v The vector on which to project.
      * @return This vector.
      */
-    public Vec4 project(Vec4 v)
+    public Vec3d project(Vec3d v)
     {
         project(this, v, this);
         return this;
@@ -1164,7 +1210,7 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param v The vector to reject from this.
      * @return This vector.
      */
-    public Vec4 reject(Vec4 v)
+    public Vec3d reject(Vec3d v)
     {
         reject(this, v, this);
         return this;
@@ -1178,7 +1224,7 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param t The scalar interpolant, between zero and one (inclusive).
      * @return This vector.
      */
-    public Vec4 lerp(Vec4 v, float t)
+    public Vec3d lerp(Vec3d v, double t)
     {
         lerp(this, v, t, this);
         return this;
@@ -1193,9 +1239,23 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
      * @param dist The distance to move by.
      * @return This vector.
      */
-    public Vec4 move(Vec4 dest, float dist)
+    public Vec3d move(Vec3d dest, double dist)
     {
         move(this, dest, dist, this);
+        return this;
+    }
+    
+    /**
+     * Rotates this vector around the given axis, by the given angle. Assumes
+     * the given axis is normalized.
+     * 
+     * @param axis The unit axis vector to rotate around.
+     * @param angle The angle to rotate by, in radians.
+     * @return This vector.
+     */
+    public Vec3d rotate(Vec3d axis, double angle)
+    {
+        rotate(this, axis, angle, this);
         return this;
     }
     // </editor-fold>
@@ -1203,75 +1263,53 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
     @Override
     public void read(ByteBuffer buffer)
     {
-        x = buffer.getFloat();
-        y = buffer.getFloat();
-        z = buffer.getFloat();
-        w = buffer.getFloat();
+        x = buffer.getDouble();
+        y = buffer.getDouble();
+        z = buffer.getDouble();
     }
 
     @Override
     public void write(ByteBuffer buffer)
     {
-        buffer.putFloat(x);
-        buffer.putFloat(y);
-        buffer.putFloat(z);
-        buffer.putFloat(w);
-    }
-    
-    @Override
-    public void read(FloatBuffer buffer)
-    {
-        x = buffer.get();
-        y = buffer.get();
-        z = buffer.get();
-        w = buffer.get();
-    }
-
-    @Override
-    public void write(FloatBuffer buffer)
-    {
-        buffer.put(x);
-        buffer.put(y);
-        buffer.put(z);
-        buffer.put(w);
+        buffer.putDouble(x);
+        buffer.putDouble(y);
+        buffer.putDouble(z);
     }
     
     @Override
     public int bufferSize()
     {
-        return 4*4;
+        return 3*8;
     }
 
     @Override
-    public Vec4 read(DataInputStream in) throws IOException
+    public Vec3d read(DataInputStream in) throws IOException
     {
-        x = in.readFloat();
-        y = in.readFloat();
-        z = in.readFloat();
-        w = in.readFloat();
+        x = in.readDouble();
+        y = in.readDouble();
+        z = in.readDouble();
         return this;
     }
 
     @Override
-    public Vec4 write(DataOutputStream out) throws IOException
+    public Vec3d write(DataOutputStream out) throws IOException
     {
-        out.writeFloat(x);
-        out.writeFloat(y);
-        out.writeFloat(z);
-        out.writeFloat(w);
+        out.writeDouble(x);
+        out.writeDouble(y);
+        out.writeDouble(z);
         return this;
     }
     
     @Override
     public String toString()
     {
-        return "(" + x + ", " + y + ", " + z + ", " + w + ")";
+        return "(" + x + ", " + y + ", " + z + ")";
     }
     
-    public boolean equals(Vec4 v)
+    public boolean equals(Vec3d v)
     {
         if (v == null) return false;
-        return v.x == x && v.y == y && v.z == z && v.w == w;
+        return x == v.x && y == v.y && z == v.z;
     }
     
     @Override
@@ -1279,17 +1317,18 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
     {
         if (o == null) return false;
         if (o.getClass() != this.getClass()) return false;
-        final Vec4 v = (Vec4)o;
+        final Vec3d v = (Vec3d)o;
         return equals(v);
     }
     
     @Override
     public int hashCode()
     {
-        int hash = 389 + Float.floatToIntBits(this.x);
-        hash = 59*hash + Float.floatToIntBits(this.y);
-        hash = 59*hash + Float.floatToIntBits(this.z);
-        return 59*hash + Float.floatToIntBits(this.w);
+        int hash = 7;
+        hash = 79 * hash + (int)(Double.doubleToLongBits(this.x) ^ (Double.doubleToLongBits(this.x) >>> 32));
+        hash = 79 * hash + (int)(Double.doubleToLongBits(this.y) ^ (Double.doubleToLongBits(this.y) >>> 32));
+        hash = 79 * hash + (int)(Double.doubleToLongBits(this.z) ^ (Double.doubleToLongBits(this.z) >>> 32));
+        return hash;
     }
     // </editor-fold>
 }
