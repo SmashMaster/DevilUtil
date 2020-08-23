@@ -242,7 +242,7 @@ public final class ActorDriver
         Vec3 avgVel = new Vec3(vel);
         Vec3 startVel = new Vec3(vel);
         
-        boolean wantToMove = !moveDir.isZero(0.0f);
+        boolean wantToMove = !moveDir.isZero();
         Vec3 adjMoveDir = new Vec3(moveDir);
 
         if (startOnGround) //Walking

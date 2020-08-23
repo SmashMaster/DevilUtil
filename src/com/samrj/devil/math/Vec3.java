@@ -196,24 +196,24 @@ public class Vec3 implements FloatBufferable, DataStreamable<Vec3>
      * @param source The vector to copy.
      * @param target The vector in which to store the result.
      */
-    public static final void copy(Vec3d source, Vec3 target)
-    {
-        target.x = (float)source.x;
-        target.y = (float)source.y;
-        target.z = (float)source.z;
-    }
-    
-    /**
-     * Copies {@code source} into {@code target}.
-     * 
-     * @param source The vector to copy.
-     * @param target The vector in which to store the result.
-     */
     public static final void copy(Vec3i source, Vec3 target)
     {
         target.x = source.x;
         target.y = source.y;
         target.z = source.z;
+    }
+    
+    /**
+     * Casts {@code source} into {@code target}.
+     * 
+     * @param source The vector to copy.
+     * @param target The vector in which to store the result.
+     */
+    public static final void cast(Vec3d source, Vec3 target)
+    {
+        target.x = (float)source.x;
+        target.y = (float)source.y;
+        target.z = (float)source.z;
     }
     
     /**
@@ -571,6 +571,13 @@ public class Vec3 implements FloatBufferable, DataStreamable<Vec3>
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
+    public static final Vec3 cast(Vec3d v)
+    {
+        Vec3 result = new Vec3();
+        cast(v, result);
+        return result;
+    }
+    
     /**
      * Returns the given row of a matrix in a new vector.
      * 
@@ -950,18 +957,6 @@ public class Vec3 implements FloatBufferable, DataStreamable<Vec3>
     }
     
     /**
-     * Casts the given double vector to a float vector.
-     * 
-     * @param v The vector to copy.
-     */
-    public Vec3(Vec3d v)
-    {
-        x = (float)v.x;
-        y = (float)v.y;
-        z = (float)v.z;
-    }
-    
-    /**
      * Converts the given integer vector to a new float vector.
      * 
      * @param v The vector to copy.
@@ -1099,9 +1094,9 @@ public class Vec3 implements FloatBufferable, DataStreamable<Vec3>
      * @param v The vector to set this to.
      * @return This vector.
      */
-    public Vec3 set(Vec3d v)
+    public Vec3 setCast(Vec3d v)
     {
-        copy(v, this);
+        cast(v, this);
         return this;
     }
     

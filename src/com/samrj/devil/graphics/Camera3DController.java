@@ -176,7 +176,7 @@ public final class Camera3DController
         camera.pos.y += height;
         Vec3 dp = new Vec3(0, 0, distance).mult(camera.dir);
         dp.add(temp.set(offset).mult(camera.dir));
-        if (blockGeom != null && !dp.isZero(0.0f))
+        if (blockGeom != null && !dp.isZero())
         {
             blockShape.pos.set(camera.pos);
             SweepResult ray = blockGeom.sweepFirst(blockShape, dp).orElse(null);
