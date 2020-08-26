@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sam Johnson
+ * Copyright (c) 2020 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@ package com.samrj.devil.gl;
 
 import com.samrj.devil.graphics.TexUtil;
 import com.samrj.devil.math.Util.PrimType;
+import com.samrj.devil.model.Mesh;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.io.File;
@@ -282,6 +283,17 @@ public final class DGL
     public static VertexStream genVertexStream(int maxVertices, int maxIndices)
     {
         return gen(new VertexStream(maxVertices, maxIndices));
+    }
+    
+    /**
+     * Returns a new mesh drawer, which buffers the given mesh onto the GPU.
+     * 
+     * @param mesh The mesh to buffer.
+     * @return A new mesh buffer.
+     */
+    public static MeshBuffer genMeshBuffer(Mesh mesh)
+    {
+        return gen(new MeshBuffer(mesh));
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Image methods">
@@ -816,25 +828,21 @@ public final class DGL
      * Draws the given vertex data using the given primitive mode. A shader must
      * be bound.
      * 
-     * @param <T> A type of vertex data.
-     * @param data The vertex data to render.
+     * @param vData The vertex data to render.
      * @param mode An OpenGL primitive draw mode.
-     * @return The given vertex data.
      */
-    public static <T extends VertexData> T draw(T data, int mode)
+    public static void draw(VertexData vData, int mode)
     {
         if (boundProgram == null) throw new IllegalStateException("No shader program is in use.");
         
-        int verts = data.numVertices();
-        int inds = data.numIndices();
+        int verts = vData.numVertices();
+        int inds = vData.numIndices();
         
-        VAO.bindFor(data, boundProgram, () ->
+        VAO.bindFor(null, vData, boundProgram, () ->
         {
             if (inds < 0) glDrawArrays(mode, 0, verts);
             else glDrawElements(mode, inds, GL_UNSIGNED_INT, 0);
         });
-        
-        return data;
     }
     
     /**
@@ -842,26 +850,47 @@ public final class DGL
      * primitive mode. The instance ID may be read as by a vertex shader as
      * {@code gl_InstanceID}.
      * 
-     * @param <T> A type of vertex data.
-     * @param data The vertex data to render.
+     * @param vData The vertex data to render.
      * @param mode An OpenGL primitive draw mode.
      * @param primcount The number of instances to render.
-     * @return The given vertex data.
      */
-    public static <T extends VertexData> T drawInstanced(T data, int mode, int primcount)
+    public static void drawInstanced(VertexData vData, int mode, int primcount)
     {
         if (boundProgram == null) throw new IllegalStateException("No shader program is in use.");
         
-        int verts = data.numVertices();
-        int inds = data.numIndices();
+        int verts = vData.numVertices();
+        int inds = vData.numIndices();
         
-        VAO.bindFor(data, boundProgram, () ->
+        VAO.bindFor(null, vData, boundProgram, () ->
         {
             if (inds < 0) glDrawArraysInstanced(mode, 0, verts, primcount);
             else glDrawElementsInstanced(mode, inds, GL_UNSIGNED_INT, 0, primcount);
         });
+    }
+    
+    /**
+     * Performs instanced rendering on the given instance and vertex data, using
+     * the given primitive mode. The instance ID may be read as by a vertex
+     * shader as {@code gl_InstanceID}, but per-instance data is efficiently
+     * provided by the InstanceData.
+     * 
+     * @param iData The instance data to render.
+     * @param vData The vertex data to render.
+     * @param mode An OpenGL primitive draw mode.
+     */
+    public static void drawInstanced(InstanceData iData, VertexData vData, int mode)
+    {
+        if (boundProgram == null) throw new IllegalStateException("No shader program is in use.");
         
-        return data;
+        int primcount = iData.numInstances();
+        int verts = vData.numVertices();
+        int inds = vData.numIndices();
+        
+        VAO.bindFor(iData, vData, boundProgram, () ->
+        {
+            if (inds < 0) glDrawArraysInstanced(mode, 0, verts, primcount);
+            else glDrawElementsInstanced(mode, inds, GL_UNSIGNED_INT, 0, primcount);
+        });
     }
     
     /**
@@ -876,7 +905,7 @@ public final class DGL
         {
             object.delete();
             DGL.objects.remove(object);
-            VAO.delete(object);
+            if (object instanceof VAOBindable) VAO.delete((VAOBindable)object);
         }
     }
     

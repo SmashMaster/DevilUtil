@@ -1,27 +1,22 @@
 package com.samrj.devil.gl;
 
+
 /**
- * Interface for all vertex data.
+ * Interface for instanced rendering data.
  * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2020 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-interface VertexData extends VAOBindable
+interface InstanceData extends VAOBindable
 {
     /**
-     * @return The OpenGL vertex buffer object for this vertex data.
+     * @return The OpenGL vertex buffer object for this instance data.
      */
     public int vbo();
     
     /**
-     * @return The OpenGL index buffer object for this vertex data, or 0 if
-     *         indexing is not enabled for this vertex data.
-     */
-    public int ibo();
-    
-    /**
-     * @return An iterable of every attribute in this vertex data.
+     * @return An iterable of every attribute in this instance data.
      */
     public Iterable<Attribute> attributes();
     
@@ -34,15 +29,9 @@ interface VertexData extends VAOBindable
     public Attribute getAttribute(String name);
     
     /**
-     * @return The number of currently uploaded vertices.
+     * Returns the number of instances in this instance data.
      */
-    public int numVertices();
-    
-    /**
-     * @return The number of currently uploaded indices, or -1 if indexing is
-     *         not enabled for this vertex data.
-     */
-    public int numIndices();
+    public int numInstances();
     
     public interface Attribute
     {
@@ -50,5 +39,6 @@ interface VertexData extends VAOBindable
         public AttributeType getType();
         public int getStride();
         public int getOffset();
+        public int getDivisor();
     }
 }

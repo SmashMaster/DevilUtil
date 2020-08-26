@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sam Johnson
+ * Copyright (c) 2020 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,9 +41,6 @@ public abstract class VertexBuilder extends DGLObj implements VertexData
     public static enum State
     {
         /**
-         * The vertex builder may register attributes, but it is not ready to
-         * emit vertices or indices, or be drawn.
-         *//**
          * The vertex builder may register attributes, but it is not ready to
          * emit vertices or indices, or be drawn.
          */

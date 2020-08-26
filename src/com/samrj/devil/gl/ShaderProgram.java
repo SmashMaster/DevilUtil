@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sam Johnson
+ * Copyright (c) 2020 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ import static org.lwjgl.system.MemoryUtil.*;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public final class ShaderProgram extends DGLObj
+public final class ShaderProgram extends DGLObj implements VAOBindable
 {
     public static enum State
     {

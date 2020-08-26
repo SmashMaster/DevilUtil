@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sam Johnson
+ * Copyright (c) 2020 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,8 @@
  * THE SOFTWARE.
  */
 
-package com.samrj.devil.graphics;
+package com.samrj.devil.gl;
 
-import com.samrj.devil.gl.AttributeType;
-import com.samrj.devil.gl.Profiler;
-import com.samrj.devil.gl.VertexData;
 import com.samrj.devil.model.Mesh;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +37,7 @@ import static org.lwjgl.opengl.GL15C.*;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class MeshDrawer implements VertexData
+public class MeshBuffer extends DGLObj implements VertexData
 {
     private final Mesh mesh;
     
@@ -56,7 +53,7 @@ public class MeshDrawer implements VertexData
     private final Map<String, Attribute> attributes;
     private int vbo, ibo;
     
-    public MeshDrawer(Mesh mesh)
+    MeshBuffer(Mesh mesh)
     {
         this.mesh = mesh;
         
@@ -176,7 +173,8 @@ public class MeshDrawer implements VertexData
         setName(material, name);
     }
     
-    public void destroy()
+    @Override
+    void delete()
     {
         Profiler.removeUsedVRAM(mesh.vertexData.remaining()*8L);
         Profiler.removeUsedVRAM(mesh.indexData.remaining()*8L);
