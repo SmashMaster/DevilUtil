@@ -7,7 +7,7 @@ package com.samrj.devil.gl;
  * @copyright 2020 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-interface VertexData extends VAOBindable
+public interface VertexData extends VAOBindable
 {
     /**
      * @return The OpenGL vertex buffer object for this vertex data.

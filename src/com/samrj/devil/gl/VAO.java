@@ -37,7 +37,7 @@ final class VAO extends DGLObj
         else if (caps.GL_ARB_instanced_arrays) vertexAttribDivisorMethod = ARBInstancedArrays::glVertexAttribDivisorARB;
     }
     
-    static void bindFor(InstanceData iData, VertexData vData, ShaderProgram shader, Runnable r)
+    static void bindFor(VertexData iData, VertexData vData, ShaderProgram shader, Runnable r)
     {
         Binding binding = new Binding(iData, vData, shader);
         VAO vao = vaos.get(binding);
@@ -46,8 +46,8 @@ final class VAO extends DGLObj
             vao = new VAO(binding);
             vaos.put(binding, vao);
             if (iData != null) bindables.put(iData, binding);
-            bindables.put(vData, binding);
-            bindables.put(shader, binding);
+            if (vData != null) bindables.put(vData, binding);
+            if (shader != null) bindables.put(shader, binding);
         }
         else vao.bind();
         r.run();
@@ -84,28 +84,36 @@ final class VAO extends DGLObj
         
         bind();
         
+        //Instance attributes
+        if (binding.iData != null)
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, binding.iData.vbo());
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+            for (ShaderProgram.Attribute satt : binding.shader.getAttributes())
+            {
+                VertexData.Attribute iAtt = binding.iData.getAttribute(satt.name);
+                if (iAtt != null)
+                {
+                    AttributeType type = iAtt.getType();
+                    for (int layer=0; layer<type.layers; layer++)
+                    {
+                        int location = satt.location + layer;
+                        glEnableVertexAttribArray(location);
+                        vertexAttribPointer(location, type, iAtt.getStride(), iAtt.getOffset() + layer*type.size);
+                        vertexAttribDivisorMethod.accept(location, 1);
+                    }
+                }
+            }
+        }
+        
+        //Vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, binding.vData.vbo());
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, binding.vData.ibo());
         
         for (ShaderProgram.Attribute satt : binding.shader.getAttributes())
         {
-            InstanceData.Attribute iAtt = binding.iData != null ? binding.iData.getAttribute(satt.name) : null;
-            
-            if (iAtt != null)
-            {
-                AttributeType type = iAtt.getType();
-                for (int layer=0; layer<type.layers; layer++)
-                {
-                    int location = satt.location + layer;
-                    glEnableVertexAttribArray(location);
-                    vertexAttribPointer(location, type, iAtt.getStride(), iAtt.getOffset() + layer*type.size);
-                    vertexAttribDivisorMethod.accept(location, iAtt.getDivisor());
-                }
-                continue;
-            }
-            
             VertexData.Attribute vAtt = binding.vData.getAttribute(satt.name);
-            
             if (vAtt != null)
             {
                 AttributeType type = vAtt.getType();
@@ -149,11 +157,11 @@ final class VAO extends DGLObj
     
     private static class Binding
     {
-        public final InstanceData iData;
+        public final VertexData iData;
         public final VertexData vData;
         public final ShaderProgram shader;
 
-        public Binding(InstanceData iData, VertexData vData, ShaderProgram shader)
+        public Binding(VertexData iData, VertexData vData, ShaderProgram shader)
         {
             this.iData = iData;
             this.vData = vData;

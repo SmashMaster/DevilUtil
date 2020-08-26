@@ -872,17 +872,18 @@ public final class DGL
      * Performs instanced rendering on the given instance and vertex data, using
      * the given primitive mode. The instance ID may be read as by a vertex
      * shader as {@code gl_InstanceID}, but per-instance data is efficiently
-     * provided by the InstanceData.
+     * provided by the instance data. The number of instances is equal to the
+     * instance data vertex count.
      * 
      * @param iData The instance data to render.
      * @param vData The vertex data to render.
      * @param mode An OpenGL primitive draw mode.
      */
-    public static void drawInstanced(InstanceData iData, VertexData vData, int mode)
+    public static void drawInstanced(VertexData iData, VertexData vData, int mode)
     {
         if (boundProgram == null) throw new IllegalStateException("No shader program is in use.");
         
-        int primcount = iData.numInstances();
+        int primcount = iData.numVertices();
         int verts = vData.numVertices();
         int inds = vData.numIndices();
         
