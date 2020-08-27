@@ -31,7 +31,10 @@ import com.samrj.devil.util.TriConsumer;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.IntFunction;
 
 import static org.lwjgl.system.MemoryUtil.*;
@@ -55,6 +58,31 @@ public final class Mesh extends DataBlock
         }
     }
     
+    private static class LoopEdge
+    {
+        private final int va, vb;
+        
+        private LoopEdge(int va, int vb)
+        {
+            this.va = va;
+            this.vb = vb;
+        }
+        
+        @Override
+        public int hashCode()
+        {
+            return va^vb;
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (!(obj instanceof LoopEdge)) return false;
+            LoopEdge edge = (LoopEdge)obj;
+            return (va == edge.va && vb == edge.vb) || (va == edge.vb && vb == edge.va);
+        }
+    }
+    
     public final boolean hasTangents;
     public final int numGroups;
     public final boolean hasMaterials;
@@ -65,6 +93,9 @@ public final class Mesh extends DataBlock
     
     public final int numTriangles;
     public final ByteBuffer indexData;
+    
+    public final int numEdges;
+    public final ByteBuffer edgeIndexData;
     
     public final int positionOffset, normalOffset;
     public final int[] uvOffsets;
@@ -115,6 +146,7 @@ public final class Mesh extends DataBlock
         int totpoly = bMesh.getField("totpoly").asInt();
         BlendFile.Pointer[] mPolys = bMesh.getField("mpoly").dereference().asArray(totpoly);
         List<LoopTri> loopTris = new ArrayList<>();
+        Set<LoopEdge> loopEdges = new HashSet<>();
         
         for (int iPoly=0; iPoly<totpoly; iPoly++)
         {
@@ -203,6 +235,14 @@ public final class Mesh extends DataBlock
                 }
             }
             
+            //Make edges
+            int eiLast = end - 1;
+            for (int ei=start; ei<end; ei++)
+            {
+                loopEdges.add(new LoopEdge(eiLast, ei));
+                eiLast = ei;
+            }
+            
             //Store normals
             boolean isSmooth = (mPoly.getField("flag").asByte() & 1) != 0;
             if (isSmooth)
@@ -287,6 +327,7 @@ public final class Mesh extends DataBlock
         
         numVertices = mLoops.length;
         numTriangles = loopTris.size();
+        numEdges = loopEdges.size();
         
         hasTangents = false;
         numGroups = maxGroup + 1;
@@ -444,6 +485,18 @@ public final class Mesh extends DataBlock
             }
             indexData.flip();
         }
+        
+        int edgeIndexInts = numEdges*2;
+        edgeIndexData = numEdges != 0 ? memAlloc(edgeIndexInts*4) : null;
+        if (edgeIndexData != null)
+        {
+            for (LoopEdge loopEdge : loopEdges)
+            {
+                edgeIndexData.putInt(loopEdge.va);
+                edgeIndexData.putInt(loopEdge.vb);
+            }
+            edgeIndexData.flip();
+        }
     }
     
     /**
@@ -519,11 +572,39 @@ public final class Mesh extends DataBlock
         forEachTriangle(i -> vertices[i], consumer);
     }
     
+    /**
+     * Reads the edge indices for this mesh, performing the given operation on
+     * each edge in this mesh, using the given index function.
+     */
+    public <V> void forEachEdge(IntFunction<V> vertexFunction, BiConsumer<V, V> consumer)
+    {
+        if (edgeIndexData == null) return;
+        
+        edgeIndexData.rewind();
+        for (int i=0; i<numTriangles; i++)
+        {
+            V a = vertexFunction.apply(edgeIndexData.getInt());
+            V b = vertexFunction.apply(edgeIndexData.getInt());
+            consumer.accept(a, b);
+        }
+        edgeIndexData.rewind();
+    }
+    
+    /**
+     * Reads this mesh data, then performs the given operation on each edge.
+     */
+    public void forEachEdge(BiConsumer<MeshVertex, MeshVertex> consumer)
+    {
+        MeshVertex[] vertices = readVertices();
+        forEachEdge(i -> vertices[i], consumer);
+    }
+    
     @Override
     void destroy()
     {
         if (vertexData != null) memFree(vertexData);
         if (indexData != null) memFree(indexData);
+        if (edgeIndexData != null) memFree(edgeIndexData);
     }
     
     public class MeshVertex

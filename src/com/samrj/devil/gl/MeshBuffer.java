@@ -23,6 +23,7 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.model.Mesh;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +41,7 @@ import static org.lwjgl.opengl.GL15C.*;
 public class MeshBuffer extends DGLObj implements VertexData
 {
     private final Mesh mesh;
+    private final boolean edges;
     
     private final Attribute position;
     private final Attribute normal;
@@ -53,9 +55,10 @@ public class MeshBuffer extends DGLObj implements VertexData
     private final Map<String, Attribute> attributes;
     private int vbo, ibo;
     
-    MeshBuffer(Mesh mesh)
+    MeshBuffer(Mesh mesh, boolean edges)
     {
         this.mesh = mesh;
+        this.edges = edges;
         
         //Set up attributes.
         position = new Attribute(VEC3, mesh.positionOffset, true);
@@ -95,16 +98,18 @@ public class MeshBuffer extends DGLObj implements VertexData
         glBufferData(GL_ARRAY_BUFFER, mesh.vertexData, GL_STATIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, prevBinding);
         
+        ByteBuffer indexData = edges ? mesh.edgeIndexData : mesh.indexData;
+        
         ibo = glGenBuffers();
         prevBinding = glGetInteger(GL_ELEMENT_ARRAY_BUFFER_BINDING);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.indexData, GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData, GL_STATIC_DRAW);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevBinding);
         
         attributes = new HashMap<>();
         
         Profiler.addUsedVRAM(mesh.vertexData.remaining()*8L);
-        Profiler.addUsedVRAM(mesh.indexData.remaining()*8L);
+        Profiler.addUsedVRAM(indexData.remaining()*8L);
     }
     
     private void setName(Attribute att, String name)
@@ -177,7 +182,7 @@ public class MeshBuffer extends DGLObj implements VertexData
     void delete()
     {
         Profiler.removeUsedVRAM(mesh.vertexData.remaining()*8L);
-        Profiler.removeUsedVRAM(mesh.indexData.remaining()*8L);
+        Profiler.removeUsedVRAM((edges ? mesh.edgeIndexData : mesh.indexData).remaining()*8L);
         
         glDeleteBuffers(vbo);
         glDeleteBuffers(ibo);
@@ -221,7 +226,7 @@ public class MeshBuffer extends DGLObj implements VertexData
     @Override
     public int numIndices()
     {
-        return mesh.numTriangles*3;
+        return edges ? mesh.numEdges*2 : mesh.numTriangles*3;
     }
     
     private class Attribute implements VertexData.Attribute

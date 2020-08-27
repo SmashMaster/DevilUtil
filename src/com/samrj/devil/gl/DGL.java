@@ -293,7 +293,19 @@ public final class DGL
      */
     public static MeshBuffer genMeshBuffer(Mesh mesh)
     {
-        return gen(new MeshBuffer(mesh));
+        return gen(new MeshBuffer(mesh, false));
+    }
+    
+    /**
+     * Returns a new mesh edge drawer, which buffers the given mesh edges onto
+     * the GPU.
+     * 
+     * @param mesh The mesh to buffer.
+     * @return A new mesh buffer.
+     */
+    public static MeshBuffer genMeshEdgeBuffer(Mesh mesh)
+    {
+        return gen(new MeshBuffer(mesh, true));
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Image methods">
