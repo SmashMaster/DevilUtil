@@ -914,10 +914,9 @@ public final class DGL
      */
     public static void delete(DGLObj... objects)
     {
-        for (DGLObj object : objects) if (DGL.objects.contains(object))
+        for (DGLObj object : objects) if (DGL.objects.remove(object))
         {
             object.delete();
-            DGL.objects.remove(object);
             if (object instanceof VAOBindable) VAO.delete((VAOBindable)object);
         }
     }

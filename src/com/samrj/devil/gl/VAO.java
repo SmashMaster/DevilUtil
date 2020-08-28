@@ -1,9 +1,6 @@
 package com.samrj.devil.gl;
 
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import org.lwjgl.opengl.ARBInstancedArrays;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL33C;
@@ -23,7 +20,7 @@ import static org.lwjgl.opengl.GL30C.*;
 final class VAO extends DGLObj
 {
     private static Map<Binding, VAO> vaos;
-    private static Map<VAOBindable, Binding> bindables;
+    private static Map<VAOBindable, Set<Binding>> bindables;
     private static VertexAttribDivisorMethod vertexAttribDivisorMethod;
     
     static void init()
@@ -37,6 +34,18 @@ final class VAO extends DGLObj
         else if (caps.GL_ARB_instanced_arrays) vertexAttribDivisorMethod = ARBInstancedArrays::glVertexAttribDivisorARB;
     }
     
+    private static void addBindable(VAOBindable bindable, Binding binding)
+    {
+        if (bindable == null) return;
+        Set<Binding> set = bindables.get(bindable);
+        if (set == null)
+        {
+            set = Collections.newSetFromMap(new HashMap<>());
+            bindables.put(bindable, set);
+        }
+        set.add(binding);
+    }
+    
     static void bindFor(VertexData iData, VertexData vData, ShaderProgram shader, Runnable r)
     {
         Binding binding = new Binding(iData, vData, shader);
@@ -45,25 +54,40 @@ final class VAO extends DGLObj
         {
             vao = new VAO(binding);
             vaos.put(binding, vao);
-            if (iData != null) bindables.put(iData, binding);
-            if (vData != null) bindables.put(vData, binding);
-            if (shader != null) bindables.put(shader, binding);
+            addBindable(iData, binding);
+            addBindable(vData, binding);
+            addBindable(shader, binding);
         }
         else vao.bind();
         r.run();
         vao.unbind();
     }
     
+    private static void removeBindable(VAOBindable bindable, Binding binding)
+    {
+        if (bindable == null) return;
+        Set<Binding> set = bindables.get(bindable);
+        set.remove(binding);
+        if (set.isEmpty()) bindables.remove(bindable);
+    }
+    
     static void delete(VAOBindable bindable)
     {
-        Binding binding = bindables.get(bindable);
-        if (binding != null)
+        Set<Binding> bindings = bindables.get(bindable);
+        Set<Binding> removedBindings = new HashSet<>();
+        
+        if (bindings != null) for (Binding binding : bindings)
         {
             VAO vao = vaos.remove(binding);
             vao.delete();
-            bindables.remove(binding.iData);
-            bindables.remove(binding.vData);
-            bindables.remove(binding.shader);
+            removedBindings.add(binding);
+        }
+        
+        for (Binding binding : removedBindings)
+        {
+            removeBindable(binding.iData, binding);
+            removeBindable(binding.vData, binding);
+            removeBindable(binding.shader, binding);
         }
     }
     
