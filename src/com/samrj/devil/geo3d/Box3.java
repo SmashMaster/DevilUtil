@@ -24,6 +24,16 @@ public class Box3
                a.max.z >= b.min.z && b.max.z >= a.min.z;
     }
     
+    /**
+     * Returns whether or not the second box is totally enclosed by the first.
+     */
+    public static boolean encloses(Box3 a, Box3 b)
+    {
+        return a.max.x >= b.max.x && a.min.x <= b.min.x &&
+               a.max.y >= b.max.y && a.min.y <= b.min.y &&
+               a.max.z >= b.max.z && a.min.z <= b.min.z;
+    }
+    
     private static boolean axisFailTest(Triangle3 triangle, Vec3 axis, Vec3 edge)
     {
         Vec3 a = Vec3.cross(axis, edge);
@@ -175,6 +185,18 @@ public class Box3
         return v.x >= box.min.x && v.x <= box.max.x &&
                v.y >= box.min.y && v.y <= box.max.y &&
                v.z >= box.min.z && v.z <= box.max.z;
+    }
+    
+    /**
+     * Returns the surface area of the given box.
+     * 
+     * @param box A box.
+     * @return The surface area of the given box.
+     */
+    public static float surfaceArea(Box3 box)
+    {
+        Vec3 d = Vec3.sub(box.max, box.min);
+        return (d.x*d.y + d.y*d.z + d.z*d.x)*2.0f;
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static mutator methods">
@@ -559,6 +581,14 @@ public class Box3
     }
     
     /**
+     * Returns whether or not the given box is totally enclosed by this.
+     */
+    public boolean encloses(Box3 b)
+    {
+        return encloses(this, b);
+    }
+    
+    /**
      * Returns whether this is touching the given triangle.
      * 
      * @param t A triangle.
@@ -589,6 +619,16 @@ public class Box3
     public boolean touching(Vec3 v)
     {
         return touching(this, v);
+    }
+    
+    /**
+     * Returns this box's surface area.
+     * 
+     * @return This box's surface area.
+     */
+    public float surfaceArea()
+    {
+        return surfaceArea(this);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Instance mutator methods">
