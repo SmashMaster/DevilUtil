@@ -348,6 +348,38 @@ public final class EZDraw
         stack.pop();
     }
     
+    public static void circleFilled(int segments)
+    {
+        float dt = 8.0f/segments;
+        
+        begin(GL_TRIANGLE_FAN);
+        for (float t=0.0f; t<8.0f; t+=dt)
+        {
+            Vec2 dir = Util.squareDir(t).normalize();
+            vertex(dir.x, dir.y, 0.0f);
+        }
+        end();
+    }
+    
+    public static void circleFilled(Vec2 pos, float radius, int segments)
+    {
+        stack.push();
+        stack.mat.translate(new Vec3(pos, 0.0f));
+        stack.mat.mult(new Vec3(radius, radius, 1.0f));
+        circleFilled(segments);
+        stack.pop();
+    }
+    
+    public static void circleFilled(Vec3 pos, Vec3 normal, float radius, int segments)
+    {
+        stack.push();
+        stack.mat.translate(pos);
+        stack.mat.mult(new Mat4(Geo3DUtil.orthonormalBasis(normal).transpose()));
+        stack.mat.mult(new Vec3(radius, radius, radius));
+        circleFilled(segments);
+        stack.pop();
+    }
+    
     /**
      * Ends the current draw command, uploading the data to the GPU and drawing
      * to the current frame buffer.
