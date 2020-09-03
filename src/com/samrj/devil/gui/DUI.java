@@ -264,6 +264,14 @@ public final class DUI
     }
     
     /**
+     * Returns the current DUI background form.
+     */
+    public static Form getBackground()
+    {
+        return background;
+    }
+    
+    /**
      * Sends a mouse move event to DevilUI. These events are needed to determine
      * which window or form is currently hovered.
      */
