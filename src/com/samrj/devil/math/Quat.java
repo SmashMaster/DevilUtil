@@ -423,6 +423,25 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
         result.y = (float)Math.atan2(2.0f*(q.w*q.y - q.z*q.x), 1.0f - 2.0f*(q.y*q.y + q.z*q.z));
         result.z = (float)Math.asin(2.0f*(q.x*q.y - q.w*q.z));
     }
+    
+    /**
+     * Recovers the axis-angle representation of the given quaternion, and
+     * stores the result in the given vector. The axis is the direction of the
+     * vector, and the angle, in radians, is the length of the vector.
+     */
+    public static final void axisAngle(Quat q, Vec3 result)
+    {
+        float norm = (float)Math.sqrt(q.x*q.x + q.y*q.y + q.z*q.z);
+        if (norm < EPSILON)
+        {
+            result.set();
+            return;
+        }
+        
+        result.set(q.x, q.y, q.z);
+        float angle = (float)(2.0*Math.atan2(norm, q.w));
+        Vec3.mult(result, angle/norm, result);
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
     /**
