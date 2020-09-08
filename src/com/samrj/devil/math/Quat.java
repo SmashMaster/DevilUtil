@@ -132,6 +132,12 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      */
     public static final void rotation(Vec3 start, Vec3 end, Quat result)
     {
+        if (start.isZero() || end.isZero())
+        {
+            result.setIdentity();
+            return;
+        }
+        
         Vec3 v0 = Vec3.normalize(start);
         Vec3 v1 = Vec3.normalize(end);
 
