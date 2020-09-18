@@ -17,6 +17,10 @@ import javax.crypto.spec.GCMParameterSpec;
  */
 class NetUtil
 {
+    static final String CSPRNG_NAME = "SHA1PRNG";
+    static final String DIGEST_NAME = "SHA-256";
+    static final String CIPHER_NAME = "AES/GCM/NoPadding";
+    
     static final int MAX_PACKET_SIZE = 1200;
     static final int MAX_PAYLOAD_SIZE = 1000;
     static final int MIN_ENCRYPTED_SIZE = 16;

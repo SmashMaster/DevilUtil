@@ -44,8 +44,8 @@ import org.lwjgl.system.MemoryStack;
  * encrypted communication with clients. Not very secure, so don't use this for
  * anything really important.
  * 
- * Since this class doesn't use a public-key infrastructure, it is vulnerable
- * to man-in-the-middle attacks. It should resist IP-spoofing, however.
+ * Since this class doesn't use public-key infrastructure, it is certainly
+ * vulnerable to man-in-the-middle attacks. It probably has more issues.
  * 
  * @author Samuel Johnson (SmashMaster)
  */
@@ -82,12 +82,12 @@ public class Server implements AutoCloseable
         channel.configureBlocking(false);
         this.password = NetUtil.bytes(password);
         
-        csprng = SecureRandom.getInstance("SHA1PRNG");
-        digest = MessageDigest.getInstance("SHA-256");
+        csprng = SecureRandom.getInstance(NetUtil.CSPRNG_NAME);
+        digest = MessageDigest.getInstance(NetUtil.DIGEST_NAME);
         dhParamGen = AlgorithmParameterGenerator.getInstance("DiffieHellman");
         dhParamGen.init(512);
         dhKeyGen = KeyPairGenerator.getInstance("DiffieHellman");
-        cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher = Cipher.getInstance(NetUtil.CIPHER_NAME);
     }
     
     public void setLog(PrintStream log, LogVerbosity verbosity)

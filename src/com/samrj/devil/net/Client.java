@@ -90,9 +90,9 @@ public class Client implements AutoCloseable
         channel.configureBlocking(false);
         channel.connect(new InetSocketAddress(InetAddress.getByName(hostname), port));
         this.password = NetUtil.bytes(password);
-        csprng = SecureRandom.getInstance("SHA1PRNG");
-        digest = MessageDigest.getInstance("SHA-256");
-        cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        csprng = SecureRandom.getInstance(NetUtil.CSPRNG_NAME);
+        digest = MessageDigest.getInstance(NetUtil.DIGEST_NAME);
+        cipher = Cipher.getInstance(NetUtil.CIPHER_NAME);
         
         nonce = new byte[16];
         csprng.nextBytes(nonce);
