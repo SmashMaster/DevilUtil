@@ -18,13 +18,8 @@ import javax.crypto.spec.GCMParameterSpec;
 class NetUtil
 {
     static final int MAX_PACKET_SIZE = 1200;
-    
-    static final int CRYPT_HEADER_KEEPALIVE = 0;
-    static final int CRYPT_HEADER_FINALIZE = 1;
-    static final int CRYPT_HEADER_MESSAGE = 2;
-    
-    static final byte[]  FINALIZE = bytes("Finalize me plz.");
-    static final byte[] KEEPALIVE = bytes("Plz no time out.");
+    static final int MAX_PAYLOAD_SIZE = 1000;
+    static final int MIN_ENCRYPTED_SIZE = 16;
     
     static byte[] bytes(String string)
     {
@@ -50,21 +45,31 @@ class NetUtil
                 (byte)(counter      ), 0, 0, 0, 0};
     }
     
-    static byte[] decrypt(ByteBuffer buffer, int[] header, Cipher cipher, SecretKey key, Sequence sequence) throws IOException
+    static Packet decrypt(ByteBuffer buffer, Cipher cipher, SecretKey key, LongSequence sequence) throws IOException
     {
         try
         {
-            header[0] = Byte.toUnsignedInt(buffer.get());
             long sequenceNumber = buffer.getLong();
             byte[] iv = counterIV(sequenceNumber);
             byte[] ciphertext = new byte[buffer.remaining()];
             buffer.get(ciphertext);
+            
+            //Packets must be padded to a minimum length, or else they are easy to forge.
+            if (ciphertext.length < MIN_ENCRYPTED_SIZE) throw new IOException("Packet too short.");
+            
             cipher.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(128, iv));
             byte[] decrypted = cipher.doFinal(ciphertext);
+            
+            Packet packet = new Packet();
+            packet.read(decrypted);
 
             //Check sequence only after successful decryption.
-            if (!sequence.addIncoming(sequenceNumber)) throw new Exception("Duplicate or old packet.");
-            return decrypted;
+            if (!sequence.addIncoming(sequenceNumber)) throw new IOException("Duplicate or old packet.");
+            return packet;
+        }
+        catch (IOException e)
+        {
+            throw e;
         }
         catch (Exception e)
         {
@@ -72,16 +77,16 @@ class NetUtil
         }
     }
     
-    static void encrypt(byte[] plaintext, int header, ByteBuffer buffer, Cipher cipher, SecretKey key, Sequence sequence) throws IOException
+    static void encrypt(Packet packet, ByteBuffer buffer, Cipher cipher, SecretKey key, LongSequence sequence) throws IOException
     {
         try
         {
             long sequenceNumber = sequence.incrementOutgoing();
             byte[] ivArr = counterIV(sequenceNumber);
             cipher.init(Cipher.ENCRYPT_MODE, key, new GCMParameterSpec(128, ivArr));
+            byte[] plaintext = packet.toArray();
             byte[] ciphertext = cipher.doFinal(plaintext);
 
-            buffer.put((byte)header);
             buffer.putLong(sequenceNumber);
             buffer.put(ciphertext);
         }

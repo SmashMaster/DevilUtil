@@ -31,7 +31,6 @@ import java.nio.ByteOrder;
 import java.nio.channels.DatagramChannel;
 import java.security.*;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Arrays;
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
 import javax.crypto.SecretKey;
@@ -48,9 +47,9 @@ import org.lwjgl.system.MemoryStack;
  */
 public class Client implements AutoCloseable
 {
-    public static final int HANDSHAKE_CONNECTION_REQUEST = 1;
-    public static final int HANDSHAKE_CHALLENGE_RESPONSE = 2;
-    public static final int HANDSHAKE_KEY_EXCHANGE = 3;
+    static final int HANDSHAKE_CONNECTION_REQUEST = 1;
+    static final int HANDSHAKE_CHALLENGE_RESPONSE = 2;
+    static final int HANDSHAKE_KEY_EXCHANGE = 3;
     
     private static final float PENDING_CHECK_UP = 0.5f;
     private static final float PENDING_TIME_OUT = 5.0f;
@@ -83,7 +82,7 @@ public class Client implements AutoCloseable
     private KeyPair dhKeyPair;
     
     private SecretKey encryptionKey;
-    private Sequence sequence;
+    private LongSequence sequence;
     
     public Client(String hostname, int port, String password) throws Exception
     {
@@ -154,7 +153,7 @@ public class Client implements AutoCloseable
                 digest.update(challengeResponse);
                 digest.update(sharedSecret);
                 encryptionKey = new SecretKeySpec(digest.digest(), "AES");
-                sequence = new Sequence(256, 0L);
+                sequence = new LongSequence(256, 0L);
 
                 state = STATE_KEY_EXCHANGE;
                 lastHeardFromServer = 0.0f;
@@ -164,9 +163,8 @@ public class Client implements AutoCloseable
                 verbosity.medium(log, () -> "CLIENT: Received public key.");
                 break;
             case STATE_KEY_EXCHANGE:
-                int[] header = new int[1];
-                byte[] decrypted = NetUtil.decrypt(buffer, header, cipher, encryptionKey, sequence);
-                if (header[0] == NetUtil.CRYPT_HEADER_FINALIZE && Arrays.equals(decrypted, NetUtil.FINALIZE))
+                Packet packet = NetUtil.decrypt(buffer, cipher, encryptionKey, sequence);
+                if (packet.type == Packet.TYPE_FINALIZE)
                 {
                     state = STATE_FINALIZE;
                     lastHeardFromServer = 0.0f;
@@ -176,10 +174,8 @@ public class Client implements AutoCloseable
                 }
                 break;
             case STATE_FINALIZE:
-                header = new int[1];
-                decrypted = NetUtil.decrypt(buffer, header, cipher, encryptionKey, sequence);
-                
-                if (header[0] == NetUtil.CRYPT_HEADER_KEEPALIVE && Arrays.equals(decrypted, NetUtil.KEEPALIVE))
+                packet = NetUtil.decrypt(buffer, cipher, encryptionKey, sequence);
+                if (packet.type == Packet.TYPE_KEEPALIVE)
                 {
                     state = STATE_CONNECTED;
                     lastHeardFromServer = 0.0f;
@@ -187,24 +183,19 @@ public class Client implements AutoCloseable
                 }
                 break;
             case STATE_CONNECTED:
-                header = new int[1];
-                decrypted = NetUtil.decrypt(buffer, header, cipher, encryptionKey, sequence);
-                
-                if (header[0] == NetUtil.CRYPT_HEADER_KEEPALIVE)
+                packet = NetUtil.decrypt(buffer, cipher, encryptionKey, sequence);
+                switch (packet.type)
                 {
-                    if (Arrays.equals(decrypted, NetUtil.KEEPALIVE))
-                    {
+                    case Packet.TYPE_KEEPALIVE:
                         lastHeardFromServer = 0.0f;
                         verbosity.high(log, () -> "CLIENT: Received keepalive.");
-                    }
-                }
-                else if (header[0] == NetUtil.CRYPT_HEADER_MESSAGE)
-                {
-                    //Deal with encrypted message
-                    
-                    //Empty messages are trivial to forge. An attacker could
-                    //otherwise keep a connection alive forever with short messages.
-                    if (decrypted.length >= 16) lastHeardFromServer = 0.0f;
+                        break;
+                    case Packet.TYPE_MESSAGE:
+                    case Packet.TYPE_ACK:
+                        //Pass to Peer.
+                        lastHeardFromServer = 0.0f;
+                        verbosity.high(log, () -> "CLIENT: Received packet.");
+                        break;
                 }
                 break;
         }
@@ -213,11 +204,11 @@ public class Client implements AutoCloseable
     private void checkUpPacket(ByteBuffer buffer) throws Exception
     {
         buffer.clear();
-        buffer.position(4);
 
         switch (state)
         {
             case STATE_CONNECTION_REQUESTED:
+                buffer.position(4);
                 buffer.put((byte)HANDSHAKE_CONNECTION_REQUEST);
                 buffer.put(nonce);
                 buffer.position(1000);
@@ -227,6 +218,7 @@ public class Client implements AutoCloseable
                 verbosity.medium(log, () -> "CLIENT: Sent connection request.");
                 break;
             case STATE_CHALLENGED:
+                buffer.position(4);
                 buffer.put((byte)HANDSHAKE_CHALLENGE_RESPONSE);
                 buffer.put(challengeResponse);
                 NetUtil.flipAndBufferChecksum(buffer);
@@ -235,6 +227,7 @@ public class Client implements AutoCloseable
                 verbosity.medium(log, () -> "CLIENT: Sent challenge response.");
                 break;
             case STATE_KEY_EXCHANGE:
+                buffer.position(4);
                 buffer.put((byte)HANDSHAKE_KEY_EXCHANGE);
                 buffer.put(dhKeyPair.getPublic().getEncoded());
                 NetUtil.flipAndBufferChecksum(buffer);
@@ -243,16 +236,18 @@ public class Client implements AutoCloseable
                 verbosity.medium(log, () -> "CLIENT: Sent public key.");
                 break;
             case STATE_FINALIZE:
-                buffer.position(0);
-                NetUtil.encrypt(NetUtil.FINALIZE, NetUtil.CRYPT_HEADER_FINALIZE, buffer, cipher, encryptionKey, sequence);
+                Packet packet = new Packet();
+                packet.type = Packet.TYPE_FINALIZE;
+                NetUtil.encrypt(packet, buffer, cipher, encryptionKey, sequence);
                 buffer.flip();
                 channel.write(buffer);
                 
                 verbosity.medium(log, () -> "CLIENT: Sent finalize.");
                 break;
             case STATE_CONNECTED:
-                buffer.position(0);
-                NetUtil.encrypt(NetUtil.KEEPALIVE, NetUtil.CRYPT_HEADER_KEEPALIVE, buffer, cipher, encryptionKey, sequence);
+                packet = new Packet();
+                packet.type = Packet.TYPE_KEEPALIVE;
+                NetUtil.encrypt(packet, buffer, cipher, encryptionKey, sequence);
                 buffer.flip();
                 channel.write(buffer);
                 

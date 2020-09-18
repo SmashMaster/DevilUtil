@@ -11,14 +11,14 @@ import java.util.TreeSet;
  * @copyright 2020 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-class Sequence
+class LongSequence
 {
     private final TreeSet<Long> values = new TreeSet<>();
     private final int capacity;
     
     private long outgoing;
     
-    Sequence(int capacity, long initialOutgoing)
+    LongSequence(int capacity, long initialOutgoing)
     {
         this.capacity = capacity;
         outgoing = initialOutgoing;
