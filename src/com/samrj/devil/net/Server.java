@@ -147,11 +147,11 @@ public class Server implements AutoCloseable
             case CLIENT_STATE_RESPONDED_TO_CHALLENGE:
                 NetUtil.verifyChecksumAndType(buffer, Client.HANDSHAKE_KEY_EXCHANGE);
 
-                byte[] serverPublicKey = new byte[buffer.remaining()];
-                buffer.get(serverPublicKey);
+                byte[] clientPublicKey = new byte[buffer.remaining()];
+                buffer.get(clientPublicKey);
 
                 KeyFactory keyFactory = KeyFactory.getInstance("DiffieHellman");
-                client.dh.doPhase(keyFactory.generatePublic(new X509EncodedKeySpec(serverPublicKey)), true);
+                client.dh.doPhase(keyFactory.generatePublic(new X509EncodedKeySpec(clientPublicKey)), true);
                 byte[] sharedSecret = client.dh.generateSecret();
                 
                 digest.update(client.expectedChallengeResponse);

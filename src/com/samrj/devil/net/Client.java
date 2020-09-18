@@ -142,12 +142,11 @@ public class Client implements AutoCloseable
                 KeyAgreement dh = KeyAgreement.getInstance("DiffieHellman");
                 dh.init(dhKeyPair.getPrivate());
 
-                byte[] sKey = new byte[Byte.toUnsignedInt(buffer.get())];
-                buffer.get(sKey);
+                byte[] serverPublicKey = new byte[Byte.toUnsignedInt(buffer.get())];
+                buffer.get(serverPublicKey);
 
                 KeyFactory keyFactory = KeyFactory.getInstance("DiffieHellman");
-                PublicKey serverPublicKey = keyFactory.generatePublic(new X509EncodedKeySpec(sKey));
-                dh.doPhase(serverPublicKey, true);
+                dh.doPhase(keyFactory.generatePublic(new X509EncodedKeySpec(serverPublicKey)), true);
                 byte[] sharedSecret = dh.generateSecret();
 
                 digest.update(challengeResponse);
