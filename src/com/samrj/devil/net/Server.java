@@ -112,7 +112,7 @@ public class Server implements AutoCloseable
             //this server from being used for a DoS amplification attack.
             if (buffer.limit() != 1000) return;
             
-            NetUtil.checksumAndType(buffer, Client.HANDSHAKE_CONNECTION_REQUEST);
+            NetUtil.verifyChecksumAndType(buffer, Client.HANDSHAKE_CONNECTION_REQUEST);
             byte[] nonce = new byte[16];
             buffer.get(nonce);
             
@@ -123,7 +123,7 @@ public class Server implements AutoCloseable
         else switch (client.state)
         {
             case CLIENT_STATE_CONNECTION_REQUESTED:
-                NetUtil.checksumAndType(buffer, Client.HANDSHAKE_CHALLENGE_RESPONSE);
+                NetUtil.verifyChecksumAndType(buffer, Client.HANDSHAKE_CHALLENGE_RESPONSE);
 
                 byte[] challengeResponse = new byte[buffer.remaining()];
                 buffer.get(challengeResponse);
@@ -145,7 +145,7 @@ public class Server implements AutoCloseable
                 }
                 break;
             case CLIENT_STATE_RESPONDED_TO_CHALLENGE:
-                NetUtil.checksumAndType(buffer, Client.HANDSHAKE_KEY_EXCHANGE);
+                NetUtil.verifyChecksumAndType(buffer, Client.HANDSHAKE_KEY_EXCHANGE);
 
                 byte[] serverPublicKey = new byte[buffer.remaining()];
                 buffer.get(serverPublicKey);
@@ -201,7 +201,7 @@ public class Server implements AutoCloseable
         }
     }
     
-    private void checkUpPacket(ByteBuffer buffer, ServerClient client) throws Exception
+    private void outgoingPacket(ByteBuffer buffer, ServerClient client) throws Exception
     {
         buffer.clear();
 
@@ -302,7 +302,7 @@ public class Server implements AutoCloseable
                 float checkUp = client.state == CLIENT_STATE_CONNECTED ? CONNECTED_CHECK_UP : PENDING_CHECK_UP;
                 if (client.lastSpokenTo >= checkUp)
                 {
-                    checkUpPacket(buffer, client);
+                    outgoingPacket(buffer, client);
                     client.lastSpokenTo = 0.0f;
                 }
 

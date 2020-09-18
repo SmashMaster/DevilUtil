@@ -110,7 +110,7 @@ public class Client implements AutoCloseable
         switch (state)
         {
             case STATE_CONNECTION_REQUESTED:
-                NetUtil.checksumAndType(buffer, Server.HANDSHAKE_CONNECTION_CHALLENGE);
+                NetUtil.verifyChecksumAndType(buffer, Server.HANDSHAKE_CONNECTION_CHALLENGE);
 
                 //Note. Always process packet before changing state, in case packet is malformed.
                 byte[] challengeNonce = new byte[buffer.remaining()];
@@ -128,7 +128,7 @@ public class Client implements AutoCloseable
                 verbosity.medium(log, () -> "CLIENT: Received connection challenge.");
                 break;
             case STATE_CHALLENGED:
-                NetUtil.checksumAndType(buffer, Server.HANDSHAKE_KEY_EXCHANGE);
+                NetUtil.verifyChecksumAndType(buffer, Server.HANDSHAKE_KEY_EXCHANGE);
 
                 byte[] params = new byte[Byte.toUnsignedInt(buffer.get())];
                 buffer.get(params);
@@ -201,7 +201,7 @@ public class Client implements AutoCloseable
         }
     }
     
-    private void checkUpPacket(ByteBuffer buffer) throws Exception
+    private void outgoingPacket(ByteBuffer buffer) throws Exception
     {
         buffer.clear();
 
@@ -299,7 +299,7 @@ public class Client implements AutoCloseable
             float checkUp = state == STATE_CONNECTED ? CONNECTED_CHECK_UP : PENDING_CHECK_UP;
             if (lastSpokenToServer > checkUp)
             {
-                checkUpPacket(buffer);
+                outgoingPacket(buffer);
                 lastSpokenToServer = 0.0f;
             }
         }

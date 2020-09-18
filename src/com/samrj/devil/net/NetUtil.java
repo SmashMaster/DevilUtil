@@ -110,7 +110,7 @@ class NetUtil
         buffer.position(0);
     }
     
-    static void checksumAndType(ByteBuffer buffer, int expectedType) throws IOException
+    static void verifyChecksumAndType(ByteBuffer buffer, int expectedType) throws IOException
     {
         int checksum = buffer.getInt();
         CRC32 crc32 = new CRC32();
