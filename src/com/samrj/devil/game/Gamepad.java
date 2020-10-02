@@ -18,14 +18,14 @@ import static org.lwjgl.glfw.GLFW.*;
 public final class Gamepad
 {
     /**
-     * Returns a list of all gamepad IDs that are currently present.
+     * Returns an array of all gamepad IDs that are currently present.
      */
-    public static IntList getAll()
+    public static int[] getAll()
     {
         IntList out = new IntList();
         for (int id=0; id<=GLFW_JOYSTICK_LAST; id++) if (glfwJoystickIsGamepad(id))
             out.add(id);
-        return out;
+        return out.toArray();
     }
     
     /**
