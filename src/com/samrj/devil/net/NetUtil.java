@@ -33,7 +33,7 @@ class NetUtil
         }
     }
     
-    static final int MAX_PACKET_SIZE = 1200;
+    static final int MAX_DATAGRAM_SIZE = 1200;
     
     static byte[] bytes(String string)
     {
