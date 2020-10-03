@@ -46,7 +46,7 @@ public class Server implements AutoCloseable
     static final int PASSWORD_INCORRECT = 3;
     static final int KEEPALIVE = 4;
     static final int DISCONNECT = 5;
-    static final int PAYLOAD = 6;
+    static final int MESSAGE = 6;
     
     private static final int CLIENT_STATE_CONNECTION_PENDING = 0;
     private static final int CLIENT_STATE_CONNECTED = 1;
@@ -203,8 +203,6 @@ public class Server implements AutoCloseable
                 client.identifier = new byte[8];
                 System.arraycopy(client.expectedChallengeResponse, 0, client.identifier, 0, 8);
                 
-                client.peer = new Peer(client::sendPayload, client.kilobitsPerSecond, client.secondsToAccumulate);
-                
                 client.nonce = null;
                 client.serverNonce = null;
                 client.expectedChallengeResponse = null;
@@ -219,8 +217,7 @@ public class Server implements AutoCloseable
             case CLIENT_STATE_CONNECTED:
                 if (buffer.limit() < 13) break;
                 if (NetUtil.failedChecksum(buffer)) break;
-                int header = Byte.toUnsignedInt(buffer.get());
-                int type = header & 0b00000111;
+                int type = Byte.toUnsignedInt(buffer.get());
                 
                 byte[] pIdentifier = new byte[8];
                 buffer.get(pIdentifier);
@@ -242,12 +239,10 @@ public class Server implements AutoCloseable
                         client.disconnect();
                         verbosity.low(log, () -> "SERVER: Client " + address + " disconnected");
                         break;
-                    case Client.PAYLOAD:
-                        int payloadType = (header & 0b11111000) >> 3;
-                        byte[] payload = new byte[buffer.remaining()];
-                        buffer.get(payload);
-                        client.peer.incoming(payloadType, payload);
-                        
+                    case Client.MESSAGE:
+                        byte[] message = new byte[buffer.remaining()];
+                        buffer.get(message);
+                        client.inbox.addLast(message);
                         client.lastHeardFrom = 0.0f;
                         verbosity.high(log, () -> "SERVER: Message from client " + address);
                         break;
@@ -294,7 +289,7 @@ public class Server implements AutoCloseable
     {
         try (MemoryStack stack = MemoryStack.stackPush())
         {
-            ByteBuffer buffer = stack.malloc(NetUtil.MAX_DATAGRAM_SIZE);
+            ByteBuffer buffer = stack.malloc(NetUtil.MAX_PACKET_SIZE);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
             
             //INCOMING
@@ -333,8 +328,6 @@ public class Server implements AutoCloseable
                     verbosity.low(log, () -> "SERVER: Timed out client " + client.address);
                     continue;
                 }
-                
-                if (client.state == CLIENT_STATE_CONNECTED) client.peer.update(dt);
                 
                 float checkUp = client.state == CLIENT_STATE_CONNECTED ? CONNECTED_CHECK_UP : PENDING_CHECK_UP;
                 if (client.lastSpokenTo >= checkUp)
@@ -380,8 +373,7 @@ public class Server implements AutoCloseable
         private byte[] expectedChallengeResponse;
         private byte[] identifier;
         
-        private Peer peer;
-        private float kilobitsPerSecond = 1024.0f, secondsToAccumulate = 2.0f;
+        private final ArrayDeque<byte[]> inbox = new ArrayDeque<>();
         
         private ServerClient(SocketAddress address)
         {
@@ -394,16 +386,6 @@ public class Server implements AutoCloseable
         public SocketAddress getAddress()
         {
             return address;
-        }
-        
-        /**
-         * Sets the outgoing bandwidth limit of this client.
-         */
-        public void setBandwidth(float kilobitsPerSecond, float secondsToAccumulate)
-        {
-            this.kilobitsPerSecond = kilobitsPerSecond;
-            this.secondsToAccumulate = secondsToAccumulate;
-            if (peer != null) peer.setBandwidth(kilobitsPerSecond, secondsToAccumulate);
         }
         
         /**
@@ -443,7 +425,7 @@ public class Server implements AutoCloseable
             }
             state = CLIENT_STATE_DISCONNECTED;
             clients.remove(address);
-            peer.destroy();
+            inbox.clear();
         }
         
         /**
@@ -451,7 +433,7 @@ public class Server implements AutoCloseable
          */
         public boolean isInboxNonempty()
         {
-            return peer.isInboxNonempty();
+            return !inbox.isEmpty();
         }
         
         /**
@@ -459,40 +441,31 @@ public class Server implements AutoCloseable
          * inbox is empty. This must be called repeatedly until the inbox is
          * empty, or else it might grow until no more memory is available.
          */
-        public byte[] receive()
+        public byte[] receiveDatagram()
         {
-            return peer.receive();
+            return inbox.pollFirst();
         }
         
-        private void sendPayload(int payloadType, byte[] data) throws IOException
-        {
-            try (MemoryStack stack = MemoryStack.stackPush())
-            {
-                int header = (payloadType << 3) | PAYLOAD;
-
-                ByteBuffer buffer = stack.malloc(Peer.HEADER_SIZE + data.length);
-                buffer.order(ByteOrder.LITTLE_ENDIAN);
-                buffer.position(4);
-                buffer.put((byte)header);
-                buffer.put(identifier);
-                buffer.put(data);
-                NetUtil.flipAndBufferChecksum(buffer);
-                channel.send(buffer, address);
-
-                lastSpokenTo = 0.0f;
-            }
-        }
-    
         /**
-         * Sends the given message to the client. If this client is not 
-         * connected, this method will do nothing. The packet is re-sent until
-         * the provided expiry is reached or it is acknowledged by the client.
+         * Immediately sends the given datagram to the client. If this client
+         * is not connected, this method will do nothing. Will throw a
+         * BufferOverflowException if the datagram exceeds 1187 bytes.
          */
-        public void send(byte[] message, float expiry) throws IOException
+        public void sendDatagram(byte[] datagram) throws IOException
         {
             if (state != CLIENT_STATE_CONNECTED) return;
-            
-            peer.send(message, expiry);
+
+            try (MemoryStack stack = MemoryStack.stackPush())
+            {
+                ByteBuffer buffer = stack.malloc(NetUtil.MAX_PACKET_SIZE);
+                buffer.order(ByteOrder.LITTLE_ENDIAN);
+                buffer.position(4);
+                buffer.put((byte)MESSAGE);
+                buffer.put(identifier);
+                buffer.put(datagram);
+                NetUtil.flipAndBufferChecksum(buffer);
+                channel.send(buffer, address);
+            }
         }
     }
 }
