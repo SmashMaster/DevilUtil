@@ -39,7 +39,7 @@ import org.lwjgl.system.MemoryStack;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Client implements AutoCloseable
+public class Client implements Peer
 {
     static final int CONNECTION_REQUEST = 1;
     static final int CHALLENGE_RESPONSE = 2;
@@ -93,25 +93,19 @@ public class Client implements AutoCloseable
         this.verbosity = verbosity;
     }
     
-    /**
-     * Returns true if this client is in the process of connecting.
-     */
+    @Override
     public boolean isConnectionPending()
     {
         return state == STATE_CONNECTION_REQUESTED || state == STATE_CHALLENGED;
     }
 
-    /**
-     * Returns true if this client is connected.
-     */
+    @Override
     public boolean isConnected()
     {
         return state == STATE_CONNECTED;
     }
 
-    /**
-     * Returns true if this client is disconnected.
-     */
+    @Override
     public boolean isDisconnected()
     {
         return state == STATE_DISCONNECTED;
@@ -345,36 +339,32 @@ public class Client implements AutoCloseable
         lastHeardFromServer += dt;
     }
     
-    /**
-     * Returns true if there is at least one datagram in the inbox.
-     */
-    public boolean isInboxNonempty()
+    @Override
+    public boolean hasDatagrams()
     {
         return !inbox.isEmpty();
     }
-        
-    /**
-     * Returns the next datagram received from the server, or null if the inbox
-     * is empty. This must be called repeatedly until the inbox is empty, or
-     * else it might grow until no more memory is available.
-     */
-    public byte[] receiveDatagram()
+    
+    @Override
+    public byte[] receive()
     {
         return inbox.pollFirst();
     }
     
     /**
-     * Immediately sends the given datagram to the server. If this client is not
-     * connected, this method will do nothing. Throws BufferOverflowException
-     * if the datagram exceeds 1187 bytes.
+     * Sends the given datagram. If this client is not connected, this
+     * method will do nothing. If the datagram exceeds 1187 bytes, throws
+     * IOException.
      */
-    public void sendDatagram(byte[] datagram) throws IOException
+    @Override
+    public void send(byte[] datagram) throws IOException
     {
         if (state != STATE_CONNECTED) return;
+        if (datagram.length > NetUtil.MAX_PAYLOAD_SIZE) throw new IOException("Datagram length must not exceed " + NetUtil.MAX_PAYLOAD_SIZE);
         
         try (MemoryStack stack = MemoryStack.stackPush())
         {
-            ByteBuffer buffer = stack.malloc(NetUtil.MAX_PACKET_SIZE);
+            ByteBuffer buffer = stack.malloc(NetUtil.HEADER_SIZE + datagram.length);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
             buffer.position(4);
             buffer.put((byte)MESSAGE);
@@ -385,9 +375,6 @@ public class Client implements AutoCloseable
         }
     }
 
-    /**
-     * Disconnects this client from the server.
-     */
     @Override
     public void close() throws IOException
     {

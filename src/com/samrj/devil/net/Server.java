@@ -236,7 +236,7 @@ public class Server implements AutoCloseable
                         verbosity.high(log, () -> "SERVER: Keepalive from client " + address);
                         break;
                     case Client.DISCONNECT:
-                        client.disconnect();
+                        client.close();
                         verbosity.low(log, () -> "SERVER: Client " + address + " disconnected");
                         break;
                     case Client.MESSAGE:
@@ -361,7 +361,7 @@ public class Server implements AutoCloseable
     /**
      * Represents a client that is connected to this server.
      */
-    public class ServerClient
+    public class ServerClient implements Peer
     {
         private final SocketAddress address;
         private int state = CLIENT_STATE_CONNECTION_PENDING;
@@ -388,34 +388,62 @@ public class Server implements AutoCloseable
             return address;
         }
         
-        /**
-         * Returns true if this client is in the process of connecting.
-         */
+        @Override
         public boolean isConnectionPending()
         {
             return state == CLIENT_STATE_CONNECTION_PENDING;
         }
         
-        /**
-         * Returns true if this client is connected.
-         */
+        @Override
         public boolean isConnected()
         {
             return state == CLIENT_STATE_CONNECTED;
         }
         
-        /**
-         * Returns true if this client is disconnected.
-         */
+        @Override
         public boolean isDisconnected()
         {
             return state == CLIENT_STATE_DISCONNECTED;
         }
         
+        @Override
+        public boolean hasDatagrams()
+        {
+            return !inbox.isEmpty();
+        }
+        
+        @Override
+        public byte[] receive()
+        {
+            return inbox.pollFirst();
+        }
+        
         /**
-         * Disconnects this client from the server.
+         * Sends the given datagram. If this client is not connected, this
+         * method will do nothing. If the datagram exceeds 1187 bytes, throws
+         * IOException.
          */
-        public void disconnect() throws IOException
+        @Override
+        public void send(byte[] datagram) throws IOException
+        {
+            if (state != CLIENT_STATE_CONNECTED) return;
+            if (datagram.length > NetUtil.MAX_PAYLOAD_SIZE) throw new IOException("Datagram length must not exceed " + NetUtil.MAX_PAYLOAD_SIZE);
+
+            try (MemoryStack stack = MemoryStack.stackPush())
+            {
+                ByteBuffer buffer = stack.malloc(NetUtil.HEADER_SIZE + datagram.length);
+                buffer.order(ByteOrder.LITTLE_ENDIAN);
+                buffer.position(4);
+                buffer.put((byte)MESSAGE);
+                buffer.put(identifier);
+                buffer.put(datagram);
+                NetUtil.flipAndBufferChecksum(buffer);
+                channel.send(buffer, address);
+            }
+        }
+        
+        @Override
+        public void close() throws IOException
         {
             if (state == CLIENT_STATE_DISCONNECTED) return;
             if (state == CLIENT_STATE_CONNECTED)
@@ -426,46 +454,6 @@ public class Server implements AutoCloseable
             state = CLIENT_STATE_DISCONNECTED;
             clients.remove(address);
             inbox.clear();
-        }
-        
-        /**
-         * Returns true if there is at least one datagram in the inbox.
-         */
-        public boolean isInboxNonempty()
-        {
-            return !inbox.isEmpty();
-        }
-        
-        /**
-         * Returns the next datagram received from this client, or null if the
-         * inbox is empty. This must be called repeatedly until the inbox is
-         * empty, or else it might grow until no more memory is available.
-         */
-        public byte[] receiveDatagram()
-        {
-            return inbox.pollFirst();
-        }
-        
-        /**
-         * Immediately sends the given datagram to the client. If this client
-         * is not connected, this method will do nothing. Will throw a
-         * BufferOverflowException if the datagram exceeds 1187 bytes.
-         */
-        public void sendDatagram(byte[] datagram) throws IOException
-        {
-            if (state != CLIENT_STATE_CONNECTED) return;
-
-            try (MemoryStack stack = MemoryStack.stackPush())
-            {
-                ByteBuffer buffer = stack.malloc(NetUtil.MAX_PACKET_SIZE);
-                buffer.order(ByteOrder.LITTLE_ENDIAN);
-                buffer.position(4);
-                buffer.put((byte)MESSAGE);
-                buffer.put(identifier);
-                buffer.put(datagram);
-                NetUtil.flipAndBufferChecksum(buffer);
-                channel.send(buffer, address);
-            }
         }
     }
 }

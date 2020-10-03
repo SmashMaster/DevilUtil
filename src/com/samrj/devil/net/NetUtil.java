@@ -34,6 +34,8 @@ class NetUtil
     }
     
     static final int MAX_PACKET_SIZE = 1200;
+    static final int HEADER_SIZE = 13;
+    static final int MAX_PAYLOAD_SIZE = MAX_PACKET_SIZE - HEADER_SIZE;
     
     static byte[] bytes(String string)
     {
