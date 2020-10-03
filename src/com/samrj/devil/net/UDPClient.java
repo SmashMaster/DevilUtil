@@ -35,11 +35,13 @@ import java.util.Arrays;
 import org.lwjgl.system.MemoryStack;
 
 /**
- * UDP game client.
+ * UDP game client. Establishes a connection with a UDP game server through
+ * basic handshaking. Provides no guarantees of reliability once the handshake
+ * is complete: datagrams can be dropped, duplicated, or delivered out of order.
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Client implements Peer
+public class UDPClient implements Peer
 {
     static final int CONNECTION_REQUEST = 1;
     static final int CHALLENGE_RESPONSE = 2;
@@ -76,7 +78,7 @@ public class Client implements Peer
      * Attempts to connect with the given hostname and port, using the given
      * password.
      */
-    public Client(String hostname, int port, String password) throws IOException
+    public UDPClient(String hostname, int port, String password) throws IOException
     {
         channel = DatagramChannel.open();
         channel.configureBlocking(false);
@@ -135,7 +137,7 @@ public class Client implements Peer
                 
                 switch (Byte.toUnsignedInt(buffer.get()))
                 {
-                    case Server.SERVER_FULL:
+                    case UDPServer.SERVER_FULL:
                         if (buffer.limit() != 21) break;
                         byte[] pNonce = new byte[16];
                         buffer.get(pNonce);
@@ -143,7 +145,7 @@ public class Client implements Peer
                         close();
                         verbosity.low(log, () -> "CLIENT: Server full.");
                         throw new ServerFullException();
-                    case Server.CHALLENGE:
+                    case UDPServer.CHALLENGE:
                         if (buffer.limit() != 38) break;
                         
                         pNonce = new byte[16];
@@ -176,7 +178,7 @@ public class Client implements Peer
                 if (NetUtil.failedChecksum(buffer)) break;
                 switch (Byte.toUnsignedInt(buffer.get()))
                 {
-                    case Server.SERVER_FULL:
+                    case UDPServer.SERVER_FULL:
                         if (buffer.limit() != 21) break;
                         byte[] pNonce = new byte[16];
                         buffer.get(pNonce);
@@ -184,7 +186,7 @@ public class Client implements Peer
                         close();
                         verbosity.low(log, () -> "CLIENT: Server full.");
                         throw new ServerFullException();
-                    case Server.PASSWORD_INCORRECT:
+                    case UDPServer.PASSWORD_INCORRECT:
                         if (buffer.limit() != 21) break;
                         pNonce = new byte[16];
                         buffer.get(pNonce);
@@ -192,7 +194,7 @@ public class Client implements Peer
                         close();
                         verbosity.low(log, () -> "CLIENT: Password rejected.");
                         throw new IncorrectPasswordException();
-                    case Server.KEEPALIVE:
+                    case UDPServer.KEEPALIVE:
                         byte[] pIdentifier = new byte[8];
                         buffer.get(pIdentifier);
                         if (!Arrays.equals(pIdentifier, identifier)) break;
@@ -217,16 +219,16 @@ public class Client implements Peer
                 
                 switch (type)
                 {
-                    case Server.KEEPALIVE:
+                    case UDPServer.KEEPALIVE:
                         lastHeardFromServer = 0.0f;
                         verbosity.high(log, () -> "Client: Keepalive received.");
                         break;
-                    case Server.DISCONNECT:
+                    case UDPServer.DISCONNECT:
                         lastHeardFromServer = 0.0f;
                         verbosity.low(log, () -> "Client: Connection terminated by server.");
                         close();
                         throw new ServerDisconnectedException();
-                    case Server.MESSAGE:
+                    case UDPServer.MESSAGE:
                         byte[] message = new byte[buffer.remaining()];
                         buffer.get(message);
                         inbox.addLast(message);
@@ -297,7 +299,7 @@ public class Client implements Peer
         
         try (MemoryStack stack = MemoryStack.stackPush())
         {
-            ByteBuffer buffer = stack.malloc(NetUtil.MAX_PACKET_SIZE);
+            ByteBuffer buffer = stack.malloc(MAX_PACKET_SIZE);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
             
             //INCOMING
@@ -360,11 +362,11 @@ public class Client implements Peer
     public void send(byte[] datagram) throws IOException
     {
         if (state != STATE_CONNECTED) return;
-        if (datagram.length > NetUtil.MAX_PAYLOAD_SIZE) throw new IOException("Datagram length must not exceed " + NetUtil.MAX_PAYLOAD_SIZE);
+        if (datagram.length > MAX_PAYLOAD_SIZE) throw new IOException("Datagram length must not exceed " + MAX_PAYLOAD_SIZE);
         
         try (MemoryStack stack = MemoryStack.stackPush())
         {
-            ByteBuffer buffer = stack.malloc(NetUtil.HEADER_SIZE + datagram.length);
+            ByteBuffer buffer = stack.malloc(HEADER_SIZE + datagram.length);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
             buffer.position(4);
             buffer.put((byte)MESSAGE);

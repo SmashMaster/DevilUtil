@@ -11,6 +11,10 @@ import java.io.IOException;
  */
 public interface Peer extends AutoCloseable
 {
+    public static final int MAX_PACKET_SIZE = 1200;
+    public static final int HEADER_SIZE = 13;
+    public static final int MAX_PAYLOAD_SIZE = MAX_PACKET_SIZE - HEADER_SIZE;
+    
     /**
      * Returns true if this peer is in the process of connecting.
      */

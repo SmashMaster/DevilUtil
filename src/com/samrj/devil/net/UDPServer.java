@@ -35,11 +35,13 @@ import java.util.*;
 import org.lwjgl.system.MemoryStack;
 
 /**
- * UDP game server.
+ * UDP game server. Establishes a connection with a UDP game client through
+ * basic handshaking. Provides no guarantees of reliability once the handshake
+ * is complete: datagrams can be dropped, duplicated, or delivered out of order.
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Server implements AutoCloseable
+public class UDPServer implements AutoCloseable
 {
     static final int CHALLENGE = 1;
     static final int SERVER_FULL = 2;
@@ -71,7 +73,7 @@ public class Server implements AutoCloseable
      * Binds this server to the given port, and sets its password and capacity.
      * It will immediately start handling connections from clients.
      */
-    public Server(int port, String password, int capacity) throws IOException
+    public UDPServer(int port, String password, int capacity) throws IOException
     {
         channel = DatagramChannel.open();
         channel.bind(new InetSocketAddress(port));
@@ -150,7 +152,7 @@ public class Server implements AutoCloseable
         {
             if (buffer.limit() != 1000) return;
             if (NetUtil.failedChecksum(buffer)) return;
-            if (Byte.toUnsignedInt(buffer.get()) != Client.CONNECTION_REQUEST) return;
+            if (Byte.toUnsignedInt(buffer.get()) != UDPClient.CONNECTION_REQUEST) return;
             
             byte[] nonce = new byte[16];
             buffer.get(nonce);
@@ -180,7 +182,7 @@ public class Server implements AutoCloseable
             case CLIENT_STATE_CONNECTION_PENDING:
                 if (buffer.limit() != 37) break;
                 if (NetUtil.failedChecksum(buffer)) break;
-                if (Byte.toUnsignedInt(buffer.get()) != Client.CHALLENGE_RESPONSE) break;
+                if (Byte.toUnsignedInt(buffer.get()) != UDPClient.CHALLENGE_RESPONSE) break;
                 
                 if (connectedClients.size() >= capacity)
                 {
@@ -225,21 +227,21 @@ public class Server implements AutoCloseable
                 
                 switch (type)
                 {
-                    case Client.CHALLENGE_RESPONSE:
+                    case UDPClient.CHALLENGE_RESPONSE:
                         //Client already connected, but initial keepalive dropped.
                         client.lastSpokenTo = Float.POSITIVE_INFINITY;
                         client.lastHeardFrom = 0.0f;
                         verbosity.high(log, () -> "SERVER: Redundant challenge response from client " + address);
                         break;
-                    case Client.KEEPALIVE:
+                    case UDPClient.KEEPALIVE:
                         client.lastHeardFrom = 0.0f;
                         verbosity.high(log, () -> "SERVER: Keepalive from client " + address);
                         break;
-                    case Client.DISCONNECT:
+                    case UDPClient.DISCONNECT:
                         client.close();
                         verbosity.low(log, () -> "SERVER: Client " + address + " disconnected");
                         break;
-                    case Client.MESSAGE:
+                    case UDPClient.MESSAGE:
                         byte[] message = new byte[buffer.remaining()];
                         buffer.get(message);
                         client.inbox.addLast(message);
@@ -289,7 +291,7 @@ public class Server implements AutoCloseable
     {
         try (MemoryStack stack = MemoryStack.stackPush())
         {
-            ByteBuffer buffer = stack.malloc(NetUtil.MAX_PACKET_SIZE);
+            ByteBuffer buffer = stack.malloc(Peer.MAX_PACKET_SIZE);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
             
             //INCOMING
@@ -427,11 +429,11 @@ public class Server implements AutoCloseable
         public void send(byte[] datagram) throws IOException
         {
             if (state != CLIENT_STATE_CONNECTED) return;
-            if (datagram.length > NetUtil.MAX_PAYLOAD_SIZE) throw new IOException("Datagram length must not exceed " + NetUtil.MAX_PAYLOAD_SIZE);
+            if (datagram.length > MAX_PAYLOAD_SIZE) throw new IOException("Datagram length must not exceed " + MAX_PAYLOAD_SIZE);
 
             try (MemoryStack stack = MemoryStack.stackPush())
             {
-                ByteBuffer buffer = stack.malloc(NetUtil.HEADER_SIZE + datagram.length);
+                ByteBuffer buffer = stack.malloc(HEADER_SIZE + datagram.length);
                 buffer.order(ByteOrder.LITTLE_ENDIAN);
                 buffer.position(4);
                 buffer.put((byte)MESSAGE);
