@@ -84,6 +84,16 @@ public class UDPServer implements AutoCloseable
         this.capacity = capacity;
     }
     
+    /**
+     * Returns the local port this server is bound to, or -1 if it is not bound.
+     */
+    public int getPort()
+    {
+        if (!channel.isOpen()) return -1;
+        try {return ((InetSocketAddress)channel.getLocalAddress()).getPort();}
+        catch (Exception e) {return -1;}
+    }
+    
     public void setLog(PrintStream log, LogVerbosity verbosity)
     {
         if (log == null) verbosity = LogVerbosity.OFF;

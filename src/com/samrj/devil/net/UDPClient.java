@@ -88,6 +88,27 @@ public class UDPClient implements Peer
         NetUtil.getCSPRNG().nextBytes(nonce);
     }
     
+    /**
+     * Returns the local port this client is bound to, or -1 if it is not bound.
+     */
+    public int getPort()
+    {
+        if (!channel.isOpen()) return -1;
+        try {return ((InetSocketAddress)channel.getLocalAddress()).getPort();}
+        catch (Exception e) {return -1;}
+    }
+    
+    /**
+     * Returns the remote address this client is connecting to, or null if it
+     * is not connected.
+     */
+    public InetSocketAddress getRemoteAddress()
+    {
+        if (!channel.isConnected()) return null;
+        try {return (InetSocketAddress)channel.getRemoteAddress();}
+        catch (Exception e) {return null;}
+    }
+    
     public void setLog(PrintStream log, LogVerbosity verbosity)
     {
         if (log == null) verbosity = LogVerbosity.OFF;
