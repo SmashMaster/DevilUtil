@@ -274,15 +274,26 @@ public final class DGL
     }
     
     /**
-     * Generates a new vertex buffer of the given capacity.
+     * Generates a new vertex stream of the given capacity.
      * 
      * @param maxVertices The maximum number of vertices to buffer.
      * @param maxIndices The maximum number of indices to buffer.
-     * @return A new vertex buffer.
+     * @return A new vertex stream.
      */
     public static VertexStream genVertexStream(int maxVertices, int maxIndices)
     {
         return gen(new VertexStream(maxVertices, maxIndices));
+    }
+    
+    /**
+     * Generates a new growable vertex stream.
+     * 
+     * @param enableIndices Whether to enable indices for the stream.
+     * @return A new growable vertex stream.
+     */
+    public static GrowableVertexStream genGrowableVertexStream(boolean enableIndices)
+    {
+        return gen(new GrowableVertexStream(enableIndices));
     }
     
     /**
