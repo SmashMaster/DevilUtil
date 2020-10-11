@@ -97,13 +97,15 @@ public final class GrowableVertexStream extends VertexBuilder
     
     private ByteBuffer growBuffer(ByteBuffer buffer, int bytes)
     {
-        int newPosition = buffer.position() + bytes;
+        int position = buffer.position();
+        int newPosition = position + bytes;
         if (newPosition > buffer.limit())
         {
             ByteBuffer newBuffer = memAlloc(buffer.capacity()*2);
             buffer.flip();
             memCopy(buffer, newBuffer);
             memFree(buffer);
+            newBuffer.position(position);
             return newBuffer;
         }
         return buffer;
