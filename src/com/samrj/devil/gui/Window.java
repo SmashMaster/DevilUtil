@@ -16,6 +16,9 @@ public final class Window
 {
     private static final float TITLE_BAR_HEIGHT = 30.0f;
     private static final float TITLE_PADDING = 5.0f;
+    private static final float CLOSE_BUTTON_PADDING = 5.0f;
+    private static final float CLOSE_BUTTON_WIDTH = TITLE_BAR_HEIGHT - CLOSE_BUTTON_PADDING*2.0f;
+    private static final float CLOSE_BUTTON_CROSS_PADDING = 3.0f;
     private static final float EDGE_CLAMP_MARGIN = TITLE_BAR_HEIGHT;
     
     Window above, below; //Doubly-linked list
@@ -32,6 +35,7 @@ public final class Window
     private float dragStartX, dragStartY;
     private boolean titleBarVisible = true, titleBarHovered;
     private boolean draggable = true, dragged;
+    private boolean closeButtonVisible = true, closeButtonHovered, closeButtonPressed;
     
     public Window()
     {
@@ -162,6 +166,16 @@ public final class Window
     }
     
     /**
+     * Sets whether this window has a visible close button. Must have a title
+     * bar to work.
+     */
+    public Window setCloseButtonVisible(boolean closeButtonVisible)
+    {
+        this.closeButtonVisible = closeButtonVisible;
+        return this;
+    }
+    
+    /**
      * Sets the title of this window to the given string, which may be null.
      */
     public Window setTitle(String string)
@@ -205,10 +219,25 @@ public final class Window
         }
         
         titleBarHovered = false;
+        closeButtonHovered = false;
         
         if (x < x0 || x > x1 || y < y0 || y > y1) return null;
         
-        if (y >= y1 - titleBarHeight())
+        if (titleBarVisible && closeButtonVisible)
+        {
+            float bx1 = x1 - CLOSE_BUTTON_PADDING;
+            float bx0 = bx1 - CLOSE_BUTTON_WIDTH;
+            float by1 = y1 - CLOSE_BUTTON_PADDING;
+            float by0 = by1 - CLOSE_BUTTON_WIDTH;
+            
+            if (x >= bx0 && x <= bx1 && y >= by0 && y <= by1)
+            {
+                closeButtonHovered = true;
+                return this;
+            }
+        }
+        
+        if (titleBarVisible && y >= y1 - titleBarHeight())
         {
             titleBarHovered = true;
             return this;
@@ -237,12 +266,22 @@ public final class Window
             dragged = true;
             return true;
         }
+        if (closeButtonHovered)
+        {
+            closeButtonPressed = true;
+            return true;
+        }
         return false;
     }
     
     void deactivate()
     {
         dragged = false;
+        if (closeButtonPressed)
+        {
+            closeButtonPressed = false;
+            if (closeButtonHovered) DUI.hide(this); //Will call this again. Risk of infinite recursion.
+        }
     }
     
     void layout()
@@ -311,6 +350,20 @@ public final class Window
                         x0 + TITLE_PADDING, x1 - TITLE_PADDING,
                         y1 + TITLE_PADDING - titleBarHeight(), y1 - TITLE_PADDING, Align.W.vector());
                 drawer.text(title, font, aligned.x, aligned.y);
+            }
+            
+            if (closeButtonVisible)
+            {
+                float bx1 = x1 - CLOSE_BUTTON_PADDING;
+                float bx0 = bx1 - CLOSE_BUTTON_WIDTH;
+                float by1 = y1 - CLOSE_BUTTON_PADDING;
+                float by0 = by1 - CLOSE_BUTTON_WIDTH;
+                
+                float closeButtonColor = closeButtonHovered ? 1.0f : 0.75f;
+                drawer.color(closeButtonColor, closeButtonColor, closeButtonColor, 1.0f);
+                drawer.rect(bx0, bx1, by0, by1);
+                drawer.line(bx0 + CLOSE_BUTTON_CROSS_PADDING, bx1 - CLOSE_BUTTON_CROSS_PADDING, by0 + CLOSE_BUTTON_CROSS_PADDING, by1 - CLOSE_BUTTON_CROSS_PADDING);
+                drawer.line(bx0 + CLOSE_BUTTON_CROSS_PADDING, bx1 - CLOSE_BUTTON_CROSS_PADDING, by1 - CLOSE_BUTTON_CROSS_PADDING, by0 + CLOSE_BUTTON_CROSS_PADDING);
             }
         }
     }
