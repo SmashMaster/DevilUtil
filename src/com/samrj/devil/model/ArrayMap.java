@@ -8,7 +8,7 @@ import java.util.stream.Stream;
  * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class ArrayMap<T extends DataBlock> implements Iterable<T>
+public final class ArrayMap<T extends DataBlock> extends AbstractList<T>
 {
     private final List<T> list = new ArrayList<>();
     private final Map<String, T> map = new HashMap<>();
@@ -22,7 +22,7 @@ public final class ArrayMap<T extends DataBlock> implements Iterable<T>
         list.add(data);
         map.put(data.name, data);
     }
-
+    
     public boolean contains(String name)
     {
         return map.containsKey(name);
@@ -45,22 +45,25 @@ public final class ArrayMap<T extends DataBlock> implements Iterable<T>
         return out;
     }
 
+    @Override
     public T get(int i)
     {
         return list.get(i);
     }
 
+    @Override
     public int size()
     {
         return list.size();
     }
-
+    
     @Override
     public Iterator<T> iterator()
     {
-        return list.iterator();
+        return Collections.unmodifiableList(list).iterator();
     }
     
+    @Override
     public Stream<T> stream()
     {
         return list.stream();
