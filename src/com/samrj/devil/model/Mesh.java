@@ -529,9 +529,9 @@ public final class Mesh extends DataBlock
         if (hasTangents) for (MeshVertex v : vertices) v.tangent.read(vertexData);
         for (int color=0; color<colorLayers.length; color++)
             for (MeshVertex v : vertices) v.colors[color].read(vertexData);
-        for (int i=0; i<numGroups; i++) for (MeshVertex v : vertices)
+        for (MeshVertex v : vertices) for (int i=0; i<numGroups; i++)
             v.groupIndex[i] = vertexData.getInt();
-        for (int i=0; i<numGroups; i++) for (MeshVertex v : vertices)
+        for (MeshVertex v : vertices) for (int i=0; i<numGroups; i++)
             v.groupWeight[i] = vertexData.getFloat();
         vertexData.rewind();
         
