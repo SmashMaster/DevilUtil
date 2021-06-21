@@ -50,6 +50,8 @@ public final class DUIDrawer
     private final Vec4 color;
     private boolean setGL_BLEND = false;
     private boolean unsetGL_DEPTH_TEST = false;
+    private boolean unsetGL_STENCIL_TEST = false;
+    private boolean unsetGL_CULL_FACE = false;
     
     DUIDrawer()
     {
@@ -70,17 +72,31 @@ public final class DUIDrawer
     }
     
     /**
-     * Prepares for a series of draw commands by enabling blending; and binding
-     * and configuring the UIDraw shader. The correct glViewport should be set
-     * before calling this. It is the application's responsibility to make sure
-     * that GL_DEPTH_TEST, GL_STENCIL_TEST, GL_CULL_FACE, or any other OpenGL
-     * state that might interfere with UIDraw, are set to default.
+     * Prepares for a series of draw commands by disabling depth testing, face 
+     * culling, and stencil testing, and enabling blending; and binding and 
+     * configuring the UIDraw shader. The correct glViewport should be set
+     * before calling this. This class will return GL_DEPTH_TEST, 
+     * GL_STENCIL_TEST, GL_CULL_FACE, and GL_BLEND to their prior values upon 
+     * the call of it's end() function, but it is still the applications 
+     * responsibility to ensure that any other OpenGL state that might interfere
+     * with UIDraw is set to it's default value. Additionally, this function 
+     * will change the blend function used, and will not change it back.
      */
     public DUIDrawer begin()
     {
         if (glIsEnabled(GL_DEPTH_TEST)) {
             unsetGL_DEPTH_TEST = true;
             glDisable(GL_DEPTH_TEST);
+        }
+        
+        if (glIsEnabled(GL_STENCIL_TEST)) {
+            unsetGL_STENCIL_TEST = true;
+            glDisable(GL_STENCIL_TEST);
+        }
+        
+        if (glIsEnabled(GL_CULL_FACE)) {
+            unsetGL_CULL_FACE = true;
+            glDisable(GL_CULL_FACE);
         }
         
         if (!glIsEnabled(GL_BLEND)) {
@@ -99,6 +115,10 @@ public final class DUIDrawer
         return this;
     }
     
+    /*
+    * Returns GL_DEPTH_TEST, 
+     * GL_STENCIL_TEST, GL_CULL_FACE, and GL_BLEND to their values prior to the last call of begin().
+    */
     public DUIDrawer end() {
         if (setGL_BLEND) {
             setGL_BLEND = false;
@@ -107,6 +127,14 @@ public final class DUIDrawer
         if (unsetGL_DEPTH_TEST) {
             unsetGL_DEPTH_TEST = false;
             glEnable(GL_DEPTH_TEST);
+        }
+        if (unsetGL_STENCIL_TEST) {
+            unsetGL_STENCIL_TEST = false;
+            glEnable(GL_STENCIL_TEST);
+        }
+        if (unsetGL_CULL_FACE) {
+            unsetGL_CULL_FACE = false;
+            glEnable(GL_CULL_FACE);
         }
         return this;
     }
