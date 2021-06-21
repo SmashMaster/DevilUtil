@@ -526,6 +526,8 @@ public final class DUI
         }
         
         if (dropDown != null) dropDown.render(drawer);
+        
+        drawer.end();
     }
     
     /**

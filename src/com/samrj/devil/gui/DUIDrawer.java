@@ -48,6 +48,7 @@ public final class DUIDrawer
     private final Vec2 pos;
     private final Vec2 texCoord;
     private final Vec4 color;
+    private boolean setGL_BLEND = false;
     
     DUIDrawer()
     {
@@ -76,7 +77,11 @@ public final class DUIDrawer
      */
     public DUIDrawer begin()
     {
-        glEnable(GL_BLEND);
+        if (!glIsEnabled(GL_BLEND)) {
+            setGL_BLEND = true;
+            glEnable(GL_BLEND);
+        }
+        
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         
         Vec2 viewport = DUI.viewport();
@@ -85,6 +90,14 @@ public final class DUIDrawer
         DGL.useProgram(shader);
         shader.uniformMat3("u_matrix", matrix);
         
+        return this;
+    }
+    
+    public DUIDrawer end() {
+        if (setGL_BLEND) {
+            setGL_BLEND = false;
+            glDisable(GL_BLEND);
+        }
         return this;
     }
     
