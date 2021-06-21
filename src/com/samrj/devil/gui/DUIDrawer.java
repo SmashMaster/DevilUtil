@@ -49,6 +49,7 @@ public final class DUIDrawer
     private final Vec2 texCoord;
     private final Vec4 color;
     private boolean setGL_BLEND = false;
+    private boolean unsetGL_DEPTH_TEST = false;
     
     DUIDrawer()
     {
@@ -77,6 +78,11 @@ public final class DUIDrawer
      */
     public DUIDrawer begin()
     {
+        if (glIsEnabled(GL_DEPTH_TEST)) {
+            unsetGL_DEPTH_TEST = true;
+            glDisable(GL_DEPTH_TEST);
+        }
+        
         if (!glIsEnabled(GL_BLEND)) {
             setGL_BLEND = true;
             glEnable(GL_BLEND);
@@ -97,6 +103,10 @@ public final class DUIDrawer
         if (setGL_BLEND) {
             setGL_BLEND = false;
             glDisable(GL_BLEND);
+        }
+        if (unsetGL_DEPTH_TEST) {
+            unsetGL_DEPTH_TEST = false;
+            glEnable(GL_DEPTH_TEST);
         }
         return this;
     }
