@@ -127,7 +127,7 @@ public final class Window
     public Window setSize(float width, float height)
     {
         x1 = x0 + width;
-        y1 = y0 + width;
+        y1 = y0 + height;
         return this;
     }
     
