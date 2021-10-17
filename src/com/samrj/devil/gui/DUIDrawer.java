@@ -48,10 +48,11 @@ public final class DUIDrawer
     private final Vec2 pos;
     private final Vec2 texCoord;
     private final Vec4 color;
-    private boolean setGL_BLEND = false;
-    private boolean unsetGL_DEPTH_TEST = false;
-    private boolean unsetGL_STENCIL_TEST = false;
-    private boolean unsetGL_CULL_FACE = false;
+    
+    private boolean setBlending;
+    private boolean unsetDepthTest;
+    private boolean unsetStencilTest;
+    private boolean unsetFaceCulling;
     
     DUIDrawer()
     {
@@ -84,25 +85,15 @@ public final class DUIDrawer
      */
     public DUIDrawer begin()
     {
-        if (glIsEnabled(GL_DEPTH_TEST)) {
-            unsetGL_DEPTH_TEST = true;
-            glDisable(GL_DEPTH_TEST);
-        }
+        unsetDepthTest = glIsEnabled(GL_DEPTH_TEST);
+        unsetStencilTest = glIsEnabled(GL_STENCIL_TEST);
+        unsetFaceCulling = glIsEnabled(GL_CULL_FACE);
+        setBlending = !glIsEnabled(GL_BLEND);
         
-        if (glIsEnabled(GL_STENCIL_TEST)) {
-            unsetGL_STENCIL_TEST = true;
-            glDisable(GL_STENCIL_TEST);
-        }
-        
-        if (glIsEnabled(GL_CULL_FACE)) {
-            unsetGL_CULL_FACE = true;
-            glDisable(GL_CULL_FACE);
-        }
-        
-        if (!glIsEnabled(GL_BLEND)) {
-            setGL_BLEND = true;
-            glEnable(GL_BLEND);
-        }
+        if (unsetDepthTest) glDisable(GL_DEPTH_TEST);
+        if (unsetStencilTest) glDisable(GL_STENCIL_TEST);
+        if (unsetFaceCulling) glDisable(GL_CULL_FACE);
+        if (setBlending) glEnable(GL_BLEND);
         
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         
@@ -115,27 +106,16 @@ public final class DUIDrawer
         return this;
     }
     
-    /*
-    * Returns GL_DEPTH_TEST, 
-     * GL_STENCIL_TEST, GL_CULL_FACE, and GL_BLEND to their values prior to the last call of begin().
-    */
-    public DUIDrawer end() {
-        if (setGL_BLEND) {
-            setGL_BLEND = false;
-            glDisable(GL_BLEND);
-        }
-        if (unsetGL_DEPTH_TEST) {
-            unsetGL_DEPTH_TEST = false;
-            glEnable(GL_DEPTH_TEST);
-        }
-        if (unsetGL_STENCIL_TEST) {
-            unsetGL_STENCIL_TEST = false;
-            glEnable(GL_STENCIL_TEST);
-        }
-        if (unsetGL_CULL_FACE) {
-            unsetGL_CULL_FACE = false;
-            glEnable(GL_CULL_FACE);
-        }
+    /**
+     * Returns GL_DEPTH_TEST,  GL_STENCIL_TEST, GL_CULL_FACE, and GL_BLEND to
+     * their values prior to the last call of begin().
+     */
+    public DUIDrawer end()
+    {
+        if (unsetDepthTest) glEnable(GL_DEPTH_TEST);
+        if (unsetStencilTest) glEnable(GL_STENCIL_TEST);
+        if (unsetFaceCulling) glEnable(GL_CULL_FACE);
+        if (setBlending) glDisable(GL_BLEND);
         return this;
     }
     
