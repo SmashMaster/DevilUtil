@@ -79,7 +79,7 @@ public final class ZOrderCurve
      * 
      * @param x The X coordinate to encode.
      * @param y The Y coordinate to encode.
-     * @return The index of the point along the Z-Order Curve corresponding to
+     * @return The index of the point along the z-order curve corresponding to
      * the given coordinates.
      */
     public static int encode2(int x, int y)
@@ -88,12 +88,13 @@ public final class ZOrderCurve
     }
 
     /**
-     * Encodes the given x and y coordinates to a z-order curve. Will correctly
-     * produce results for coordinates up to 1023 (2^10 - 1).
+     * Encodes the given x, y, and z coordinates to a z-order curve. Will
+     * correctly produce results for coordinates up to 1023 (2^10 - 1).
      * 
      * @param x The X coordinate to encode.
      * @param y The Y coordinate to encode.
-     * @return The index of the point along the Z-Order Curve corresponding to
+     * @param z The Z coordinate to encode.
+     * @return The index of the point along the z-order curve corresponding to
      * the given coordinates.
      */
     public static int encode3(int x, int y, int z)
