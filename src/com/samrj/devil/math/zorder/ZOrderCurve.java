@@ -29,6 +29,8 @@ import com.samrj.devil.math.Vec3i;
  * Utility methods for encoding and decoding z-order curve indices, also known
  * as Morton codes. Useful for improving cache locality on big 2D and 3D arrays.
  * 
+ * Adapted from https://fgiesen.wordpress.com/2009/12/13/decoding-morton-codes/
+ * 
  * @author Samuel Johnson (SmashMaster)
  */
 public final class ZOrderCurve
