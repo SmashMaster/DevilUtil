@@ -86,6 +86,19 @@ public final class ZOrderCurve
     {
         return (part1By1(y) << 1) + part1By1(x);
     }
+    
+    /**
+     * Encodes the given 2D coordinates to a z-order curve. Will correctly
+     * produce results for coordinates up to 65535 (2^16 - 1).
+     * 
+     * @param v The 2D coordinates to encode.
+     * @return The index of the point along the z-order curve corresponding to
+     * the given coordinates.
+     */
+    public static int encode2(Vec2i v)
+    {
+        return encode2(v.x, v.y);
+    }
 
     /**
      * Encodes the given x, y, and z coordinates to a z-order curve. Will
@@ -102,6 +115,21 @@ public final class ZOrderCurve
         return (part1By2(z) << 2) + (part1By2(y) << 1) + part1By2(x);
     }
     
+    
+    /**
+     * Encodes the given 3D coordinates to a z-order curve. Will correctly
+     * produce results for coordinates up to 1023 (2^10 - 1).
+     * 
+     * @param v The 3D coordinates to encode.
+     * @return The index of the point along the z-order curve corresponding to
+     * the given coordinates.
+     */
+    public static int encode3(Vec3i v)
+    {
+        return encode3(v.x, v.y, v.z);
+    }
+    
+    
     /**
      * Decodes the given z-order curve index to 2D coordinates.
      * 
@@ -117,7 +145,7 @@ public final class ZOrderCurve
      * Decodes the given z-order curve index to 3D coordinates.
      * 
      * @param code The z-order curve index to decode.
-     * @return 2D coordinates in the range [0, 1023]
+     * @return 3D coordinates in the range [0, 1023]
      */
     public static Vec3i decode3(int code)
     {
