@@ -117,7 +117,7 @@ public final class Util
     }
     
     /**
-     * Returns the first integer that is larger than the given float.
+     * Returns the smallest integer that is larger or equal to the given float.
      * Has undefined behavior for NaN and the infinities.
      * 
      * @param f A finite float.
@@ -131,7 +131,7 @@ public final class Util
     }
     
     /**
-     * Returns the first integer that is smaller than the given float.
+     * Returns the largest integer that is smaller or equal to the given float.
      * Has undefined behavior for NaN and the infinities.
      * 
      * @param f A finite float.

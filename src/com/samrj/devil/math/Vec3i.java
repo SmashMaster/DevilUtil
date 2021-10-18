@@ -27,6 +27,13 @@ public class Vec3i implements Bufferable, DataStreamable<Vec3i>
         return v.x*v.x + v.y*v.y + v.z*v.z;
     }
     
+    public static final void copy(Vec3i source, Vec3i target)
+    {
+        target.x = source.x;
+        target.y = source.y;
+        target.z = source.z;
+    }
+    
     public static final void add(Vec3i v0, Vec3i v1, Vec3i result)
     {
         result.x = v0.x + v1.x;

@@ -8,7 +8,7 @@ import com.samrj.devil.math.Vec3;
  * Axis-aligned bounding box class.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2021 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class Box3
@@ -224,7 +224,7 @@ public class Box3
     }
     
     /**
-     * Sets the given box to the unit box, centered around the origin.
+     * Sets the given box to a cube of width 2, centered around the origin.
      * 
      * @param r The box to set.
      */
@@ -363,6 +363,31 @@ public class Box3
     public static final void expand(Box3 b0, OBox3 b1, Box3 r)
     {
         expand(b0, contain(b1), r);
+    }
+    
+    /**
+     * Sets {@code r} to the intersection of the given boxes, or to the empty
+     * box if they do not intersect.
+     * 
+     * @param b0 The first box to intersect.
+     * @param b1 The second box to intersect.
+     * @param r The box in which to store the result.
+     */
+    public static final void intersect(Box3 b0, Box3 b1, Box3 r)
+    {
+        float minX = Util.max(b0.min.x, b1.min.x);
+        float minY = Util.max(b0.min.y, b1.min.y);
+        float minZ = Util.max(b0.min.z, b1.min.z);
+        float maxX = Util.min(b0.max.x, b1.max.x);
+        float maxY = Util.min(b0.max.y, b1.max.y);
+        float maxZ = Util.min(b0.max.z, b1.max.z);
+        
+        if (maxX < minX || maxY < minY || maxZ < minZ) r.setEmpty();
+        else
+        {
+            r.min.set(minX, minY, minZ);
+            r.max.set(maxX, maxY, maxZ);
+        }
     }
     
     /**
@@ -515,6 +540,20 @@ public class Box3
     }
     
     /**
+     * Returns the intersection of the two given boxes.
+     * 
+     * @param b0 The first box to intersect.
+     * @param b1 The second box to intersect.
+     * @return A new box containing the result.
+     */
+    public static final Box3 intersect(Box3 b0, Box3 b1)
+    {
+        Box3 result = new Box3();
+        intersect(b0, b1, result);
+        return result;
+    }
+    
+    /**
      * Translates the given box by the given vector and returns the result in
      * a new box.
      * 
@@ -633,6 +672,18 @@ public class Box3
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Instance mutator methods">
     /**
+     * Sets this to the given box.
+     * 
+     * @param b The box to set this to.
+     * @return This box.
+     */
+    public Box3 set(Box3 b)
+    {
+        copy(b, this);
+        return this;
+    }
+    
+    /**
      * Sets this to the empty box and returns this.
      * 
      * @return This box.
@@ -643,42 +694,82 @@ public class Box3
         return this;
     }
     
+    /**
+     * Sets this to a cube of width 2, centered around the origin.
+     * 
+     * @return This box.
+     */
     public Box3 setUnit()
     {
         unit(this);
         return this;
     }
     
+    /**
+     * Sets this to the infinite box.
+     * 
+     * @return This box.
+     */
     public Box3 setInfinite()
     {
         infinite(this);
         return this;
     }
     
+    /**
+     * Sets this to the smallest box that can contain the given oriented box.
+     * 
+     * @param b The oriented box to contain.
+     * @return This box.
+     */
     public Box3 setContain(OBox3 b)
     {
         contain(b, this);
         return this;
     }
     
+    /**
+     * Sets this to the smallest box that can contain the given triangle.
+     * 
+     * @param t The triangle to contain.
+     * @return This box.
+     */
     public Box3 setContain(Triangle3 t)
     {
         contain(t, this);
         return this;
     }
     
+    /**
+     * Sets this to the smallest box that can contain the given edge.
+     * 
+     * @param e The edge to contain.
+     * @return This box.
+     */
     public Box3 setContain(Edge3 e)
     {
         contain(e, this);
         return this;
     }
     
+    /**
+     * Expands this box so that it contains the given triangle.
+     * 
+     * @param f The triangle to contain.
+     * @return This box.
+     */
     public Box3 expand(Triangle3 f)
     {
         expand(this, f, this);
         return this;
     }
     
+    /**
+     * Expands this box so that it contains the given edge.
+     * 
+     * @param e The edge to contain.
+     * @return This box.
+     */
     public Box3 expand(Edge3 e)
     {
         expand(this, e, this);
@@ -718,6 +809,18 @@ public class Box3
     public Box3 expand(OBox3 b)
     {
         expand(this, b, this);
+        return this;
+    }
+    
+    /**
+     * Sets this to its intersection with the given box.
+     * 
+     * @param b The box to intersect with.
+     * @return This box.
+     */
+    public Box3 intersect(Box3 b)
+    {
+        intersect(this, b, this);
         return this;
     }
     

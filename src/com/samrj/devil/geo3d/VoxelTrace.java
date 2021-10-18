@@ -51,7 +51,7 @@ public class VoxelTrace
      */
     public final boolean hit;
     
-    private final Vec3i min, max;
+    private final Box3i bounds;
     private final Vec3 ray, dir;
     private final boolean startedOutside;
     private final Side startSide;
@@ -64,15 +64,13 @@ public class VoxelTrace
     /**
      * Sets up a VoxelTrace with the given parameters.
      * 
-     * @param min The lower bounds of the voxel grid.
-     * @param max The upper bounds of the voxel grid.
+     * @param bounds The bounding volume to trace in.
      * @param ray The starting position of the ray.
      * @param dir The direction of the ray.
      */
-    public VoxelTrace(Vec3i min, Vec3i max, Vec3 ray, Vec3 dir)
+    public VoxelTrace(Box3i bounds, Vec3 ray, Vec3 dir)
     {
-        this.min = new Vec3i(min);
-        this.max = new Vec3i(max);
+        this.bounds = new Box3i(bounds);
         this.ray = new Vec3(ray);
         this.dir = new Vec3(dir);
         
@@ -81,12 +79,12 @@ public class VoxelTrace
         //Trace against the whole volume, determine if we hit and the points of
         //intersection.
         {
-            float tx0 = (min.x - ray.x)/dir.x;
-            float tx1 = (max.x - ray.x)/dir.x;
-            float ty0 = (min.y - ray.y)/dir.y;
-            float ty1 = (max.y - ray.y)/dir.y;
-            float tz0 = (min.z - ray.z)/dir.z;
-            float tz1 = (max.z - ray.z)/dir.z;
+            float tx0 = (bounds.min.x - ray.x)/dir.x;
+            float tx1 = (bounds.max.x - ray.x)/dir.x;
+            float ty0 = (bounds.min.y - ray.y)/dir.y;
+            float ty1 = (bounds.max.y - ray.y)/dir.y;
+            float tz0 = (bounds.min.z - ray.z)/dir.z;
+            float tz1 = (bounds.max.z - ray.z)/dir.z;
             
             if (Float.isNaN(tx0)) tx0 = Float.NEGATIVE_INFINITY;
             if (Float.isNaN(tx1)) tx1 = Float.POSITIVE_INFINITY;
@@ -171,23 +169,23 @@ public class VoxelTrace
                       (int)Math.floor(start.y),
                       (int)Math.floor(start.z));
             
-            if (voxel.x < min.x) voxel.x = min.x;
-            if (voxel.y < min.y) voxel.y = min.y;
-            if (voxel.z < min.z) voxel.z = min.z;
-            if (voxel.x >= max.x) voxel.x = max.x - 1;
-            if (voxel.y >= max.y) voxel.y = max.y - 1;
-            if (voxel.z >= max.z) voxel.z = max.z - 1;
+            if (voxel.x < bounds.min.x) voxel.x = bounds.min.x;
+            if (voxel.y < bounds.min.y) voxel.y = bounds.min.y;
+            if (voxel.z < bounds.min.z) voxel.z = bounds.min.z;
+            if (voxel.x >= bounds.max.x) voxel.x = bounds.max.x - 1;
+            if (voxel.y >= bounds.max.y) voxel.y = bounds.max.y - 1;
+            if (voxel.z >= bounds.max.z) voxel.z = bounds.max.z - 1;
             
             Vec3i endPos = new Vec3i((int)Math.floor(end.x),
                                      (int)Math.floor(end.y),
                                      (int)Math.floor(end.z));
             
-            if (endPos.x < min.x) endPos.x = min.x;
-            if (endPos.y < min.y) endPos.y = min.y;
-            if (endPos.z < min.z) endPos.z = min.z;
-            if (endPos.x >= max.x) endPos.x = max.x - 1;
-            if (endPos.y >= max.y) endPos.y = max.y - 1;
-            if (endPos.z >= max.z) endPos.z = max.z - 1;
+            if (endPos.x < bounds.min.x) endPos.x = bounds.min.x;
+            if (endPos.y < bounds.min.y) endPos.y = bounds.min.y;
+            if (endPos.z < bounds.min.z) endPos.z = bounds.min.z;
+            if (endPos.x >= bounds.max.x) endPos.x = bounds.max.x - 1;
+            if (endPos.y >= bounds.max.y) endPos.y = bounds.max.y - 1;
+            if (endPos.z >= bounds.max.z) endPos.z = bounds.max.z - 1;
             
             side = startSide;
             
@@ -215,12 +213,12 @@ public class VoxelTrace
     public boolean hasNext()
     {
         if (!hit) return false;
-        if (voxel.x < min.x) return false;
-        if (voxel.y < min.y) return false;
-        if (voxel.z < min.z) return false;
-        if (voxel.x >= max.x) return false;
-        if (voxel.y >= max.y) return false;
-        if (voxel.z >= max.z) return false;
+        if (voxel.x < bounds.min.x) return false;
+        if (voxel.y < bounds.min.y) return false;
+        if (voxel.z < bounds.min.z) return false;
+        if (voxel.x >= bounds.max.x) return false;
+        if (voxel.y >= bounds.max.y) return false;
+        if (voxel.z >= bounds.max.z) return false;
         return true;
     }
     
