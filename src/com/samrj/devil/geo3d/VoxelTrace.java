@@ -207,6 +207,20 @@ public class VoxelTrace
         }
     }
     
+    
+    /**
+     * Sets up a VoxelTrace with the given parameters.
+     * 
+     * @param min The minimum corner of the volume to trace in.
+     * @param max The maximum corner of the volume to trace in.
+     * @param ray The starting position of the ray.
+     * @param dir The direction of the ray.
+     */
+    public VoxelTrace(Vec3i min, Vec3i max, Vec3 ray, Vec3 dir)
+    {
+        this(new Box3i(min, max), ray, dir);
+    }
+    
     /**
      * Returns true if the trace has another voxel.
      */
