@@ -14,6 +14,18 @@ import java.util.stream.Stream;
  */
 public class GeoSoup implements Geometry
 {
+    private static <T> Supplier<Stream<T>> streamSupplier(Collection<T> collection)
+    {
+        if (collection == null) return Stream::empty;
+        else return collection::stream;
+    }
+    
+    private static <T> Supplier<Stream<T>> streamSupplier(T[] arr)
+    {
+        if (arr == null) return Stream::empty;
+        else return () -> Stream.of(arr);
+    }
+    
     private final Supplier<Stream<Vec3>> vertProvider;
     private final Supplier<Stream<Edge3>> edgeProvider;
     private final Supplier<Stream<Triangle3>> faceProvider;
@@ -24,9 +36,9 @@ public class GeoSoup implements Geometry
     
     public GeoSoup(Supplier<Stream<Vec3>> vProvider, Supplier<Stream<Edge3>> eProvider, Supplier<Stream<Triangle3>> fProvider)
     {
-        if (vProvider == null) throw new NullPointerException();
-        if (eProvider == null) throw new NullPointerException();
-        if (fProvider == null) throw new NullPointerException();
+        if (vProvider == null) vProvider = Stream::empty;
+        if (eProvider == null) eProvider = Stream::empty;
+        if (fProvider == null) fProvider = Stream::empty;
         
         vertProvider = vProvider;
         edgeProvider = eProvider;
@@ -35,12 +47,12 @@ public class GeoSoup implements Geometry
     
     public GeoSoup(Collection<Vec3> verts, Collection<Edge3> edges, Collection<Triangle3> faces)
     {
-        this(verts::stream, edges::stream, faces::stream);
+        this(streamSupplier(verts), streamSupplier(edges), streamSupplier(faces));
     }
     
     public GeoSoup(Vec3[] verts, Edge3[] edges, Triangle3[] faces)
     {
-        this(() -> Stream.of(verts), () -> Stream.of(edges), () -> Stream.of(faces));
+        this(streamSupplier(verts), streamSupplier(edges), streamSupplier(faces));
     }
     
     @Override
