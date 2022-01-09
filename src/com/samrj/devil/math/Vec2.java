@@ -181,6 +181,18 @@ public class Vec2 implements FloatBufferable, DataStreamable<Vec2>
     }
     
     /**
+     * Copies {@code source} into {@code target}.
+     * 
+     * @param source The vector to copy from.
+     * @param target The vector to copy into.
+     */
+    public static final void copy(Vec2i source, Vec2 target)
+    {
+        target.x = source.x;
+        target.y = source.y;
+    }
+    
+    /**
      * Sets a vector to the given row of a matrix.
      * 
      * @param m The matrix to copy from.
@@ -777,6 +789,16 @@ public class Vec2 implements FloatBufferable, DataStreamable<Vec2>
     }
     
     /**
+     * Copies the given integer vector.
+     * 
+     * @param v The vector to copy.
+     */
+    public Vec2(Vec2i v)
+    {
+        x = v.x; y = v.y;
+    }
+    
+    /**
      * Loads a new vector from the given input stream.
      * 
      * @param in The input stream to read from.
@@ -904,6 +926,17 @@ public class Vec2 implements FloatBufferable, DataStreamable<Vec2>
      * @return This vector.
      */
     public Vec2 set(Vec2 v)
+    {
+        copy(v, this);
+        return this;
+    }
+    
+    /**
+     * Copies the given integer vector.
+     * 
+     * @param v The vector to copy.
+     */
+    public Vec2 set(Vec2i v)
     {
         copy(v, this);
         return this;
