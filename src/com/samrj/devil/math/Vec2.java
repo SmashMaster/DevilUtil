@@ -640,7 +640,7 @@ public class Vec2 implements FloatBufferable, DataStreamable<Vec2>
     public static final Vec2 negate(Vec2 v)
     {
         Vec2 result = new Vec2();
-        negate(result, result);
+        negate(v, result);
         return result;
     }
     
