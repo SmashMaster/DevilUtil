@@ -36,6 +36,7 @@ import java.util.Set;
 import org.kc7bfi.jflac.FLACDecoder;
 import org.lwjgl.openal.*;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.opengl.ARBTextureBufferObject;
 
 import static org.lwjgl.openal.AL10.*;
 import static org.lwjgl.system.MemoryUtil.*;

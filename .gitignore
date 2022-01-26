@@ -1,7 +1,5 @@
-#NetBeans project directories
-nbproject/private/
-build/
-dist/
+#IntelliJ IDEA build directory
+out/
 
 #Java files
 *.class
