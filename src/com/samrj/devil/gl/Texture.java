@@ -111,10 +111,11 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
     
     /**
      * Unbinds any texture currently bound to the current texture unit. Might
-     * not be this texture! Manage your texture state carefully.
+     * not be this texture! Manage your texture state carefully. TODO: delete this.
      * 
      * @return This texture.
      */
+    @Deprecated
     public final T unbind()
     {
         if (isBound()) glBindTexture(target, 0);
