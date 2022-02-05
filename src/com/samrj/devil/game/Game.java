@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sam Johnson
+ * Copyright (c) 2022 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -301,13 +301,6 @@ public final class Game
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Callbacks">
-    
-    @FunctionalInterface
-    public static interface InitCallback
-    {
-        public void init() throws IOException;
-    }
-    
     /**
      * The given callback is run once, after the window amd OpenGL context have
      * been created and before the game runs. Any previous callback is
@@ -317,13 +310,13 @@ public final class Game
     {
         initCallback = callback;
     }
-    
+
     @FunctionalInterface
     public static interface ResizeCallback
     {
         public void resize(int width, int height);
     }
-    
+
     /**
      * The given callback is run any time the window has been resized. Any
      * previous callback is overwritten.
@@ -396,13 +389,7 @@ public final class Game
     {
         afterInputCallback = callback;
     }
-    
-    @FunctionalInterface
-    public static interface StepCallback
-    {
-        public void step(float dt);
-    }
-    
+
     /**
      * The given callback is run at least once per frame, before the frame is
      * rendered. The number of times this callback is run, and the timesteps
