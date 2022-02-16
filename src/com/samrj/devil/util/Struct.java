@@ -74,21 +74,6 @@ public final class Struct<T extends Enum<T>> implements Bufferable
         void write(ByteBuffer buffer, int name);
     }
 
-    private static String readString(ByteBuffer buffer)
-    {
-        int len = buffer.getInt();
-        byte[] bytes = new byte[len];
-        buffer.get(bytes);
-        return new String(bytes, StandardCharsets.UTF_8);
-    }
-
-    private static void writeString(ByteBuffer buffer, String string)
-    {
-        byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
-        buffer.putInt(bytes.length);
-        buffer.put(bytes);
-    }
-
     private static int stringSize(String string)
     {
         return 4 + string.getBytes(StandardCharsets.UTF_8).length;
@@ -225,12 +210,12 @@ public final class Struct<T extends Enum<T>> implements Bufferable
                     value = array;
                     break;
                 }
-                case STRING: value = readString(buffer); break;
+                case STRING: value = IOUtil.readUTF8(buffer); break;
                 case STRING_ARRAY:
                 {
                     int length = buffer.getInt();
                     String[] array = new String[length];
-                    for (int i=0; i<length; i++) array[i] = readString(buffer);
+                    for (int i=0; i<length; i++) array[i] = IOUtil.readUTF8(buffer);
                     value = array;
                     break;
                 }
@@ -347,12 +332,12 @@ public final class Struct<T extends Enum<T>> implements Bufferable
                     for (int i=0; i<array.length; i++) buffer.putChar(array[i]);
                     break;
                 }
-                case STRING: writeString(buffer, (String)value); break;
+                case STRING: IOUtil.writeUTF8(buffer, (String)value); break;
                 case STRING_ARRAY:
                 {
                     String[] array = (String[])value;
                     buffer.putInt(array.length);
-                    for (int i=0; i<array.length; i++) writeString(buffer, (String)array[i]);
+                    for (int i=0; i<array.length; i++) IOUtil.writeUTF8(buffer, (String)array[i]);
                     break;
                 }
                 case STRUCT: ((Struct)value).write(buffer); break;

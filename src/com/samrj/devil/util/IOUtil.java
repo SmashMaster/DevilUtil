@@ -158,7 +158,128 @@ public final class IOUtil
 
         return buffer.toByteArray();
     }
-    
+
+    private static final int VLQ_CONTINUE = 0b10000000;
+    private static final int VLQ_SIGN     = 0b01000000;
+    private static final int VLQ_MASK1    = 0b00111111;
+    private static final int VLQ_MASK_N   = 0b01111111;
+    private static final byte[] VLQ_MIN_VALUE = {(byte)VLQ_CONTINUE, (byte)VLQ_CONTINUE, (byte)VLQ_CONTINUE, (byte)VLQ_CONTINUE, (byte)0b00010000};
+
+    /**
+     * Reads a signed variable-length quantity assuming it was encoded by writeVLQ().
+     */
+    public static int readVLQ(ByteBuffer buffer)
+    {
+        byte firstByte = buffer.get();
+        boolean sign = (firstByte & VLQ_SIGN) != 0;
+        int abs = firstByte & VLQ_MASK1;
+        boolean cont = (firstByte & VLQ_CONTINUE) != 0;
+
+        if (cont)
+        {
+            byte nextByte = buffer.get();
+            abs |= (nextByte & VLQ_MASK_N) << 6;
+            cont = (nextByte & VLQ_CONTINUE) != 0;
+
+            if (cont)
+            {
+                nextByte = buffer.get();
+                abs |= (nextByte & VLQ_MASK_N) << 13;
+                cont = (nextByte & VLQ_CONTINUE) != 0;
+
+                if (cont)
+                {
+                    nextByte = buffer.get();
+                    abs |= (nextByte & VLQ_MASK_N) << 20;
+                    cont = (nextByte & VLQ_CONTINUE) != 0;
+
+                    if (cont) abs |= (buffer.get() & VLQ_MASK_N) << 27;
+                }
+            }
+        }
+
+        return sign ? abs : -abs;
+    }
+
+    /**
+     * Writes a signed variable-length quantity the given buffer such that it could be decoded by readVLQ().
+     */
+    public static void writeVLQ(ByteBuffer buffer, int value)
+    {
+        if (value == Integer.MIN_VALUE) //There is no absolute value of Integer.MIN_VALUE without long. Need a special case.
+        {
+            buffer.put(VLQ_MIN_VALUE);
+            return;
+        }
+
+        boolean sign = value >= 0;
+        int abs = sign ? value : -value;
+        boolean cont = abs >= 64;
+
+        int firstByte = abs & VLQ_MASK1;
+        if (sign) firstByte |= VLQ_SIGN;
+        if (cont) firstByte |= VLQ_CONTINUE;
+        buffer.put((byte)firstByte);
+
+        if (cont)
+        {
+            cont = abs >= 8192;
+
+            int nextByte = (abs >>> 6) & VLQ_MASK_N;
+            if (cont) nextByte |= VLQ_CONTINUE;
+            buffer.put((byte)nextByte);
+
+            if (cont)
+            {
+                cont = abs >= 1048576;
+
+                nextByte = (abs >>> 13) & VLQ_MASK_N;
+                if (cont) nextByte |= VLQ_CONTINUE;
+                buffer.put((byte)nextByte);
+
+                if (cont)
+                {
+                    cont = abs >= 134217728;
+
+                    nextByte = (abs >>> 20) & VLQ_MASK_N;
+                    if (cont) nextByte |= VLQ_CONTINUE;
+                    buffer.put((byte)nextByte);
+
+                    if (cont) buffer.put((byte)((abs >>> 27) & VLQ_MASK_N));
+                }
+            }
+        }
+    }
+
+    /**
+     * Reads a UTF-8 string from the given buffer, assuming it was encoded by writeUTF8().
+     */
+    public static String readUTF8(ByteBuffer buffer)
+    {
+        int length = readVLQ(buffer);
+        if (length < 0) return null;
+
+        byte[] bytes = new byte[length];
+        buffer.get(bytes);
+        return new String(bytes, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Writes a UTF-8 string from the given buffer such that it could be decoded by readUTF8().
+     */
+    public static void writeUTF8(ByteBuffer buffer, String string)
+    {
+        if (string == null)
+        {
+            writeVLQ(buffer, -1);
+            return;
+        }
+
+        byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
+        writeVLQ(buffer, bytes.length);
+        buffer.put(bytes);
+    }
+
     private IOUtil()
     {
     }
