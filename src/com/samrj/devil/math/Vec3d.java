@@ -821,6 +821,16 @@ public class Vec3d implements Bufferable, DataStreamable<Vec3d>
     {
         x = v.x; y = v.y; z = v.z;
     }
+
+    /**
+     * Loads a new vector from the given buffer.
+     *
+     * @param buffer The buffer to read from.
+     */
+    public Vec3d(ByteBuffer buffer)
+    {
+        Vec3d.this.read(buffer);
+    }
     
     /**
      * Loads a new vector from the given input stream.

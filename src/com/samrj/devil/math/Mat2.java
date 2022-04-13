@@ -448,7 +448,17 @@ public class Mat2 implements FloatBufferable, DataStreamable<Mat2>
         a = mat.a; b = mat.b;
         c = mat.e; d = mat.f;
     }
-    
+
+    /**
+     * Loads a new matrix from the given buffer.
+     *
+     * @param buffer The buffer to read from.
+     */
+    public Mat2(ByteBuffer buffer)
+    {
+        Mat2.this.read(buffer);
+    }
+
     /**
      * Loads a new matrix from the given input stream.
      * 

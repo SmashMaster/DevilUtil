@@ -797,7 +797,17 @@ public class Vec2 implements FloatBufferable, DataStreamable<Vec2>
     {
         x = v.x; y = v.y;
     }
-    
+
+    /**
+     * Loads a new vector from the given buffer.
+     *
+     * @param buffer The buffer to read from.
+     */
+    public Vec2(ByteBuffer buffer)
+    {
+        Vec2.this.read(buffer);
+    }
+
     /**
      * Loads a new vector from the given input stream.
      * 

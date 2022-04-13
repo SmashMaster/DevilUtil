@@ -730,7 +730,18 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
     {
         w = q.w; x = q.x; y = q.y; z = q.z;
     }
-    
+
+
+    /**
+     * Loads a new quaternion from the given buffer.
+     *
+     * @param buffer The buffer to read from.
+     */
+    public Quat(ByteBuffer buffer)
+    {
+        Quat.this.read(buffer);
+    }
+
     /**
      * Loads a new quaternion from the given input stream.
      * 

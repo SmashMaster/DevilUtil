@@ -1,6 +1,11 @@
 package com.samrj.devil.math;
 
 import com.samrj.devil.util.Bufferable;
+import com.samrj.devil.util.DataStreamable;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
@@ -11,7 +16,7 @@ import java.nio.IntBuffer;
  * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Vec2i implements Bufferable
+public class Vec2i implements Bufferable, DataStreamable<Vec2i>
 {
     public int x, y;
     
@@ -28,7 +33,17 @@ public class Vec2i implements Bufferable
     {
         x = v.x; y = v.y;
     }
-    
+
+    public Vec2i(ByteBuffer buffer)
+    {
+        Vec2i.this.read(buffer);
+    }
+
+    public Vec2i(DataInputStream in) throws IOException
+    {
+        Vec2i.this.read(in);
+    }
+
     public Vec2i set()
     {
         x = 0; y = 0;
@@ -78,7 +93,23 @@ public class Vec2i implements Bufferable
     {
         return 8;
     }
-    
+
+    @Override
+    public Vec2i read(DataInputStream in) throws IOException
+    {
+        x = in.readInt();
+        y = in.readInt();
+        return this;
+    }
+
+    @Override
+    public Vec2i write(DataOutputStream out) throws IOException
+    {
+        out.writeInt(x);
+        out.writeInt(y);
+        return this;
+    }
+
     @Override
     public String toString()
     {

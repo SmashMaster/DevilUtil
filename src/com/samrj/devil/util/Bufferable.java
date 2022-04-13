@@ -1,7 +1,8 @@
 package com.samrj.devil.util;
 
-import java.nio.ByteBuffer;
 import org.lwjgl.system.MemoryStack;
+
+import java.nio.ByteBuffer;
 
 /**
  * Interface for anything than can be written to memory. (Everything)

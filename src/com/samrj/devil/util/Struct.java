@@ -120,6 +120,12 @@ public final class Struct<T extends Enum<T>> implements Bufferable
         //Idea: Could multiply name by type count, and add type ordinal. To separate them, use division and modulus.
     }
 
+    public Struct(Class<T> nameEnum, ByteBuffer buffer)
+    {
+        this(nameEnum);
+        read(buffer);
+    }
+
     @Override
     public void read(ByteBuffer buffer)
     {

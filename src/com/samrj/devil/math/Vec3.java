@@ -965,7 +965,17 @@ public class Vec3 implements FloatBufferable, DataStreamable<Vec3>
     {
         x = v.x; y = v.y; z = v.z;
     }
-    
+
+    /**
+     * Loads a new vector from the given buffer.
+     *
+     * @param buffer The buffer to read from.
+     */
+    public Vec3(ByteBuffer buffer)
+    {
+        Vec3.this.read(buffer);
+    }
+
     /**
      * Loads a new vector from the given input stream.
      * 

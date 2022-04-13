@@ -153,7 +153,12 @@ public class Vec3i implements Bufferable, DataStreamable<Vec3i>
     {
         x = v.x; y = v.y; z = v.z;
     }
-    
+
+    public Vec3i(ByteBuffer buffer)
+    {
+        Vec3i.this.read(buffer);
+    }
+
     public Vec3i(DataInputStream in) throws IOException
     {
         Vec3i.this.read(in);

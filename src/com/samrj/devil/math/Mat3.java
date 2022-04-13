@@ -764,7 +764,17 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
         d = mat.e; e = mat.f; f = mat.g;
         g = mat.i; h = mat.j; i = mat.k;
     }
-    
+
+    /**
+     * Loads a new matrix from the given buffer.
+     *
+     * @param buffer The buffer to read from.
+     */
+    public Mat3(ByteBuffer buffer)
+    {
+        Mat3.this.read(buffer);
+    }
+
     /**
      * Loads a new matrix from the given input stream.
      * 

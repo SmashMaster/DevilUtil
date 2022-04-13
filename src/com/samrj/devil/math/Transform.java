@@ -261,7 +261,19 @@ public class Transform implements FloatBufferable, DataStreamable<Transform>
         rot = new Quat(transform.rot);
         sca = new Vec3(transform.sca);
     }
-    
+
+    /**
+     * Loads a new transform from the given buffer.
+     *
+     * @param buffer The buffer to read from.
+     */
+    public Transform(ByteBuffer buffer)
+    {
+        pos = new Vec3(buffer);
+        rot = new Quat(buffer);
+        sca = new Vec3(buffer);
+    }
+
     /**
      * Loads a new transform from the given input stream.
      * 

@@ -809,7 +809,17 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
     {
         x = v.x; y = v.y; z = v.z; w = v.w;
     }
-    
+
+    /**
+     * Loads a new vector from the given buffer.
+     *
+     * @param buffer The buffer to read from.
+     */
+    public Vec4(ByteBuffer buffer)
+    {
+        Vec4.this.read(buffer);
+    }
+
     /**
      * Loads a new vector from the given input stream.
      * 

@@ -1007,7 +1007,17 @@ public class Mat4 implements FloatBufferable, DataStreamable<Mat4>
         i = x.i; j = x.j; k = x.k; l = x.l;
         m = x.m; n = x.n; o = x.o; p = x.p;
     }
-    
+
+    /**
+     * Loads a new matrix from the given buffer.
+     *
+     * @param buffer The buffer to read from.
+     */
+    public Mat4(ByteBuffer buffer)
+    {
+        Mat4.this.read(buffer);
+    }
+
     /**
      * Loads a new matrix from the given input stream.
      * 
