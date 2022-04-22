@@ -897,10 +897,10 @@ public final class JsonObject extends JsonValue implements Iterable<Member> {
 
     private final byte[] hashTable = new byte[32]; // must be a power of two
 
-    public HashIndexTable() {
+    HashIndexTable() {
     }
 
-    public HashIndexTable(HashIndexTable original) {
+    HashIndexTable(HashIndexTable original) {
       System.arraycopy(original.hashTable, 0, hashTable, 0, hashTable.length);
     }
 
@@ -916,9 +916,9 @@ public final class JsonObject extends JsonValue implements Iterable<Member> {
 
     void remove(int index) {
       for (int i = 0; i < hashTable.length; i++) {
-        if (hashTable[i] == index + 1) {
+        if ((hashTable[i] & 0xFF ) == index + 1) {
           hashTable[i] = 0;
-        } else if (hashTable[i] > index + 1) {
+        } else if ((hashTable[i] & 0xFF) > index + 1) {
           hashTable[i]--;
         }
       }
