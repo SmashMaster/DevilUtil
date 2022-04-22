@@ -679,7 +679,7 @@ public final class JsonObject extends JsonValue implements Iterable<Member> {
    * @return whether this object contains any member with the given name
    */
   public boolean contains(String name) {
-    return table.get(name) != -1;
+    return indexOf(name) != -1;
   }
 
   /**
