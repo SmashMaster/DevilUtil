@@ -252,6 +252,22 @@ public final class IOUtil
     }
 
     /**
+     * Returns the number of bytes that would be written by a call to writeVQL(buffer, value) with the given value.
+     */
+    public static int sizeOfVLQ(int value)
+    {
+        if (value == Integer.MIN_VALUE) return 5;
+
+        int abs = (value >= 0) ? value : -value;
+
+        if (abs < 64) return 1;
+        if (abs < 8192) return 2;
+        if (abs < 1048576) return 3;
+        if (abs < 134217728) return 4;
+        return 5;
+    }
+
+    /**
      * Reads a UTF-8 string from the given buffer, assuming it was encoded by writeUTF8().
      */
     public static String readUTF8(ByteBuffer buffer)
