@@ -296,6 +296,17 @@ public final class IOUtil
         buffer.put(bytes);
     }
 
+    /**
+     * Returns the size of a string in bytes when written via writeUTF8().
+     */
+    public static int sizeOfUTF8(String string)
+    {
+        if (string == null) return sizeOfVLQ(-1);
+
+        byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
+        return sizeOfVLQ(bytes.length) + bytes.length;
+    }
+
     private IOUtil()
     {
     }
