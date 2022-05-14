@@ -17,19 +17,17 @@ public final class Notifier<T> implements Consumer<T>, Runnable
     /**
      * Adds the given callback to this Notifier.
      */
-    public <G extends Consumer<T>> G subscribe(G callback)
+    public void subscribe(Consumer<T> callback)
     {
         callbacks.add(callback);
-        return callback;
     }
 
     /**
      * Adds the given callback to this notifier.
      */
-    public <G extends Runnable> G subscribe(G callback)
+    public void subscribe(Runnable callback)
     {
         callbacks.add(e -> callback.run());
-        return callback;
     }
 
     /**
