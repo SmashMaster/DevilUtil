@@ -5,6 +5,10 @@ import java.util.Iterator;
 
 /**
  * Automatically resizing integer array.
+ *
+ * @author Samuel Johnson (SmashMaster)
+ * @copyright 2022 Samuel Johnson
+ * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class IntList implements Iterable<Integer>
 {
