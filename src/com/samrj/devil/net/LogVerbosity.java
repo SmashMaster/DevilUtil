@@ -10,6 +10,7 @@ import java.util.function.Supplier;
  * @copyright 2020 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
+@Deprecated
 public enum LogVerbosity
 {
     /**

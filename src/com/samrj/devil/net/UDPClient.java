@@ -41,6 +41,7 @@ import org.lwjgl.system.MemoryStack;
  * 
  * @author Samuel Johnson (SmashMaster)
  */
+@Deprecated
 public class UDPClient implements Peer
 {
     static final int CONNECTION_REQUEST = 1;

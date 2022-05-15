@@ -14,6 +14,7 @@ import java.util.zip.CRC32;
  * @copyright 2020 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
+@Deprecated
 class NetUtil
 {
     static final SecureRandom getCSPRNG()

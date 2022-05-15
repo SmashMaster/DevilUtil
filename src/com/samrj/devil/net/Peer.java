@@ -9,6 +9,7 @@ import java.io.IOException;
  * @copyright 2020 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
+@Deprecated
 public interface Peer extends AutoCloseable
 {
     public static final int MAX_PACKET_SIZE = 1200;

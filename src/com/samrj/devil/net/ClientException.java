@@ -7,6 +7,7 @@ package com.samrj.devil.net;
  * @copyright 2020 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
+@Deprecated
 public abstract class ClientException extends Exception
 {
 }
