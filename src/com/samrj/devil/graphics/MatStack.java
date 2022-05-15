@@ -1,6 +1,7 @@
 package com.samrj.devil.graphics;
 
 import com.samrj.devil.math.Mat4;
+
 import java.util.Deque;
 import java.util.LinkedList;
 

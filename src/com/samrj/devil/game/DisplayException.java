@@ -1,7 +1,7 @@
 package com.samrj.devil.game;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.system.MemoryUtil.memUTF8;
 
 /**
  * Exception class for GLFW errors.

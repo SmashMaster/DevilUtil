@@ -2,7 +2,7 @@ package com.samrj.devil.gl;
 
 import com.samrj.devil.graphics.TexUtil;
 
-import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL11C.glGetInteger;
 import static org.lwjgl.opengl.GL30C.*;
 
 /**

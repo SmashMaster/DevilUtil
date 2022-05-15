@@ -24,6 +24,7 @@ package com.samrj.devil.math;
 
 import com.samrj.devil.util.DataStreamable;
 import com.samrj.devil.util.FloatBufferable;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;

@@ -1,8 +1,9 @@
 package com.samrj.devil.gl;
 
 import static org.lwjgl.opengl.GL11C.*;
-import static org.lwjgl.opengl.GL12C.*;
-import static org.lwjgl.opengl.GL31C.*;
+import static org.lwjgl.opengl.GL12C.GL_CLAMP_TO_EDGE;
+import static org.lwjgl.opengl.GL31C.GL_TEXTURE_BINDING_RECTANGLE;
+import static org.lwjgl.opengl.GL31C.GL_TEXTURE_RECTANGLE;
 
 /**
  * OpenGL rectangle texture class.

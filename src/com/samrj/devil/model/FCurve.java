@@ -24,6 +24,7 @@ package com.samrj.devil.model;
 
 import com.samrj.devil.math.Transform;
 import com.samrj.devil.math.Vec2;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

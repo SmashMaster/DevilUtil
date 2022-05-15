@@ -3,6 +3,7 @@ package com.samrj.devil.phys;
 import com.samrj.devil.geo3d.Triangle3;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Vec3;
+
 import java.util.Collection;
 
 /**

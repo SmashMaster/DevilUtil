@@ -1,10 +1,11 @@
 package com.samrj.devil.gui;
 
 import com.samrj.devil.math.Vec2;
+
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 /**
  * A combo box allows for the selection of one of many options, by using a drop

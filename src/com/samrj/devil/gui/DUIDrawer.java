@@ -8,7 +8,7 @@ import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec4;
 
 import static org.lwjgl.opengl.GL11C.*;
-import static org.lwjgl.opengl.GL13C.*;
+import static org.lwjgl.opengl.GL13C.GL_TEXTURE0;
 
 /**
  * Used for internal DevilUI draw calls, but also exposed for convenience.

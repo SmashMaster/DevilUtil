@@ -1,6 +1,7 @@
 package com.samrj.devil.geo3d;
 
 import com.samrj.devil.math.Vec3;
+
 import java.util.Collection;
 import java.util.function.Supplier;
 import java.util.stream.Stream;

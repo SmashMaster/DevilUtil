@@ -29,17 +29,19 @@ import com.samrj.devil.game.sync.SleepHybrid;
 import com.samrj.devil.game.sync.SleepMethod;
 import com.samrj.devil.game.sync.Sync;
 import com.samrj.devil.math.Vec2i;
-import java.io.IOException;
-import java.util.Objects;
-import java.util.function.Consumer;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
 import org.lwjgl.system.Configuration;
 
+import java.io.IOException;
+import java.util.Objects;
+import java.util.function.Consumer;
+
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11C.*;
-import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.opengl.GL11C.GL_FALSE;
+import static org.lwjgl.opengl.GL11C.glViewport;
+import static org.lwjgl.system.MemoryUtil.NULL;
 
 /**
  * Improved utility game class. To start up a game, simply call Game.run().

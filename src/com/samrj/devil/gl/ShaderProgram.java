@@ -23,15 +23,17 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.math.*;
+import org.lwjgl.system.MemoryStack;
+
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.*;
-import org.lwjgl.system.MemoryStack;
 
-import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL11C.GL_TRUE;
 import static org.lwjgl.opengl.GL20C.*;
-import static org.lwjgl.opengl.GL30C.*;
-import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.opengl.GL30C.glBindFragDataLocation;
+import static org.lwjgl.system.MemoryUtil.memASCII;
+import static org.lwjgl.system.MemoryUtil.memByteBuffer;
 
 /**
  * OpenGL shader program wrapper.

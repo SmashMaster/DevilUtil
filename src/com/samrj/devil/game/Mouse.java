@@ -2,9 +2,10 @@ package com.samrj.devil.game;
 
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec2i;
+import org.lwjgl.system.MemoryStack;
+
 import java.nio.DoubleBuffer;
 import java.util.Objects;
-import org.lwjgl.system.MemoryStack;
 
 import static org.lwjgl.glfw.GLFW.*;
 

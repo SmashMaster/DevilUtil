@@ -1,6 +1,7 @@
 package com.samrj.devil.model;
 
 import com.samrj.devil.math.Vec3;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;

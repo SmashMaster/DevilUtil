@@ -7,10 +7,11 @@ import com.samrj.devil.model.ArmatureSolver.BoneSolver;
 import com.samrj.devil.model.Mesh;
 import com.samrj.devil.model.ModelObject;
 import com.samrj.devil.util.IOUtil;
+
 import java.nio.FloatBuffer;
 import java.util.List;
 
-import static org.lwjgl.opengl.GL20C.*;
+import static org.lwjgl.opengl.GL20C.glUniformMatrix4fv;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**

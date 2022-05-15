@@ -1,10 +1,12 @@
 package com.samrj.devil.gl;
 
-import java.nio.IntBuffer;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.Callback;
 
-import static org.lwjgl.opengl.GL11C.*;
+import java.nio.IntBuffer;
+
+import static org.lwjgl.opengl.GL11C.GL_DONT_CARE;
+import static org.lwjgl.opengl.GL11C.glEnable;
 import static org.lwjgl.opengl.GL43C.*;
 import static org.lwjgl.system.MemoryUtil.*;
 

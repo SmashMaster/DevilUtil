@@ -1,10 +1,11 @@
 package com.samrj.devil.game;
 
 import com.samrj.devil.util.IntList;
-import java.util.ArrayList;
-import java.util.List;
 import org.lwjgl.glfw.GLFWGamepadState;
 import org.lwjgl.system.MemoryStack;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
 

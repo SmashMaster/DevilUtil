@@ -23,6 +23,10 @@
 package com.samrj.devil.al;
 
 import com.samrj.devil.math.Vec3;
+import org.kc7bfi.jflac.FLACDecoder;
+import org.lwjgl.openal.*;
+import org.lwjgl.system.MemoryStack;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,13 +37,10 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Set;
-import org.kc7bfi.jflac.FLACDecoder;
-import org.lwjgl.openal.*;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.opengl.ARBTextureBufferObject;
 
 import static org.lwjgl.openal.AL10.*;
-import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.system.MemoryUtil.NULL;
+import static org.lwjgl.system.MemoryUtil.memFree;
 
 /**
  * DevilAL. An object-oriented OpenAL wrapper.

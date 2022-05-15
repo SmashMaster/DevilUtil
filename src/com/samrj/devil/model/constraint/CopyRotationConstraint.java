@@ -3,6 +3,7 @@ package com.samrj.devil.model.constraint;
 import com.samrj.devil.math.topo.DAG;
 import com.samrj.devil.model.ArmatureSolver;
 import com.samrj.devil.model.ArmatureSolver.BoneSolver;
+
 import java.util.Set;
 
 /**

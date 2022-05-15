@@ -26,7 +26,7 @@ import com.samrj.devil.math.Vec2i;
 import org.lwjgl.system.MemoryStack;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.system.MemoryUtil.memGetInt;
 
 /**
  * Utility class for GLFW. GLFW must be initialized for most of these methods to

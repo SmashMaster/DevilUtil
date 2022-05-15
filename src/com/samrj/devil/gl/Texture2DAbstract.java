@@ -25,8 +25,8 @@ package com.samrj.devil.gl;
 import com.samrj.devil.graphics.TexUtil;
 
 import static org.lwjgl.opengl.GL11C.*;
-import static org.lwjgl.opengl.GL13C.*;
-import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.opengl.GL13C.nglCompressedTexImage2D;
+import static org.lwjgl.system.MemoryUtil.NULL;
 
 /**
  * Abstract class for 2D textures.

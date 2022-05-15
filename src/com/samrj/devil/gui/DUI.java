@@ -23,10 +23,13 @@
 package com.samrj.devil.gui;
 
 import com.samrj.devil.math.Vec2;
+
 import java.util.Objects;
 
-import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
+import static org.lwjgl.opengl.GL11C.GL_VIEWPORT;
+import static org.lwjgl.opengl.GL11C.glGetIntegerv;
 
 /**
  * DevilUI. A GUI library for DevilUtil.

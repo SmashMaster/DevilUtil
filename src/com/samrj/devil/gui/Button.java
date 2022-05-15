@@ -1,10 +1,11 @@
 package com.samrj.devil.gui;
 
 import com.samrj.devil.math.Vec2;
+
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 /**
  * A simple button.

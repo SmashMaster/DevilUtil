@@ -24,6 +24,7 @@ package com.samrj.devil.gl;
 
 import com.samrj.devil.math.*;
 import com.samrj.devil.util.Bufferable;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;

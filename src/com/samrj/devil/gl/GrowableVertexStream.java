@@ -24,7 +24,7 @@ package com.samrj.devil.gl;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL11C.glGetInteger;
 import static org.lwjgl.opengl.GL15C.*;
 import static org.lwjgl.system.MemoryUtil.*;
 

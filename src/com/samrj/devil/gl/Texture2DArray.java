@@ -1,7 +1,8 @@
 package com.samrj.devil.gl;
 
 import static org.lwjgl.opengl.GL11C.*;
-import static org.lwjgl.opengl.GL30C.*;
+import static org.lwjgl.opengl.GL30C.GL_TEXTURE_2D_ARRAY;
+import static org.lwjgl.opengl.GL30C.GL_TEXTURE_BINDING_2D_ARRAY;
 
 /**
  * 2D texture array class.

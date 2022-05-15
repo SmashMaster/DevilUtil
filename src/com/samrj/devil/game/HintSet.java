@@ -2,7 +2,7 @@ package com.samrj.devil.game;
 
 import com.samrj.devil.util.IntList;
 
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.glfwWindowHint;
 
 /**
  * Display hint class.

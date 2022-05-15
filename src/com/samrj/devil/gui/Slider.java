@@ -1,9 +1,10 @@
 package com.samrj.devil.gui;
 
 import com.samrj.devil.math.Util;
+
 import java.util.function.Consumer;
 
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 /**
  * A slider can be used to choose a numerical value.

@@ -1,9 +1,11 @@
 package com.samrj.devil.al;
 
 import com.samrj.devil.math.Util.PrimType;
+
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.system.MemoryUtil.memAddress0;
+import static org.lwjgl.system.MemoryUtil.memFree;
 
 /**
  * Sound buffer. Stores raw sound data.

@@ -24,7 +24,7 @@ package com.samrj.devil.gl;
 
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL13C.*;
-import static org.lwjgl.opengl.GL30C.*;
+import static org.lwjgl.opengl.GL30C.glGenerateMipmap;
 
 /**
  * Abstract OpenGL texture class.

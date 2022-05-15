@@ -1,6 +1,6 @@
 package com.samrj.devil.al;
 
-import static org.lwjgl.openal.AL10.*;
+import static org.lwjgl.openal.AL10.AL_NONE;
 import static org.lwjgl.openal.EXTEfx.*;
 
 /**

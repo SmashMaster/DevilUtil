@@ -26,6 +26,7 @@ import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Transform;
 import com.samrj.devil.math.Transform.Property;
 import com.samrj.devil.math.Vec3;
+
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;

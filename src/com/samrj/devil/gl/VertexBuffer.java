@@ -24,9 +24,10 @@ package com.samrj.devil.gl;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL11C.glGetInteger;
 import static org.lwjgl.opengl.GL15C.*;
-import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.system.MemoryUtil.memAlloc;
+import static org.lwjgl.system.MemoryUtil.memFree;
 
 /**
  * Vertex data for unmodifiable vertex data. Suitable for data that is built
