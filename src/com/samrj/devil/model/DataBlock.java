@@ -1,6 +1,7 @@
 package com.samrj.devil.model;
 
 import com.samrj.devil.model.BlendFile.Pointer;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -45,6 +46,11 @@ public abstract class DataBlock
         
         BlendFile.Pointer bProp = id.getField("properties").dereference();
         properties = bProp != null ? new Property(bProp).properties : Collections.emptyList();
+    }
+
+    public final List<Property> getProperties()
+    {
+        return Collections.unmodifiableList(properties);
     }
     
     public final Property getProperty(String name)

@@ -9,19 +9,19 @@ import java.util.List;
  * Allows access to Blender's RNA properties, including custom properties.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Property
 {
-    public static enum Type
+    public enum Type
     {
         STRING, INT, FLOAT, ARRAY, GROUP, ID, DOUBLE, IDPARRAY, NUMTYPES
     }
     
     public final String name;
     public final Type type;
-    public final List<Property> properties = new ArrayList<>();
+    public final List<Property> properties;
     
     private Object value;
     
@@ -33,6 +33,8 @@ public final class Property
         BlendFile.Pointer pointer = data.getField("pointer").dereference();
         int val = data.getField("val").asInt();
         int val2 = data.getField("val2").asInt();
+
+        ArrayList<Property> propsList = new ArrayList<>();
         
         switch (bProp.getField("type").asByte())
         {
@@ -55,7 +57,7 @@ public final class Property
             case 6:
                 type = Type.GROUP;
                 for (BlendFile.Pointer subBProp : data.getField("group").asList("IDProperty"))
-                    properties.add(new Property(subBProp));
+                    propsList.add(new Property(subBProp));
                 break;
             case 7:
                 type = Type.ID;
@@ -72,7 +74,7 @@ public final class Property
                     int len = bProp.getField("len").asInt();
                     pointer = pointer.cast("IDProperty");
                     for (int i=0; i<len; i++)
-                        properties.add(new Property(pointer.getElement(i)));
+                        propsList.add(new Property(pointer.getElement(i)));
                 }
                 break;
             case 10:
@@ -81,6 +83,8 @@ public final class Property
             default:
                 type = null;
         }
+
+        properties = Collections.unmodifiableList(propsList);
     }
     
     public String getString()

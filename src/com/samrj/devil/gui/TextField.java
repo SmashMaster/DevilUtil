@@ -1,6 +1,7 @@
 package com.samrj.devil.gui;
 
 import com.samrj.devil.math.Vec2;
+
 import java.util.Objects;
 import java.util.function.Consumer;
 

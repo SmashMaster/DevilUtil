@@ -1,35 +1,36 @@
 package com.samrj.devil.gl;
 
 import com.samrj.devil.util.IOUtil;
-import java.io.FileInputStream;
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.system.MemoryStack;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.channels.FileChannel;
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.system.MemoryStack;
+import java.nio.file.Path;
 
-import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL11C.GL_TRUE;
 import static org.lwjgl.opengl.GL20C.*;
 
 /**
  * OpenGL shader object wrapper/loader.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2020 Samuel Johnson
+ * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Shader extends DGLObj
 {
-    public static enum State
+    public enum State
     {
         NEW, COMPILED, DELETED;
     }
     
     final int id, type;
     private State state;
-    private String path;
+    private Path path;
     
     Shader(int type)
     {
@@ -42,8 +43,7 @@ public final class Shader extends DGLObj
     }
     
     /**
-     * Loads shader sources from the given native ByteBuffer and then compiles
-     * this shader.
+     * Loads shader sources from the native ByteBuffer and then compiles this shader.
      * 
      * @param buffer The ByteBuffer to load the source from.
      * @return This shader.
@@ -109,20 +109,18 @@ public final class Shader extends DGLObj
     }
     
     /**
-     * Loads shader sources from the given file path and then compiles this
-     * shader. Buffers the source in native memory.
+     * Loads shader sources from the given file path and then compiles this shader.
      * 
      * @param path The file path from which to load the source.
      * @return This shader.
      * @throws IOException If an I/O error occurs.
      */
-    public Shader sourceFromFile(String path) throws IOException
+    public Shader sourceFromFile(Path path) throws IOException
     {
         this.path = path;
-        
-        try (FileInputStream in = new FileInputStream(path))
+
+        try (FileChannel channel = FileChannel.open(path))
         {
-            FileChannel channel = in.getChannel();
             long size = channel.size();
             if (size > Integer.MAX_VALUE) throw new IOException("File size > 2.15GB");
             
@@ -134,6 +132,14 @@ public final class Shader extends DGLObj
                 return source(buffer);
             }
         }
+    }
+
+    /**
+     * Loads shader sources from the given file path and then compiles this shader.
+     */
+    public Shader sourceFromFile(String path) throws IOException
+    {
+        return sourceFromFile(Path.of(path));
     }
     
     /**

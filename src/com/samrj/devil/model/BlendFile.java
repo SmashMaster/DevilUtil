@@ -27,17 +27,19 @@ import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.util.IOUtil;
+
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
-import java.util.Map.Entry;
+import java.nio.file.Path;
 import java.util.*;
+import java.util.Map.Entry;
 
-import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.system.MemoryUtil.memAlloc;
+import static org.lwjgl.system.MemoryUtil.memFree;
 
 /**
  * Blender model loader. Capable of parsing the basic structure of a blend file,
@@ -70,12 +72,11 @@ public final class BlendFile
      * a single native ByteBuffer, so it can't be larger than Integer.MAX_SIZE,
      * or around 2.15GB.
      */
-    public BlendFile(File file) throws IOException
+    public BlendFile(Path path) throws IOException
     {
         //Buffer entire file into native memory.
-        try (FileInputStream in = new FileInputStream(file))
+        try (FileChannel channel = FileChannel.open(path))
         {
-            FileChannel channel = in.getChannel();
             long size = channel.size();
             if (size > Integer.MAX_VALUE) throw new IOException("Blend file sizes >2.15GB not supported.");
             
@@ -198,6 +199,16 @@ public final class BlendFile
         {
             throw new IOException("Reached unexpected end of file.", e);
         }
+    }
+
+    public BlendFile(File file) throws IOException
+    {
+        this(file.toPath());
+    }
+
+    public BlendFile(String path) throws IOException
+    {
+        this(Path.of(path));
     }
     
     private void expect(String string) throws IOException

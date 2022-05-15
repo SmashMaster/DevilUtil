@@ -6,6 +6,7 @@ import com.samrj.devil.math.Transform;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.model.constraint.CopyRotationConstraint.CopyRotDef;
 import com.samrj.devil.model.constraint.IKConstraint.IKDefinition;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -21,8 +22,10 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
     {
         AXES, CUBE, SPHERE;
     }
-    
-    public final Map<String, String> arguments;
+
+    @Deprecated
+    public final Map<String, String> arguments; //Requires blender plugin -- use custom properties for this instead.
+
     public final Transform transform;
     public final List<String> vertexGroups;
     public final Pose pose;

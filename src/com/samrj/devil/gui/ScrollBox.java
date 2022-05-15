@@ -4,7 +4,7 @@ package com.samrj.devil.gui;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
 
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 import static org.lwjgl.opengl.GL11C.*;
 
 /**

@@ -1,10 +1,11 @@
 package com.samrj.devil.al;
 
 import com.samrj.devil.math.Vec3;
+
 import java.util.HashSet;
 
 import static org.lwjgl.openal.AL10.*;
-import static org.lwjgl.openal.AL11.*;
+import static org.lwjgl.openal.AL11.alSource3i;
 import static org.lwjgl.openal.EXTEfx.*;
 
 /**

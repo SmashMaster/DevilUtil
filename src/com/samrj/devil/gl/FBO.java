@@ -24,9 +24,9 @@ package com.samrj.devil.gl;
 
 import org.lwjgl.system.MemoryStack;
 
-import static org.lwjgl.opengl.GL11C.*;
-import static org.lwjgl.opengl.GL13C.*;
-import static org.lwjgl.opengl.GL20C.*;
+import static org.lwjgl.opengl.GL11C.glReadBuffer;
+import static org.lwjgl.opengl.GL13C.GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+import static org.lwjgl.opengl.GL20C.glDrawBuffers;
 import static org.lwjgl.opengl.GL30C.*;
 
 /**

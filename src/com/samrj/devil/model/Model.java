@@ -1,10 +1,9 @@
 package com.samrj.devil.model;
 
 import com.samrj.devil.model.DataBlock.Type;
-import java.io.File;
+
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.EnumMap;
 
 /**
@@ -33,13 +32,13 @@ public final class Model
     
     private boolean destroyed;
     
-    public Model(String path) throws IOException
+    public Model(Path path) throws IOException
     {
-        this.path = Paths.get(path);
+        this.path = path;
         
         try
         {
-            BlendFile blend = new BlendFile(new File(path));
+            BlendFile blend = new BlendFile(path.toFile());
             
             libraries = new ArrayMap<>();
             for (BlendFile.Pointer bLib : blend.getLibrary("Library"))
@@ -102,6 +101,11 @@ public final class Model
         {
             throw new RuntimeException("in " + path, e);
         }
+    }
+
+    public Model(String path) throws IOException
+    {
+        this(Path.of(path));
     }
     
     public <T extends DataBlock> ArrayMap<T> get(DataBlock.Type dataType)

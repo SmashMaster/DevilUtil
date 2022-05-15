@@ -25,24 +25,26 @@ package com.samrj.devil.gl;
 import com.samrj.devil.graphics.TexUtil;
 import com.samrj.devil.math.Util.PrimType;
 import com.samrj.devil.model.Mesh;
-import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.Set;
-import javax.imageio.ImageIO;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
 import org.lwjgl.system.MemoryStack;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
+
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL20C.*;
 import static org.lwjgl.opengl.GL30C.*;
-import static org.lwjgl.opengl.GL31C.*;
-import static org.lwjgl.opengl.GL43C.*;
-import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.opengl.GL31C.glDrawArraysInstanced;
+import static org.lwjgl.opengl.GL31C.glDrawElementsInstanced;
+import static org.lwjgl.opengl.GL43C.GL_CONTEXT_FLAG_DEBUG_BIT;
+import static org.lwjgl.system.MemoryUtil.memGetInt;
 
 /**
  * DevilGL. A state-based, object-oriented, forward compatible OpenGL wrapper;
@@ -60,18 +62,18 @@ public final class DGL
     private static boolean debugLeak;
     private static Thread debugShutdownHook;
     private static boolean init;
-    
+
     //State fields
     private static ShaderProgram boundProgram;
     private static FBO readFBO, drawFBO;
-    
+
     static void checkState()
     {
         if (!init) throw new IllegalStateException("DGL not initialized.");
         if (Thread.currentThread() != thread)
             throw new IllegalThreadStateException("DGL initialized on different thread.");
     }
-    
+
     /**
      * Initializes DevilGL. Must be called from a thread on which an OpenGL
      * context is current.
@@ -82,7 +84,7 @@ public final class DGL
         thread = Thread.currentThread();
         capabilities = GL.getCapabilities();
         objects = Collections.newSetFromMap(new IdentityHashMap<>());
-        debugContext = (glGetInteger(GL_CONTEXT_FLAGS) & GL_CONTEXT_FLAG_DEBUG_BIT) != 0;
+        debugContext = (glGetInteger(GL_CONTEXT_FLAGS)&GL_CONTEXT_FLAG_DEBUG_BIT) != 0;
         debugLeak = debugContext;
         VAO.init();
         DGLException.init(debugContext);
@@ -97,7 +99,7 @@ public final class DGL
         Runtime.getRuntime().addShutdownHook(debugShutdownHook);
         init = true;
     }
-    
+
     /**
      * Returns whether the OpenGL context in use by DGL is a debug context.
      */
@@ -105,7 +107,7 @@ public final class DGL
     {
         return debugContext;
     }
-    
+
     /**
      * Returns whether or not leak tracking is currently enabled for DevilGL.
      */
@@ -113,7 +115,7 @@ public final class DGL
     {
         return debugLeak;
     }
-    
+
     /**
      * Enables resource leak tracking. Note: Leak tracking works only for
      * objects that were constructed *after* debug was enabled, so it is best to
@@ -124,7 +126,7 @@ public final class DGL
     {
         DGL.debugLeak = debugLeak;
     }
-    
+
     /**
      * @return The current OpenGL context's capabilities.
      */
@@ -133,18 +135,19 @@ public final class DGL
         checkState();
         return capabilities;
     }
-    
+
     private static <T extends DGLObj> T gen(T obj)
     {
         objects.add(obj);
         return obj;
     }
-    
+
     // <editor-fold defaultstate="collapsed" desc="Shader methods">
+
     /**
      * Generates a new OpenGL shader. Shader will not have any associated
      * sources or be compiled.
-     * 
+     *
      * @param type The type of shader to generate.
      * @return A new shader.
      */
@@ -152,35 +155,44 @@ public final class DGL
     {
         return gen(new Shader(type));
     }
-    
+
     /**
      * Generates a new OpenGL shader, loads sources from the given resource
      * path, then compiles the shader.
-     * 
+     *
      * @param path The class/file path from which to load sources.
      * @param type The type of shader to load.
      * @return A new, compiled shader.
      * @throws IOException If an I/O error occurs.
      */
-    public static Shader loadShader(String path, int type) throws IOException
+    public static Shader loadShader(Path path, int type) throws IOException
     {
         return genShader(type).sourceFromFile(path);
     }
-    
+
+    /**
+     * Generates a new OpenGL shader, loads sources from the given resource
+     * path, then compiles the shader.
+     */
+    public static Shader loadShader(String path, int type) throws IOException
+    {
+        return loadShader(Path.of(path), type);
+    }
+
     /**
      * Generates and returns a new shader program.
-     * 
+     *
      * @return A new shader program.
      */
     public static ShaderProgram genProgram()
     {
         return gen(new ShaderProgram());
     }
-    
+
     /**
      * Generates, loads, compiles, and links a new shader program using any
      * number of given shaders.
-     * 
+     *
      * @param shaders An array of shaders to attach.
      * @return A new, complete shader program.
      */
@@ -188,10 +200,10 @@ public final class DGL
     {
         return genProgram().attach(shaders).link().detachAll();
     }
-    
+
     /**
      * Loads a shader using the given strings as its source code.
-     * 
+     *
      * @param vertSource The vertex shader source code.
      * @param fragSource The fragment shader source code.
      * @return A new, complete shader program.
@@ -206,16 +218,16 @@ public final class DGL
         delete(vert, frag);
         return shader;
     }
-    
+
     /**
      * Generates, loads, compiles, links, and validates a new shader program as
      * well as an underlying vertex and fragment shader. The shader sources are
      * assumed to be in the given path, with the same name, ending in .vert and
      * .frag, respectively.
-     * 
+     *
      * @param path The directory and name to load sources from.
      * @return A new, complete shader program.
-     * @throws IOException 
+     * @throws IOException
      */
     public static ShaderProgram loadProgram(String path) throws IOException
     {
@@ -225,69 +237,70 @@ public final class DGL
         delete(vertShader, fragShader);
         return program;
     }
-    
+
     private static void checkProgramState()
     {
         if (glGetInteger(GL_CURRENT_PROGRAM) != ShaderProgram.glSafeID(boundProgram))
             throw new IllegalStateException("Shader state modified outside of DGL.");
     }
-    
+
     /**
      * Uses the given shader program for any subsequent draw calls. Pass null to
      * unbind the current shader.
-     * 
+     *
      * @param shaderProgram The shader program to use.
      * @return The given shader program, which is now in use.
      */
     public static ShaderProgram useProgram(ShaderProgram shaderProgram)
     {
         if (getDebugEnabled()) checkProgramState();
-        
+
         ShaderProgram.ensureNotDeleted(shaderProgram);
         glUseProgram(ShaderProgram.glSafeID(shaderProgram));
         boundProgram = shaderProgram;
-        
+
         return shaderProgram;
     }
-    
+
     /**
      * @return The shader program currently in use, or null if none is in use.
      */
     public static ShaderProgram currentProgram()
     {
         if (getDebugEnabled()) checkProgramState();
-        
+
         return boundProgram;
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Vertex data methods">
+
     /**
      * Generates a new vertex buffer of the given capacity.
-     * 
+     *
      * @param maxVertices The maximum number of vertices to buffer.
-     * @param maxIndices The maximum number of indices to buffer.
+     * @param maxIndices  The maximum number of indices to buffer.
      * @return A new vertex buffer.
      */
     public static VertexBuffer genVertexBuffer(int maxVertices, int maxIndices)
     {
         return gen(new VertexBuffer(maxVertices, maxIndices));
     }
-    
+
     /**
      * Generates a new vertex stream of the given capacity.
-     * 
+     *
      * @param maxVertices The maximum number of vertices to buffer.
-     * @param maxIndices The maximum number of indices to buffer.
+     * @param maxIndices  The maximum number of indices to buffer.
      * @return A new vertex stream.
      */
     public static VertexStream genVertexStream(int maxVertices, int maxIndices)
     {
         return gen(new VertexStream(maxVertices, maxIndices));
     }
-    
+
     /**
      * Generates a new growable vertex stream.
-     * 
+     *
      * @param enableIndices Whether to enable indices for the stream.
      * @return A new growable vertex stream.
      */
@@ -295,10 +308,10 @@ public final class DGL
     {
         return gen(new GrowableVertexStream(enableIndices));
     }
-    
+
     /**
      * Returns a new mesh drawer, which buffers the given mesh onto the GPU.
-     * 
+     *
      * @param mesh The mesh to buffer.
      * @return A new mesh buffer.
      */
@@ -306,11 +319,11 @@ public final class DGL
     {
         return gen(new MeshBuffer(mesh, false));
     }
-    
+
     /**
      * Returns a new mesh edge drawer, which buffers the given mesh edges onto
      * the GPU.
-     * 
+     *
      * @param mesh The mesh to buffer.
      * @return A new mesh buffer.
      */
@@ -320,26 +333,27 @@ public final class DGL
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Image methods">
+
     /**
      * Allocates a new image buffer with the given dimensions and format. The
      * newly allocated buffer has indeterminate contents.
-     * 
-     * @param width The width of the image, in pixels.
+     *
+     * @param width  The width of the image, in pixels.
      * @param height The height of the image, in pixels.
-     * @param bands The number of bands the image will have.
-     * @param type The primitive type of the image data.
+     * @param bands  The number of bands the image will have.
+     * @param type   The primitive type of the image data.
      * @return A newly allocated image.
      */
     public static Image genImage(int width, int height, int bands, PrimType type)
     {
         return gen(new Image(width, height, bands, type));
     }
-    
+
     /**
      * Creates a new compressed image container. Does not allocate any storage
      * for the image.
-     * 
-     * @param width The width of the image, in pixels.
+     *
+     * @param width  The width of the image, in pixels.
      * @param height The height of the image, in pixels.
      * @param format The OpenGL compressed image format to use.
      * @return A new compressed image container.
@@ -348,11 +362,11 @@ public final class DGL
     {
         return gen(new ImageCompressed(width, height, format));
     }
-    
+
     /**
      * Allocates an image  buffer for the given raster, then buffers the raster
      * in it. Returns the allocated buffer.
-     * 
+     *
      * @param raster The raster to buffer.
      * @return A newly allocated buffer containing the given raster.
      */
@@ -360,34 +374,34 @@ public final class DGL
     {
         PrimType type = Image.getType(raster);
         if (type == null) throw new IllegalArgumentException("Given raster is not bufferable.");
-        
-        return genImage(raster.getWidth(),
-                        raster.getHeight(),
-                        raster.getNumBands(), type).buffer(raster);
+
+        return genImage(raster.getWidth(), raster.getHeight(), raster.getNumBands(), type).buffer(raster);
     }
-    
+
     /**
-     * Loads an image type at the given path, which may be a classpath or file
-     * path, and then buffers the image in a newly allocated buffer. Returns
-     * the image buffer.
-     * 
-     * @param path The path to load an image from.
-     * @return A newly allocated buffer containing the loaded image.
-     * @throws IOException If an io exception occurs.
+     * Loads an image from the given file path, and returns it in a newly allocated Image buffer.
+     */
+    public static Image loadImage(Path path) throws IOException
+    {
+        BufferedImage bImage = ImageIO.read(path.toFile());
+
+        if (bImage == null) throw new IOException("Cannot read image from " + path);
+
+        return loadImage(bImage.getRaster());
+    }
+
+    /**
+     * Loads an image from the given file path, and returns it in a newly allocated Image buffer.
      */
     public static Image loadImage(String path) throws IOException
     {
-        BufferedImage bImage = ImageIO.read(new File(path));
-        
-        if (bImage == null) throw new IOException("Cannot read image from " + path);
-        
-        return loadImage(bImage.getRaster());
+        return loadImage(Path.of(path));
     }
-    
+
     /**
      * Creates a new image from the current read framebuffer and viewport.
      * Useful for taking screenshots.
-     * 
+     *
      * @return A newly allocated image.
      */
     public static Image screenshotImage()
@@ -409,19 +423,20 @@ public final class DGL
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Texture methods">
+
     /**
      * Generates a new OpenGL name for a 1D texture.
-     * 
+     *
      * @return A new 1D texture object.
      */
     public static Texture1D genTex1D()
     {
         return gen(new Texture1D());
     }
-    
+
     /**
      * Creates a new OpenGL 1D texture using the given image.
-     * 
+     *
      * @param image The image to load as a texture.
      * @return A new 2D texture object.
      */
@@ -429,12 +444,12 @@ public final class DGL
     {
         return genTex1D().image(image);
     }
-    
+
     /**
      * Creates a new OpenGL 1D texture using the given raster. Allocates memory
      * to use as an image buffer, uploads the image, and then deallocates the
      * memory.
-     * 
+     *
      * @param raster The raster to load as a texture.
      * @return A new 1D texture object.
      */
@@ -445,37 +460,39 @@ public final class DGL
         delete(image);
         return texture;
     }
-    
+
     /**
-     * Creates a new openGL 1D texture using the image found at the given path.
-     * Allocates memory to use as an image buffer, uploads the image, and then
-     * deallocates the memory.
-     * 
-     * @param path The classpath or file path to an image.
-     * @return A new 1D texture object.
-     * @throws IOException If an io exception occurred.
+     * Returns a new OpenGL 1D texture using the image found at the given path.
      */
-    public static Texture1D loadTex1D(String path) throws IOException
+    public static Texture1D loadTex1D(Path path) throws IOException
     {
         Image image = loadImage(path);
         Texture1D texture = loadTex1D(image);
         delete(image);
         return texture;
     }
-    
+
+    /**
+     * Returns a new OpenGL 1D texture using the image found at the given path.
+     */
+    public static Texture1D loadTex1D(String path) throws IOException
+    {
+        return loadTex1D(Path.of(path));
+    }
+
     /**
      * Generates a new OpenGL name for a 2D texture.
-     * 
+     *
      * @return A new 2D texture object.
      */
     public static Texture2D genTex2D()
     {
         return gen(new Texture2D());
     }
-    
+
     /**
      * Creates a new OpenGL 2D texture using the given image.
-     * 
+     *
      * @param image The image to load as a texture.
      * @return A new 2D texture object.
      */
@@ -483,12 +500,12 @@ public final class DGL
     {
         return genTex2D().image(image);
     }
-    
+
     /**
      * Creates a new OpenGL 2D texture using the given raster. Allocates memory
      * to use as an image buffer, uploads the image, and then deallocates the
      * memory.
-     * 
+     *
      * @param raster The raster to load as a texture.
      * @return A new 2D texture object.
      */
@@ -499,37 +516,39 @@ public final class DGL
         delete(image);
         return texture;
     }
-    
+
     /**
-     * Creates a new openGL 2D texture using the image found at the given path.
-     * Allocates memory to use as an image buffer, uploads the image, and then
-     * deallocates the memory.
-     * 
-     * @param path The classpath or file path to an image.
-     * @return A new 2D texture object.
-     * @throws IOException If an io exception occurred.
+     * Returns a new OpenGL 2D texture using the image found at the given path.
      */
-    public static Texture2D loadTex2D(String path) throws IOException
+    public static Texture2D loadTex2D(Path path) throws IOException
     {
         Image image = loadImage(path);
         Texture2D texture = loadTex2D(image);
         delete(image);
         return texture;
     }
-    
+
+    /**
+     * Returns a new OpenGL 2D texture using the image found at the given path.
+     */
+    public static Texture2D loadTex2D(String path) throws IOException
+    {
+        return loadTex2D(Path.of(path));
+    }
+
     /**
      * Generates a new OpenGL name for a 3D texture.
-     * 
+     *
      * @return A new 3D texture object.
      */
     public static Texture3D genTex3D()
     {
         return gen(new Texture3D());
     }
-    
+
     /**
      * Creates a new OpenGL 3D texture using the given image array.
-     * 
+     *
      * @param images The array of images to load as a texture.
      * @return A new 3D texture object.
      */
@@ -537,49 +556,56 @@ public final class DGL
     {
         Texture3D texture = genTex3D();
         Image first = images[0];
-        
+
         int format = TexUtil.getFormat(first);
         if (format == -1) throw new IllegalArgumentException("Illegal image format.");
-        
+
         texture.image(first.width, first.height, images.length, format);
-        
-        for (int i=0; i<images.length; i++)
+
+        for (int i = 0; i < images.length; i++)
             texture.subimage(images[i], i, format);
-        
+
         return texture;
     }
-    
+
     /**
      * Creates a new OpenGL 3D texture using the given raster array.
-     * 
+     *
      * @param rasters The raster array to load as a texture.
      * @return A new 3D texture object.
      */
     public static Texture3D loadTex3D(Raster... rasters)
     {
         Image[] images = new Image[rasters.length];
-        for (int i=0; i<images.length; i++) images[i] = loadImage(rasters[i]);
-        
+        for (int i = 0; i < images.length; i++) images[i] = loadImage(rasters[i]);
+
         Texture3D texture = loadTex3D(images);
         delete(images);
         return texture;
     }
-    
+
     /**
      * Creates a new OpenGL 3D texture using the given array of paths.
-     * 
-     * @param paths An array of file or class paths to load from.
-     * @return A new 3D texture object.
-     * @throws IOException If an io exception occurred.
      */
-    public static Texture3D loadTex3D(String... paths) throws IOException
+    public static Texture3D loadTex3D(Path... paths) throws IOException
     {
         Image[] images = new Image[paths.length];
-        for (int i=0; i<images.length; i++) images[i] = loadImage(paths[i]);
-        
+        for (int i = 0; i < images.length; i++) images[i] = loadImage(paths[i]);
+
         Texture3D texture = loadTex3D(images);
         delete(images);
         return texture;
+    }
+
+
+    /**
+     * Creates a new OpenGL 3D texture using the given array of paths.
+     */
+    public static Texture3D loadTex3D(String... pathStrings) throws IOException
+    {
+        Path[] paths = new Path[pathStrings.length];
+        for (int i=0; i<paths.length; i++) paths[i] = Path.of(pathStrings[i]);
+        return loadTex3D(paths);
     }
     
     /**
@@ -628,12 +654,21 @@ public final class DGL
      * @return A new rectangle texture object.
      * @throws IOException If an io exception occurred.
      */
-    public static TextureRectangle loadTexRect(String path) throws IOException
+    public static TextureRectangle loadTexRect(Path path) throws IOException
     {
         Image image = loadImage(path);
         TextureRectangle texture = loadTexRect(image);
         delete(image);
         return texture;
+    }
+
+
+    /**
+     * Returns a new OpenGL rectable texture using the image found at the given path.
+     */
+    public static TextureRectangle loadTexRect(String path) throws IOException
+    {
+        return loadTexRect(Path.of(path));
     }
     
     /**
@@ -685,13 +720,13 @@ public final class DGL
     }
     
     /**
-     * Creates a new OpenGL 3D texture using the given array of paths.
+     * Creates a new OpenGL 2d texture array using the given array of paths.
      * 
      * @param paths An array of file or class paths to load from.
      * @return A new 3D texture object.
      * @throws IOException If an io exception occurred.
      */
-    public static Texture2DArray loadTex2DArray(String... paths) throws IOException
+    public static Texture2DArray loadTex2DArray(Path... paths) throws IOException
     {
         Image[] images = new Image[paths.length];
         for (int i=0; i<images.length; i++) images[i] = loadImage(paths[i]);
@@ -699,6 +734,16 @@ public final class DGL
         Texture2DArray texture = loadTex2DArray(images);
         delete(images);
         return texture;
+    }
+
+    /**
+     * Creates a new OpenGL 2d texture array using the given array of paths.
+     */
+    public static Texture2DArray loadTex2DArray(String... pathStrings) throws IOException
+    {
+        Path[] paths = new Path[pathStrings.length];
+        for (int i=0; i<paths.length; i++) paths[i] = Path.of(pathStrings[i]);
+        return loadTex2DArray(paths);
     }
     
     /**

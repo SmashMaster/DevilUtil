@@ -1,13 +1,15 @@
 package com.samrj.devil.gl;
 
-import java.util.*;
 import org.lwjgl.opengl.ARBInstancedArrays;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL33C;
 import org.lwjgl.opengl.GLCapabilities;
 
+import java.util.*;
+
 import static org.lwjgl.opengl.GL15C.*;
-import static org.lwjgl.opengl.GL20C.*;
+import static org.lwjgl.opengl.GL20C.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL20C.nglVertexAttribPointer;
 import static org.lwjgl.opengl.GL30C.*;
 
 /**

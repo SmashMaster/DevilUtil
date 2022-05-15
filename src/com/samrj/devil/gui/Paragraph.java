@@ -2,6 +2,7 @@ package com.samrj.devil.gui;
 
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
+
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.function.Consumer;
