@@ -617,7 +617,22 @@ public final class BlendFile
 
             return result;
         }
-        
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Pointer pointer = (Pointer)o;
+            return position == pointer.position && count == pointer.count && type == pointer.type && Objects.equals(structDNA, pointer.structDNA);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return Objects.hash(position, structDNA, count, type);
+        }
+
         @Override
         public String toString()
         {
