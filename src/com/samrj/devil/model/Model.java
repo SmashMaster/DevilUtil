@@ -10,7 +10,7 @@ import java.util.EnumMap;
  * Loads and parses Blender .blend files.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2020 Samuel Johnson
+ * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class Model
@@ -28,7 +28,7 @@ public final class Model
     public final ArrayMap<Mesh> meshes;
     public final ArrayMap<ModelObject> objects;
     public final ArrayMap<Scene> scenes;
-    public final ArrayMap<Texture> textures;
+    public final ArrayMap<Image> images;
     
     private boolean destroyed;
     
@@ -85,12 +85,12 @@ public final class Model
             for (BlendFile.Pointer bScene : blend.getLibrary("Scene"))
                 scenes.put(new Scene(this, bScene));
             arraymaps.put(Type.SCENE, scenes);
-            
-            textures = new ArrayMap<>();
-            for (BlendFile.Pointer bTex : blend.getLibrary("Tex"))
-                textures.put(new Texture(this, bTex));
-            arraymaps.put(Type.TEXTURE, textures);
-            
+
+            images = new ArrayMap<>();
+            for (BlendFile.Pointer bImage : blend.getLibrary("Image"))
+                images.put(new Image(this, bImage));
+            arraymaps.put(Type.IMAGE, images);
+
             blend.destroy();
         }
         catch (IOException e)

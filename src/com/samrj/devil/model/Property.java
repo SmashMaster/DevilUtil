@@ -18,14 +18,14 @@ public final class Property
     {
         STRING, INT, FLOAT, ARRAY, GROUP, ID, DOUBLE, IDPARRAY, NUMTYPES
     }
-    
+
     public final String name;
     public final Type type;
     public final List<Property> properties;
     
     private Object value;
     
-    Property(BlendFile.Pointer bProp) throws IOException
+    Property(BlendFile.Pointer bProp)
     {
         name = bProp.getField("name").asString();
         

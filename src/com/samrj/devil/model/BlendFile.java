@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Sam Johnson
+ * Copyright (c) 2022 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,7 @@
 
 package com.samrj.devil.model;
 
-import com.samrj.devil.math.Mat3;
-import com.samrj.devil.math.Mat4;
-import com.samrj.devil.math.Quat;
-import com.samrj.devil.math.Vec3;
+import com.samrj.devil.math.*;
 import com.samrj.devil.util.IOUtil;
 
 import java.io.File;
@@ -192,7 +189,7 @@ public final class BlendFile
             
             for (Entry<String, List<Pointer>> entry : libmap.entrySet())
                 entry.setValue(Collections.unmodifiableList(entry.getValue()));
-            
+
             libraries = Collections.unmodifiableMap(libmap);
         }
         catch (BufferUnderflowException e)
@@ -441,7 +438,7 @@ public final class BlendFile
             float[] v = asFloats(3);
             return new Vec3(v[1], v[2], v[0]);
         }
-        
+
         /**
          * Casts this pointer to a 3d vector of signed shorts.
          */
@@ -450,7 +447,16 @@ public final class BlendFile
             short[] nrm = asShorts(3);
             return new Vec3(nrm[1], nrm[2], nrm[0]).div(32768.0f);
         }
-        
+
+        /**
+         * Casts this pointer to an RGBA color.
+         */
+        public Vec4 asRGBA()
+        {
+            float[] v = asFloats(4);
+            return new Vec4(v[0], v[1], v[2], v[3]);
+        }
+
         /**
          * Casts this pointer to a quaternion.
          */

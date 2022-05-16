@@ -2,13 +2,12 @@ package com.samrj.devil.model;
 
 import com.samrj.devil.model.BlendFile.Pointer;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public abstract class DataBlock
@@ -24,6 +23,7 @@ public abstract class DataBlock
         MESH,
         OBJECT,
         SCENE,
+        IMAGE,
         TEXTURE;
     }
     
@@ -36,7 +36,7 @@ public abstract class DataBlock
     public final String name;
     public final List<Property> properties;
     
-    DataBlock(Model model, BlendFile.Pointer pointer) throws IOException
+    DataBlock(Model model, BlendFile.Pointer pointer)
     {
         if (model == null || pointer == null) throw new NullPointerException();
         this.model = model;
