@@ -19,37 +19,50 @@ public final class Material extends DataBlock
 
     private static final int NODE_TYPE_OUTPUT_MATERIAL = 124;
     private static final int NODE_TYPE_TEX_IMAGE = 143;
-    private static final int NODE_TYPE_NORMAL_MAP = 175;
     private static final int NODE_TYPE_BSDF_PRINCIPLED = 193;
 
     private static final int NODE_LINK_FLAG_MUTED = 1 << 4;
     private static final int NODE_FLAG_DO_OUTPUT = 1 << 6;
 
     private static final int SOCKET_TYPE_FLOAT = 0;
-    private static final int SOCKET_TYPE_VECTOR = 1;
     private static final int SOCKET_TYPE_RGBA = 2;
-    private static final int SOCKET_TYPE_SHADER = 3;
-    private static final int SOCKET_TYPE_BOOLEAN = 4;
-    private static final int SOCKET_TYPE_INT = 6;
-    private static final int SOCKET_TYPE_STRING = 7;
-    private static final int SOCKET_TYPE_OBJECT = 8;
-    private static final int SOCKET_TYPE_IMAGE = 9;
-    private static final int SOCKET_TYPE_GEOMETRY = 10;
-    private static final int SOCKET_TYPE_COLLECTION = 11;
-    private static final int SOCKET_TYPE_TEXTURE = 12;
-    private static final int SOCKET_TYPE_MATERIAL = 13;
 
     public final int modelIndex;
     
-    public final Vec3 diffuseColor;
-    public final float specularIntensity;
-    public final float roughness;
+    public final Vec3 baseColor;
+    public final DataPointer<Image> baseColorImage;
     public final float metallic;
+    public final DataPointer<Image> metallicImage;
+    public final float specular;
+    public final DataPointer<Image> specularImage;
+    public final float roughness;
+    public final DataPointer<Image> roughnessImage;
     
     Material(Model model, int modelIndex, BlendFile.Pointer bMat) throws IOException
     {
         super(model, bMat);
         this.modelIndex = modelIndex;
+
+        //Default to legacy values if "Use Nodes" not enabled for this material.
+        float r = bMat.getField("r").asFloat();
+        float g = bMat.getField("g").asFloat();
+        float b = bMat.getField("b").asFloat();
+
+        Vec3 baseColor = new Vec3(r, g, b);
+        float metallic = bMat.getField("metallic").asFloat();
+        float specular = bMat.getField("spec").asFloat();
+        float roughness = bMat.getField("roughness").asFloat();
+
+        DataPointer<Image> baseColorImage = DataPointer.nullPointer(model);
+        DataPointer<Image> metallicImage = DataPointer.nullPointer(model);
+        DataPointer<Image> specularImage = DataPointer.nullPointer(model);
+        DataPointer<Image> roughnessImage = DataPointer.nullPointer(model);
+
+
+        /**
+         * Node loading limitations: Only loads supported nodes. Only allows for the simplest possible node layout.
+         * Ignores texture mapping information.
+         */
 
         boolean useNodes = bMat.getField("use_nodes").asByte() != 0;
         Node outputNode = null;
@@ -90,38 +103,38 @@ public final class Material extends DataBlock
                     //How does blender deal with RGB textures attached to 1-channel sockets? Guessing it just uses the red channel?
 
                     Node bsdf = bsdfSock.node;
-                    NodeSocket baseColor = bsdf.inputs.get("Base Color");
-                    Vec4 baseDefault = baseColor.asRGBA();
-                    NodeSocket texSock = baseColor.connectedFrom;
-                    if (texSock != null && texSock.node.type == NODE_TYPE_TEX_IMAGE && texSock.name.equals("Color"))
-                    {
-                        Node tex = texSock.node;
 
-                        BlendFile.Pointer storage = tex.ptr.getField("storage").cast("NodeTexImage").dereference();
-                        BlendFile.Pointer base = storage.getField("base"); //NodeTexBase
-                        BlendFile.Pointer texMapping = base.getField("tex_mapping"); //TexMapping
-                        BlendFile.Pointer colorMapping = base.getField("color_mapping"); //ColorMapping
-                        BlendFile.Pointer imageUser = storage.getField("iuser"); //ImageUser
+                    NodeSocket baseColorSock = bsdf.inputs.get("Base Color");
+                    Vec4 baseDefault = baseColorSock.asRGBA();
+                    baseColor.set(baseDefault.x, baseDefault.y, baseDefault.z);
+                    baseColorImage = baseColorSock.getImage(model);
 
-                        BlendFile.Pointer id = tex.ptr.getField("id").dereference();
-                        String imgName = id.getField("name").asString().substring(2);
-                        DataPointer<Image> image = new DataPointer<>(model, Type.IMAGE, imgName);
-                    }
+                    NodeSocket metallicSock = bsdf.inputs.get("Metallic");
+                    metallic = metallicSock.asFloat();
+                    metallicImage = metallicSock.getImage(model);
+
+                    NodeSocket specularSock = bsdf.inputs.get("Specular");
+                    specular = specularSock.asFloat();
+                    specularImage = specularSock.getImage(model);
+
+                    NodeSocket roughnessSock = bsdf.inputs.get("Roughness");
+                    roughness = roughnessSock.asFloat();
+                    roughnessImage = roughnessSock.getImage(model);
                 }
             }
         }
 
-        float r = bMat.getField("r").asFloat();
-        float g = bMat.getField("g").asFloat();
-        float b = bMat.getField("b").asFloat();
-        
-        diffuseColor = new Vec3(r, g, b);
-        specularIntensity = bMat.getField("spec").asFloat();
-        roughness = bMat.getField("roughness").asFloat();
-        metallic = bMat.getField("metallic").asFloat();
+        this.baseColor = baseColor;
+        this.baseColorImage = baseColorImage;
+        this.metallic = metallic;
+        this.metallicImage = metallicImage;
+        this.specular = specular;
+        this.specularImage = specularImage;
+        this.roughness = roughness;
+        this.roughnessImage = roughnessImage;
     }
 
-    private static class NodeSocket
+    private static class NodeSocket<T>
     {
         private final Node node;
         private final BlendFile.Pointer ptr;
@@ -129,6 +142,7 @@ public final class Material extends DataBlock
         private final int type;
 
         private NodeSocket connectedFrom;
+
 
         private NodeSocket(Node node, BlendFile.Pointer ptr)
         {
@@ -138,15 +152,28 @@ public final class Material extends DataBlock
             type = ptr.getField("type").asShort() & 0xFFFF;
         }
 
-        private boolean isConnected()
-        {
-            return connectedFrom != null;
-        }
-
         private Vec4 asRGBA()
         {
             if (type != SOCKET_TYPE_RGBA) throw new UnsupportedOperationException();
             return ptr.getField("default_value").cast("bNodeSocketValueRGBA").dereference().getField("value").asRGBA();
+        }
+
+        private float asFloat()
+        {
+            if (type != SOCKET_TYPE_FLOAT) throw new UnsupportedOperationException();
+            return ptr.getField("default_value").cast("bNodeSocketValueFloat").dereference().getField("value").asFloat();
+        }
+
+        private DataPointer<Image> getImage(Model model)
+        {
+            if (connectedFrom == null || connectedFrom.node.type != NODE_TYPE_TEX_IMAGE || !connectedFrom.name.equals("Color"))
+                return DataPointer.nullPointer(model);
+
+            Node tex = connectedFrom.node;
+
+            BlendFile.Pointer id = tex.ptr.getField("id").dereference();
+            String imgName = id.getField("name").asString().substring(2);
+            return new DataPointer<>(model, Type.IMAGE, imgName);
         }
     }
 
@@ -166,8 +193,6 @@ public final class Material extends DataBlock
             name = ptr.getField("name").asString();
             isMainOutput = (ptr.getField("flag").asInt() & NODE_FLAG_DO_OUTPUT) != 0;
             type = ptr.getField("type").asShort() & 0xFFFF;
-
-            System.out.println(name + " " + type);
 
             for (BlendFile.Pointer bNodeSocket : ptr.getField("inputs").asList("bNodeSocket"))
             {

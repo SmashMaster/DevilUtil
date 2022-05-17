@@ -10,6 +10,11 @@ import java.util.Optional;
  */
 public final class DataPointer<T extends DataBlock>
 {
+    static <T extends DataBlock> DataPointer<T> nullPointer(Model model)
+    {
+        return new DataPointer(model, null, null);
+    }
+
     public final DataBlock.Type type;
     
     private final Model model;
@@ -24,7 +29,7 @@ public final class DataPointer<T extends DataBlock>
         this.name = name;
         this.type = type;
     }
-    
+
     /**
      * Returns the model data this pointer points to, or null if none is found.
      */

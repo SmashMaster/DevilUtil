@@ -182,7 +182,7 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
         }
         else
         {
-            parent = new DataPointer<>(model, null, null);
+            parent = DataPointer.nullPointer(model);
             parentBoneName = null;
             parentMatrix = null;
         }
@@ -193,7 +193,7 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
             String actionName = bAction.getField(0).getField("name").asString().substring(2);
             action = new DataPointer<>(model, Type.ACTION, actionName);
         }
-        else action = new DataPointer<>(model, null, null);
+        else action = DataPointer.nullPointer(model);
         
         switch(bObject.getField("empty_drawtype").asByte())
         {
