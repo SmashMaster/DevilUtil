@@ -1,7 +1,7 @@
 package com.samrj.devil.model;
 
 import com.samrj.devil.math.Vec3;
-import com.samrj.devil.model.nodes.MaterialShader;
+import com.samrj.devil.model.nodes.NodesToGLSL;
 
 import java.io.IOException;
 
@@ -19,7 +19,7 @@ public final class Material extends DataBlock
     public final float specular;
     public final float roughness;
 
-    public final MaterialShader shader;
+    public final NodesToGLSL glsl;
     
     Material(Model model, int modelIndex, BlendFile.Pointer bMat) throws IOException
     {
@@ -36,7 +36,6 @@ public final class Material extends DataBlock
         specular = bMat.getField("spec").asFloat();
         roughness = bMat.getField("roughness").asFloat();
 
-        shader = MaterialShader.of(bMat);
-//        if (shader != null) System.out.println(shader.source);
+        glsl = NodesToGLSL.of(bMat);
     }
 }

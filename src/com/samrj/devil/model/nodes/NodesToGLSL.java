@@ -12,11 +12,11 @@ import java.util.*;
  * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class MaterialShader
+public class NodesToGLSL
 {
     private static final int NODE_LINK_FLAG_MUTED = 1 << 4;
 
-    public static MaterialShader of(BlendFile.Pointer bMat)
+    public static NodesToGLSL of(BlendFile.Pointer bMat)
     {
         if (bMat.getField("use_nodes").asByte() == 0) return null;
 
@@ -68,7 +68,11 @@ public class MaterialShader
         builder.append("""
                     
                     in vec3 v_obj_pos;
+                    in vec3 v_prev_view_pos;
+                    in vec3 v_view_pos;
                     in vec3 v_normal;
+                    in vec3 v_tangent;
+                    in vec2 v_uv;
                     
                     out vec3 out_albedo;
                     out vec3 out_material;
@@ -81,13 +85,13 @@ public class MaterialShader
         for (Node node : nodes) if (node.isUsed()) node.generateCode(builder);
         builder.append("}");
 
-        return new MaterialShader(builder.toString(), varNames);
+        return new NodesToGLSL(builder.toString(), varNames);
     }
 
     public final String source;
     public final Map<String, String> images;
 
-    private MaterialShader(String source, VarNames varNames)
+    private NodesToGLSL(String source, VarNames varNames)
     {
         this.source = source;
         images = Collections.unmodifiableMap(varNames.imageNames);
