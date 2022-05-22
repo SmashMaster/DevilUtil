@@ -440,6 +440,15 @@ public final class BlendFile
         }
 
         /**
+         * Casts this pointer to a 3d vector, preserving Blender's native coordinate system.
+         */
+        public Vec3 asZUpVec3()
+        {
+            float[] v = asFloats(3);
+            return new Vec3(v[1], v[2], v[0]);
+        }
+
+        /**
          * Casts this pointer to a 3d vector of signed shorts.
          */
         public Vec3 asNormalVec3()

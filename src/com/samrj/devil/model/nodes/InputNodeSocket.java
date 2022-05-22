@@ -39,7 +39,7 @@ class InputNodeSocket implements Socket
     private Vec3 getDefaultVector()
     {
         if (type != Socket.TYPE_VECTOR) throw new UnsupportedOperationException();
-        return ptr.getField("default_value").cast("bNodeSocketValueVector").dereference().getField("value").asVec3();
+        return ptr.getField("default_value").cast("bNodeSocketValueVector").dereference().getField("value").asZUpVec3();
     }
 
     private Vec4 getDefaultRGBA()

@@ -1,5 +1,6 @@
 package com.samrj.devil.model.nodes;
 
+import com.samrj.devil.math.Vec4;
 import com.samrj.devil.model.BlendFile;
 
 import java.util.*;
@@ -85,7 +86,7 @@ class Node
         return Collections.unmodifiableCollection(outputs.values());
     }
 
-
+    private static final int TYPE_RGB = 101;
     private static final int TYPE_VALUE = 102;
     private static final int TYPE_MIX_RGB = 103;
     private static final int TYPE_VECTOR_MATH = 116;
@@ -93,6 +94,7 @@ class Node
     private static final int TYPE_OUTPUT_MATERIAL = 124;
     private static final int TYPE_TEX_IMAGE = 143;
     private static final int TYPE_TEX_COORD = 155;
+    private static final int TYPE_SEPXYZ = 188;
     private static final int TYPE_BSDF_PRINCIPLED = 193;
 
     //Enum orders matter.
@@ -118,6 +120,12 @@ class Node
 
         switch (type)
         {
+            case TYPE_RGB ->
+            {
+                OutputNodeSocket valueSock = outputs.get("Color");
+                Vec4 value = valueSock.ptr.getField("default_value").cast("bNodeSocketValueRGBA").dereference().getField("value").asRGBA();
+                valueSock.expression = () -> "vec4(" + value.x + ", " + value.y + ", " + value.z + ", " + value.w + ")";
+            }
             case TYPE_VALUE ->
             {
                 OutputNodeSocket valueSock = outputs.get("Value");
@@ -167,7 +175,7 @@ class Node
                 {
                     case FLAT ->
                     {
-                        outputs.get("Color").expression = () -> "texture(" + imgName + ", vec2(" + vector.getVectorZ() + ", " + vector.getVectorX() + "))"; //XYz -> ZXy
+                        outputs.get("Color").expression = () -> "texture(" + imgName + ", vec2(" + vector.getVectorX() + ", " + vector.getVectorY() + "))";
                     }
                     case BOX ->
                     {
@@ -176,13 +184,13 @@ class Node
 
                         //TODO: Generate simplified code if blend = 0.
                         String blendName = varNames.newVarName();
-                        innerExpressions.add(() -> "vec3 " + blendName + " = pow(abs(v_normal), vec3(" + invBlendAmt + "));");
+                        innerExpressions.add(() -> "vec3 " + blendName + " = pow(abs(v_normal.zxy), vec3(" + invBlendAmt + "));");
                         innerExpressions.add(() -> blendName + " /= dot(" + blendName + ", vec3(1.0));");
 
                         String xName = varNames.newVarName(), yName = varNames.newVarName(), zName = varNames.newVarName();
-                        innerExpressions.add(() -> "vec4 " + xName + " = v_normal.x > 0.0 ? texture(" + imgName + ", vec2(-" + vector.getVectorZ() + ", " + vector.getVectorY() + ")) : texture(" + imgName + ", vec2(" + vector.getVectorZ() + ", " + vector.getVectorY() + "));");
-                        innerExpressions.add(() -> "vec4 " + yName + " = v_normal.y > 0.0 ? texture(" + imgName + ", vec2(-" + vector.getVectorX() + ", " + vector.getVectorZ() + ")) : texture(" + imgName + ", vec2(" + vector.getVectorX() + ", " + vector.getVectorZ() + "));");
-                        innerExpressions.add(() -> "vec4 " + zName + " = v_normal.z > 0.0 ? texture(" + imgName + ", vec2(" + vector.getVectorX() + ", " + vector.getVectorY() + ")) : texture(" + imgName + ", vec2(-" + vector.getVectorX() + ", " + vector.getVectorY() + "));");
+                        innerExpressions.add(() -> "vec4 " + xName + " = v_normal.z > 0.0 ? texture(" + imgName + ", vec2(" + vector.getVectorY() + ", " + vector.getVectorZ() + ")) : texture(" + imgName + ", vec2(-" + vector.getVectorY() + ", " + vector.getVectorZ() + "));");
+                        innerExpressions.add(() -> "vec4 " + yName + " = v_normal.x > 0.0 ? texture(" + imgName + ", vec2(-" + vector.getVectorX() + ", " + vector.getVectorZ() + ")) : texture(" + imgName + ", vec2(" + vector.getVectorX() + ", " + vector.getVectorZ() + "));");
+                        innerExpressions.add(() -> "vec4 " + zName + " = v_normal.y > 0.0 ? texture(" + imgName + ", vec2(-" + vector.getVectorY() + ", " + vector.getVectorX() + ")) : texture(" + imgName + ", vec2(" + vector.getVectorY() + ", " + vector.getVectorX() + "));");
 
                         outputs.get("Color").expression = () -> xName + "*" + blendName + ".x + " + yName + "*" + blendName + ".y + " + zName + "*" + blendName + ".z";
                     }
@@ -190,15 +198,22 @@ class Node
                     case TUBE -> throw new UnsupportedOperationException();
                 }
             }
-            case TYPE_TEX_COORD ->
+            case TYPE_TEX_COORD -> //Must convert from DevilUtil's coordinate system to Blender.
             {
                 outputs.get("Generated").expression = null; //TODO: Gives [0,1] in the range of the object's bounding box.
-                outputs.get("Normal").expression = () -> "v_normal";
+                outputs.get("Normal").expression = () -> "v_normal.zxy";
                 outputs.get("UV").expression = null; //TODO: UV Mapping.
-                outputs.get("Object").expression = () -> "v_obj_pos";
+                outputs.get("Object").expression = () -> "v_obj_pos.zxy";
                 outputs.get("Camera").expression = null;
                 outputs.get("Window").expression = null;
                 outputs.get("Reflection").expression = null;
+            }
+            case TYPE_SEPXYZ ->
+            {
+                InputNodeSocket vector = inputs.get("Vector");
+                outputs.get("X").expression = () -> vector.getVectorX();
+                outputs.get("Y").expression = () -> vector.getVectorY();
+                outputs.get("Z").expression = () -> vector.getVectorZ();
             }
             case TYPE_BSDF_PRINCIPLED ->
             {
@@ -212,18 +227,20 @@ class Node
                 //InputNodeSocket should have a number of methods that return strings (or accept a StringBuilder)
                 //and basically fill in an expression
 
+                //TODO: Actually use Normal socket. (for normal mapping)
+
                 if (emissionStrength == null)
                 {
                     outputs.get("BSDF").expression = () -> "float[](" +
                             baseColor.getRed() + ", " + baseColor.getGreen() + ", " + baseColor.getBlue() + ", " +
                             metallic.getFloat() + ", " + specular.getFloat() + ", " + roughness.getFloat() + ", " +
-                            "v_normal.x, v_normal.y, v_normal.z, " +
+                            "v_normal.z, v_normal.x, v_normal.y, " +
                             emission.getRed() + ", " + emission.getGreen() + ", " + emission.getBlue() + ")";
                 }
                 else outputs.get("BSDF").expression = () -> "float[](" +
                             baseColor.getRed() + ", " + baseColor.getGreen() + ", " + baseColor.getBlue() + ", " +
                             metallic.getFloat() + ", " + specular.getFloat() + ", " + roughness.getFloat() + ", " +
-                            "v_normal.x, v_normal.y, v_normal.z, " +
+                            "v_normal.z, v_normal.x, v_normal.y, " +
                             emission.getRed() + "*" + emissionStrength.getFloat() + ", " + emission.getGreen() + "*" + emissionStrength.getFloat() + ", " + emission.getBlue() + "*" + emissionStrength.getFloat() + ")";
             }
         }
@@ -264,12 +281,12 @@ class Node
             builder.append(";\n");
         }
 
-        if (type == TYPE_OUTPUT_MATERIAL)
+        if (type == TYPE_OUTPUT_MATERIAL) //Must convert from Blender's coordinate system back to DevilUtil.
         {
             OutputNodeSocket bsdf = inputs.get("Surface").connectedFrom;
             builder.append("\tout_albedo = vec3(" + bsdf.varName() + "[0], " + bsdf.varName() + "[1], " + bsdf.varName() + "[2]);\n");
             builder.append("\tout_material = vec3(" + bsdf.varName() + "[3], " + bsdf.varName() + "[4], " + bsdf.varName() + "[5]);\n");
-            builder.append("\tout_normal = vec3(" + bsdf.varName() + "[6]*0.5 + 0.5, " + bsdf.varName() + "[7]*0.5 + 0.5, " + bsdf.varName() + "[8]*0.5 + 0.5);\n");
+            builder.append("\tout_normal = vec3(" + bsdf.varName() + "[7]*0.5 + 0.5, " + bsdf.varName() + "[8]*0.5 + 0.5, " + bsdf.varName() + "[6]*0.5 + 0.5);\n");
             builder.append("\tout_radiance = vec3(" + bsdf.varName() + "[9], " + bsdf.varName() + "[10], " + bsdf.varName() + "[11]);\n");
         }
         else builder.append('\n');
