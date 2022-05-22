@@ -63,27 +63,46 @@ public class NodesToGLSL
         outputNode.buildExpressions();
 
         StringBuilder builder = new StringBuilder();
-        builder.append("#version 140\n\n");
+        builder.append("""
+                #version 140
+                
+                uniform float u_z_far;
+                uniform vec2 u_vel_factor;
+                
+                """);
         for (String imgName : varNames.imageNames.values()) builder.append("uniform sampler2D " + imgName + ";\n");
         builder.append("""
-                    
-                    in vec3 v_obj_pos;
-                    in vec3 v_prev_view_pos;
-                    in vec3 v_view_pos;
-                    in vec3 v_normal;
-                    in vec3 v_tangent;
-                    in vec2 v_uv;
-                    
-                    out vec3 out_albedo;
-                    out vec3 out_material;
-                    out vec3 out_normal;
-                    out vec3 out_radiance;
-                    
-                    void main()
-                    {
-                    """);
+                
+                in vec3 v_obj_pos;
+                in vec3 v_prev_view_pos;
+                in vec3 v_view_pos;
+                in vec3 v_normal;
+                in vec3 v_tangent;
+                in vec2 v_uv;
+                
+                out vec3 out_albedo;
+                out vec3 out_material;
+                out vec3 out_normal;
+                out vec2 out_velocity;
+                out vec3 out_radiance;
+                
+                void main()
+                {
+                    //Motion blur
+                    vec2 p0 = (-v_prev_view_pos.xy/v_prev_view_pos.z)*0.5 + 0.5;
+                    vec2 p1 = (-v_view_pos.xy/v_view_pos.z)*0.5 + 0.5;
+                    vec2 vel = (p1 - p0)*u_vel_factor;
+                    float speed = length(vel);
+                    if (speed > 1.0) vel /= speed;
+                                    
+                """);
         for (Node node : nodes) if (node.isUsed()) node.generateCode(builder);
-        builder.append("}");
+        builder.append("""
+                    
+                    out_velocity = vel*0.5 + 0.5;
+                    gl_FragDepth = -v_view_pos.z/u_z_far;
+                }
+                """);
 
         return new NodesToGLSL(builder.toString(), varNames);
     }

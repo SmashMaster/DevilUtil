@@ -87,6 +87,7 @@ class Node
 
 
     private static final int TYPE_VALUE = 102;
+    private static final int TYPE_MIX_RGB = 103;
     private static final int TYPE_VECTOR_MATH = 116;
     private static final int TYPE_SEPRGB_LEGACY = 120;
     private static final int TYPE_OUTPUT_MATERIAL = 124;
@@ -94,15 +95,21 @@ class Node
     private static final int TYPE_TEX_COORD = 155;
     private static final int TYPE_BSDF_PRINCIPLED = 193;
 
-    private static final int VECTOR_MATH_ADD = 0;
-    private static final int VECTOR_MATH_SUBTRACT = 1;
-    private static final int VECTOR_MATH_MULTIPLY = 2;
-    private static final int VECTOR_MATH_DIVIDE = 3;
+    //Enum orders matter.
+    private enum MixRGBOperation
+    {
+        BLEND, ADD, MULTIPLY, SUBTRACT, SCREEN, DIVIDE, DIFFERENCE, DARK, LIGHT, OVERLAY, DODGE, BURN, HUE, SAT, VAL, COLOR, SOFT, LINEAR;
+    }
 
-    private static final int TEX_IMAGE_PROJ_FLAT = 0;
-    private static final int TEX_IMAGE_PROJ_BOX = 1;
-    private static final int TEX_IMAGE_PROJ_SPHERE = 2;
-    private static final int TEX_IMAGE_PROJ_TUBE = 3;
+    private enum VectorMathOperation
+    {
+        ADD, SUBTRACT, MULTIPLY, DIVIDE;
+    }
+
+    private enum TexImageProjection
+    {
+        FLAT, BOX, SPHERE, TUBE;
+    }
 
     void buildExpressions()
     {
@@ -117,6 +124,19 @@ class Node
                 float value = valueSock.ptr.getField("default_value").cast("bNodeSocketValueFloat").dereference().getField("value").asFloat();
                 valueSock.expression = () -> Float.toString(value);
             }
+            case TYPE_MIX_RGB ->
+            {
+                InputNodeSocket fac = inputs.get("Fac");
+                InputNodeSocket color1 = inputs.get("Color1");
+                InputNodeSocket color2 = inputs.get("Color2");
+
+                switch (MixRGBOperation.values()[ptr.getField("custom1").asShort() & 0xFFFF])
+                {
+                    case BLEND -> outputs.get("Color").expression = () -> "mix(" + color1.getRGBA() + ", " + color2.getRGBA() + ", " + fac.getFloat() + ")";
+                    //Could optimize multiply if factor is a constant 0.0 or 1.0
+                    case MULTIPLY -> outputs.get("Color").expression = () -> "mix(" + color1.getRGBA() + ", " + color1.getRGBA() + "*" + color2.getRGBA() + ", " + fac.getFloat() + ")";
+                }
+            }
             case TYPE_VECTOR_MATH ->
             {
                 InputNodeSocket vector1 = inputs.get("Vector1");
@@ -124,13 +144,12 @@ class Node
                 InputNodeSocket vector3 = inputs.get("Vector3");
                 InputNodeSocket scale = inputs.get("Scale");
 
-                int mode = ptr.getField("custom1").asShort() & 0xFFFF; //Thanks Blender, this was fun to figure out.
-                switch (mode)
+                switch (VectorMathOperation.values()[ptr.getField("custom1").asShort() & 0xFFFF])
                 {
-                    case VECTOR_MATH_ADD      -> outputs.get("Vector").expression = () -> vector1.getVector() + " + " + vector2.getVector();
-                    case VECTOR_MATH_SUBTRACT -> outputs.get("Vector").expression = () -> vector1.getVector() + " - " + vector2.getVector();
-                    case VECTOR_MATH_MULTIPLY -> outputs.get("Vector").expression = () -> vector1.getVector() + "*" + vector2.getVector();
-                    case VECTOR_MATH_DIVIDE   -> outputs.get("Vector").expression = () -> vector1.getVector() + "/" + vector2.getVector();
+                    case ADD      -> outputs.get("Vector").expression = () -> vector1.getVector() + " + " + vector2.getVector();
+                    case SUBTRACT -> outputs.get("Vector").expression = () -> vector1.getVector() + " - " + vector2.getVector();
+                    case MULTIPLY -> outputs.get("Vector").expression = () -> vector1.getVector() + "*" + vector2.getVector();
+                    case DIVIDE   -> outputs.get("Vector").expression = () -> vector1.getVector() + "/" + vector2.getVector();
                 }
             }
             case TYPE_SEPRGB_LEGACY ->
@@ -144,14 +163,13 @@ class Node
                 String imgName = varNames.getImageName(id.getField("name").asString().substring(2));
 
                 BlendFile.Pointer storage = ptr.getField("storage").cast("NodeTexImage").dereference();
-                int projection = storage.getField("projection").asInt();
-                switch (projection)
+                switch (TexImageProjection.values()[storage.getField("projection").asInt()])
                 {
-                    case TEX_IMAGE_PROJ_FLAT ->
+                    case FLAT ->
                     {
-                        outputs.get("Color").expression = () -> "texture(" + imgName + ", vec2(" + vector.getVectorX() + ", " + vector.getVectorY() + "))";
+                        outputs.get("Color").expression = () -> "texture(" + imgName + ", vec2(" + vector.getVectorZ() + ", " + vector.getVectorX() + "))"; //XYz -> ZXy
                     }
-                    case TEX_IMAGE_PROJ_BOX ->
+                    case BOX ->
                     {
                         float blendAmt = storage.getField("projection_blend").asFloat();
                         float invBlendAmt = blendAmt == 0.0f ? 1e9f : 1.0f/blendAmt;
@@ -162,14 +180,14 @@ class Node
                         innerExpressions.add(() -> blendName + " /= dot(" + blendName + ", vec3(1.0));");
 
                         String xName = varNames.newVarName(), yName = varNames.newVarName(), zName = varNames.newVarName();
-                        innerExpressions.add(() -> "vec4 " + xName + " = texture(" + imgName + ", vec2(" + vector.getVectorZ() + ", " + vector.getVectorY() + "));");
-                        innerExpressions.add(() -> "vec4 " + yName + " = texture(" + imgName + ", vec2(" + vector.getVectorX() + ", " + vector.getVectorZ() + "));");
-                        innerExpressions.add(() -> "vec4 " + zName + " = texture(" + imgName + ", vec2(" + vector.getVectorX() + ", " + vector.getVectorY() + "));");
+                        innerExpressions.add(() -> "vec4 " + xName + " = v_normal.x > 0.0 ? texture(" + imgName + ", vec2(-" + vector.getVectorZ() + ", " + vector.getVectorY() + ")) : texture(" + imgName + ", vec2(" + vector.getVectorZ() + ", " + vector.getVectorY() + "));");
+                        innerExpressions.add(() -> "vec4 " + yName + " = v_normal.y > 0.0 ? texture(" + imgName + ", vec2(-" + vector.getVectorX() + ", " + vector.getVectorZ() + ")) : texture(" + imgName + ", vec2(" + vector.getVectorX() + ", " + vector.getVectorZ() + "));");
+                        innerExpressions.add(() -> "vec4 " + zName + " = v_normal.z > 0.0 ? texture(" + imgName + ", vec2(" + vector.getVectorX() + ", " + vector.getVectorY() + ")) : texture(" + imgName + ", vec2(-" + vector.getVectorX() + ", " + vector.getVectorY() + "));");
 
                         outputs.get("Color").expression = () -> xName + "*" + blendName + ".x + " + yName + "*" + blendName + ".y + " + zName + "*" + blendName + ".z";
                     }
-                    case TEX_IMAGE_PROJ_SPHERE -> throw new UnsupportedOperationException();
-                    case TEX_IMAGE_PROJ_TUBE -> throw new UnsupportedOperationException();
+                    case SPHERE -> throw new UnsupportedOperationException();
+                    case TUBE -> throw new UnsupportedOperationException();
                 }
             }
             case TYPE_TEX_COORD ->
@@ -251,7 +269,7 @@ class Node
             OutputNodeSocket bsdf = inputs.get("Surface").connectedFrom;
             builder.append("\tout_albedo = vec3(" + bsdf.varName() + "[0], " + bsdf.varName() + "[1], " + bsdf.varName() + "[2]);\n");
             builder.append("\tout_material = vec3(" + bsdf.varName() + "[3], " + bsdf.varName() + "[4], " + bsdf.varName() + "[5]);\n");
-            builder.append("\tout_normal = vec3(" + bsdf.varName() + "[6], " + bsdf.varName() + "[7], " + bsdf.varName() + "[8]);\n");
+            builder.append("\tout_normal = vec3(" + bsdf.varName() + "[6]*0.5 + 0.5, " + bsdf.varName() + "[7]*0.5 + 0.5, " + bsdf.varName() + "[8]*0.5 + 0.5);\n");
             builder.append("\tout_radiance = vec3(" + bsdf.varName() + "[9], " + bsdf.varName() + "[10], " + bsdf.varName() + "[11]);\n");
         }
         else builder.append('\n');

@@ -124,6 +124,23 @@ class InputNodeSocket implements Socket
         return getVector(2);
     }
 
+    String getRGBA()
+    {
+        if (type != TYPE_RGBA) throw new UnsupportedOperationException();
+        if (connectedFrom == null)
+        {
+            Vec4 value = getDefaultRGBA();
+            return "vec4(" + value.x + ", " + value.y + ", " + value.z + ", " + value.w + ")";
+        }
+
+        return switch (connectedFrom.type)
+        {
+            case TYPE_FLOAT -> "vec4(" + connectedFrom.varName() + ")";
+            case TYPE_RGBA -> connectedFrom.varName();
+            default -> throw new UnsupportedOperationException();
+        };
+    }
+
     String getRGBA(int index)
     {
         if (type != TYPE_RGBA) throw new UnsupportedOperationException();
