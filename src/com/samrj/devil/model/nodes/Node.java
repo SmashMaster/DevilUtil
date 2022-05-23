@@ -86,6 +86,7 @@ class Node
         return Collections.unmodifiableCollection(outputs.values());
     }
 
+    private static final int TYPE_GROUP = 2;
     private static final int TYPE_RGB = 101;
     private static final int TYPE_VALUE = 102;
     private static final int TYPE_MIX_RGB = 103;
@@ -124,6 +125,10 @@ class Node
 
         switch (type)
         {
+            case TYPE_GROUP ->
+            {
+                //TODO: Add support for node groups.
+            }
             case TYPE_RGB ->
             {
                 OutputNodeSocket valueSock = outputs.get("Color");
@@ -196,20 +201,27 @@ class Node
                     }
                     case BOX ->
                     {
+                        String x = varNames.newVarName(), y = varNames.newVarName(), z = varNames.newVarName();
+                        innerExpressions.add(() -> "vec4 " + x + " = v_normal.z > 0.0 ? texture(" + imgName + ", vec2("  + vector.getVectorY() + ", " + vector.getVectorZ() + ")) : texture(" + imgName + ", vec2(-" + vector.getVectorY() + ", " + vector.getVectorZ() + "));");
+                        innerExpressions.add(() -> "vec4 " + y + " = v_normal.x > 0.0 ? texture(" + imgName + ", vec2(-" + vector.getVectorX() + ", " + vector.getVectorZ() + ")) : texture(" + imgName + ", vec2("  + vector.getVectorX() + ", " + vector.getVectorZ() + "));");
+                        innerExpressions.add(() -> "vec4 " + z + " = v_normal.y > 0.0 ? texture(" + imgName + ", vec2(-" + vector.getVectorY() + ", " + vector.getVectorX() + ")) : texture(" + imgName + ", vec2("  + vector.getVectorY() + ", " + vector.getVectorX() + "));");
+
                         float blendAmt = storage.getField("projection_blend").asFloat();
-                        float invBlendAmt = blendAmt == 0.0f ? 1e9f : 1.0f/blendAmt;
+                        if (blendAmt < 0.01f)
+                        {
+                            String n = varNames.newVarName();
+                            innerExpressions.add(() -> "vec3 " + n + " = abs(v_normal.zxy);");
+                            outputs.get("Color").expression = () ->  "(" + n + ".x > " + n + ".y) ? (" + n + ".x > " + n + ".z ? " + x + " : " + z + ") : (" + n + ".y > " + n + ".z ? " + y + " : " + z + ")";
+                        }
+                        else
+                        {
+                            float invBlendAmt = blendAmt == 0.0f ? 1e9f : 1.0f/blendAmt;
+                            String b = varNames.newVarName(); //Blend
+                            innerExpressions.add(() -> "vec3 " + b + " = pow(abs(v_normal.zxy), vec3(" + invBlendAmt + "));");
+                            innerExpressions.add(() -> b + " /= dot(" + b + ", vec3(1.0));");
 
-                        //TODO: Generate simplified code if blend = 0.
-                        String blendName = varNames.newVarName();
-                        innerExpressions.add(() -> "vec3 " + blendName + " = pow(abs(v_normal.zxy), vec3(" + invBlendAmt + "));");
-                        innerExpressions.add(() -> blendName + " /= dot(" + blendName + ", vec3(1.0));");
-
-                        String xName = varNames.newVarName(), yName = varNames.newVarName(), zName = varNames.newVarName();
-                        innerExpressions.add(() -> "vec4 " + xName + " = v_normal.z > 0.0 ? texture(" + imgName + ", vec2(" + vector.getVectorY() + ", " + vector.getVectorZ() + ")) : texture(" + imgName + ", vec2(-" + vector.getVectorY() + ", " + vector.getVectorZ() + "));");
-                        innerExpressions.add(() -> "vec4 " + yName + " = v_normal.x > 0.0 ? texture(" + imgName + ", vec2(-" + vector.getVectorX() + ", " + vector.getVectorZ() + ")) : texture(" + imgName + ", vec2(" + vector.getVectorX() + ", " + vector.getVectorZ() + "));");
-                        innerExpressions.add(() -> "vec4 " + zName + " = v_normal.y > 0.0 ? texture(" + imgName + ", vec2(-" + vector.getVectorY() + ", " + vector.getVectorX() + ")) : texture(" + imgName + ", vec2(" + vector.getVectorY() + ", " + vector.getVectorX() + "));");
-
-                        outputs.get("Color").expression = () -> xName + "*" + blendName + ".x + " + yName + "*" + blendName + ".y + " + zName + "*" + blendName + ".z";
+                            outputs.get("Color").expression = () -> x + "*" + b + ".x + " + y + "*" + b + ".y + " + z + "*" + b + ".z";
+                        }
                     }
                     case SPHERE -> throw new UnsupportedOperationException();
                     case TUBE -> throw new UnsupportedOperationException();
@@ -241,7 +253,7 @@ class Node
                 innerExpressions.add(() -> "vec3 " + b + " = normalize(cross(" + n + ", " + t + "));");
                 innerExpressions.add(() -> "vec3 " + tsn + " = normalize(" + color.getRGB() + "*2.0 - 1.0);");
 
-                outputs.get("Normal").expression = () -> tsn + ".x*" + t + " + " + tsn + ".y*" + b + " + " + tsn + ".z*" + n;
+                outputs.get("Normal").expression = () -> "normalize(mix(" + n + ", " + tsn + ".x*" + t + " + " + tsn + ".y*" + b + " + " + tsn + ".z*" + n + ", " + strength.getFloat() + "))";
             }
             case TYPE_SEPXYZ ->
             {
