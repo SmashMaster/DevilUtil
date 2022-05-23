@@ -92,8 +92,10 @@ class Node
     private static final int TYPE_VECTOR_MATH = 116;
     private static final int TYPE_SEPRGB_LEGACY = 120;
     private static final int TYPE_OUTPUT_MATERIAL = 124;
+    private static final int TYPE_NEW_GEOMETRY = 141;
     private static final int TYPE_TEX_IMAGE = 143;
     private static final int TYPE_TEX_COORD = 155;
+    private static final int TYPE_NORMAL_MAP = 175;
     private static final int TYPE_SEPXYZ = 188;
     private static final int TYPE_BSDF_PRINCIPLED = 193;
 
@@ -117,6 +119,8 @@ class Node
     {
         if (isUsed) return; //Prevent this from being called multiple times.
         isUsed = true;
+
+//        System.out.println(name + " " + type);
 
         switch (type)
         {
@@ -163,6 +167,19 @@ class Node
             case TYPE_SEPRGB_LEGACY ->
             {
             }
+            case TYPE_NEW_GEOMETRY ->
+            {
+                //Some of these may be impractical to implement.
+                outputs.get("Position").expression = () -> "v_world_pos.zxy";
+                outputs.get("Normal").expression = () -> "v_normal.zxy";
+                outputs.get("Tangent").expression = null; //Should not actually return () -> "v_tangent.zxy" -- blender calculates this differently.
+                outputs.get("True Normal").expression = null;
+                outputs.get("Incoming").expression = null;
+                outputs.get("Parametric").expression = null;
+                outputs.get("Backfacing").expression = null;
+                outputs.get("Pointiness").expression = null;
+                outputs.get("Random Per Island").expression = null;
+            }
             case TYPE_TEX_IMAGE ->
             {
                 InputNodeSocket vector = inputs.get("Vector");
@@ -202,11 +219,29 @@ class Node
             {
                 outputs.get("Generated").expression = null; //TODO: Gives [0,1] in the range of the object's bounding box.
                 outputs.get("Normal").expression = () -> "v_normal.zxy";
-                outputs.get("UV").expression = null; //TODO: UV Mapping.
+                outputs.get("UV").expression = () -> "vec3(v_uv, 0.0)";
                 outputs.get("Object").expression = () -> "v_obj_pos.zxy";
                 outputs.get("Camera").expression = null;
                 outputs.get("Window").expression = null;
                 outputs.get("Reflection").expression = null;
+            }
+            case TYPE_NORMAL_MAP ->
+            {
+                InputNodeSocket strength = inputs.get("Strength");
+                InputNodeSocket color = inputs.get("Color");
+
+                //TODO: Could optimize these kinds of expressions to be "global" and only declared once.
+                //Normals and tangents probably not normalized.
+                String n = varNames.newVarName(); //Normal
+                String t = varNames.newVarName(); //Tangent
+                String b = varNames.newVarName(); //Bitangent
+                String tsn = varNames.newVarName(); //Tangent space normal
+                innerExpressions.add(() -> "vec3 " + n + " = normalize(v_normal.zxy);");
+                innerExpressions.add(() -> "vec3 " + t + " = normalize(v_tangent.zxy);");
+                innerExpressions.add(() -> "vec3 " + b + " = normalize(cross(" + n + ", " + t + "));");
+                innerExpressions.add(() -> "vec3 " + tsn + " = normalize(" + color.getRGB() + "*2.0 - 1.0);");
+
+                outputs.get("Normal").expression = () -> tsn + ".x*" + t + " + " + tsn + ".y*" + b + " + " + tsn + ".z*" + n;
             }
             case TYPE_SEPXYZ ->
             {
@@ -223,24 +258,20 @@ class Node
                 InputNodeSocket roughness = inputs.get("Roughness");
                 InputNodeSocket emission = inputs.get("Emission");
                 InputNodeSocket emissionStrength = inputs.get("Emission Strength");
+                InputNodeSocket normal = inputs.get("Normal");
 
-                //InputNodeSocket should have a number of methods that return strings (or accept a StringBuilder)
-                //and basically fill in an expression
-
-                //TODO: Actually use Normal socket. (for normal mapping)
-
-                if (emissionStrength == null)
+                if (emissionStrength == null || emissionStrength.getDefaultFloat() == 0.0f)
                 {
                     outputs.get("BSDF").expression = () -> "float[](" +
                             baseColor.getRed() + ", " + baseColor.getGreen() + ", " + baseColor.getBlue() + ", " +
                             metallic.getFloat() + ", " + specular.getFloat() + ", " + roughness.getFloat() + ", " +
-                            "v_normal.z, v_normal.x, v_normal.y, " +
+                            (normal.connectedFrom == null ? "v_normal.z, v_normal.x, v_normal.y, " : (normal.getVectorX() + ", " + normal.getVectorY() + ", " + normal.getVectorZ() + ", ")) +
                             emission.getRed() + ", " + emission.getGreen() + ", " + emission.getBlue() + ")";
                 }
                 else outputs.get("BSDF").expression = () -> "float[](" +
                             baseColor.getRed() + ", " + baseColor.getGreen() + ", " + baseColor.getBlue() + ", " +
                             metallic.getFloat() + ", " + specular.getFloat() + ", " + roughness.getFloat() + ", " +
-                            "v_normal.z, v_normal.x, v_normal.y, " +
+                            (normal.connectedFrom == null ? "v_normal.z, v_normal.x, v_normal.y, " : (normal.getVectorX() + ", " + normal.getVectorY() + ", " + normal.getVectorZ() + ", ")) +
                             emission.getRed() + "*" + emissionStrength.getFloat() + ", " + emission.getGreen() + "*" + emissionStrength.getFloat() + ", " + emission.getBlue() + "*" + emissionStrength.getFloat() + ")";
             }
         }

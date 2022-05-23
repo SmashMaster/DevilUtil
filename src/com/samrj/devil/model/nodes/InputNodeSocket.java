@@ -30,19 +30,19 @@ class InputNodeSocket implements Socket
         type = ptr.getField("type").asShort()&0xFFFF;
     }
 
-    private float getDefaultFloat()
+    float getDefaultFloat()
     {
         if (type != Socket.TYPE_FLOAT) throw new UnsupportedOperationException();
         return ptr.getField("default_value").cast("bNodeSocketValueFloat").dereference().getField("value").asFloat();
     }
 
-    private Vec3 getDefaultVector()
+    Vec3 getDefaultVector()
     {
         if (type != Socket.TYPE_VECTOR) throw new UnsupportedOperationException();
         return ptr.getField("default_value").cast("bNodeSocketValueVector").dereference().getField("value").asZUpVec3();
     }
 
-    private Vec4 getDefaultRGBA()
+    Vec4 getDefaultRGBA()
     {
         if (type != Socket.TYPE_RGBA) throw new UnsupportedOperationException();
         return ptr.getField("default_value").cast("bNodeSocketValueRGBA").dereference().getField("value").asRGBA();
@@ -141,6 +141,24 @@ class InputNodeSocket implements Socket
         };
     }
 
+    String getRGB()
+    {
+        if (type != TYPE_RGBA) throw new UnsupportedOperationException();
+        if (connectedFrom == null)
+        {
+            Vec4 value = getDefaultRGBA();
+            return "vec3(" + value.x + ", " + value.y + ", " + value.z + ")";
+        }
+
+        return switch (connectedFrom.type)
+        {
+            case TYPE_FLOAT -> "vec3(" + connectedFrom.varName() + ")";
+            case TYPE_VECTOR -> connectedFrom.varName();
+            case TYPE_RGBA -> connectedFrom.varName() + ".rgb";
+            default -> throw new UnsupportedOperationException();
+        };
+    }
+
     String getRGBA(int index)
     {
         if (type != TYPE_RGBA) throw new UnsupportedOperationException();
@@ -149,6 +167,13 @@ class InputNodeSocket implements Socket
         return switch (connectedFrom.type)
         {
             case TYPE_FLOAT -> connectedFrom.varName();
+            case TYPE_VECTOR -> connectedFrom.varName() + switch (index)
+            {
+                case 0 -> ".x";
+                case 1 -> ".y";
+                case 2 -> ".z";
+                default -> throw new IllegalArgumentException();
+            };
             case TYPE_RGBA -> connectedFrom.varName() + switch (index)
             {
                 case 0 -> ".r";

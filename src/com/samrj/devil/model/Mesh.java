@@ -330,8 +330,8 @@ public final class Mesh extends DataBlock
         numVertices = mLoops.length;
         numTriangles = loopTris.size();
         numEdges = loopEdges.size();
-        
-        hasTangents = false;
+
+        hasTangents = !uvLayerNames.isEmpty();
         numGroups = maxGroup + 1;
         hasMaterials = loopMats != null;
         
@@ -356,8 +356,8 @@ public final class Mesh extends DataBlock
         
         //Tangents
         tangentOffset = intOffset*4;
-        if (hasTangents) intOffset += numVertices*3; 
-        
+        if (hasTangents) intOffset += numVertices*3;
+
         //Colors
         colorOffsets = new int[colorLayers.length];
         for (int i=0; i<colorLayers.length; i++)
@@ -425,13 +425,7 @@ public final class Mesh extends DataBlock
                     vertexData.putFloat(uv[1]);
                 }
             }
-            
-            if (hasTangents)
-            {
-                vertexData.position(tangentOffset);
-                //tangents need to be calculated from normals and uvs.
-            }
-            
+
             for (int layer=0; layer<colorLayers.length; layer++)
             {
                 vertexData.position(colorOffsets[layer]);
@@ -499,8 +493,97 @@ public final class Mesh extends DataBlock
             }
             edgeIndexData.flip();
         }
+
+        //Calculate tangents & bitangents.
+        if (hasTangents)
+        {
+            Vec3[] tangent = new Vec3[numVertices];
+            Vec3[] bitangent = new Vec3[numVertices];
+
+            for (int i=0; i<numVertices; i++)
+            {
+                tangent[i] = new Vec3();
+                bitangent[i] = new Vec3();
+            }
+
+            for (int tri=0; tri<numTriangles; tri++)
+            {
+                int i0 = indexData.getInt();
+                int i1 = indexData.getInt();
+                int i2 = indexData.getInt();
+
+                Vec3 p0 = getPosition(i0);
+                Vec3 p1 = getPosition(i1);
+                Vec3 p2 = getPosition(i2);
+                Vec2 w0 = getUV(i0);
+                Vec2 w1 = getUV(i1);
+                Vec2 w2 = getUV(i2);
+
+                Vec3 e1 = Vec3.sub(p1, p0), e2 = Vec3.sub(p2, p0);
+                float x1 = w1.x - w0.x, x2 = w2.x - w0.x;
+                float y1 = w1.y - w0.y, y2 = w2.y - w0.y;
+
+                float r = 1.0f/(x1*y2 - x2*y1);
+                Vec3 t = Vec3.mult(e1, y2).sub(Vec3.mult(e2, y1)).mult(r);
+                Vec3 b = Vec3.mult(e2, x1).sub(Vec3.mult(e1, x2)).mult(r);
+
+                tangent[i0].add(t);
+                tangent[i1].add(t);
+                tangent[i2].add(t);
+                bitangent[i0].add(b);
+                bitangent[i1].add(b);
+                bitangent[i2].add(b);
+            }
+            indexData.rewind();
+
+            vertexData.position(tangentOffset);
+            for (int i=0; i<numVertices; i++)
+            {
+                Vec3 t = tangent[i];
+                Vec3 b = bitangent[i];
+                Vec3 n = getNormal(i);
+
+                Vec3 vTangent = Vec3.reject(t, n).normalize();
+                vertexData.putFloat(vTangent.x);
+                vertexData.putFloat(vTangent.y);
+                vertexData.putFloat(vTangent.z);
+
+                //Might need handedness later
+//                boolean handedness = Vec3.cross(t, b).dot(n) > 0.0f;
+            }
+            vertexData.rewind();
+        }
     }
-    
+
+    /**
+     * Returns a new vector of the position of the vertex at the given index.
+     */
+    public Vec3 getPosition(int index)
+    {
+        int offset = positionOffset + index*12;
+        return new Vec3(vertexData.getFloat(offset),
+                        vertexData.getFloat(offset + 4),
+                        vertexData.getFloat(offset + 8));
+    }
+
+    public Vec3 getNormal(int index)
+    {
+        int offset = normalOffset + index*12;
+        return new Vec3(vertexData.getFloat(offset),
+                        vertexData.getFloat(offset + 4),
+                        vertexData.getFloat(offset + 8));
+    }
+
+    /**
+     * Returns the first UV value of the vertex at the given index.
+     */
+    public Vec2 getUV(int index)
+    {
+        int offset = uvOffsets[0] + index*8;
+        return new Vec2(vertexData.getFloat(offset),
+                        vertexData.getFloat(offset + 4));
+    }
+
     /**
      * Returns the first material found in this mesh, or null if this mesh has
      * no materials. This mesh may have more than one material.

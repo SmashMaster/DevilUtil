@@ -74,6 +74,7 @@ public class NodesToGLSL
         builder.append("""
                 
                 in vec3 v_obj_pos;
+                in vec3 v_world_pos;
                 in vec3 v_prev_view_pos;
                 in vec3 v_view_pos;
                 in vec3 v_normal;
