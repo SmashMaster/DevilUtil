@@ -20,7 +20,7 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
 {
     public enum EmptyType
     {
-        AXES, CUBE, SPHERE;
+        NONE, ARROWS, PLAINAXES, CIRCLE, SINGLE_ARROW, CUBE, EMPTY_SPHERE, EMPTY_CONE, EMPTY_IMAGE;
     }
 
     @Deprecated
@@ -195,29 +195,7 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
         }
         else action = DataPointer.nullPointer(model);
         
-        switch(bObject.getField("empty_drawtype").asByte())
-        {
-            case 2:
-                emptyType = EmptyType.AXES;
-                break;
-            case 5:
-                emptyType = EmptyType.CUBE;
-                break;
-            case 6:
-                emptyType = EmptyType.SPHERE;
-                break;
-                
-            //Unimplemented types:
-            case 1: //arrows
-            case 3: //circle
-            case 4: //single arrow
-            case 7: //cone
-            case 8: //image
-                
-            default:
-                emptyType = null;
-                break;
-        }
+        emptyType = EmptyType.values()[bObject.getField("empty_drawtype").asByte() & 0xFF];
     }
     
     public <T extends DataBlock> ModelObject<T> asType(Class<T> typeClass)
@@ -229,7 +207,12 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
     {
         return Optional.ofNullable(asType(typeClass));
     }
-    
+
+    /**
+     * These methods do not apply the parent inverse matrix, and cannot work for shearing transformations.
+     */
+
+    @Deprecated
     public void applyParentTransform(Transform result)
     {
         ModelObject<?> parentObj = parent.get();
@@ -239,13 +222,15 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
             parentObj.applyParentTransform(result);
         }
     }
-    
+
+    @Deprecated
     public void getParentedTransform(Transform result)
     {
         result.set(transform);
         applyParentTransform(result);
     }
-    
+
+    @Deprecated
     public Transform getParentedTransform()
     {
         Transform out = new Transform();
