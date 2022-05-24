@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 class Node
 {
     private static final int NODE_FLAG_DO_OUTPUT = 1 << 6;
+    private static final String EMIT_BRIGHTNESS = Float.toString(1.0f/32.0f);
 
     //Reading Blender's nodes:
     //Node type enums: https://github.com/blender/blender/blob/master/source/blender/blenkernel/BKE_node.h
@@ -90,6 +91,7 @@ class Node
     private static final int TYPE_RGB = 101;
     private static final int TYPE_VALUE = 102;
     private static final int TYPE_MIX_RGB = 103;
+    private static final int TYPE_MATH = 115;
     private static final int TYPE_VECTOR_MATH = 116;
     private static final int TYPE_SEPRGB_LEGACY = 120;
     private static final int TYPE_OUTPUT_MATERIAL = 124;
@@ -106,9 +108,17 @@ class Node
         BLEND, ADD, MULTIPLY, SUBTRACT, SCREEN, DIVIDE, DIFFERENCE, DARK, LIGHT, OVERLAY, DODGE, BURN, HUE, SAT, VAL, COLOR, SOFT, LINEAR;
     }
 
+    private enum MathOperation
+    {
+        ADD, SUBTRACT, MULTIPLY, DIVIDE, SINE, COSINE, TANGENT, ARCSINE, ARCCOSINE, ARCTANGENT, POWER, LOGARITHM, MINIMUM, MAXIMUM, ROUND,
+        LESS_THAN, GREATER_THAN, MODULO, ABSOLUTE, ARCTAN2, FLOOR, CEIL, FRACTION, SQRT, INV_SQRT, SIGN, EXPONENT, RADIANS, DEGREES, SINH,
+        COSH, TANH, TRUNC, SNAP, WRAP, COMPARE, MULTIPLY_ADD, PINGPONG, SMOOTH_MIN, SMOOTH_MAX
+    }
+
     private enum VectorMathOperation
     {
-        ADD, SUBTRACT, MULTIPLY, DIVIDE;
+        ADD, SUBTRACT, MULTIPLY, DIVIDE, CROSS_PRODUCT, PROJECT, REFLECT, DOT_PRODUCT, DISTANCE, LENGTH, SCALE, NORMALIZE,
+        SNAP, FLOOR, CEIL, MODULO, FRACTION, ABSOLUTE, MINIMUM, MAXIMUM, WRAP, SINE, COSINE, TANGENT, REFRACT, FACEFORWARD, MULTIPLY_ADD;
     }
 
     private enum TexImageProjection
@@ -149,9 +159,23 @@ class Node
 
                 switch (MixRGBOperation.values()[ptr.getField("custom1").asShort() & 0xFFFF])
                 {
-                    case BLEND -> outputs.get("Color").expression = () -> "mix(" + color1.getRGBA() + ", " + color2.getRGBA() + ", " + fac.getFloat() + ")";
+                    case BLEND    -> outputs.get("Color").expression = () -> "mix(" + color1.getRGBA() + ", " + color2.getRGBA() + ", " + fac.getFloat() + ")";
+                    case ADD      -> outputs.get("Color").expression = () -> color1.getRGBA() + " + " + color2.getRGBA() + "*" + fac.getFloat();
                     //Could optimize multiply if factor is a constant 0.0 or 1.0
                     case MULTIPLY -> outputs.get("Color").expression = () -> "mix(" + color1.getRGBA() + ", " + color1.getRGBA() + "*" + color2.getRGBA() + ", " + fac.getFloat() + ")";
+                    //case BURN     -> outputs.get("Color").expression = () -> "1.0 - (1.0 - " + color2.getRGBA() + ")/" + color1.getRGBA();
+                }
+            }
+            case TYPE_MATH ->
+            {
+                InputNodeSocket value1 = inputs.get("Value1");
+                InputNodeSocket value2 = inputs.get("Value2");
+
+                switch (MathOperation.values()[ptr.getField("custom1").asShort() & 0xFFFF])
+                {
+                    case MULTIPLY -> outputs.get("Value").expression = () -> value1.getFloat() + "*" + value2.getFloat();
+                    case SINE     -> outputs.get("Value").expression = () -> "sin(" + value1.getFloat() + ")";
+                    case ABSOLUTE -> outputs.get("Value").expression = () -> "abs(" + value1.getFloat() + ")";
                 }
             }
             case TYPE_VECTOR_MATH ->
@@ -167,6 +191,7 @@ class Node
                     case SUBTRACT -> outputs.get("Vector").expression = () -> vector1.getVector() + " - " + vector2.getVector();
                     case MULTIPLY -> outputs.get("Vector").expression = () -> vector1.getVector() + "*" + vector2.getVector();
                     case DIVIDE   -> outputs.get("Vector").expression = () -> vector1.getVector() + "/" + vector2.getVector();
+                    case REFRACT  -> outputs.get("Vector").expression = () -> "refract(" + vector1.getVector() + ", " + vector2.getVector() + ", " + scale.getFloat() + ")";
                 }
             }
             case TYPE_SEPRGB_LEGACY ->
@@ -179,7 +204,7 @@ class Node
                 outputs.get("Normal").expression = () -> "v_normal.zxy";
                 outputs.get("Tangent").expression = null; //Should not actually return () -> "v_tangent.zxy" -- blender calculates this differently.
                 outputs.get("True Normal").expression = null;
-                outputs.get("Incoming").expression = null;
+                outputs.get("Incoming").expression = () -> "normalize(v_incoming.zxy)";
                 outputs.get("Parametric").expression = null;
                 outputs.get("Backfacing").expression = null;
                 outputs.get("Pointiness").expression = null;
@@ -330,7 +355,7 @@ class Node
             builder.append("\tout_albedo = vec3(" + bsdf.varName() + "[0], " + bsdf.varName() + "[1], " + bsdf.varName() + "[2]);\n");
             builder.append("\tout_material = vec3(" + bsdf.varName() + "[3], " + bsdf.varName() + "[4], " + bsdf.varName() + "[5]);\n");
             builder.append("\tout_normal = vec3(" + bsdf.varName() + "[7]*0.5 + 0.5, " + bsdf.varName() + "[8]*0.5 + 0.5, " + bsdf.varName() + "[6]*0.5 + 0.5);\n");
-            builder.append("\tout_radiance = vec3(" + bsdf.varName() + "[9], " + bsdf.varName() + "[10], " + bsdf.varName() + "[11]);\n");
+            builder.append("\tout_radiance = vec3(" + bsdf.varName() + "[9], " + bsdf.varName() + "[10], " + bsdf.varName() + "[11])*" + EMIT_BRIGHTNESS + ";\n");
         }
         else builder.append('\n');
     }

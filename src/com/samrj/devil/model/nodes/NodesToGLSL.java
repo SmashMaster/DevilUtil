@@ -68,13 +68,13 @@ public class NodesToGLSL
                 
                 uniform float u_z_far;
                 uniform vec2 u_vel_factor;
-                
                 """);
         for (String imgName : varNames.imageNames.values()) builder.append("uniform sampler2D " + imgName + ";\n");
         builder.append("""
                 
                 in vec3 v_obj_pos;
                 in vec3 v_world_pos;
+                in vec3 v_incoming;
                 in vec3 v_prev_view_pos;
                 in vec3 v_view_pos;
                 in vec3 v_normal;
