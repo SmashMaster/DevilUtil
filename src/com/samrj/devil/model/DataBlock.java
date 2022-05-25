@@ -22,6 +22,7 @@ public abstract class DataBlock
         MATERIAL,
         MESH,
         OBJECT,
+        COLLECTION,
         SCENE,
         IMAGE,
         TEXTURE;

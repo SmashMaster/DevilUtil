@@ -23,6 +23,24 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
         NONE, ARROWS, PLAINAXES, CIRCLE, SINGLE_ARROW, CUBE, EMPTY_SPHERE, EMPTY_CONE, EMPTY_IMAGE;
     }
 
+    //Object types: https://github.com/blender/blender/blob/master/source/blender/makesdna/DNA_object_types.h
+    private static final int TYPE_EMPTY = 0;
+    private static final int TYPE_MESH = 1;
+    private static final int TYPE_CURVES_LEGACY = 2;
+    private static final int TYPE_SURF = 3;
+    private static final int TYPE_FONT = 4;
+    private static final int TYPE_MBALL = 5;
+    private static final int TYPE_LAMP = 10;
+    private static final int TYPE_CAMERA = 11;
+    private static final int TYPE_SPEAKER = 12;
+    private static final int TYPE_LIGHTPROBE = 13;
+    private static final int TYPE_LATTICE = 22;
+    private static final int TYPE_ARMATURE = 25;
+    private static final int TYPE_GPENCIL = 26;
+    private static final int TYPE_CURVES = 27;
+    private static final int TYPE_POINTCLOUD = 28;
+    private static final int TYPE_VOLUME = 29;
+
     @Deprecated
     public final Map<String, String> arguments; //Requires blender plugin -- use custom properties for this instead.
 
@@ -37,6 +55,7 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
     public final Mat4 parentMatrix;
     public final DataPointer<Action> action;
     public final EmptyType emptyType;
+    public final DataPointer<ModelCollection> instance;
     
     ModelObject(Model model, BlendFile.Pointer bObject) throws IOException
     {
@@ -74,7 +93,7 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
         }
         
         Vec3 pos = bObject.getField("loc").asVec3();
-        Vec3 sca = bObject.getField("size").asVec3();
+        Vec3 sca = bObject.getField("scale", "size").asVec3();
         transform = new Transform(pos, rot, sca);
         
         vertexGroups = new ArrayList<>();
@@ -132,40 +151,34 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
         
         Type dataType = null;
         String dataName = null;
+
         switch (bObject.getField("type").asShort())
         {
-            case 1:
+            case TYPE_MESH:
                 dataType = Type.MESH;
                 BlendFile.Pointer bMesh = bObject.getField("data").cast("Mesh").dereference();
                 dataName = bMesh.getField(0).getField("name").asString().substring(2);
                 break;
-            case 2:
+            case TYPE_CURVES_LEGACY:
                 dataType = Type.CURVE;
                 BlendFile.Pointer bCurve = bObject.getField("data").cast("Curve").dereference();
                 dataName = bCurve.getField(0).getField("name").asString().substring(2);
                 break;
-            case 10:
+            case TYPE_LAMP:
                 dataType = Type.LAMP;
                 BlendFile.Pointer bLamp = bObject.getField("data").cast("Lamp").dereference();
                 dataName = bLamp.getField(0).getField("name").asString().substring(2);
                 break;
-            case 25:
+            case TYPE_ARMATURE:
                 dataType = Type.ARMATURE;
                 BlendFile.Pointer bArmature = bObject.getField("data").cast("bArmature").dereference();
                 dataName = bArmature.getField(0).getField("name").asString().substring(2);
                 break;
-                
+
             //Unimplemented types:
-            case 3: //surf
-            case 4: //font
-            case 5: //mball
-            case 11: //camera
-            case 12: //speaker
-            case 22: //lattice
-                
-            case 0: //empty
-            default:
-                break;
+            case TYPE_EMPTY, TYPE_SURF, TYPE_FONT, TYPE_MBALL, TYPE_CAMERA, TYPE_SPEAKER, TYPE_LIGHTPROBE,
+                    TYPE_LATTICE, TYPE_GPENCIL, TYPE_CURVES, TYPE_POINTCLOUD, TYPE_VOLUME:
+            default: break;
         }
         data = new DataPointer<>(model, dataType, dataName);
         
@@ -177,8 +190,9 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
             
             if (bObject.getField("partype").asShort() == 7) parentBoneName = bObject.getField("parsubstr").asString();
             else parentBoneName = null;
-            
-            parentMatrix = bObject.getField("parentinv").asMat4();
+
+            //Not 100% sure why this needs to be transposed to get correct results. TODO: Possibly an underlying bug.
+            parentMatrix = bObject.getField("parentinv").asMat4().transpose();
         }
         else
         {
@@ -196,6 +210,14 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
         else action = DataPointer.nullPointer(model);
         
         emptyType = EmptyType.values()[bObject.getField("empty_drawtype").asByte() & 0xFF];
+
+        BlendFile.Pointer bInstance = bObject.getField("instance_collection", "dup_group").dereference();
+        if (bInstance != null)
+        {
+            String instanceName = bInstance.getField(0).getField("name").asString().substring(2);
+            instance = new DataPointer<>(model, Type.COLLECTION, instanceName);
+        }
+        else instance = null;
     }
     
     public <T extends DataBlock> ModelObject<T> asType(Class<T> typeClass)

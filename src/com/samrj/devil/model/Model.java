@@ -27,6 +27,7 @@ public final class Model
     public final ArrayMap<Material> materials;
     public final ArrayMap<Mesh> meshes;
     public final ArrayMap<ModelObject> objects;
+    public final ArrayMap<ModelCollection> collections;
     public final ArrayMap<Scene> scenes;
     public final ArrayMap<Image> images;
     
@@ -80,7 +81,12 @@ public final class Model
             for (BlendFile.Pointer bObject : blend.getLibrary("Object"))
                 objects.put(new ModelObject(this, bObject));
             arraymaps.put(Type.OBJECT, objects);
-            
+
+            collections = new ArrayMap<>();
+            for (BlendFile.Pointer bObject : blend.getLibrary("Collection"))
+                collections.put(new ModelCollection(this, bObject));
+            arraymaps.put(Type.COLLECTION, collections);
+
             scenes = new ArrayMap<>();
             for (BlendFile.Pointer bScene : blend.getLibrary("Scene"))
                 scenes.put(new Scene(this, bScene));

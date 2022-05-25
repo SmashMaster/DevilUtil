@@ -614,6 +614,22 @@ public final class BlendFile
             
             return new Pointer(position + fieldDNA.offset, fieldDNA.type, sdnaTypesToStructs[fieldDNA.type], fieldDNA.count);
         }
+
+        /**
+         * Searches for multiple names, returning the first one found. Useful because many struct fields have been
+         * renamed in Blender. See the following for a list:
+         *
+         * https://github.com/blender/blender/blob/master/source/blender/makesdna/intern/dna_rename_defs.h
+         */
+        public Pointer getField(String... validNames)
+        {
+            for (String name : validNames)
+            {
+                Pointer field =  getField(name);
+                if (field != null) return field;
+            }
+            return null;
+        }
         
         /**
          * Treats this pointer as a Blender ListBase type, which is a linked
