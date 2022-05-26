@@ -16,18 +16,18 @@ import static org.lwjgl.opengl.GL30C.*;
  * OpenGL Vertex Array Object wrapper.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2020 Samuel Johnson
+ * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 final class VAO extends DGLObj
 {
-    private static Map<Binding, VAO> vaos;
+    private static Map<ShaderProgram, Map<VertexData, Map<VertexData, VAO>>> shaderMap;
     private static Map<VAOBindable, Set<Binding>> bindables;
     private static VertexAttribDivisorMethod vertexAttribDivisorMethod;
     
     static void init()
     {
-        vaos = new HashMap<>();
+        shaderMap = new IdentityHashMap<>();
         bindables = new IdentityHashMap<>();
         
         GLCapabilities caps = GL.getCapabilities();
@@ -50,12 +50,26 @@ final class VAO extends DGLObj
     
     static void bindFor(VertexData iData, VertexData vData, ShaderProgram shader, Runnable r)
     {
-        Binding binding = new Binding(iData, vData, shader);
-        VAO vao = vaos.get(binding);
+        Map<VertexData, Map<VertexData, VAO>> instanceMap = shaderMap.get(shader);
+        if (instanceMap == null)
+        {
+            instanceMap = new IdentityHashMap<>();
+            shaderMap.put(shader, instanceMap);
+        }
+
+        Map<VertexData, VAO> vertexMap = instanceMap.get(iData);
+        if (vertexMap == null)
+        {
+            vertexMap = new IdentityHashMap<>();
+            instanceMap.put(iData, vertexMap);
+        }
+
+        VAO vao = vertexMap.get(vData);
         if (vao == null)
         {
+            Binding binding = new Binding(iData, vData, shader);
             vao = new VAO(binding);
-            vaos.put(binding, vao);
+            vertexMap.put(vData, vao);
             addBindable(iData, binding);
             addBindable(vData, binding);
             addBindable(shader, binding);
@@ -80,7 +94,12 @@ final class VAO extends DGLObj
         
         if (bindings != null) for (Binding binding : bindings)
         {
-            VAO vao = vaos.remove(binding);
+            Map<VertexData, Map<VertexData, VAO>> instanceMap = shaderMap.get(binding.shader);
+            Map<VertexData, VAO> vertexMap = instanceMap.get(binding.iData);
+            VAO vao = vertexMap.remove(binding.vData);
+            if (vertexMap.isEmpty()) instanceMap.remove(binding.iData);
+            if (instanceMap.isEmpty()) shaderMap.remove(binding.shader);
+
             vao.delete();
             removedBindings.add(binding);
         }
@@ -95,8 +114,12 @@ final class VAO extends DGLObj
     
     static void terminate()
     {
-        if (DGL.getDebugLeakTracking()) for (VAO vao : vaos.values()) vao.debugLeakTrace();
-        vaos = null;
+        if (DGL.getDebugLeakTracking())
+            for (Map<VertexData, Map<VertexData, VAO>> instanceMap : shaderMap.values())
+                for (Map<VertexData, VAO> vertexMap : instanceMap.values())
+                    for (VAO vao : vertexMap.values())
+                        vao.debugLeakTrace();
+        shaderMap = null;
     }
     
     private final int id;
