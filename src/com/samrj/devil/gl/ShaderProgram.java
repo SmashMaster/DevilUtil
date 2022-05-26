@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Sam Johnson
+ * Copyright (c) 2022 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,7 @@ import static org.lwjgl.system.MemoryUtil.memByteBuffer;
  */
 public final class ShaderProgram extends DGLObj implements VAOBindable
 {
-    public static enum State
+    public enum State
     {
         NEW, LINKED, COMPLETE, DELETED;
     }
@@ -59,12 +59,13 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     }
     
     final int id;
-    
+
     private final Set<Shader> shaders;
     private List<Attribute> attributes;
     private Map<String, Attribute> attMap;
+    private final Map<String, Integer> uniMap = new HashMap<>();
     private State state;
-    
+
     ShaderProgram()
     {
         DGL.checkState();
@@ -161,13 +162,14 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
         
         try (MemoryStack stack = MemoryStack.stackPush())
         {
-            int attBytes = 4 + 4 + 4 + 32;
+            int maxNameLength = glGetProgrami(id, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH);
+            int attBytes = 4 + 4 + 4 + maxNameLength + 1; //+1 for null terminator
             long address = stack.nmalloc(attBytes);
             ByteBuffer buffer = memByteBuffer(address, attBytes);
             for (int index=0; index<numAttributes; index++)
             {
                 long nameAddress = address + 12;
-                nglGetActiveAttrib(id, index, 31, address, address + 4, address + 8, nameAddress);
+                nglGetActiveAttrib(id, index, maxNameLength, address, address + 4, address + 8, nameAddress);
 
                 buffer.rewind();
                 buffer.getInt();
@@ -183,6 +185,30 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
         }
         
         attributes = Collections.unmodifiableList(attList);
+
+        //Build uniform map to avoid calling glGetUniformLocation during runtime, which is slow.
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            int maxNameLength = glGetProgrami(id, GL_ACTIVE_UNIFORM_MAX_LENGTH);
+            int uniBytes = 4 + 4 + 4 + maxNameLength + 1; //+1 for null terminator
+            long address = stack.nmalloc(uniBytes);
+            int numUniforms = glGetProgrami(id, GL_ACTIVE_UNIFORMS);
+            for (int index=0; index<numUniforms; index++)
+            {
+
+                long nameAddress = address + 12;
+                nglGetActiveUniform(id, index, maxNameLength, address, address + 4, address + 8, nameAddress);
+                String name = memASCII(nameAddress);
+                int nameLength = name.length();
+                int location = nglGetUniformLocation(id, nameAddress);
+
+                //Array uniforms end with '[0]' and struct uniforms end with '.' -- TODO: Support structs.
+                int arrIndex = nameLength - 3;
+                if (arrIndex > 0 && name.charAt(arrIndex) == '[')
+                    name = name.substring(0, arrIndex);
+                uniMap.put(name, location);
+            }
+        }
         
         state = State.LINKED;
         return this;
@@ -228,7 +254,9 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
      */
     public int getUniformLocation(String name)
     {
-        return glGetUniformLocation(id, name);
+        Integer loc = uniMap.get(name);
+        if (loc == null) loc = -1;
+        return loc;
     }
     
     /**
@@ -242,7 +270,7 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     public boolean uniform1i(String name, int x)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = glGetUniformLocation(id, name);
+        int loc = getUniformLocation(name);
         if (loc < 0) return false;
         glUniform1i(loc, x);
         return true;
@@ -259,7 +287,7 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     public boolean uniform1iv(String name, int... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = glGetUniformLocation(id, name);
+        int loc = getUniformLocation(name);
         if (loc < 0) return false;
         
         try (MemoryStack stack = MemoryStack.stackPush())
@@ -292,7 +320,7 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     public boolean uniform1f(String name, float x)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = glGetUniformLocation(id, name);
+        int loc = getUniformLocation(name);
         if (loc < 0) return false;
         glUniform1f(loc, x);
         return true;
@@ -309,7 +337,7 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     public boolean uniform1fv(String name, float... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = glGetUniformLocation(id, name);
+        int loc = getUniformLocation(name);
         if (loc < 0) return false;
         
         try (MemoryStack stack = MemoryStack.stackPush())
@@ -329,7 +357,7 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     public boolean uniform2f(String name, float x, float y)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = glGetUniformLocation(id, name);
+        int loc = getUniformLocation(name);
         if (loc < 0) return false;
         glUniform2f(loc, x, y);
         return true;
@@ -346,7 +374,7 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     public boolean uniform2fv(String name, float... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = glGetUniformLocation(id, name);
+        int loc = getUniformLocation(name);
         if (loc < 0) return false;
         
         try (MemoryStack stack = MemoryStack.stackPush())
@@ -379,7 +407,7 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     public boolean uniformVec2v(String name, Vec2... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = glGetUniformLocation(id, name);
+        int loc = getUniformLocation(name);
         if (loc < 0) return false;
         
         try (MemoryStack stack = MemoryStack.stackPush())
@@ -402,7 +430,7 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     public boolean uniform3f(String name, float x, float y, float z)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = glGetUniformLocation(id, name);
+        int loc = getUniformLocation(name);
         if (loc < 0) return false;
         glUniform3f(loc, x, y, z);
         return true;
@@ -419,7 +447,7 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     public boolean uniform3fv(String name, float... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = glGetUniformLocation(id, name);
+        int loc = getUniformLocation(name);
         if (loc < 0) return false;
         
         try (MemoryStack stack = MemoryStack.stackPush())
@@ -452,7 +480,7 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     public boolean uniformVec3v(String name, Vec3... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = glGetUniformLocation(id, name);
+        int loc = getUniformLocation(name);
         if (loc < 0) return false;
         
         try (MemoryStack stack = MemoryStack.stackPush())
@@ -475,7 +503,7 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     public boolean uniform4f(String name, float x, float y, float z, float w)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = glGetUniformLocation(id, name);
+        int loc = getUniformLocation(name);
         if (loc < 0) return false;
         glUniform4f(loc, x, y, z, w);
         return true;
@@ -492,7 +520,7 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     public boolean uniform4fv(String name, float... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = glGetUniformLocation(id, name);
+        int loc = getUniformLocation(name);
         if (loc < 0) return false;
         
         try (MemoryStack stack = MemoryStack.stackPush())
@@ -525,10 +553,9 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     public boolean uniformVec4v(String name, Vec4... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = glGetUniformLocation(id, name);
+        int loc = getUniformLocation(name);
         if (loc < 0) return false;
-        
-        
+
         try (MemoryStack stack = MemoryStack.stackPush())
         {
             FloatBuffer buffer = stack.mallocFloat(array.length*4);
@@ -549,7 +576,7 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     public boolean uniformMat2(String name, Mat2 matrix)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = glGetUniformLocation(id, name);
+        int loc = getUniformLocation(name);
         if (loc < 0) return false;
         
         try (MemoryStack stack = MemoryStack.stackPush())
@@ -570,7 +597,7 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     public boolean uniformMat2v(String name, Mat2... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = glGetUniformLocation(id, name);
+        int loc = getUniformLocation(name);
         if (loc < 0) return false;
         
         try (MemoryStack stack = MemoryStack.stackPush())
@@ -593,7 +620,7 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     public boolean uniformMat3(String name, Mat3 matrix)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = glGetUniformLocation(id, name);
+        int loc = getUniformLocation(name);
         if (loc < 0) return false;
         
         try (MemoryStack stack = MemoryStack.stackPush())
@@ -614,7 +641,7 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     public boolean uniformMat3v(String name, Mat3... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = glGetUniformLocation(id, name);
+        int loc = getUniformLocation(name);
         if (loc < 0) return false;
         
         try (MemoryStack stack = MemoryStack.stackPush())
@@ -637,7 +664,7 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     public boolean uniformMat4(String name, Mat4 matrix)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = glGetUniformLocation(id, name);
+        int loc = getUniformLocation(name);
         if (loc < 0) return false;
         
         try (MemoryStack stack = MemoryStack.stackPush())
@@ -658,7 +685,7 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     public boolean uniformMat4v(String name, Mat4... array)
     {
         if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
-        int loc = glGetUniformLocation(id, name);
+        int loc = getUniformLocation(name);
         if (loc < 0) return false;
         
         try (MemoryStack stack = MemoryStack.stackPush())
