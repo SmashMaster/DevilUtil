@@ -176,45 +176,10 @@ final class VAO extends DGLObj
     }
     
     @FunctionalInterface
-    private static interface VertexAttribDivisorMethod
+    private interface VertexAttribDivisorMethod
     {
-        public void accept(int index, int divisor);
+        void accept(int index, int divisor);
     }
-    
-    private static class Binding
-    {
-        public final VertexData iData;
-        public final VertexData vData;
-        public final ShaderProgram shader;
 
-        public Binding(VertexData iData, VertexData vData, ShaderProgram shader)
-        {
-            this.iData = iData;
-            this.vData = vData;
-            this.shader = shader;
-        }
-
-        @Override
-        public int hashCode()
-        {
-            int hash = 7;
-            hash = 43 * hash + Objects.hashCode(this.iData);
-            hash = 43 * hash + Objects.hashCode(this.vData);
-            hash = 43 * hash + Objects.hashCode(this.shader);
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            if (this == obj) return true;
-            if (obj == null) return false;
-            if (getClass() != obj.getClass()) return false;
-            final Binding other = (Binding)obj;
-            if (!Objects.equals(this.iData, other.iData)) return false;
-            if (!Objects.equals(this.vData, other.vData)) return false;
-            if (!Objects.equals(this.shader, other.shader)) return false;
-            return true;
-        }
-    }
+    private record Binding(VertexData iData, VertexData vData, ShaderProgram shader) {}
 }
