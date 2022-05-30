@@ -21,6 +21,8 @@ import static org.lwjgl.opengl.GL30C.*;
  */
 final class VAO extends DGLObj
 {
+    private record Binding(VertexData iData, VertexData vData, ShaderProgram shader) {}
+
     private static Map<ShaderProgram, Map<VertexData, Map<VertexData, VAO>>> shaderMap;
     private static Map<VAOBindable, Set<Binding>> bindables;
     private static VertexAttribDivisorMethod vertexAttribDivisorMethod;
@@ -42,7 +44,7 @@ final class VAO extends DGLObj
         Set<Binding> set = bindables.get(bindable);
         if (set == null)
         {
-            set = Collections.newSetFromMap(new HashMap<>());
+            set = new HashSet<>();
             bindables.put(bindable, set);
         }
         set.add(binding);
@@ -90,9 +92,11 @@ final class VAO extends DGLObj
     static void delete(VAOBindable bindable)
     {
         Set<Binding> bindings = bindables.get(bindable);
-        Set<Binding> removedBindings = new HashSet<>();
-        
-        if (bindings != null) for (Binding binding : bindings)
+        if (bindings == null) return;
+
+        //Copy to list to prevent ConcurrentModificationException in next step.
+        List<Binding> removedBindings = new ArrayList<>(bindings.size());
+        for (Binding binding : bindings)
         {
             Map<VertexData, Map<VertexData, VAO>> instanceMap = shaderMap.get(binding.shader);
             Map<VertexData, VAO> vertexMap = instanceMap.get(binding.iData);
@@ -203,6 +207,4 @@ final class VAO extends DGLObj
     {
         void accept(int index, int divisor);
     }
-
-    private record Binding(VertexData iData, VertexData vData, ShaderProgram shader) {}
 }

@@ -1,10 +1,6 @@
 package com.samrj.devil.geo3d;
 
-import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
-
-import java.util.Optional;
-import java.util.stream.Stream;
 
 /**
  * Interface for any kind of geometry which accepts collision tests.
@@ -15,78 +11,137 @@ import java.util.stream.Stream;
  */
 public interface Geometry
 {
-    //Base methods
-    Stream<RaycastResult> raycastUnsorted(Vec3 p0, Vec3 dp, boolean terminated);
-    Stream<IsectResult> intersectUnsorted(ConvexShape shape);
-    Stream<SweepResult> sweepUnsorted(ConvexShape shape, Vec3 dp);
-    Stream<Vec3> verts();
-    Stream<Edge3> edges();
-    Stream<Triangle3> faces();
-    
-    //Ordered streams
-    default Stream<RaycastResult> raycast(Vec3 p0, Vec3 dp, boolean terminated)
+    /**
+     * Performs an unsorted ray query on this geometry.
+     *
+     * @param p0 The starting point of the ray.
+     * @param dp The direction of the ray.
+     * @param terminated Whether the ray ends at p0 + dp.
+     * @return A new query iterator.
+     */
+    Query<Ray> ray(Vec3 p0, Vec3 dp, boolean terminated);
+
+    /**
+     * Performs an unsorted intersection query on this geometry.
+     *
+     * @param shape The shape to intersect with.
+     * @return A new query iterator.
+     */
+    Query<Isect> isect(ConvexShape shape);
+
+    /**
+     * Performs an unsorted sweeep test on this geometry.
+     *
+     * @param shape The shape to sweep against.
+     * @param dp The displacement to sweep by.
+     * @return A new query iterator.
+     */
+    Query<Sweep> sweep(ConvexShape shape, Vec3 dp);
+
+    default boolean rayFirst(Vec3 p0, Vec3 dp, boolean terminated, Ray result)
     {
-        return raycastUnsorted(p0, dp, terminated)
-                .sorted((a, b) -> Util.compare(a.time, b.time));
+        boolean hit = false;
+        Ray temp = new Ray();
+        Query<Ray> it = ray(p0, dp, terminated);
+        while (it.hasNext()) if (it.next(temp))
+        {
+            hit = true;
+            if (temp.time < result.time) result.set(temp);
+        }
+        return hit;
     }
-    
-    default Stream<IsectResult> intersect(ConvexShape shape)
+
+    default boolean isectDeepest(ConvexShape shape, Isect result)
     {
-        return intersectUnsorted(shape)
-                .sorted((a, b) -> Util.compare(b.depth, a.depth, 0.0f));
+        boolean hit = false;
+        Isect temp = new Isect();
+        Query<Isect> it = isect(shape);
+        while (it.hasNext()) if (it.next(temp))
+        {
+            hit = true;
+            if (temp.depth > result.depth) result.set(temp);
+        }
+        return hit;
     }
-    
-    default Stream<SweepResult> sweep(ConvexShape shape, Vec3 dp)
+
+    default boolean sweepFirst(ConvexShape shape, Vec3 dp, Sweep result)
     {
-        return sweepUnsorted(shape, dp)
-                .sorted((a, b) -> Util.compare(a.time, b.time, 0.0f));
+        boolean hit = false;
+        Sweep temp = new Sweep();
+        Query<Sweep> it = sweep(shape, dp);
+        while (it.hasNext()) if (it.next(temp))
+        {
+            hit = true;
+            if (temp.time < result.time) result.set(temp);
+        }
+        return hit;
     }
-    
-    //Single-result methods
-    default Optional<RaycastResult> raycastFirst(Vec3 p0, Vec3 dp, boolean terminated)
+
+    default Ray rayFirst(Vec3 p0, Vec3 dp, boolean terminated)
     {
-        return raycastUnsorted(p0, dp, terminated)
-                .reduce((a, b) -> a.time < b.time ? a : b);
+        Ray result = new Ray();
+        return rayFirst(p0, dp, terminated, result) ? result : null;
     }
-    
-    default Optional<IsectResult> intersectDeepest(ConvexShape shape)
+
+    default Isect isectDeepest(ConvexShape shape)
     {
-        return intersectUnsorted(shape)
-                .reduce((a, b) -> a.depth > b.depth ? a : b);
+        Isect result = new Isect();
+        return isectDeepest(shape, result) ? result : null;
     }
-    
-    default Optional<SweepResult> sweepFirst(ConvexShape shape, Vec3 dp)
+
+    default Sweep sweepFirst(ConvexShape shape, Vec3 dp)
     {
-        return sweepUnsorted(shape, dp)
-                .reduce((a, b) -> a.time < b.time ? a : b);
+        Sweep result = new Sweep();
+        return sweepFirst(shape, dp, result) ? result : null;
     }
-    
+
     //Bounds-related methods
-    default Box3 getBounds()
-    {
-        return Box3.infinite();
-    }
-    
     default boolean areBoundsDirty()
     {
         return false;
     }
-    
-    void markBoundsDirty();
-    
-    default void updateBounds()
+
+    default void markBoundsDirty() {}
+
+    default void updateBounds() {}
+
+    default void getBounds(Box3 result)
     {
+        Box3.infinite(result);
     }
-    
-    //Utility stuff
-    
+
+    default Box3 getBounds()
+    {
+        Box3 result = new Box3();
+        getBounds(result);
+        return result;
+    }
+
+    default boolean boundsTouchingRay(Vec3 p0, Vec3 dp, boolean terminated)
+    {
+        return Box3.touchingRay(getBounds(), p0, dp, terminated);
+    }
+
+    default boolean boundsTouchingBox(Box3 box)
+    {
+        return getBounds().touching(box);
+    }
+
     /**
-     * Returns false if the ray between the two given points intersects this
-     * geometry, true otherwise.
+     * Returns true if a ray between the two given points does not intersect this geometry.
      */
     default boolean areVisible(Vec3 a, Vec3 b)
     {
         Vec3 dp = Vec3.sub(b, a);
-        return !raycast(a, dp, true).findAny().isPresent();
+        Query<Ray> it = ray(a, dp, true);
+        Ray temp = new Ray();
+        while (it.hasNext()) if (it.next(temp)) return false;
+        return true;
+    }
+
+    interface Query<T>
+    {
+        boolean hasNext();
+        boolean next(T result);
     }
 }

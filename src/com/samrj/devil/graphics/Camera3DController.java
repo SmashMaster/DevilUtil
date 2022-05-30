@@ -2,7 +2,7 @@ package com.samrj.devil.graphics;
 
 import com.samrj.devil.geo3d.Ellipsoid;
 import com.samrj.devil.geo3d.Geometry;
-import com.samrj.devil.geo3d.SweepResult;
+import com.samrj.devil.geo3d.Sweep;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
@@ -179,7 +179,7 @@ public final class Camera3DController
         if (blockGeom != null && !dp.isZero())
         {
             blockShape.pos.set(camera.pos);
-            SweepResult ray = blockGeom.sweepFirst(blockShape, dp).orElse(null);
+            Sweep ray = blockGeom.sweepFirst(blockShape, dp);
             if (ray != null) camera.pos.madd(dp, ray.time);
             else camera.pos.add(dp);
         }

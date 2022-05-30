@@ -12,15 +12,15 @@ import java.util.Collection;
  * 3D geometry utility methods.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2015 Samuel Johnson
+ * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Geo3DUtil
+public final class Geo3DUtil
 {
     /**
      * Returns whether the given barycentric coordinates lie on a triangle.
      */
-    public static final boolean baryContained(Vec3 bary)
+    public static boolean baryContained(Vec3 bary)
     {
         return bary.y >= 0.0f && bary.z >= 0.0f && (bary.y + bary.z) <= 1.0f;
     }
@@ -28,7 +28,7 @@ public class Geo3DUtil
     /**
      * Returns the distance from the given point to the given plane.
      */
-    public static final float dist(Vec3 p, Vec4 plane)
+    public static float dist(Vec3 p, Vec4 plane)
     {
         return plane.x*p.x + plane.y*p.y + plane.z*p.z - plane.w;
     }
@@ -36,7 +36,7 @@ public class Geo3DUtil
     /**
      * Finds the closest point to p on the given plane, and stores it in r.
      */
-    public static final void closest(Vec3 p, Vec4 plane, Vec3 r)
+    public static void closest(Vec3 p, Vec4 plane, Vec3 r)
     {
         Vec3 n = normal(plane);
         Vec3.madd(p, n, plane.w - p.dot(n), r);
@@ -45,7 +45,7 @@ public class Geo3DUtil
     /**
      * Returns the closest point to p on the given plane as a new vector.
      */
-    public static final Vec3 closest(Vec3 p, Vec4 plane)
+    public static Vec3 closest(Vec3 p, Vec4 plane)
     {
         Vec3 r = new Vec3();
         closest(p, plane, r);
@@ -55,24 +55,24 @@ public class Geo3DUtil
     /**
      * Stores the normal vector for the given plane in r.
      */
-    public static final void normal(Vec4 plane, Vec3 r)
+    public static void normal(Vec4 plane, Vec3 r)
     {
         r.x = plane.x;
         r.y = plane.y;
         r.z = plane.z;
     }
-    
+
     /**
      * Returns the normal of the given plane as a new vector.
      */
-    public static final Vec3 normal(Vec4 plane)
+    public static Vec3 normal(Vec4 plane)
     {
         Vec3 r = new Vec3();
         normal(plane, r);
         return r;
     }
-    
-    static final float solveQuadratic(float a, float b, float c)
+
+    static float solveQuadratic(float a, float b, float c)
     {
         float[] solutions = Util.quadFormula(a, b, c);
         
@@ -107,17 +107,17 @@ public class Geo3DUtil
     }
     
     /**
-     * Casts the given ray against the given triangle and returns the results of
-     * the cast, or null if the ray missed.
+     * Casts the given ray against the given triangle and stores the results of the cast in the given RaycastResult, or
+     * returns false if the ray missed.
      */
-    public static RaycastResult raycast(Triangle3 f, Vec3 p0, Vec3 dp, boolean terminated)
+    public static boolean raycast(Triangle3 f, Vec3 p0, Vec3 dp, boolean terminated, Ray result)
     {
         Vec3 ab = Vec3.sub(f.b, f.a);
         Vec3 ac = Vec3.sub(f.c, f.a);
         
         Vec3 n = Vec3.cross(ab, ac);
         float d = -dp.dot(n);
-        if (d == 0.0f) return null; //Ray parallel to triangle.
+        if (d == 0.0f) return false; //Ray parallel to triangle.
         boolean backface = d < 0.0f;
         if (backface)
         {
@@ -128,57 +128,55 @@ public class Geo3DUtil
         float ood = 1.0f/d;
         Vec3 ap = Vec3.sub(p0, f.a);
         float t = ap.dot(n)*ood;
-        if (t < 0.0f) return null; //Ray behind triangle.
-        if (terminated && t > 1.0f) return null; //Triangle too far.
+        if (t < 0.0f) return false; //Ray behind triangle.
+        if (terminated && t > 1.0f) return false; //Triangle too far.
         
         Vec3 e = backface ? Vec3.cross(dp, ap) : Vec3.cross(ap, dp);
         float v = ac.dot(e);
-        if (v < 0.0f || v > d) return null; //Missed triangle.
+        if (v < 0.0f || v > d) return false; //Missed triangle.
         float w = -ab.dot(e);
-        if (w < 0.0f || v + w > d) return null; //Missed triangle.
+        if (w < 0.0f || v + w > d) return false; //Missed triangle.
 
         v = v*ood;
         w = w*ood;
         float u = 1.0f - v - w;
-        
-        RaycastResult out = new RaycastResult(f);
-        out.time = t;
-        Vec3.mult(f.a, u, out.point);
-        out.point.madd(f.b, v).madd(f.c, w);
-        Vec3.normalize(n, out.normal);
-        return out;
+
+        result.face = f;
+        result.time = t;
+        Vec3.mult(f.a, u, result.point);
+        result.point.madd(f.b, v).madd(f.c, w);
+        Vec3.normalize(n, result.normal);
+        return true;
+    }
+
+    public static Ray raycast(Triangle3 f, Vec3 p0, Vec3 dp, boolean terminated)
+    {
+        Ray result = new Ray();
+        return raycast(f, p0, dp, terminated, result) ? result : null;
     }
     
     /**
      * Reduces the degrees of freedom of the given vector, using the given array
-     * of normal vectors. Returns the result as a new vector.
+     * of normal vectors. Stores the result in the given vector.
      */
-    public static final Vec3 restrain(Vec3 v, Vec3... normals)
+    public static void restrain(Vec3 v, Vec3 n, Vec3 result)
     {
-        Vec3[] opp = new Vec3[3];
-        int num = 0;
-        
-        for (Vec3 n : normals) if (n.dot(v) < 0.0f)
-        {
-            opp[num++] = n;
-            if (num == 3) break;
-        }
-        
-        switch (num)
-        {
-            case 0: return new Vec3(v);
-            case 1: return Vec3.reject(v, opp[0]);
-            case 2: return Vec3.project(v, Vec3.cross(opp[0], opp[1]));
-            default: return new Vec3();
-        }
+        if (n.dot(v) < 0.0f) Vec3.reject(v, n, result);
+        else result.set(v);
+    }
+
+    public static Vec3 restrain(Vec3 v, Vec3 n)
+    {
+        Vec3 result = new Vec3();
+        restrain(v, n, result);
+        return result;
     }
     
     /**
-     * Finds the two closest points between two lines. The result is returned as
-     * an array containing the two interpolation parameters to get the closest
-     * point along both lines.
+     * Finds the two closest points between two lines. The result is stored in a given array as the two interpolation
+     * parameters to get the closest point along both lines.
      */
-    public static final float[] closestTwoLines(Vec3 ap0, Vec3 ap1, Vec3 bp0, Vec3 bp1)
+    public static void closestTwoLines(Vec3 ap0, Vec3 ap1, Vec3 bp0, Vec3 bp1, float[] result)
     {
         Vec3 u = Vec3.sub(ap1, ap0);
         Vec3 v = Vec3.sub(bp1, bp0);
@@ -191,8 +189,6 @@ public class Geo3DUtil
         float vw = v.dot(w);
         
         float denom = uu*vv - uv*uv;
-        float[] result = new float[2];
-        
         if (denom < 0.001f)
         {
             result[0] = 0.0f;
@@ -203,7 +199,12 @@ public class Geo3DUtil
             result[0] = (uv*vw - vv*uw)/denom;
             result[1] = (uu*vw - uv*uw)/denom;
         }
-        
+    }
+
+    public static float[] closestTwoLines(Vec3 ap0, Vec3 ap1, Vec3 bp0, Vec3 bp1)
+    {
+        float[] result = new float[2];
+        closestTwoLines(ap0, ap1, bp0, bp1, result);
         return result;
     }
     
@@ -230,20 +231,20 @@ public class Geo3DUtil
         }
         else result.setIdentity();
     }
-    
+
     public static Mat3 orthonormalBasis(Vec3 n)
     {
         Mat3 result = new Mat3();
         orthonormalBasis(n, result);
         return result;
     }
-    
+
     /**
      * Returns a bounding sphere that contains all of the given vectors. It is
      * not necessarily a minimum bounding sphere. The last component of the
      * returned vector is the sphere's radius.
      */
-    public static Vec4 boundingSphere(Collection<Vec3> vecs)
+    public static void boundingSphere(Collection<Vec3> vecs, Vec4 result)
     {
         //Find bounding sphere by Ritter's algorithm.
         ArrayDeque<Vec3> remaining = new ArrayDeque<>(vecs.size());
@@ -251,7 +252,11 @@ public class Geo3DUtil
         
         //Start with any point.
         Vec3 start = remaining.peek();
-        if (vecs.size() == 1) return new Vec4(start, 0.0f);
+        if (vecs.size() == 1)
+        {
+            result.set(start, 0.0f);
+            return;
+        }
         
         //Find the furthest point A from the starting point.
         Vec3 furthest = null;
@@ -301,7 +306,14 @@ public class Geo3DUtil
             }
         }
         
-        return new Vec4(center, (float)Math.sqrt(sqRadius));
+        result.set(center, (float)Math.sqrt(sqRadius));
+    }
+
+    public static Vec4 boundingSphere(Collection<Vec3> vecs)
+    {
+        Vec4 result = new Vec4();
+        boundingSphere(vecs, result);
+        return result;
     }
     
     private Geo3DUtil()

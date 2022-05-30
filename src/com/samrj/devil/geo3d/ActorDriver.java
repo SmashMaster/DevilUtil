@@ -9,7 +9,7 @@ import java.util.function.Consumer;
  * Basic class handling collision and movement of a character in a 3D space.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public final class ActorDriver
@@ -290,14 +290,16 @@ public final class ActorDriver
                 pos.y += climbHeight;
 
                 Vec3 step = new Vec3(0.0f, -2.0f*climbHeight, 0.0f);
-                SweepResult sweep = geom.sweepUnsorted(shape, step)
-                        .filter(e -> isValidGround(e.normal))
-                        .reduce((a, b) -> a.time < b.time ? a : b)
-                        .orElse(null);
+
+                Geometry.Query<Sweep> sweepIt = geom.sweep(shape, step);
+                Sweep sweep = new Sweep(), sweepTemp = new Sweep();
+                while (sweepIt.hasNext())
+                    if (sweepIt.next(sweepTemp) && isValidGround(sweepTemp.normal) && sweepTemp.time < sweep.time)
+                        sweep.set(sweepTemp);
 
                 pos.y = oldY;
 
-                if (sweep != null)
+                if (Float.isFinite(sweep.time))
                 {
                     float groundDist = (sweep.time*2.0f - 1.0f)*climbHeight;
                     pos.y -= groundDist*(1.0f - (float)Math.pow(0.5f, dt*groundFloatDecay));
@@ -313,9 +315,7 @@ public final class ActorDriver
                 pos.y += climbHeight;
 
                 Vec3 step = new Vec3(0.0f, -2.0f*climbHeight, 0.0f);
-                SweepResult sweep = geom.sweepUnsorted(shape, step)
-                        .reduce((a, b) -> a.time < b.time ? a : b)
-                        .orElse(null);
+                Sweep sweep = geom.sweepFirst(shape, step);
                 
                 pos.y = oldY;
                 
@@ -328,26 +328,33 @@ public final class ActorDriver
             
             //Clip against the level
             Vec3 nudge = new Vec3();
-            
-            geom.intersectUnsorted(shape).forEach(isect ->
+            Geometry.Query<Isect> isectIt = geom.isect(shape);
+            Isect isect = new Isect();
+            while (isectIt.hasNext())
             {
+                isect.reset();
+                if (!isectIt.next(isect)) continue;
+
                 nudge.add(Vec3.sub(isect.point, isect.surface));
                 
                 float height = isect.point.y - pos.y + shape.radii.y;
-                if (height > climbHeight) vel.set(Geo3DUtil.restrain(vel, isect.normal));
+                if (height > climbHeight) Geo3DUtil.restrain(vel, isect.normal, vel);
 
                 if (isValidGround(isect.normal) && (!onGround() || isect.normal.y > groundNormal.y))
                 {
                     groundObject = isect.object;
                     groundNormal.set(isect.normal);
                 }
-            });
+            }
             
             pos.madd(nudge, 1.0f - (float)Math.pow(0.5f, dt*intersectionDecay));
         }
         
         boolean endOnGround = onGround();
-        if (endOnGround) vel.y = Geo3DUtil.restrain(vel, groundNormal).y;
+        if (endOnGround)
+        {
+            vel.y = Geo3DUtil.restrain(vel, groundNormal).y;
+        }
 
         //Check for landing
         if (landCallback != null && !startOnGround && endOnGround)

@@ -953,6 +953,15 @@ public class Vec4 implements FloatBufferable, DataStreamable<Vec4>
         this.x = x; this.y = y; this.z = z; this.w = w;
         return this;
     }
+
+    /**
+     * Sets the coordinates of this vector.
+     */
+    public Vec4 set(Vec3 v, float w)
+    {
+        x = v.x; y = v.y; z = v.z; this.w = w;
+        return this;
+    }
     
     /**
      * Sets each component of this vector to the given scalar.
