@@ -134,9 +134,7 @@ public class Ellipsoid implements ConvexShape
         Vec3 pDir = Vec3.sub(pos, v).div(radii);
         float pSqDist = pDir.squareLength();
         
-        float t = Geo3DUtil.solveQuadratic(dpSqLen,
-                                           2.0f*pDir.dot(dpe),
-                                           pSqDist - 1.0f);
+        float t = Util.quadFormulaSmallestPositive(dpSqLen, 2.0f*pDir.dot(dpe), pSqDist - 1.0f);
 
         if (Float.isNaN(t)) return false; //Missed the vertex.
         if (t < 0.0f || t > 1.0f)
@@ -167,7 +165,7 @@ public class Ellipsoid implements ConvexShape
         float segDotDP = segDir.dot(dpe);
         float segDotA = segDir.dot(aDir);
 
-        float t = Geo3DUtil.solveQuadratic(
+        float t = Util.quadFormulaSmallestPositive(
                 segDotDP*segDotDP - segSqLen*dpeLen,
                 2.0f*(segSqLen*dpe.dot(aDir) - segDotDP*segDotA),
                 segSqLen*(1.0f - aDir.squareLength()) + segDotA*segDotA);

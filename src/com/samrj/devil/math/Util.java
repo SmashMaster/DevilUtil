@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Sam Johnson
+ * Copyright (c) 2022 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -485,6 +485,7 @@ public final class Util
      * @param c The constant coefficient.
      * @return A float array of length 0, 1, or 2.
      */
+    @Deprecated
     public static float[] quadFormula(float a, float b, float c)
     {
         if (Util.isSubnormal(a)) return new float[0];
@@ -499,7 +500,66 @@ public final class Util
         float a2 = a*2f;
         return new float[] {(-b - sqrtDisc)/a2, (sqrtDisc - b)/a2};
     }
-    
+
+    /**
+     * Solves the quadratic formula with the given coefficients.
+     *
+     * @param a The quadratic coefficient.
+     * @param b The linear coefficient.
+     * @param c The constant coefficient.
+     * @param result An array of at least length 2 in which to store the results.
+     * @return How many valid solutions were found, either 0, 1, or 2.
+     */
+    public static int quadFormula(float a, float b, float c, float[] result)
+    {
+        if (Util.isSubnormal(a)) return 0;
+
+        float discriminant = b*b - 4.0f*a*c;
+
+        if (discriminant < 0.0f || !Float.isFinite(discriminant)) return 0;
+        if (discriminant == 0.0f)
+        {
+            result[0] = -b/(a*2.0f);
+            return 1;
+        }
+
+        float sqrtDisc = (float)Math.sqrt(discriminant);
+
+        float a2 = a*2.0f;
+        result[0] = (-b - sqrtDisc)/a2;
+        result[1] = (sqrtDisc - b)/a2;
+        return 2;
+    }
+
+    public static float quadFormulaSmallestPositive(float a, float b, float c)
+    {
+        if (Util.isSubnormal(a)) return Float.NaN;
+
+        float discriminant = b*b - 4.0f*a*c;
+
+        if (discriminant < 0.0f || !Float.isFinite(discriminant)) return Float.NaN;
+        if (discriminant == 0.0f)
+        {
+            float solution = -b/(a*2.0f);
+            return solution >= 0.0f ? solution : Float.NaN;
+        }
+
+        float sqrtDisc = (float)Math.sqrt(discriminant);
+
+        float a2 = a*2.0f;
+        float s1 = (-b - sqrtDisc)/a2;
+        float s2 = (sqrtDisc - b)/a2;
+
+        //If both solutions are negative, return NaN. If one is positive, return it.
+        if (s1 < 0.0f)
+        {
+            if (s2 < 0.0f) return Float.NaN;
+            else return s2;
+        }
+        else if (s2 < 0.0f) return s1;
+        else return s1 < s2 ? s1 : s2; //If both are positive, return the smallest.
+    }
+
     public static final float PI = (float)Math.PI;
     public static final float PIm2 = (float)(Math.PI*2.0);
     public static final float PId2 = (float)(Math.PI/2.0);

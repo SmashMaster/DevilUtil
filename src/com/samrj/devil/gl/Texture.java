@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sam Johnson
+ * Copyright (c) 2022 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,8 +92,7 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
     }
     
     /**
-     * Temporarily activates the given texture unit, binds this texture to it,
-     * then activates whichever unit was active before this method was called.
+     * Activates the given texture unit and binds this texture to it. Leaves the given texture unit bound.
      * 
      * @param texture The OpenGL texture unit enum to bind to.
      * @return This texture.
@@ -101,11 +100,8 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
     public final T bind(int texture)
     {
         if (deleted) throw new IllegalStateException("Cannot bind deleted texture.");
-        if (texture < GL_TEXTURE0) throw new IllegalArgumentException();
-        int old = glGetInteger(GL_ACTIVE_TEXTURE);
         glActiveTexture(texture);
-        bind();
-        glActiveTexture(old);
+        glBindTexture(target, id);
         return getThis();
     }
     

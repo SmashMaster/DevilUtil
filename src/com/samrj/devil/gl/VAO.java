@@ -50,7 +50,7 @@ final class VAO extends DGLObj
         set.add(binding);
     }
     
-    static void bindFor(VertexData iData, VertexData vData, ShaderProgram shader, Runnable r)
+    static VAO bind(VertexData iData, VertexData vData, ShaderProgram shader)
     {
         Map<VertexData, Map<VertexData, VAO>> instanceMap = shaderMap.get(shader);
         if (instanceMap == null)
@@ -76,9 +76,8 @@ final class VAO extends DGLObj
             addBindable(vData, binding);
             addBindable(shader, binding);
         }
-        else vao.bind();
-        r.run();
-        vao.unbind();
+        else vao.bind(); //Bound when created.
+        return vao;
     }
     
     private static void removeBindable(VAOBindable bindable, Binding binding)
@@ -191,7 +190,7 @@ final class VAO extends DGLObj
         glBindVertexArray(id);
     }
     
-    private void unbind()
+    void unbind()
     {
         glBindVertexArray(0);
     }

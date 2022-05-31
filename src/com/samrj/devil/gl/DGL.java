@@ -906,11 +906,10 @@ public final class DGL
         int verts = vData.numVertices();
         int inds = vData.numIndices();
         
-        VAO.bindFor(null, vData, boundProgram, () ->
-        {
-            if (inds < 0) glDrawArrays(mode, 0, verts);
-            else glDrawElements(mode, inds, GL_UNSIGNED_INT, 0);
-        });
+        VAO vao = VAO.bind(null, vData, boundProgram);
+        if (inds < 0) glDrawArrays(mode, 0, verts);
+        else glDrawElements(mode, inds, GL_UNSIGNED_INT, 0);
+        vao.unbind();
     }
     
     /**
@@ -929,11 +928,10 @@ public final class DGL
         int verts = vData.numVertices();
         int inds = vData.numIndices();
         
-        VAO.bindFor(null, vData, boundProgram, () ->
-        {
-            if (inds < 0) glDrawArraysInstanced(mode, 0, verts, primcount);
-            else glDrawElementsInstanced(mode, inds, GL_UNSIGNED_INT, 0, primcount);
-        });
+        VAO vao = VAO.bind(null, vData, boundProgram);
+        if (inds < 0) glDrawArraysInstanced(mode, 0, verts, primcount);
+        else glDrawElementsInstanced(mode, inds, GL_UNSIGNED_INT, 0, primcount);
+        vao.unbind();
     }
     
     /**
@@ -955,11 +953,10 @@ public final class DGL
         int verts = vData.numVertices();
         int inds = vData.numIndices();
         
-        VAO.bindFor(iData, vData, boundProgram, () ->
-        {
-            if (inds < 0) glDrawArraysInstanced(mode, 0, verts, primcount);
-            else glDrawElementsInstanced(mode, inds, GL_UNSIGNED_INT, 0, primcount);
-        });
+        VAO vao = VAO.bind(iData, vData, boundProgram);
+        if (inds < 0) glDrawArraysInstanced(mode, 0, verts, primcount);
+        else glDrawElementsInstanced(mode, inds, GL_UNSIGNED_INT, 0, primcount);
+        vao.unbind();
     }
     
     /**

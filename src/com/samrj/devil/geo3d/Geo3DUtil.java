@@ -72,27 +72,6 @@ public final class Geo3DUtil
         return r;
     }
 
-    static float solveQuadratic(float a, float b, float c)
-    {
-        float[] solutions = Util.quadFormula(a, b, c);
-        
-        switch (solutions.length)
-        {
-            case 0: return Float.NaN;
-            case 1: return solutions[0];
-            case 2:
-                float s1 = solutions[0];
-                float s2 = solutions[1];
-                
-                if (s1 < 0.0f || s2 < 0.0f)
-                     return s1 > s2 ? s1 : s2; //If either are negative, return the larger one.
-                else return s1 < s2 ? s1 : s2; //Otherwise, return the smaller one.
-            default:
-                assert(false);
-                throw new Error();
-        }
-    }
-    
     static float sweepSpherePlane(Vec3 p, Vec3 dp, Vec4 plane, float r)
     {
         Vec3 n = normal(plane);
