@@ -53,6 +53,16 @@ public class GeoMesh implements Geometry
         result.set(bounds);
     }
 
+    /**
+     * Overrides the bounds of this mesh, and marks them as up-to-date. Useful for storing bounds calculations, so they
+     * don't need to be repeated.
+     */
+    public void overrideBounds(Box3 box)
+    {
+        bounds.set(box);
+        boundsDirty = false;
+    }
+
     @Override
     public boolean areBoundsDirty()
     {
