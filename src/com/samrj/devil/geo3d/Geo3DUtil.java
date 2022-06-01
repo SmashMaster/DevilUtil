@@ -1,7 +1,6 @@
 package com.samrj.devil.geo3d;
 
 import com.samrj.devil.math.Mat3;
-import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.Vec4;
 

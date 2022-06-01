@@ -3,7 +3,9 @@ package com.samrj.devil.model.nodes;
 import com.samrj.devil.math.topo.DAG;
 import com.samrj.devil.model.BlendFile;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Converts a Blender Nodes material into a GLSL shader.

@@ -4,9 +4,6 @@ import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.Vec4;
 import com.samrj.devil.model.BlendFile;
 
-import java.util.HashMap;
-import java.util.Map;
-
 
 /**
  * @author Samuel Johnson (SmashMaster)

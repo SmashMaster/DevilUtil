@@ -22,6 +22,8 @@
 
 package com.samrj.devil.net;
 
+import org.lwjgl.system.MemoryStack;
+
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetAddress;
@@ -32,7 +34,6 @@ import java.nio.channels.DatagramChannel;
 import java.security.MessageDigest;
 import java.util.ArrayDeque;
 import java.util.Arrays;
-import org.lwjgl.system.MemoryStack;
 
 /**
  * UDP game client. Establishes a connection with a UDP game server through

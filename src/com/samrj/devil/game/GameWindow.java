@@ -46,7 +46,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 /**
  * Improved utility game class. To start up a game, simply call Game.run().
  */
-public final class Game
+public final class GameWindow
 {
     private static final StepCallback NULL_STEP_CALLBACK = (dt) -> {};
     private static final HintSet HINTS = new HintSet();
@@ -56,7 +56,7 @@ public final class Game
     private static final Vec2i RESOLUTION = new Vec2i(1280, 720);
     private static boolean vsync = true, fullscreen = false;
     private static int fpsLimit = 60;
-    private static String title = "DevilUtil Game";
+    private static String title = "DevilUtil Window";
     
     private static long window = NULL;
     private static GLCapabilities capabilities;
@@ -126,7 +126,7 @@ public final class Game
      */
     public static void setStepper(TimeStepper stepper)
     {
-        Game.stepper = Objects.requireNonNull(stepper);
+        GameWindow.stepper = Objects.requireNonNull(stepper);
     }
     
     /**
@@ -138,7 +138,7 @@ public final class Game
     public static void setSleeper(SleepMethod sleeper)
     {
         if (running) sync.setSleeper(sleeper);
-        Game.sleeper = Objects.requireNonNull(sleeper);
+        GameWindow.sleeper = Objects.requireNonNull(sleeper);
     }
     
     /**
@@ -185,7 +185,7 @@ public final class Game
             GLFWVidMode mode = glfwGetVideoMode(monitor);
             glfwSetWindowMonitor(window, monitor, 0, 0, RESOLUTION.x, RESOLUTION.y, mode.refreshRate());
         }
-        Game.fullscreen = fullscreen;
+        GameWindow.fullscreen = fullscreen;
     }
     
     /**
@@ -207,7 +207,7 @@ public final class Game
     public static void setVsync(boolean vsync)
     {
         if (running) glfwSwapInterval(vsync ? 1 : 0);
-        Game.vsync = vsync;
+        GameWindow.vsync = vsync;
     }
     
     /**
@@ -219,7 +219,7 @@ public final class Game
     public static void setFPSLimit(int fpsLimit)
     {
         if (running) sync.setFPS(fpsLimit);
-        Game.fpsLimit = fpsLimit;
+        GameWindow.fpsLimit = fpsLimit;
     }
     
     /**
@@ -228,7 +228,7 @@ public final class Game
     public static void setTitle(String title)
     {
         if (running) glfwSetWindowTitle(window, title);
-        Game.title = Objects.requireNonNull(title);
+        GameWindow.title = Objects.requireNonNull(title);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Runtime">
@@ -585,7 +585,7 @@ public final class Game
         running = false;
     }
     
-    private Game()
+    private GameWindow()
     {
     }
 }
