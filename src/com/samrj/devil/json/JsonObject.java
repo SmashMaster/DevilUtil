@@ -19,9 +19,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  ******************************************************************************/
-package com.eclipsesource.json;
+package com.samrj.devil.json;
 
-import com.eclipsesource.json.JsonObject.Member;
+import com.samrj.devil.json.JsonObject.Member;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;

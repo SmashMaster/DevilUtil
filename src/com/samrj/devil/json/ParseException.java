@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2015 EclipseSource.
+ * Copyright (c) 2013, 2016 EclipseSource.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,58 +19,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  ******************************************************************************/
-package com.eclipsesource.json;
+package com.samrj.devil.json;
 
-import java.io.File;
-import java.io.IOException;
-
-
+/**
+ * An unchecked exception to indicate that an input does not qualify as valid JSON.
+ */
 @SuppressWarnings("serial") // use default serial UID
-final class JsonString extends JsonValue {
+public class ParseException extends RuntimeException {
 
-  private final String string;
+  private final Location location;
 
-  JsonString(File source, String string) {
-    super(source);
-    if (string == null) {
-      throw new NullPointerException("string is null");
-    }
-    this.string = string;
+  ParseException(String message, Location location) {
+    super(message + " at " + location);
+    this.location = location;
   }
 
-  @Override
-  void write(JsonWriter writer) throws IOException {
-    writer.writeString(string);
-  }
-
-  @Override
-  public boolean isString() {
-    return true;
-  }
-
-  @Override
-  public String asString() {
-    return string;
-  }
-
-  @Override
-  public int hashCode() {
-    return string.hashCode();
-  }
-
-  @Override
-  public boolean equals(Object object) {
-    if (this == object) {
-      return true;
-    }
-    if (object == null) {
-      return false;
-    }
-    if (getClass() != object.getClass()) {
-      return false;
-    }
-    JsonString other = (JsonString)object;
-    return string.equals(other.string);
+  /**
+   * Returns the location at which the error occurred.
+   *
+   * @return the error location
+   */
+  public Location getLocation() {
+    return location;
   }
 
 }

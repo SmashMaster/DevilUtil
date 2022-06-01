@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2016 EclipseSource.
+ * Copyright (c) 2015 EclipseSource.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,28 +19,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  ******************************************************************************/
-package com.eclipsesource.json;
+package com.samrj.devil.json;
+
+import java.io.Writer;
+
 
 /**
- * An unchecked exception to indicate that an input does not qualify as valid JSON.
+ * Controls the formatting of the JSON output. Use one of the available constants.
  */
-@SuppressWarnings("serial") // use default serial UID
-public class ParseException extends RuntimeException {
-
-  private final Location location;
-
-  ParseException(String message, Location location) {
-    super(message + " at " + location);
-    this.location = location;
-  }
+public abstract class WriterConfig {
 
   /**
-   * Returns the location at which the error occurred.
-   *
-   * @return the error location
+   * Write JSON in its minimal form, without any additional whitespace. This is the default.
    */
-  public Location getLocation() {
-    return location;
-  }
+  public static WriterConfig MINIMAL = new WriterConfig() {
+    @Override
+    JsonWriter createWriter(Writer writer) {
+      return new JsonWriter(writer);
+    }
+  };
+
+  /**
+   * Write JSON in pretty-print, with each value on a separate line and an indentation of two
+   * spaces.
+   */
+  public static WriterConfig PRETTY_PRINT = PrettyPrint.indentWithSpaces(2);
+
+  abstract JsonWriter createWriter(Writer writer);
 
 }

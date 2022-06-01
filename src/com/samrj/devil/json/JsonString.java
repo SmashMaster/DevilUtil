@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 EclipseSource.
+ * Copyright (c) 2013, 2015 EclipseSource.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,32 +19,58 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  ******************************************************************************/
-package com.eclipsesource.json;
+package com.samrj.devil.json;
 
-import java.io.Writer;
+import java.io.File;
+import java.io.IOException;
 
 
-/**
- * Controls the formatting of the JSON output. Use one of the available constants.
- */
-public abstract class WriterConfig {
+@SuppressWarnings("serial") // use default serial UID
+final class JsonString extends JsonValue {
 
-  /**
-   * Write JSON in its minimal form, without any additional whitespace. This is the default.
-   */
-  public static WriterConfig MINIMAL = new WriterConfig() {
-    @Override
-    JsonWriter createWriter(Writer writer) {
-      return new JsonWriter(writer);
+  private final String string;
+
+  JsonString(File source, String string) {
+    super(source);
+    if (string == null) {
+      throw new NullPointerException("string is null");
     }
-  };
+    this.string = string;
+  }
 
-  /**
-   * Write JSON in pretty-print, with each value on a separate line and an indentation of two
-   * spaces.
-   */
-  public static WriterConfig PRETTY_PRINT = PrettyPrint.indentWithSpaces(2);
+  @Override
+  void write(JsonWriter writer) throws IOException {
+    writer.writeString(string);
+  }
 
-  abstract JsonWriter createWriter(Writer writer);
+  @Override
+  public boolean isString() {
+    return true;
+  }
+
+  @Override
+  public String asString() {
+    return string;
+  }
+
+  @Override
+  public int hashCode() {
+    return string.hashCode();
+  }
+
+  @Override
+  public boolean equals(Object object) {
+    if (this == object) {
+      return true;
+    }
+    if (object == null) {
+      return false;
+    }
+    if (getClass() != object.getClass()) {
+      return false;
+    }
+    JsonString other = (JsonString)object;
+    return string.equals(other.string);
+  }
 
 }
