@@ -465,8 +465,8 @@ public final class Mesh extends DataBlock
                 for (int i=0; i<numVertices; i++)
                     vertexData.putInt(loopMats[i]);
             }
-            
-            vertexData.flip();
+
+            vertexData.rewind();
         }
         
         int triangleIndexInts = numTriangles*3;
@@ -479,7 +479,7 @@ public final class Mesh extends DataBlock
                 indexData.putInt(loopTri.vb);
                 indexData.putInt(loopTri.vc);
             }
-            indexData.flip();
+            indexData.rewind();
         }
         
         int edgeIndexInts = numEdges*2;
@@ -491,11 +491,11 @@ public final class Mesh extends DataBlock
                 edgeIndexData.putInt(loopEdge.va);
                 edgeIndexData.putInt(loopEdge.vb);
             }
-            edgeIndexData.flip();
+            edgeIndexData.rewind();
         }
 
-        //Calculate tangents & bitangents.
-        if (hasTangents)
+        //Calculate tangents & bitangents. Must be done after indices.
+        if (vertexData != null && hasTangents)
         {
             Vec3[] tangent = new Vec3[numVertices];
             Vec3[] bitangent = new Vec3[numVertices];
