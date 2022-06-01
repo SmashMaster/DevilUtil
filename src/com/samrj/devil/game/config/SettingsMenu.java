@@ -64,7 +64,7 @@ public class SettingsMenu
     public SettingsMenu(Config config, Layout layout)
     {
         this.config = config;
-        this.layout = Objects.requireNonNull(layout);
+        this.layout = layout;
         
         window = new Window()
                 .setTitle("Settings")
@@ -236,7 +236,7 @@ public class SettingsMenu
         rows.add(fpsLimit(config.fpsLimit, config.vSync, "FPS Limit"));
         rows.add(combool(config.showFPS, "Show FPS"));
 
-        menu.layout.apply(config, rows);
+        if (menu.layout != null) menu.layout.apply(config, rows);
 
         rows.add(new Text("Bindings (Mouse & Keyboard)"), Align.N.vector());
 

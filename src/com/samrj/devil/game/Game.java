@@ -74,7 +74,7 @@ public final class Game
         private boolean debug;
         private String title = "DevilUtil Game";
         private GameModeSupplier modeSupplier = e -> null;
-        private FontSupplier fontSupplier;
+        private FontSupplier fontSupplier = () -> null;
         private SettingsMenu.Layout settingsLayout;
         private Font font;
         private Game game;
