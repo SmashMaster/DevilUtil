@@ -93,7 +93,6 @@ public final class Game
         if (running) throw new IllegalStateException("Debug must be set before running game.");
         
         Configuration.DEBUG.set(debug);
-        Configuration.DEBUG_STACK.set(debug);
         Configuration.DEBUG_MEMORY_ALLOCATOR.set(debug);
         hint(GLFW_OPENGL_DEBUG_CONTEXT, debug ? GLFW_TRUE : GLFW_FALSE);
         DAL.setDebugEnabled(debug);
