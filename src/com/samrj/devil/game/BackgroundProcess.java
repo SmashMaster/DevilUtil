@@ -34,7 +34,7 @@ import java.util.function.Consumer;
 
 /**
  * A game loop that runs without a window. Useful for background processes like servers. Can make multiple instances of
- * this, unlike Game.
+ * this, unlike GameWindow or Game.
  */
 public final class BackgroundProcess implements Runnable
 {

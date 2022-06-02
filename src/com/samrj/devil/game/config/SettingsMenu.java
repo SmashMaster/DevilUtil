@@ -32,7 +32,6 @@ import org.lwjgl.glfw.GLFWVidMode;
 
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Predicate;
 
 import static org.lwjgl.glfw.GLFW.*;

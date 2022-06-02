@@ -289,6 +289,14 @@ public final class Controls
     }
 
     /**
+     * Removes a default binding if it exists.
+     */
+    public Pair<Source, Source> removeControl(String target)
+    {
+        return defaults.remove(target);
+    }
+
+    /**
      * Returns a map view of the default bindings for these Controls. If new defaults are added, the change is
      * reflected by the returned collection. The returned collection is unmodifiable.
      */

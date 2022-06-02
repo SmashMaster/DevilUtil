@@ -24,6 +24,7 @@ package com.samrj.devil.game;
 
 import com.samrj.devil.al.DAL;
 import com.samrj.devil.game.config.Config;
+import com.samrj.devil.game.config.Controls;
 import com.samrj.devil.game.config.SettingsMenu;
 import com.samrj.devil.game.config.Vec2iSetting;
 import com.samrj.devil.gl.DGL;
@@ -42,21 +43,21 @@ import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 /**
- * Wrapper for GameWindow that handles config file loading, re-mappable controls, and more.
+ * Wrapper for GameWindow that handles config file loading, re-mappable controls, a command console, and more.
  *
  * @author Samuel Johnson (SmashMaster)
  */
-public final class Game
+public final class Game<T extends GameMode>
 {
-    public static Builder builder()
+    public static <T extends GameMode> Builder<T> builder()
     {
         return new Builder();
     }
 
     @FunctionalInterface
-    public interface GameModeSupplier
+    public interface GameModeSupplier<T extends GameMode>
     {
-        GameMode apply(Game engine) throws IOException;
+        T apply(Game engine) throws IOException;
     }
 
     @FunctionalInterface
@@ -65,7 +66,7 @@ public final class Game
         Font get() throws IOException;
     }
 
-    public static final class Builder
+    public static final class Builder<T extends GameMode>
     {
         public final State state;
         public final Config config;
@@ -73,11 +74,13 @@ public final class Game
         private boolean isNew = true;
         private boolean debug;
         private String title = "DevilUtil Game";
-        private GameModeSupplier modeSupplier = e -> null;
+        private GameModeSupplier<T> modeSupplier = e -> null;
         private FontSupplier fontSupplier = () -> null;
         private SettingsMenu.Layout settingsLayout;
+        private String consoleControlName;
+        private Console.Callback consoleCallback;
         private Font font;
-        private Game game;
+        private Game<T> game;
 
         private Builder()
         {
@@ -115,11 +118,30 @@ public final class Game
 
         public Builder setSettingsLayout(SettingsMenu.Layout layout)
         {
+            state.requireNew();
             settingsLayout = layout;
             return this;
         }
 
-        public Builder setGameMode(GameModeSupplier modeSupplier)
+        public Builder setConsoleControl(String name, Controls.Source defaultBinding)
+        {
+            //This whole method is clunky. Could also be merged with setConsoleCallback.
+            state.requireNew();
+            if (name == null || defaultBinding == null) throw new NullPointerException();
+            if (consoleControlName != null) config.controls.removeControl(name);
+            config.controls.addControl(name, defaultBinding.TYPE.isGamepad ? null : defaultBinding, defaultBinding.TYPE.isGamepad ? defaultBinding : null);
+            consoleControlName = name;
+            return this;
+        }
+
+        public Builder setConsoleCallback(Console.Callback callback)
+        {
+            state.requireNew();
+            consoleCallback = callback;
+            return this;
+        }
+
+        public Builder setGameMode(GameModeSupplier<T> modeSupplier)
         {
             state.requireNew();
             this.modeSupplier = Objects.requireNonNull(modeSupplier);
@@ -154,7 +176,7 @@ public final class Game
 
                 EZDraw.init(65536*4);
 
-                game = new Game(state, config, settingsLayout);
+                game = new Game<>(this);
 
                 GameWindow.onResize(game::resize);
                 GameWindow.beforeInput(game::beforeInput);
@@ -231,9 +253,11 @@ public final class Game
     }
 
     public final Config config;
-    public final SettingsMenu settings;
     public final Input input;
+    public final Console<T> console;
 
+    private final String consoleControlName;
+    private final SettingsMenu settings;
     private final FPSCounter fpsCounter;
     private final Vec2i resolution;
 
@@ -246,12 +270,12 @@ public final class Game
     private float prevMouseX, prevMouseY;
     private boolean prevMouseValid;
 
-    public GameMode mode;
+    public T mode;
 
-    private Game(State state, Config config, SettingsMenu.Layout settingsLayout)
+    private Game(Builder<T> builder)
     {
-        state.requireStarted();
-        this.config = config;
+        builder.state.requireStarted();
+        this.config = builder.config;
 
         resolution = new Vec2i(config.get("resolution", Vec2iSetting.class).get());
 
@@ -260,8 +284,10 @@ public final class Game
         config.vSync.onChanged(GameWindow::setVsync);
         config.fpsLimit.onChanged(GameWindow::setFPSLimit);
 
-        settings = new SettingsMenu(config, settingsLayout);
-        input = new Input(state, config, this::input);
+        input = new Input(builder.state, config, this::input);
+        settings = new SettingsMenu(config, builder.settingsLayout);
+        console = new Console(this, builder.consoleCallback);
+        consoleControlName = builder.consoleControlName;
         fpsCounter = new FPSCounter(resolution, config);
     }
 
@@ -378,7 +404,7 @@ public final class Game
         }
 
         if (!modeHasFocus()) DUI.key(key, action, mods);
-
+        if (console.hasFocus()) console.key(key, action, mods);
         input.key(key, action, mods);
     }
 
@@ -414,12 +440,15 @@ public final class Game
 
     private void input(String target, boolean active)
     {
+        if (active && target.equals(consoleControlName)) console.toggleVisible();
+
         if (mode != null) mode.input(target, active);
     }
 
     void afterInput()
     {
         if (gamepad != null) gamepad.update();
+        console.afterInput();
     }
 
     void step(float dt)
