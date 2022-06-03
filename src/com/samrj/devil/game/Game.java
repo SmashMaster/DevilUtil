@@ -55,15 +55,21 @@ public final class Game<T extends GameMode>
     }
 
     @FunctionalInterface
-    public interface GameModeSupplier<T extends GameMode>
-    {
-        T apply(Game engine) throws IOException;
-    }
-
-    @FunctionalInterface
     public interface FontSupplier
     {
         Font get() throws IOException;
+    }
+
+    @FunctionalInterface
+    public interface InitCallback<T extends GameMode>
+    {
+        void accept(Game<T> game) throws IOException;
+    }
+
+    @FunctionalInterface
+    public interface DestroyCallback<T extends GameMode>
+    {
+        void accept(Game<T> game, boolean crashed);
     }
 
     public static final class Builder<T extends GameMode>
@@ -74,7 +80,8 @@ public final class Game<T extends GameMode>
         private boolean isNew = true;
         private boolean debug;
         private String title = "DevilUtil Game";
-        private GameModeSupplier<T> modeSupplier = e -> null;
+        private InitCallback<T> onInit = null;
+        private DestroyCallback<T> onDestroy = null;
         private FontSupplier fontSupplier = () -> null;
         private SettingsMenu.Layout settingsLayout;
         private String consoleControlName;
@@ -88,42 +95,42 @@ public final class Game<T extends GameMode>
             config = new Config(state);
         }
 
-        public Builder glfwHint(int target, int hint)
+        public Builder<T> glfwHint(int target, int hint)
         {
             state.requireNew();
             GameWindow.hint(target, hint);
             return this;
         }
 
-        public Builder setDebug(boolean debug)
+        public Builder<T> setDebug(boolean debug)
         {
             state.requireNew();
             this.debug = debug;
             return this;
         }
 
-        public Builder setTitle(String title)
+        public Builder<T> setTitle(String title)
         {
             state.requireNew();
             this.title = Objects.requireNonNull(title);
             return this;
         }
 
-        public Builder setFont(FontSupplier fontSupplier)
+        public Builder<T> setFont(FontSupplier fontSupplier)
         {
             state.requireNew();
             this.fontSupplier = Objects.requireNonNull(fontSupplier);
             return this;
         }
 
-        public Builder setSettingsLayout(SettingsMenu.Layout layout)
+        public Builder<T> setSettingsLayout(SettingsMenu.Layout layout)
         {
             state.requireNew();
             settingsLayout = layout;
             return this;
         }
 
-        public Builder setConsoleControl(String name, Controls.Source defaultBinding)
+        public Builder<T> setConsoleControl(String name, Controls.Source defaultBinding)
         {
             //This whole method is clunky. Could also be merged with setConsoleCallback.
             state.requireNew();
@@ -134,17 +141,24 @@ public final class Game<T extends GameMode>
             return this;
         }
 
-        public Builder setConsoleCallback(Console.Callback callback)
+        public Builder<T> setConsoleCallback(Console.Callback callback)
         {
             state.requireNew();
             consoleCallback = callback;
             return this;
         }
 
-        public Builder setGameMode(GameModeSupplier<T> modeSupplier)
+        public Builder<T> onInit(InitCallback<T> onInit)
         {
             state.requireNew();
-            this.modeSupplier = Objects.requireNonNull(modeSupplier);
+            this.onInit = onInit;
+            return this;
+        }
+
+        public Builder<T> onDestroy(DestroyCallback<T> onDestroy)
+        {
+            state.requireNew();
+            this.onDestroy = onDestroy;
             return this;
         }
 
@@ -189,19 +203,24 @@ public final class Game<T extends GameMode>
                 GameWindow.onStep(game::step);
                 GameWindow.onRender(game::render);
 
-                game.mode = modeSupplier.apply(game);
+                if (onInit != null) onInit.accept(game);
             });
 
             GameWindow.onDestroy(crashed ->
             {
                 config.save(); //Save the config even if we've crashed.
+                if (onDestroy != null) onDestroy.accept(game, crashed);
+                if (game.mode != null)
+                {
+                    game.mode.destroy();
+                    game.mode = null;
+                }
                 DAL.detachAllSounds();
                 if (font != null)
                 {
                     font.destroy();
                     font = null;
                 }
-                game = null;
                 EZDraw.destroy();
                 DUI.destroy();
 
@@ -400,7 +419,7 @@ public final class Game<T extends GameMode>
         {
             Window topWindow = DUI.getTopWindow();
             if (topWindow != null) DUI.hide(topWindow);
-            else settings.setVisible(!settings.isVisible());
+            else settings.toggleVisible();
         }
 
         if (!modeHasFocus()) DUI.key(key, action, mods);

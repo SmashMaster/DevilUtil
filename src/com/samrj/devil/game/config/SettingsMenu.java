@@ -277,6 +277,11 @@ public class SettingsMenu
     {
         return window.isVisible();
     }
+
+    public void toggleVisible()
+    {
+        setVisible(!isVisible());
+    }
     
     private void rebind(Pair<Controls.Source, String> binding, Controls.Source source)
     {
