@@ -13,5 +13,5 @@ DevilUtil
 * **devil.graphics** - Graphics utilities, like a 3D camera and a mesh drawer.
 * **devil.gui** - Interface. Also has TrueType font loading.
 * **devil.json** - A JSON importer/exporter forked from [miminal-json](https://github.com/ralfstx/minimal-json).
-* **devil.math** - Linear algebra. [Compare to GLM](http://glm.g-truc.net).
+* **devil.math** - Linear algebra. [Compare to GLM](https://github.com/g-truc/glm).
 * **devil.model** - Blender (.blend) file loader
