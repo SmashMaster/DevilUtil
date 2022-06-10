@@ -8,10 +8,10 @@ import java.util.List;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class Curve extends DataBlock
+public final class Curve extends DataBlockAnimatable
 {
     public final List<Spline> splines;
     

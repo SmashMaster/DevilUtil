@@ -13,10 +13,10 @@ import java.util.*;
 /**
  * @author Samuel Johnson (SmashMaster)
  * @param <DATA_TYPE> The type of datablock this ModelObject encapsulates.
- * @copyright 2019 Samuel Johnson
+ * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlock
+public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlockAnimatable
 {
     public enum EmptyType
     {

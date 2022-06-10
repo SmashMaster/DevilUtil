@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sam Johnson
+ * Copyright (c) 2022 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -190,9 +190,8 @@ public class FCurve
     }
     
     //Needed to change from Blender's coordinate system to DevilUtil's.
-    private static final int[][] INDEX_MAP = {{2, 0, 1},
-                                              {0, 3, 1, 2},
-                                              {2, 0, 1}};
+    private static final int[] INDEX_MAP_XYZ = {2, 0, 1};
+    private static final int[] INDEX_MAP_QUAT = {0, 3, 1, 2};
     
     public final String boneName;
     public final Transform.Property property;
@@ -206,7 +205,7 @@ public class FCurve
     {
         String rnaPath = pointer.getField("rna_path").dereference().asString();
         String propertyName;
-        
+
         if (rnaPath.startsWith("pose.bones[\""))
         {
             int boneNameEndIndex = rnaPath.indexOf("\"].");
@@ -219,25 +218,29 @@ public class FCurve
             propertyName = rnaPath;
         }
         
-        int pi;
+        int[] indexMap;
         switch (propertyName)
         {
             case "location":
                 property = Transform.Property.POSITION;
-                pi = 0;
+                indexMap = INDEX_MAP_XYZ;
                 break;
             case "rotation_quaternion":
                 property = Transform.Property.ROTATION;
-                pi = 1;
+                indexMap = INDEX_MAP_QUAT;
                 break;
             case "scale":
                 property = Transform.Property.SCALE;
-                pi = 2;
+                indexMap = INDEX_MAP_XYZ;
                 break;
-            default: throw new IllegalArgumentException("Illegal property: " + propertyName);
+            default:
+                property = null;
+                indexMap = null;
+                break;
         }
-        
-        propertyIndex = INDEX_MAP[pi][pointer.getField("array_index").asInt()];
+
+        int blendPropIndex = pointer.getField("array_index").asInt();
+        propertyIndex = indexMap != null ? indexMap[blendPropIndex] : blendPropIndex;
         
         int totvert = pointer.getField("totvert").asInt();
         BlendFile.Pointer bezts = pointer.getField("bezt").dereference();

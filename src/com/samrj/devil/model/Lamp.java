@@ -6,10 +6,10 @@ import java.io.IOException;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class Lamp extends DataBlock
+public final class Lamp extends DataBlockAnimatable
 {
     public enum Type
     {

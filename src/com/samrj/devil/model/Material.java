@@ -10,7 +10,7 @@ import java.io.IOException;
  * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class Material extends DataBlock
+public final class Material extends DataBlockAnimatable
 {
     public final int modelIndex;
     

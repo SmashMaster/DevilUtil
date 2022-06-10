@@ -8,7 +8,7 @@ import java.util.stream.Stream;
  * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class Scene extends DataBlock
+public final class Scene extends DataBlockAnimatable
 {
     public final ModelCollection collection;
     
