@@ -63,6 +63,7 @@ public final class Texture1D extends Texture<Texture1D>
         int primType = TexUtil.getPrimitiveType(format);
         
         int oldID = tempBind();
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexImage1D(target, 0, format, width, 0, dataFormat, primType, image.buffer);
         tempUnbind(oldID);
         

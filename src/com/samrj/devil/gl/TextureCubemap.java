@@ -92,6 +92,7 @@ public final class TextureCubemap extends Texture<TextureCubemap>
                 throw new IllegalArgumentException();
         
         int oldID = tempBind();
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         for (int i=0; i<6; i++) glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                 0, format, size, size, 0, dataFormat, primType, images[i].buffer);
         tempUnbind(oldID);

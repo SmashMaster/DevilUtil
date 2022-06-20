@@ -2,6 +2,8 @@ package com.samrj.devil.gl;
 
 import com.samrj.devil.graphics.TexUtil;
 
+import static org.lwjgl.opengl.GL11C.GL_UNPACK_ALIGNMENT;
+import static org.lwjgl.opengl.GL11C.glPixelStorei;
 import static org.lwjgl.opengl.GL12C.glTexSubImage3D;
 import static org.lwjgl.opengl.GL12C.nglTexImage3D;
 import static org.lwjgl.system.MemoryUtil.NULL;
@@ -105,6 +107,7 @@ abstract class Texture3DAbstract<T extends Texture3DAbstract<T>> extends Texture
         
         int primType = TexUtil.getPrimitiveType(format);
         int oldID = tempBind();
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexSubImage3D(target, 0, 0, 0, depth, width, height, 1, dataFormat, primType, image.buffer);
         tempUnbind(oldID);
         return getThis();

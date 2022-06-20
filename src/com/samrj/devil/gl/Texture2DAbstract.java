@@ -113,6 +113,7 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         int primType = TexUtil.getPrimitiveType(format);
         
         int oldID = tempBind();
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexImage2D(target, 0, format, width, height, 0, dataFormat, primType, image.buffer);
         tempUnbind(oldID);
         
@@ -182,6 +183,7 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         
         int primType = TexUtil.getPrimitiveType(format);
         int oldID = tempBind();
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexSubImage2D(target, 0, 0, 0, width, height, dataFormat, primType, image.buffer);
         tempUnbind(oldID);
         return getThis();
@@ -210,6 +212,7 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         int primType = TexUtil.getPrimitiveType(format);
         int oldID = tempBind();
         image.buffer.clear();
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glGetTexImage(target, 0, dataFormat, primType, image.buffer);
         tempUnbind(oldID);
         return getThis();
