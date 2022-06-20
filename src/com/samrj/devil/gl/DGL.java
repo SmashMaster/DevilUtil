@@ -30,6 +30,7 @@ import org.lwjgl.opengl.GLCapabilities;
 import org.lwjgl.system.MemoryStack;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.io.IOException;
@@ -386,6 +387,16 @@ public final class DGL
         BufferedImage bImage = ImageIO.read(path.toFile());
 
         if (bImage == null) throw new IOException("Cannot read image from " + path);
+
+        if (bImage.getType() == BufferedImage.TYPE_BYTE_INDEXED)
+        {
+            boolean hasAlpha = bImage.getColorModel().hasAlpha();
+            BufferedImage rgbImage = new BufferedImage(bImage.getWidth(), bImage.getHeight(), hasAlpha ? BufferedImage.TYPE_4BYTE_ABGR : BufferedImage.TYPE_3BYTE_BGR);
+            Graphics2D graphics = rgbImage.createGraphics();
+            graphics.drawImage(bImage, 0, 0, null);
+            graphics.dispose();
+            return loadImage(rgbImage.getRaster());
+        }
 
         return loadImage(bImage.getRaster());
     }
