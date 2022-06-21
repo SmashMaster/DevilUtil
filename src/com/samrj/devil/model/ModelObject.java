@@ -54,7 +54,7 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlockAni
     public final Map<String, String> arguments; //Requires blender plugin -- use custom properties for this instead.
 
     public final Transform transform;
-    public final List<String> vertexGroups;
+    @Deprecated public final List<String> vertexGroups; //Use Mesh vertexGroups instead.
     public final Pose pose;
     public final List<IKDefinition> ikConstraints;
     public final List<CopyRotDef> copyRotConstraints;
@@ -63,7 +63,7 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlockAni
     public final ParentType parentType;
     public final String parentBoneName;
     public final Mat4 parentMatrix;
-    public final DataPointer<Action> action;
+    @Deprecated public final DataPointer<Action> action;
     public final EmptyType emptyType;
     public final DataPointer<ModelCollection> instance;
 

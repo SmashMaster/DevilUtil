@@ -33,8 +33,10 @@ public class MeshSkinner
     
     public MeshSkinner(ModelObject<Mesh> object, ArmatureSolver solver)
     {
-        numGroups = object.data.get().numGroups;
-        bones = IOUtil.mapList(object.vertexGroups, solver::getBone);
+        Mesh mesh = object.data.get();
+        numGroups = mesh.numGroups;
+        List<String> vertexGroups = mesh.vertexGroups != null ? mesh.vertexGroups : object.vertexGroups;
+        bones = IOUtil.mapList(vertexGroups, solver::getBone);
         matData = memAllocFloat(bones.size()*16);
     }
     

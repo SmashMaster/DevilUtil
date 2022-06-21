@@ -84,9 +84,10 @@ public final class Mesh extends DataBlockAnimatable
             return (va == edge.va && vb == edge.vb) || (va == edge.vb && vb == edge.va);
         }
     }
-    
+
     public final boolean hasTangents;
-    public final int numGroups;
+    public final int numGroups; //Maximum number of groups per vertex, not total number of groups.
+    public final List<String> vertexGroups;
     public final boolean hasMaterials;
     
     public final String[] uvLayers, colorLayers;
@@ -115,7 +116,7 @@ public final class Mesh extends DataBlockAnimatable
         /**
          * PREPARE MESH DATA
          */
-        
+
         //Populate materials list
         int totcol = bMesh.getField("totcol").asShort();
         materials = new DataPointer[totcol];
@@ -292,6 +293,10 @@ public final class Mesh extends DataBlockAnimatable
         for (Vec3 smoothNormal : vertSmoothNormals) smoothNormal.normalize();
         
         //Prepare vertex group data
+        vertexGroups = new ArrayList<>();
+        for (BlendFile.Pointer group : bMesh.getField("vertex_group_names").asList("bDeformGroup"))
+            vertexGroups.add(group.getField("name").asString());
+
         int maxGroup = -1;
         BlendFile.Pointer dVertArr = bMesh.getField("dvert").dereference();
         BlendFile.Pointer[] dVerts = dVertArr == null ? null : dVertArr.asArray(totvert);
