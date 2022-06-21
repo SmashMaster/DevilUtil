@@ -132,12 +132,11 @@ public final class Mesh extends DataBlockAnimatable
         int totvert = bMesh.getField("totvert").asInt();
         BlendFile.Pointer[] mVerts = bMesh.getField("mvert").dereference().asArray(totvert);
         Vec3[] verts = new Vec3[totvert];
-        Vec3[] normals = new Vec3[totvert];
+        Vec3[] vertSmoothNormals = new Vec3[totvert];
         for (int i=0; i<totvert; i++)
         {
-            BlendFile.Pointer mVert = mVerts[i];
-            verts[i] = mVert.getField("co").asVec3();
-            normals[i] = mVert.getField("no").asNormalVec3();
+            verts[i] = mVerts[i].getField("co").asVec3();
+            vertSmoothNormals[i] = new Vec3();
         }
         
         int totloop = bMesh.getField("totloop").asInt();
@@ -149,36 +148,64 @@ public final class Mesh extends DataBlockAnimatable
         BlendFile.Pointer[] mPolys = bMesh.getField("mpoly").dereference().asArray(totpoly);
         List<LoopTri> loopTris = new ArrayList<>();
         Set<LoopEdge> loopEdges = new HashSet<>();
+        Vec3[] polyFlatNormals = new Vec3[totpoly];
         
         for (int iPoly=0; iPoly<totpoly; iPoly++)
         {
             BlendFile.Pointer mPoly = mPolys[iPoly];
-            
+
             int start = mPoly.getField("loopstart").asInt();
             int count = mPoly.getField("totloop").asInt();
             int end = start + count;
-            
-            //Calculate normal by Newell's method
-            Vec3 normal = new Vec3();
-            for (int i0=start; i0<end; i0++)
+
+            //Calculate polygon flat normal by Newell's method.
+            Vec3 flatNormal = new Vec3();
+            polyFlatNormals[iPoly] = flatNormal;
+
+            for (int i0 = start; i0 < end; i0++)
             {
                 int i1 = i0 + 1;
                 if (i1 == end) i1 = start;
-                
+
                 Vec3 v0 = verts[mLoops[i0].getField("v").asInt()];
                 Vec3 v1 = verts[mLoops[i1].getField("v").asInt()];
 
-                normal.x += (v0.y - v1.y)*(v0.z + v1.z);
-                normal.y += (v0.z - v1.z)*(v0.x + v1.x);
-                normal.z += (v0.x - v1.x)*(v0.y + v1.y);
+                flatNormal.x += (v0.y - v1.y)*(v0.z + v1.z);
+                flatNormal.y += (v0.z - v1.z)*(v0.x + v1.x);
+                flatNormal.z += (v0.x - v1.x)*(v0.y + v1.y);
             }
-            
-            float nrmLen = normal.length();
-            if (nrmLen == 0.0f) normal.z = 1.0f;
-            else normal.div(nrmLen);
-            
+
+            float flatNormalLength = flatNormal.length();
+            if (flatNormalLength == 0.0f) flatNormal.z = 1.0f;
+            else flatNormal.div(flatNormalLength);
+
+            //Accumulate flat normal weighted by corner angles into each vertex's smooth normal.
+            //TODO: Optimise this.
+            for (int i = start; i < end; i++)
+            {
+                int iPrev = i - 1, iNext = i + 1;
+                if (iPrev == start - 1) iPrev = end - 1;
+                if (iNext == end) iNext = start;
+
+                int mVertIndex = mLoops[i].getField("v").asInt();
+
+                //Could optimise this.
+                Vec3 vPrev = verts[mLoops[iPrev].getField("v").asInt()];
+                Vec3 v = verts[mVertIndex];
+                Vec3 vNext = verts[mLoops[iNext].getField("v").asInt()];
+
+                Vec3 edge0 = Vec3.sub(v, vPrev).normalize();
+                Vec3 edge1 = Vec3.sub(vNext, v).normalize();
+
+                float angle = (float)Math.acos(edge0.dot(edge1)); //Unsafe.
+
+                vertSmoothNormals[mVertIndex].madd(flatNormal, angle);
+            }
+
             //Triangulate the face
-            if (count < 3) {} //Degenerate poly
+            if (count < 3) //Degenerate poly
+            {
+            }
             else if (count == 3) //Single triangle poly
             {
                 loopTris.add(new LoopTri(start, 0, 1, 2));
@@ -189,14 +216,14 @@ public final class Mesh extends DataBlockAnimatable
                 Vec3 v1 = verts[mLoops[start + 1].getField("v").asInt()];
                 Vec3 v2 = verts[mLoops[start + 2].getField("v").asInt()];
                 Vec3 v3 = verts[mLoops[start + 3].getField("v").asInt()];
-                
+
                 Vec3 e01 = Vec3.sub(v1, v0);
                 Vec3 e02 = Vec3.sub(v2, v0);
                 Vec3 e03 = Vec3.sub(v3, v0);
-                
+
                 Vec3 crossA = Vec3.cross(e01, e02);
                 Vec3 crossB = Vec3.cross(e03, e02);
-                
+
                 if (crossA.dot(crossB) > 0.0f)
                 {
                     loopTris.add(new LoopTri(start, 0, 1, 3));
@@ -211,47 +238,47 @@ public final class Mesh extends DataBlockAnimatable
             else //Need to triangulate by ear clipping
             {
                 //Project to 2D
-                Mat3 basis = Geo3DUtil.orthonormalBasis(normal);
+                Mat3 basis = Geo3DUtil.orthonormalBasis(flatNormal);
                 basis.g = 0.0f;
                 basis.h = 0.0f;
                 basis.i = 0.0f;
                 double[] projData = new double[count*2];
-                for (int i=0; i<count; i++)
+                for (int i = 0; i < count; i++)
                 {
                     Vec3 v = verts[mLoops[start + i].getField("v").asInt()];
                     Vec3 projected = Vec3.mult(v, basis);
-                    
+
                     projData[i*2] = projected.x;
                     projData[i*2 + 1] = projected.y;
                 }
-                
+
                 //Compute the triangulation
                 List<Integer> triangulated = Earcut.earcut(projData);
-                for (int i=0; i<triangulated.size();)
+                for (int i = 0; i < triangulated.size(); )
                 {
                     int a = triangulated.get(i++);
                     int b = triangulated.get(i++);
                     int c = triangulated.get(i++);
-                    
+
                     loopTris.add(new LoopTri(start, a, b, c));
                 }
             }
-            
+
             //Make edges
             int eiLast = end - 1;
-            for (int ei=start; ei<end; ei++)
+            for (int ei = start; ei < end; ei++)
             {
                 loopEdges.add(new LoopEdge(eiLast, ei));
                 eiLast = ei;
             }
-            
+
             //Store normals
             boolean isSmooth = (mPoly.getField("flag").asByte() & 1) != 0;
             if (isSmooth)
                 for (int i=start; i<end; i++)
-                    loopNormals[i] = normals[mLoops[i].getField("v").asInt()];
+                    loopNormals[i] = vertSmoothNormals[mLoops[i].getField("v").asInt()]; //Warning: these aren't normalized yet.
             else for (int i=start; i<end; i++)
-                    loopNormals[i] = normal;
+                    loopNormals[i] = polyFlatNormals[iPoly];
             
             //Store face material
             if (loopMats != null)
@@ -261,6 +288,8 @@ public final class Mesh extends DataBlockAnimatable
                     loopMats[i] = polyMat;
             }
         }
+
+        for (Vec3 smoothNormal : vertSmoothNormals) smoothNormal.normalize();
         
         //Prepare vertex group data
         int maxGroup = -1;

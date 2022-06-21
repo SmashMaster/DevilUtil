@@ -4,6 +4,7 @@ import com.samrj.devil.model.DataBlock.Type;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.EnumMap;
 
 /**
@@ -47,7 +48,7 @@ public final class Model
             arraymaps.put(Type.LIBRARY, libraries);
             
             actions = new ArrayMap<>();
-           for (BlendFile.Pointer bAction : blend.getLibrary("bAction"))
+            for (BlendFile.Pointer bAction : blend.getLibrary("bAction"))
                 actions.put(new Action(this, bAction));
             arraymaps.put(Type.ACTION, actions);
             
@@ -81,6 +82,14 @@ public final class Model
             for (BlendFile.Pointer bObject : blend.getLibrary("Object"))
                 objects.put(new ModelObject(this, bObject));
             arraymaps.put(Type.OBJECT, objects);
+
+            for (ModelObject<?> object : objects)
+            {
+                ModelObject<?> parent = object.parent.get();
+                if (parent != null) parent.children.add(object);
+            }
+
+            for (ModelObject<?> object : objects) object.children = Collections.unmodifiableSet(object.children);
 
             collections = new ArrayMap<>();
             for (BlendFile.Pointer bObject : blend.getLibrary("Collection"))

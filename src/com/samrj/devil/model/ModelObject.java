@@ -23,6 +23,11 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlockAni
         NONE, ARROWS, PLAINAXES, CIRCLE, SINGLE_ARROW, CUBE, EMPTY_SPHERE, EMPTY_CONE, EMPTY_IMAGE;
     }
 
+    public enum ParentType
+    {
+        OBJECT, ARMATURE, BONE;
+    }
+
     //Object types: https://github.com/blender/blender/blob/master/source/blender/makesdna/DNA_object_types.h
     private static final int TYPE_EMPTY = 0;
     private static final int TYPE_MESH = 1;
@@ -41,6 +46,10 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlockAni
     private static final int TYPE_POINTCLOUD = 28;
     private static final int TYPE_VOLUME = 29;
 
+    private static final int PARENT_TYPE_OBJECT = 0;
+    private static final int PARENT_TYPE_ARMATURE = 4;
+    private static final int PARENT_TYPE_BONE = 7;
+
     @Deprecated
     public final Map<String, String> arguments; //Requires blender plugin -- use custom properties for this instead.
 
@@ -51,11 +60,14 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlockAni
     public final List<CopyRotDef> copyRotConstraints;
     public final DataPointer<DATA_TYPE> data;
     public final DataPointer<ModelObject<?>> parent;
+    public final ParentType parentType;
     public final String parentBoneName;
     public final Mat4 parentMatrix;
     public final DataPointer<Action> action;
     public final EmptyType emptyType;
     public final DataPointer<ModelCollection> instance;
+
+    Set<ModelObject<?>> children = Collections.newSetFromMap(new IdentityHashMap<>());
     
     ModelObject(Model model, BlendFile.Pointer bObject) throws IOException
     {
@@ -187,8 +199,16 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlockAni
         {
             String parentName = bParent.getField(0).getField("name").asString().substring(2);
             parent = new DataPointer<>(model, Type.OBJECT, parentName);
-            
-            if (bObject.getField("partype").asShort() == 7) parentBoneName = bObject.getField("parsubstr").asString();
+
+            parentType = switch(bObject.getField("partype").asShort() & 0xF)
+            {
+                case PARENT_TYPE_OBJECT -> ParentType.OBJECT;
+                case PARENT_TYPE_ARMATURE -> ParentType.ARMATURE;
+                case PARENT_TYPE_BONE -> ParentType.BONE;
+                default -> null;
+            };
+
+            if (parentType == ParentType.BONE) parentBoneName = bObject.getField("parsubstr").asString();
             else parentBoneName = null;
 
             //Not 100% sure why this needs to be transposed to get correct results. TODO: Possibly an underlying bug.
@@ -197,6 +217,7 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlockAni
         else
         {
             parent = DataPointer.nullPointer(model);
+            parentType = null;
             parentBoneName = null;
             parentMatrix = null;
         }
@@ -228,6 +249,11 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlockAni
     public <T extends DataBlock> Optional<ModelObject<T>> optionalType(Class<T> typeClass)
     {
         return Optional.ofNullable(asType(typeClass));
+    }
+
+    public Set<ModelObject<?>> getChildren()
+    {
+        return children;
     }
 
     /**
