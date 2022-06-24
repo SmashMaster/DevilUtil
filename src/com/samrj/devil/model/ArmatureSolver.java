@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sam Johnson
+ * Copyright (c) 2022 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +29,8 @@ import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.topo.DAG;
 import com.samrj.devil.model.Armature.Bone;
 import com.samrj.devil.model.Pose.PoseBone;
+import com.samrj.devil.model.constraint.ChildOfConstraint;
 import com.samrj.devil.model.constraint.CopyRotationConstraint;
-import com.samrj.devil.model.constraint.CopyRotationConstraint.CopyRotDef;
 import com.samrj.devil.model.constraint.IKConstraint;
 import com.samrj.devil.util.IOUtil;
 
@@ -68,7 +68,9 @@ public final class ArmatureSolver
         
         ikConstraints = IOUtil.mapList(object.ikConstraints, ikDef -> new IKConstraint(ikDef, this));
         constraints = new LinkedList<>();
-        for (CopyRotDef def : object.copyRotConstraints)
+        for (ChildOfConstraint.Definition def : object.childOfConstraints)
+            constraints.add(new ChildOfConstraint(def, this));
+        for (CopyRotationConstraint.Definition def : object.copyRotConstraints)
             constraints.add(new CopyRotationConstraint(def, this));
         nonconstrained = Collections.newSetFromMap(new IdentityHashMap<>());
         sortSolvables();

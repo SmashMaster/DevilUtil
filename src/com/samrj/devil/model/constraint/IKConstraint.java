@@ -12,11 +12,13 @@ import java.util.Set;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class IKConstraint implements ArmatureSolver.Constraint
 {
+    public record Definition(String boneName, String targetName, String poleName, float poleAngle) {}
+
     private static float nrm(Vec3 v)
     {
         float len = v.length();
@@ -31,7 +33,7 @@ public class IKConstraint implements ArmatureSolver.Constraint
     private final Vec3 hinge1 = new Vec3(), hinge2 = new Vec3();
     private final float ang2init;
     
-    public IKConstraint(IKDefinition def, ArmatureSolver solver)
+    public IKConstraint(Definition def, ArmatureSolver solver)
     {
         end = solver.getBone(def.boneName);
         start = end.getParent();
@@ -109,21 +111,5 @@ public class IKConstraint implements ArmatureSolver.Constraint
         }
         else rot2.rotate(hinge2, -ang2init); //Reach towards target.
         //Also need cases for targets that are too close.
-    }
-    
-    public static class IKDefinition
-    {
-        public final String boneName;
-        public final String targetName;
-        public final String poleName;
-        public final float poleAngle;
-        
-        public IKDefinition(String boneName, String targetName, String poleName, float poleAngle)
-        {
-            this.boneName = boneName;
-            this.targetName = targetName;
-            this.poleName = poleName;
-            this.poleAngle = poleAngle;
-        }
     }
 }

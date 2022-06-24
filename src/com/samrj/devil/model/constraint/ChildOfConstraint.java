@@ -1,6 +1,7 @@
 package com.samrj.devil.model.constraint;
 
 import com.samrj.devil.math.Mat3;
+import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.topo.DAG;
 import com.samrj.devil.model.ArmatureSolver;
@@ -9,16 +10,27 @@ import com.samrj.devil.model.ArmatureSolver.BoneSolver;
 import java.util.Set;
 
 /**
- * Dynamic parenting constraint. Currently only works for rotation. Also doesn't
- * support inherited rotation yet.
+ * Dynamic parenting constraint. Currently only works for rotation. Also doesn't support inherited rotation yet.
+ *
+ * See childof_evaluate in https://github.com/blender/blender/blob/master/source/blender/blenkernel/intern/constraint.c
+ * for Blender's implementation.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class ChildOfConstraint implements ArmatureSolver.Constraint
 {
+    public record Definition(String bone, String subtarget, int flag, Mat4 invMat) {}
+
     private final BoneSolver parent, realParent, child;
+
+    public ChildOfConstraint(Definition def, ArmatureSolver solver)
+    {
+        parent = solver.getBone(def.subtarget);
+        child = solver.getBone(def.bone);
+        realParent = child.getParent();
+    }
     
     public ChildOfConstraint(BoneSolver parent, BoneSolver child)
     {

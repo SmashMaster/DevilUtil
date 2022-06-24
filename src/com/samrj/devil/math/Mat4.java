@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Sam Johnson
+ * Copyright (c) 2022 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -109,6 +109,21 @@ public class Mat4 implements FloatBufferable, DataStreamable<Mat4>
         translation(t.pos, r);
         rotate(r, t.rot, r);
         mult(r, t.sca, r);
+    }
+
+    /**
+     * Sets the given matrix to the transformation created by the given position, Euler rotation, and scale.
+     */
+    public static final void transform(Vec3 pos, Euler rot, Vec3 sca, Mat4 r)
+    {
+        Mat3 rotMat = Euler.toMat3(rot);
+        Mat3 scaMat = Mat3.scaling(sca);
+        Mat3 tempMat = Mat3.mult(rotMat, scaMat);
+
+        r.set(tempMat);
+        r.setEntry(0, 3, pos.x);
+        r.setEntry(1, 3, pos.y);
+        r.setEntry(2, 3, pos.z);
     }
     
     /**
@@ -627,6 +642,16 @@ public class Mat4 implements FloatBufferable, DataStreamable<Mat4>
     {
         Mat4 m = new Mat4();
         transform(transform, m);
+        return m;
+    }
+
+    /**
+     * Returns a new
+     */
+    public static final Mat4 transform(Vec3 pos, Euler rot, Vec3 sca)
+    {
+        Mat4 m = new Mat4();
+        transform(pos, rot, sca, m);
         return m;
     }
     

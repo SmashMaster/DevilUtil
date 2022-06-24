@@ -4,8 +4,9 @@ import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Quat;
 import com.samrj.devil.math.Transform;
 import com.samrj.devil.math.Vec3;
-import com.samrj.devil.model.constraint.CopyRotationConstraint.CopyRotDef;
-import com.samrj.devil.model.constraint.IKConstraint.IKDefinition;
+import com.samrj.devil.model.constraint.ChildOfConstraint;
+import com.samrj.devil.model.constraint.CopyRotationConstraint;
+import com.samrj.devil.model.constraint.IKConstraint;
 
 import java.io.IOException;
 import java.util.*;
@@ -50,14 +51,46 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlockAni
     private static final int PARENT_TYPE_ARMATURE = 4;
     private static final int PARENT_TYPE_BONE = 7;
 
+    private static final int CONSTRAINT_TYPE_NULL = 0;
+    private static final int CONSTRAINT_TYPE_CHILDOF = 1;
+    private static final int CONSTRAINT_TYPE_TRACKTO = 2;
+    private static final int CONSTRAINT_TYPE_IK = 3;
+    private static final int CONSTRAINT_TYPE_FOLLOWPATH = 4;
+    private static final int CONSTRAINT_TYPE_ROTLIMIT = 5;
+    private static final int CONSTRAINT_TYPE_LOCLIMIT = 6;
+    private static final int CONSTRAINT_TYPE_SIZELIMIT = 7;
+    private static final int CONSTRAINT_TYPE_ROTLIKE = 8;
+    private static final int CONSTRAINT_TYPE_LOCLIKE = 9;
+    private static final int CONSTRAINT_TYPE_SIZELIKE = 10;
+    private static final int CONSTRAINT_TYPE_PYTHON = 11;
+    private static final int CONSTRAINT_TYPE_ACTION = 12;
+    private static final int CONSTRAINT_TYPE_LOCKTRACK = 13;
+    private static final int CONSTRAINT_TYPE_DISTLIMIT = 14;
+    private static final int CONSTRAINT_TYPE_STRETCHTO = 15;
+    private static final int CONSTRAINT_TYPE_MINMAX = 16;
+    private static final int CONSTRAINT_TYPE_CLAMPTO = 18;
+    private static final int CONSTRAINT_TYPE_TRANSFORM = 19;
+    private static final int CONSTRAINT_TYPE_SHRINKWRAP = 20;
+    private static final int CONSTRAINT_TYPE_DAMPTRACK = 21;
+    private static final int CONSTRAINT_TYPE_SPLINEIK = 22;
+    private static final int CONSTRAINT_TYPE_TRANSLIKE = 23;
+    private static final int CONSTRAINT_TYPE_SAMEVOL = 24;
+    private static final int CONSTRAINT_TYPE_PIVOT = 25;
+    private static final int CONSTRAINT_TYPE_FOLLOWTRACK = 26;
+    private static final int CONSTRAINT_TYPE_CAMERASOLVER = 27;
+    private static final int CONSTRAINT_TYPE_OBJECTSOLVER = 28;
+    private static final int CONSTRAINT_TYPE_TRANSFORM_CACHE = 29;
+    private static final int CONSTRAINT_TYPE_ARMATURE = 30;
+
     @Deprecated
     public final Map<String, String> arguments; //Requires blender plugin -- use custom properties for this instead.
 
     public final Transform transform;
     @Deprecated public final List<String> vertexGroups; //Use Mesh vertexGroups instead.
     public final Pose pose;
-    public final List<IKDefinition> ikConstraints;
-    public final List<CopyRotDef> copyRotConstraints;
+    public final List<ChildOfConstraint.Definition> childOfConstraints = new ArrayList<>();
+    public final List<IKConstraint.Definition> ikConstraints = new ArrayList<>();
+    public final List<CopyRotationConstraint.Definition> copyRotConstraints = new ArrayList<>();
     public final DataPointer<DATA_TYPE> data;
     public final DataPointer<ModelObject<?>> parent;
     public final ParentType parentType;
@@ -113,8 +146,6 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlockAni
             vertexGroups.add(group.getField("name").asString());
         
         BlendFile.Pointer bPose = bObject.getField("pose").dereference();
-        ikConstraints = new ArrayList<>();
-        copyRotConstraints = new ArrayList<>();
         if (bPose != null)
         {
             pose = new Pose(bPose);
@@ -122,9 +153,24 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlockAni
             for (BlendFile.Pointer bChan : bPose.getField("chanbase").asList("bPoseChannel"))
                 for (BlendFile.Pointer bCons : bChan.getField("constraints").asList("bConstraint"))
             {
+                String bone = bChan.getField("name").asString();
+
                 switch (bCons.getField("type").asShort())
                 {
-                    case 3:
+                    case CONSTRAINT_TYPE_CHILDOF ->
+                    {
+                        BlendFile.Pointer bChildOf = bCons.getField("data").cast("bChildOfConstraint").dereference();
+
+                        BlendFile.Pointer target = bChildOf.getField("tar").dereference();
+                        String subtarget = bChildOf.getField("subtarget").asString();
+                        if (target == null || subtarget.isEmpty()) continue;
+
+                        int flag = bChildOf.getField("flag").asInt();
+                        Mat4 invMat = bChildOf.getField("invmat").asMat4();
+
+                        childOfConstraints.add(new ChildOfConstraint.Definition(bone, subtarget, flag, invMat));
+                    }
+                    case CONSTRAINT_TYPE_IK ->
                     {
                         BlendFile.Pointer bIK = bCons.getField("data").cast("bKinematicConstraint").dereference();
                 
@@ -138,12 +184,10 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlockAni
                         String poleSubtarget = bIK.getField("polesubtarget").asString();
                         if (poleTarget == null || poleSubtarget.isEmpty()) continue;
 
-                        String bone = bChan.getField("name").asString();
                         float poleAngle = bIK.getField("poleangle").asFloat();
-                        ikConstraints.add(new IKDefinition(bone, subtarget, poleSubtarget, poleAngle));
+                        ikConstraints.add(new IKConstraint.Definition(bone, subtarget, poleSubtarget, poleAngle));
                     }
-                    break;
-                    case 8:
+                    case CONSTRAINT_TYPE_ROTLIKE ->
                     {
                         BlendFile.Pointer bRotLike = bCons.getField("data").cast("bRotateLikeConstraint").dereference();
                         
@@ -151,11 +195,8 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlockAni
                         String subtarget = bRotLike.getField("subtarget").asString();
                         if (target == null || subtarget.isEmpty()) continue;
                         
-                        String bone = bChan.getField("name").asString();
-                        
-                        copyRotConstraints.add(new CopyRotDef(bone, subtarget));
+                        copyRotConstraints.add(new CopyRotationConstraint.Definition(bone, subtarget));
                     }
-                    break;
                 }
             }
         }

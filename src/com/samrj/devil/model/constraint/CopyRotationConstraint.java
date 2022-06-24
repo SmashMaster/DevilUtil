@@ -8,15 +8,17 @@ import java.util.Set;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2020 Samuel Johnson
+ * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class CopyRotationConstraint implements ArmatureSolver.Constraint
 {
+    public record Definition(String boneName, String targetName) {}
+
     private final BoneSolver source, parent, target;
     public float influence = 1.0f;
     
-    public CopyRotationConstraint(CopyRotDef def, ArmatureSolver solver)
+    public CopyRotationConstraint(Definition def, ArmatureSolver solver)
     {
         source = solver.getBone(def.boneName);
         target = solver.getBone(def.targetName);
@@ -43,17 +45,5 @@ public class CopyRotationConstraint implements ArmatureSolver.Constraint
     public void solve()
     {
         target.finalTransform.rot.set(source.finalTransform.rot);
-    }
-    
-    public static class CopyRotDef
-    {
-        public final String boneName;
-        public final String targetName;
-        
-        public CopyRotDef(String boneName, String targetName)
-        {
-            this.boneName = boneName;
-            this.targetName = targetName;
-        }
     }
 }
