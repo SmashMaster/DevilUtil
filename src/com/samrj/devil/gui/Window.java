@@ -13,14 +13,20 @@ import java.util.function.Consumer;
  * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class Window
+public final class Window implements Hoverable
 {
+    private enum Drag
+    {
+        NONE, MOVE, RESIZE_LEFT, RESIZE_TOP, RESIZE_RIGHT, RESIZE_BOTTOM;
+    }
+
     private static final float TITLE_BAR_HEIGHT = 30.0f;
     private static final float TITLE_PADDING = 5.0f;
     private static final float CLOSE_BUTTON_PADDING = 5.0f;
     private static final float CLOSE_BUTTON_WIDTH = TITLE_BAR_HEIGHT - CLOSE_BUTTON_PADDING*2.0f;
     private static final float CLOSE_BUTTON_CROSS_PADDING = 3.0f;
     private static final float EDGE_CLAMP_MARGIN = TITLE_BAR_HEIGHT;
+    private static final float RESIZE_RANGE = 5.0f;
     
     Window above, below; //Doubly-linked list
     boolean isVisible;
@@ -33,9 +39,11 @@ public final class Window
     private final Vec2 alignment = Align.NW.vector();
     private float padding = 10.0f;
     
-    private float dragStartX, dragStartY;
+    private float dragStartX0, dragStartX1, dragStartY0, dragStartY1;
     private boolean titleBarVisible = true, titleBarHovered;
-    private boolean draggable = true, dragged;
+    private Drag drag = Drag.NONE;
+    private boolean draggable = true, resizable = false;
+    private boolean leftResizeHovered, topResizeHovered, rightResizeHovered, bottomResizeHovered;
     private boolean closeButtonVisible = true, closeButtonHovered, closeButtonPressed;
     
     public Window()
@@ -106,6 +114,13 @@ public final class Window
     {
         this.draggable = draggable;
         return this;
+    }
+
+    public Window setResizable(boolean resizable)
+    {
+        throw new UnsupportedOperationException(); //Make this work later.
+//        this.resizable = resizable;
+//        return this;
     }
     
     private float titleBarHeight()
@@ -201,27 +216,57 @@ public final class Window
         this.padding = padding;
         return this;
     }
-    
+
     //Used mostly to determine what is hovered.
-    Object hover(float x, float y)
+    Hoverable hover(float x, float y)
     {
-        if (dragged)
+        switch (drag)
         {
-            float w = x1 - x0, h = y1 - y0;
-            x0 = x + dragStartX;
-            x1 = x0 + w;
-            y0 = y + dragStartY;
-            y1 = y0 + h;
+            case MOVE ->
+            {
+                float w = x1 - x0, h = y1 - y0;
+                x0 = x + dragStartX0;
+                x1 = x0 + w;
+                y0 = y + dragStartY0;
+                y1 = y0 + h;
+            }
+            case RESIZE_LEFT -> x0 = x + dragStartX0;
+            case RESIZE_TOP -> y1 = y + dragStartY1;
+            case RESIZE_RIGHT -> x1 = x + dragStartX1;
+            case RESIZE_BOTTOM -> y0 = y + dragStartY0;
+            default ->
+            {
+                dragStartX0 = x0 - x;
+                dragStartX1 = x1 - x;
+                dragStartY0 = y0 - y;
+                dragStartY1 = y1 - y;
+            }
         }
-        else
-        {
-            dragStartX = x0 - x;
-            dragStartY = y0 - y;
-        }
-        
+
         titleBarHovered = false;
         closeButtonHovered = false;
-        
+        leftResizeHovered = false;
+        topResizeHovered = false;
+        rightResizeHovered = false;
+        bottomResizeHovered = false;
+
+        if (resizable)
+        {
+            float[] dist = {Math.abs(x - x0), Math.abs(y - y1), Math.abs(x - x1), Math.abs(y - y0)};
+            int minDistIndex = Util.mindex(dist);
+            if (dist[minDistIndex] < RESIZE_RANGE)
+            {
+                switch (minDistIndex)
+                {
+                    case 0 -> leftResizeHovered = true;
+                    case 1 -> topResizeHovered = true;
+                    case 2 -> rightResizeHovered = true;
+                    case 3 -> bottomResizeHovered = true;
+                }
+                return this;
+            }
+        }
+
         if (x < x0 || x > x1 || y < y0 || y > y1) return null;
         
         if (titleBarVisible && closeButtonVisible)
@@ -252,7 +297,15 @@ public final class Window
         
         return this;
     }
-    
+
+    @Override
+    public Cursor getHoverCursor()
+    {
+        if (leftResizeHovered || rightResizeHovered) return Cursor.H_RESIZE;
+        if (topResizeHovered || bottomResizeHovered) return Cursor.V_RESIZE;
+        return Cursor.DEFAULT;
+    }
+
     Form findScrollBox(float x, float y)
     {
         if (x < x0 || x > x1 || y < y0 || y > y1) return null;
@@ -264,8 +317,31 @@ public final class Window
     {
         if (titleBarHovered && draggable)
         {
-            dragged = true;
+            drag = Drag.MOVE;
             return true;
+        }
+        if (resizable)
+        {
+            if (leftResizeHovered)
+            {
+                drag = Drag.RESIZE_LEFT;
+                return true;
+            }
+            if (topResizeHovered)
+            {
+                drag = Drag.RESIZE_TOP;
+                return true;
+            }
+            if (rightResizeHovered)
+            {
+                drag = Drag.RESIZE_RIGHT;
+                return true;
+            }
+            if (bottomResizeHovered)
+            {
+                drag = Drag.RESIZE_BOTTOM;
+                return true;
+            }
         }
         if (closeButtonHovered)
         {
@@ -277,7 +353,7 @@ public final class Window
     
     void deactivate()
     {
-        dragged = false;
+        drag = Drag.NONE;
         if (closeButtonPressed)
         {
             closeButtonPressed = false;
@@ -367,5 +443,11 @@ public final class Window
                 drawer.line(bx0 + CLOSE_BUTTON_CROSS_PADDING, bx1 - CLOSE_BUTTON_CROSS_PADDING, by1 - CLOSE_BUTTON_CROSS_PADDING, by0 + CLOSE_BUTTON_CROSS_PADDING);
             }
         }
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Window{" + "x0=" + x0 + ", x1=" + x1 + ", y0=" + y0 + ", y1=" + y1 + ", title='" + title + '\'' + '}';
     }
 }

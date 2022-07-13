@@ -282,7 +282,31 @@ public final class Util
     {
         return x0 <= x1 ? x0 : x1;
     }
-    
+
+    /**
+     * Returns the index of the smallest value in the given array.
+     *
+     * @param values An array of floats.
+     * @return The index of the smallest value in the given array.
+     */
+    public static int mindex(float... values)
+    {
+        int index = 0;
+        float min = values[0];
+
+        for (int i=1; i<values.length; i++)
+        {
+            float value = values[i];
+            if (value < min)
+            {
+                min = value;
+                index = i;
+            }
+        }
+
+        return index;
+    }
+
     /**
      * Returns -1.0, 0.0, or 1.0 as the given float is negative, zero, or
      * positive, respectively. Returns undefined result for NaN.
@@ -309,8 +333,7 @@ public final class Util
     {
         return x0 >= x1 ? x0 : x1;
     }
-    
-    
+
     /**
      * Returns the index of the largest value in the given array. 
      * 
@@ -334,8 +357,7 @@ public final class Util
         
         return index;
     }
-    
-    
+
     /**
      * Loops the given value into the given range.
      * 

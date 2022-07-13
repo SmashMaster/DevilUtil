@@ -12,7 +12,7 @@ import com.samrj.devil.math.Vec2;
  * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class DropDown
+public final class DropDown implements Hoverable
 {
     private final Form parent;
     private Form content;
@@ -79,8 +79,8 @@ public final class DropDown
         this.padding = padding;
         return this;
     }
-    
-    Object hover(float x, float y)
+
+    Hoverable hover(float x, float y)
     {
         if (x < x0 || x > x0 + width || y < y0 || y > y0 + height) return null;
         

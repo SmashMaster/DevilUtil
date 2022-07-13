@@ -10,7 +10,7 @@ import com.samrj.devil.math.Vec2;
  * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public abstract class Form
+public abstract class Form implements Hoverable
 {
     /**
      * The position of the southwest (bottom-left) corner of this Form in

@@ -22,12 +22,12 @@
 
 package com.samrj.devil.gui;
 
+import com.samrj.devil.game.GameWindow;
 import com.samrj.devil.math.Vec2;
 
 import java.util.Objects;
 
-import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
-import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
+import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11C.GL_VIEWPORT;
 import static org.lwjgl.opengl.GL11C.glGetIntegerv;
 
@@ -39,6 +39,8 @@ import static org.lwjgl.opengl.GL11C.glGetIntegerv;
 public final class DUI
 {
     private static DUIDrawer drawer;
+    private static long glfwWindow;
+    private static long vResizeCursor, hResizeCursor, ibeamCursor;
     private static Font font;
     private static Window topWindow, bottomWindow;
     private static boolean init;
@@ -61,7 +63,23 @@ public final class DUI
     {
         if (init) throw new IllegalStateException("DUI already initialized.");
         drawer = new DUIDrawer();
+        glfwWindow = GameWindow.getWindow();
+        vResizeCursor = glfwCreateStandardCursor(GLFW_VRESIZE_CURSOR);
+        hResizeCursor = glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR);
+        ibeamCursor = glfwCreateStandardCursor(GLFW_IBEAM_CURSOR);
         init = true;
+    }
+
+    static void setCursor(Hoverable hovered)
+    {
+        Cursor cursor = hovered != null ? hovered.getHoverCursor() : Cursor.DEFAULT;
+        glfwSetCursor(glfwWindow, switch (cursor)
+        {
+            case DEFAULT -> 0;
+            case V_RESIZE -> vResizeCursor;
+            case H_RESIZE -> hResizeCursor;
+            case IBEAM -> ibeamCursor;
+        });
     }
     
     /**
@@ -284,13 +302,13 @@ public final class DUI
         
         if (activeForm != null)
         {
-            activeForm.hover(x, y);
+            setCursor(activeForm.hover(x, y));
             return;
         }
         
         if (activeWindow != null)
         {
-            activeWindow.hover(x, y);
+            setCursor(activeWindow.hover(x, y));
             return;
         }
         
@@ -300,7 +318,7 @@ public final class DUI
         
         if (dropDown != null)
         {
-            Object hovered = dropDown.hover(x, y);
+            Hoverable hovered = dropDown.hover(x, y);
             Form scrollBox = dropDown.findScrollBox(x, y);
             
             if (hovered instanceof Form) hoveredForm = (Form)hovered;
@@ -309,6 +327,7 @@ public final class DUI
             if (dropDownHovered)
             {
                 hoveredScrollBox = scrollBox;
+                setCursor(hovered);
                 return;
             }
         }
@@ -316,19 +335,21 @@ public final class DUI
         Window window = topWindow;
         while (window != null)
         {
-            Object hovered = window.hover(x, y);
+            Hoverable hovered = window.hover(x, y);
             Form scrollBox = window.findScrollBox(x, y);
             if (hovered instanceof Form)
             {
                 hoveredForm = (Form)hovered;
                 hoveredWindow = window;
                 hoveredScrollBox = scrollBox;
+                setCursor(hoveredForm);
                 return;
             }
             else if (hovered instanceof Window)
             {
                 hoveredWindow = window;
                 hoveredScrollBox = scrollBox;
+                setCursor(hoveredWindow);
                 return;
             }
             
@@ -340,6 +361,8 @@ public final class DUI
             hoveredForm = background.hover(x, y);
             hoveredScrollBox = background.findScrollBox(x, y);
         }
+
+        setCursor(hoveredForm);
     }
     
     /**
@@ -540,6 +563,8 @@ public final class DUI
     {
         if (!init) throw new IllegalStateException("Not initialized.");
         drawer.destroy();
+        glfwDestroyCursor(vResizeCursor);
+        glfwDestroyCursor(hResizeCursor);
         init = false;
     }
     

@@ -294,7 +294,8 @@ public final class Mesh extends DataBlockAnimatable
         
         //Prepare vertex group data
         vertexGroups = new ArrayList<>();
-        for (BlendFile.Pointer group : bMesh.getField("vertex_group_names").asList("bDeformGroup"))
+        BlendFile.Pointer bVGroups = bMesh.getField("vertex_group_names");
+        if (bVGroups != null) for (BlendFile.Pointer group : bVGroups.asList("bDeformGroup"))
             vertexGroups.add(group.getField("name").asString());
 
         int maxGroup = -1;
