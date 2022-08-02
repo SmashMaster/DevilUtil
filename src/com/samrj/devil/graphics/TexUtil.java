@@ -23,11 +23,16 @@
 package com.samrj.devil.graphics;
 
 import com.samrj.devil.gl.Image;
-import org.lwjgl.opengl.EXTTextureCompressionS3TC;
+
+import java.util.HashMap;
 
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL14C.*;
 import static org.lwjgl.opengl.GL30C.*;
+import static org.lwjgl.opengl.GL33C.*;
+import static org.lwjgl.opengl.GL41C.GL_RGB565;
+import static org.lwjgl.opengl.GL42C.*;
+import static org.lwjgl.opengl.GL43C.*;
 
 /**
  * Texture utility methods.
@@ -36,6 +41,132 @@ import static org.lwjgl.opengl.GL30C.*;
  */
 public class TexUtil
 {
+    public enum Format
+    {
+        R8(GL_R8, GL_RED, GL_UNSIGNED_BYTE, 8),
+        R8_SNORM(GL_R8_SNORM, GL_RED, GL_BYTE, 8),
+        R16(GL_R16, GL_RED, GL_UNSIGNED_SHORT, 16),
+        R16_SNORM(GL_R16_SNORM, GL_RED, GL_SHORT, 16),
+        RG8(GL_RG8, GL_RG, GL_UNSIGNED_BYTE, 16),
+        RG8_SNORM(GL_RG8_SNORM, GL_RG, GL_SHORT, 16),
+        RG16(GL_RG16, GL_RG, GL_UNSIGNED_SHORT, 32),
+        RG16_SNORM(GL_RG16_SNORM, GL_RG, GL_SHORT, 32),
+        R3_G3_B2(GL_R3_G3_B2, GL_RGB, -1, 8),
+        RGB4(GL_RGB4, GL_RGB, -1, 12),
+        RGB5(GL_RGB5, GL_RGB, -1, 15),
+        RGB565(GL_RGB565, GL_RGB, -1, 16),
+        RGB8(GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, 8),
+        RGB8_SNORM(GL_RGB8_SNORM, GL_RGB, GL_BYTE, 24),
+        RGB10(GL_RGB10, GL_RGB, -1, 30),
+        RGB12(GL_RGB12, GL_RGB, -1, 36),
+        RGB16(GL_RGB16, GL_RGB, GL_UNSIGNED_SHORT, 48),
+        RGB16_SNORM(GL_RGB16_SNORM, GL_RGB, GL_SHORT, 48),
+        RGBA2(GL_RGBA2, GL_RGBA, -1, 8),
+        RGBA4(GL_RGBA4, GL_RGBA, -1, 16),
+        RGB5_A1(GL_RGB5_A1, GL_RGBA, -1, 16),
+        RGBA8(GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 32),
+        RGBA8_SNORM(GL_RGBA8_SNORM, GL_RGBA, GL_BYTE, 32),
+        RGB10_A2(GL_RGB10_A2, GL_RGBA, -1, 32),
+        RGB10_A2UI(GL_RGB10_A2UI, GL_RGBA, -1, 32),
+        RGBA12(GL_RGBA12, GL_RGBA, -1, 48),
+        RGBA16(GL_RGBA16, GL_RGBA, GL_UNSIGNED_SHORT, 64),
+        RGBA16_SNORM(GL_RGBA16_SNORM, GL_RGBA, GL_SHORT, 64),
+        SRGB8(GL_SRGB8, GL_RGB, GL_UNSIGNED_BYTE, 24),
+        SRGB8_ALPHA8(GL_SRGB8_ALPHA8, GL_RGBA, GL_BYTE, 32),
+        R16F(GL_R16F, GL_RED, GL_HALF_FLOAT, 16),
+        RG16F(GL_RG16F, GL_RG, GL_HALF_FLOAT, 32),
+        RGB16F(GL_RGB16F, GL_RGB, GL_HALF_FLOAT, 48),
+        RGBA16F(GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT, 64),
+        R32F(GL_R32F, GL_RED, GL_FLOAT, 32),
+        RG32F(GL_RG32F, GL_RG, GL_FLOAT, 64),
+        RGB32F(GL_RGB32F, GL_RGB, GL_FLOAT, 96),
+        RGBA32F(GL_RGBA32F, GL_RGBA, GL_FLOAT, 128),
+        R11F_G11F_B10F(GL_R11F_G11F_B10F, GL_RGB, -1, 32),
+        RGB9_E5(GL_RGB9_E5, GL_RGB, -1, 32),
+        R8I(GL_R8I, GL_RED, GL_BYTE, 8),
+        R8UI(GL_R8UI, GL_RED, GL_UNSIGNED_BYTE, 8),
+        R16I(GL_R16I, GL_RED, GL_SHORT, 16),
+        R16UI(GL_R16UI, GL_RED, GL_UNSIGNED_SHORT, 16),
+        R32I(GL_R32I, GL_RED, GL_INT, 32),
+        R32UI(GL_R32UI, GL_RED, GL_UNSIGNED_INT, 32),
+        RG8I(GL_RG8I, GL_RG, GL_BYTE, 16),
+        RG8UI(GL_RG8UI, GL_RG, GL_UNSIGNED_BYTE, 16),
+        RG16I(GL_RG16I, GL_RG, GL_SHORT, 32),
+        RG16UI(GL_RG16UI, GL_RG, GL_UNSIGNED_SHORT, 32),
+        RG32I(GL_RG32I, GL_RG, GL_INT, 64),
+        RG32UI(GL_RG32UI, GL_RG, GL_UNSIGNED_INT, 64),
+        RGB8I(GL_RGB8I, GL_RGB, GL_BYTE, 24),
+        RGB8UI(GL_RGB8UI, GL_RGB, GL_UNSIGNED_BYTE, 24),
+        RGB16I(GL_RGB16I, GL_RGB, GL_SHORT, 48),
+        RGB16UI(GL_RGB16UI, GL_RGB, GL_UNSIGNED_SHORT, 48),
+        RGB32I(GL_RGB32I, GL_RGB, GL_INT, 96),
+        RGB32UI(GL_RGB32UI, GL_RGB, GL_UNSIGNED_INT, 96),
+        RGBA8I(GL_RGBA8I, GL_RGBA, GL_BYTE, 32),
+        RGBA8UI(GL_RGBA8UI, GL_RGBA, GL_UNSIGNED_BYTE, 32),
+        RGBA16I(GL_RGBA16I, GL_RGBA, GL_SHORT, 64),
+        RGBA16UI(GL_RGBA16UI, GL_RGBA, GL_UNSIGNED_SHORT, 64),
+        RGBA32I(GL_RGBA32I, GL_RGBA, GL_INT, 128),
+        RGBA32UI(GL_RGBA32UI, GL_RGBA, GL_UNSIGNED_INT, 128),
+        DEPTH_COMPONENT16(GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, 16),
+        DEPTH_COMPONENT24(GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, -1, 24),
+        DEPTH_COMPONENT32(GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 32),
+        DEPTH_COMPONENT32F(GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, 32),
+        DEPTH24_STENCIL8(GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, 32),
+        DEPTH32F_STENCIL8(GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, 40),
+        STENCIL_INDEX1(GL_STENCIL_INDEX1, GL_STENCIL_INDEX, -1, 1),
+        STENCIL_INDEX4(GL_STENCIL_INDEX4, GL_STENCIL_INDEX, -1, 4),
+        STENCIL_INDEX8(GL_STENCIL_INDEX8, GL_STENCIL_INDEX, -1, 8),
+        STENCIL_INDEX16(GL_STENCIL_INDEX16, GL_STENCIL_INDEX, -1, 16),
+        COMPRESSED_RED(GL_COMPRESSED_RED, GL_RED, -1, 0),
+        COMPRESSED_RG(GL_COMPRESSED_RG, GL_RG, -1, 0),
+        COMPRESSED_RGB(GL_COMPRESSED_RGB, GL_RGB, -1, 0),
+        COMPRESSED_RGBA(GL_COMPRESSED_RGBA, GL_RGBA, -1, 0),
+        COMPRESSED_SRGB(GL_COMPRESSED_SRGB, GL_RGB, -1, 0),
+        COMPRESSED_SRGB_ALPHA(GL_COMPRESSED_SRGB_ALPHA, GL_RGBA, -1, 0),
+        COMPRESSED_RED_RGTC1(GL_COMPRESSED_RED_RGTC1, GL_RED, -1, 0),
+        COMPRESSED_SIGNED_RED_RGTC1(GL_COMPRESSED_SIGNED_RED_RGTC1, GL_RED, -1, 0),
+        COMPRESSED_RG_RGTC2(GL_COMPRESSED_RG_RGTC2, GL_RG, -1, 0),
+        COMPRESSED_SIGNED_RG_RGTC2(GL_COMPRESSED_SIGNED_RG_RGTC2, GL_RG, -1, 0),
+        COMPRESSED_RGBA_BPTC_UNORM(GL_COMPRESSED_RGBA_BPTC_UNORM, GL_RGBA, -1, 0),
+        COMPRESSED_SRGB_ALPHA_BPTC_UNORM(GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM, GL_RGBA, -1, 0),
+        COMPRESSED_RGB_BPTC_SIGNED_FLOAT(GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT, GL_RGB, -1, 0),
+        COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT(GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT, GL_RGB, -1, 0),
+        COMPRESSED_RGB8_ETC2(GL_COMPRESSED_RGB8_ETC2, GL_RGB, -1, 0),
+        COMPRESSED_SRGB8_ETC2(GL_COMPRESSED_SRGB8_ETC2, GL_RGB, -1, 0),
+        COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2(GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2, GL_RGB, -1, 0),
+        COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2(GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2, GL_RGB, -1, 0),
+        COMPRESSED_RGBA8_ETC2_EAC(GL_COMPRESSED_RGBA8_ETC2_EAC, GL_RGBA, -1, 0),
+        COMPRESSED_SRGB8_ALPHA8_ETC2_EAC(GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC, GL_RGBA, -1, 0),
+        COMPRESSED_R11_EAC(GL_COMPRESSED_R11_EAC, GL_RED, -1, 0),
+        COMPRESSED_SIGNED_R11_EAC(GL_COMPRESSED_SIGNED_R11_EAC, GL_RED, -1, 0),
+        COMPRESSED_RG11_EAC(GL_COMPRESSED_RG11_EAC, GL_RG, -1, 0),
+        COMPRESSED_SIGNED_RG11_EAC(GL_COMPRESSED_SIGNED_RG11_EAC, GL_RG, -1, 0);
+
+        public final int format, baseFormat, type, bits; //TODO: Bits.
+
+        Format(int format, int baseFormat, int type, int bits)
+        {
+            this.format = format;
+            this.baseFormat = baseFormat;
+            this.type = type != -1 ? type : GL_UNSIGNED_BYTE; //Default to unsigned bytes for texture storage
+            this.bits = bits;
+        }
+    }
+
+    private static final HashMap<Integer, Format> FORMATS = new HashMap<>();
+
+    static
+    {
+        for (Format format : Format.values()) FORMATS.put(format.format, format);
+    }
+
+    private static Format getFormat(int format)
+    {
+        Format f = FORMATS.get(format);
+        if (f == null) throw new IllegalArgumentException("Unrecognized format " + format);
+        return f;
+    }
+
     /**
      * @param baseFormat a base internal format, as in the internalFormat
      *                   argument of the {@code glTexImage2D()} method.
@@ -43,20 +174,18 @@ public class TexUtil
      */
     public static int getBands(int baseFormat)
     {
-        switch (baseFormat)
+        return switch (baseFormat)
         {
-            case GL_ALPHA:
-            case GL_DEPTH_COMPONENT:
-            case GL_RED: return 1;
-            
-            case GL_DEPTH_STENCIL:
-            case GL_RG: return 2;
-                
-            case GL_RGB: return 3;
-            case GL_RGBA: return 4;
-            
-            default: return -1;
-        }
+            case GL_ALPHA -> 1; //Deprecated
+            case GL_DEPTH_COMPONENT -> 1;
+            case GL_DEPTH_STENCIL -> 2;
+            case GL_RED, GL_RED_INTEGER -> 1;
+            case GL_RG, GL_RG_INTEGER -> 2;
+            case GL_RGB, GL_RGB_INTEGER -> 3;
+            case GL_RGBA, GL_RGBA_INTEGER -> 4;
+            case GL_STENCIL_INDEX -> 1;
+            default -> throw new IllegalArgumentException("Unrecognized base format " + baseFormat);
+        };
     }
     
     /**
@@ -84,14 +213,6 @@ public class TexUtil
                     case 2: return GL_RG16;
                     case 3: return GL_RGB16;
                     case 4: return GL_RGBA16;
-                }
-                break;
-            case SHORT: switch (image.bands)
-                {
-                    case 1: return GL_R16I;
-                    case 2: return GL_RG16I;
-                    case 3: return GL_RGB16I;
-                    case 4: return GL_RGBA16I;
                 }
                 break;
             case INT: switch (image.bands)
@@ -122,60 +243,7 @@ public class TexUtil
      */
     public static int getBaseFormat(int format)
     {
-        switch (format)
-        {
-            case GL_DEPTH_COMPONENT:
-            case GL_DEPTH_COMPONENT16:
-            case GL_DEPTH_COMPONENT24:
-            case GL_DEPTH_COMPONENT32:
-            case GL_DEPTH_COMPONENT32F: return GL_DEPTH_COMPONENT;
-            
-            case GL_RED:
-            case GL_R8:
-            case GL_R16:
-            case GL_R16F:
-            case GL_R16I:
-            case GL_R32F:
-            case GL_R32I: return GL_RED;
-            
-            case GL_DEPTH_STENCIL:
-            case GL_DEPTH24_STENCIL8:
-            case GL_DEPTH32F_STENCIL8: return GL_DEPTH_STENCIL;
-            
-            case GL_RG:
-            case GL_RG8:
-            case GL_RG16:
-            case GL_RG16F:
-            case GL_RG16I:
-            case GL_RG32F:
-            case GL_RG32I: return GL_RG;
-            
-            case GL_RGB:
-            case GL_R3_G3_B2:
-            case GL_RGB4:
-            case GL_RGB5:
-            case GL_RGB8:
-            case GL_RGB10:
-            case GL_RGB12:
-            case GL_RGB16:
-            case GL_RGB16F:
-            case GL_RGB16I:
-            case GL_RGB32F:
-            case GL_RGB32I: return GL_RGB;
-            
-            case GL_RGBA:
-            case GL_RGBA2:
-            case GL_RGBA4:
-            case GL_RGBA8:
-            case GL_RGBA12:
-            case GL_RGBA16:
-            case GL_RGBA16F:
-            case GL_RGBA16I:
-            case GL_RGBA32F:
-            case GL_RGBA32I: return GL_RGBA;
-            
-            default: return -1;
-        }
+        return getFormat(format).baseFormat;
     }
     
     /**
@@ -186,59 +254,45 @@ public class TexUtil
      */
     public static String formatToString(int format)
     {
-        switch (format)
+        return "GL_" + getFormat(format);
+    }
+
+    public static String baseFormatToString(int baseFormat)
+    {
+        return switch (baseFormat)
         {
-            case GL_DEPTH_COMPONENT: return "GL_DEPTH_COMPONENT";
-            case GL_DEPTH_COMPONENT16: return "GL_DEPTH_COMPONENT16";
-            case GL_DEPTH_COMPONENT24: return "GL_DEPTH_COMPONENT24";
-            case GL_DEPTH_COMPONENT32: return "GL_DEPTH_COMPONENT32";
-            case GL_DEPTH_COMPONENT32F: return "GL_DEPTH_COMPONENT32F";
-                
-            case GL_RED: return "GL_RED";
-            case GL_R8: return "GL_R8";
-            case GL_R16: return "GL_R16";
-            case GL_R16F: return "GL_R16F";
-            case GL_R16I: return "GL_R16I";
-            case GL_R32F: return "GL_R32F";
-            case GL_R32I: return "GL_R32I";
-                
-            case GL_DEPTH_STENCIL: return "GL_DEPTH_STENCIL";
-            case GL_DEPTH24_STENCIL8: return "GL_DEPTH24_STENCIL8";
-            case GL_DEPTH32F_STENCIL8: return "GL_DEPTH32F_STENCIL8";
-                
-            case GL_RG: return "GL_RG";
-            case GL_RG8: return "GL_RG8";
-            case GL_RG16: return "GL_RG16";
-            case GL_RG16F: return "GL_RG16F";
-            case GL_RG16I: return "GL_RG16I";
-            case GL_RG32F: return "GL_RG32F";
-            case GL_RG32I: return "GL_RG32I";
-                
-            case GL_RGB: return "GL_RGB";
-            case GL_RGB8: return "GL_RGB8";
-            case GL_RGB16: return "GL_RGB16";
-            case GL_RGB16F: return "GL_RGB16F";
-            case GL_RGB16I: return "GL_RGB16I";
-            case GL_RGB32F: return "GL_RGB32F";
-            case GL_RGB32I: return "GL_RGB32I";
-                
-            case GL_RGBA: return "GL_RGBA";
-            case GL_RGBA8: return "GL_RGBA8";
-            case GL_RGBA16: return "GL_RGBA16";
-            case GL_RGBA16F: return "GL_RGBA16F";
-            case GL_RGBA16I: return "GL_RGBA16I";
-            case GL_RGBA32F: return "GL_RGBA32F";
-            case GL_RGBA32I: return "GL_RGBA32I";
-            
-            case GL_ALPHA: return "GL_ALPHA";
-            
-            case EXTTextureCompressionS3TC.GL_COMPRESSED_RGB_S3TC_DXT1_EXT: return "GL_COMPRESSED_RGB_S3TC_DXT1_EXT";
-            case EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT1_EXT: return "GL_COMPRESSED_RGBA_S3TC_DXT1_EXT";
-            case EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT3_EXT: return "GL_COMPRESSED_RGBA_S3TC_DXT3_EXT";
-            case EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT5_EXT: return "GL_COMPRESSED_RGBA_S3TC_DXT5_EXT";
-                
-            default: return "UNSUPPORTED_FORMAT";
-        }
+            case GL_ALPHA -> "GL_ALPHA"; //Deprecated
+            case GL_DEPTH_COMPONENT -> "GL_DEPTH_COMPONENT";
+            case GL_DEPTH_STENCIL -> "GL_DEPTH_STENCIL";
+            case GL_RED -> "GL_RED";
+            case GL_RED_INTEGER -> "GL_RED_INTEGER";
+            case GL_RG -> "GL_RG";
+            case GL_RG_INTEGER -> "GL_RG_INTEGER";
+            case GL_RGB -> "GL_RGB";
+            case GL_RGB_INTEGER -> "GL_RGB_INTEGER";
+            case GL_RGBA -> "GL_RGBA";
+            case GL_RGBA_INTEGER -> "GL_RGBA_INTEGER";
+            case GL_STENCIL_INDEX -> "GL_STENCIL_INDEX";
+            default -> "Unrecognized base format 0x" + Integer.toHexString(baseFormat);
+        };
+    }
+
+    public static String typeToString(int type)
+    {
+        return switch (type)
+        {
+            case GL_BYTE -> "GL_BYTE";
+            case GL_UNSIGNED_BYTE -> "GL_UNSIGNED_BYTE";
+            case GL_SHORT -> "GL_SHORT";
+            case GL_UNSIGNED_SHORT -> "GL_UNSIGNED_SHORT";
+            case GL_INT -> "GL_INT";
+            case GL_UNSIGNED_INT -> "GL_UNSIGNED_INT";
+            case GL_HALF_FLOAT -> "GL_HALF_FLOAT";
+            case GL_FLOAT -> "GL_FLOAT";
+            case GL_UNSIGNED_INT_24_8 -> "GL_UNSIGNED_INT_24_8";
+            case GL_FLOAT_32_UNSIGNED_INT_24_8_REV -> "GL_FLOAT_32_UNSIGNED_INT_24_8_REV";
+            default -> "Unrecognized type 0x" + Integer.toHexString(type);
+        };
     }
     
     /**
@@ -254,118 +308,30 @@ public class TexUtil
             case 2: return GL_RG;
             case 3: return GL_RGB;
             case 4: return GL_RGBA;
-                
             default: return -1;
         }
     }
-    
+
     /**
      * Returns the OpenGL enumerator for the given primitive type.
-     * 
+     *
      * @param format an OpenGL texture format.
      * @return the primitive data type associated with the given OpenGL format.
      */
     public static int getPrimitiveType(int format)
     {
-        switch (format)
-        {
-            default:
-            case GL_R8:
-            case GL_RG8:
-            case GL_RGB8:
-            case GL_RGBA8: return GL_UNSIGNED_BYTE;
-            
-            case GL_DEPTH_COMPONENT16:
-            case GL_R16:
-            case GL_RG16:
-            case GL_RGB16:
-            case GL_RGBA16: return GL_UNSIGNED_SHORT;
-            
-            case GL_R16I:
-            case GL_RG16I:
-            case GL_RGB16I:
-            case GL_RGBA16I: return GL_SHORT;
-            
-            case GL_R16F:
-            case GL_RG16F:
-            case GL_RGB16F:
-            case GL_RGBA16F: return GL_HALF_FLOAT;
-            
-            case GL_DEPTH_COMPONENT32F:
-            case GL_R32F:
-            case GL_RG32F:
-            case GL_RGB32F:
-            case GL_RGBA32F: return GL_FLOAT;
-            
-            case GL_R32I:
-            case GL_RG32I:
-            case GL_RGB32I:
-            case GL_RGBA32I: return GL_INT;
-            
-            case GL_DEPTH24_STENCIL8: return GL_UNSIGNED_INT_24_8;
-        }
+        return getFormat(format).type;
     }
-    
+
     /**
      * @param format an OpenGL texture format.
      * @return Approximately how many bits are stored per texel for the given format.
      */
     public static long getBits(int format)
     {
-        switch (format)
-        {
-            case GL_DEPTH_COMPONENT: return 24;
-            case GL_DEPTH_COMPONENT16: return 16;
-            case GL_DEPTH_COMPONENT24: return 24;
-            case GL_DEPTH_COMPONENT32:
-            case GL_DEPTH_COMPONENT32F: return 32;
-            case GL_RED:
-            case GL_R8: return 8;
-            case GL_R16:
-            case GL_R16F:
-            case GL_R16I: return 16;
-            case GL_R32F:
-            case GL_R32I: return 32;
-            case GL_DEPTH_STENCIL: return 8;
-            case GL_DEPTH24_STENCIL8: return 32;
-            case GL_DEPTH32F_STENCIL8: return 40;
-                
-            case GL_RG:
-            case GL_RG8: return 16;
-            case GL_RG16:
-            case GL_RG16F:
-            case GL_RG16I: return 32;
-            case GL_RG32F:
-            case GL_RG32I: return 64;
-                
-            case GL_RGB: return 24;
-            case GL_R3_G3_B2: return 8;
-            case GL_RGB4: return 12;
-            case GL_RGB5: return 15;
-            case GL_RGB8: return 24;
-            case GL_RGB10: return 30;
-            case GL_RGB12: return 36;
-            case GL_RGB16:
-            case GL_RGB16F:
-            case GL_RGB16I: return 48;
-            case GL_RGB32F:
-            case GL_RGB32I: return 96;
-                
-            case GL_RGBA: return 32;
-            case GL_RGBA2: return 8;
-            case GL_RGBA4: return 16;
-            case GL_RGBA8: return 32;
-            case GL_RGBA12: return 48;
-            case GL_RGBA16:
-            case GL_RGBA16F:
-            case GL_RGBA16I: return 64;
-            case GL_RGBA32F:
-            case GL_RGBA32I: return 128;
-                
-            default: return -1;
-        }
+        return getFormat(format).bits;
     }
-    
+
     /**
      * @param filter an OpenGL texture minify filter.
      * @return whether or not the given filter is a mipmap filter.
