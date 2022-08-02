@@ -114,7 +114,6 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         
         int oldID = tempBind();
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        System.out.println(TexUtil.formatToString(format) + " " + TexUtil.baseFormatToString(dataFormat) + " " + TexUtil.typeToString(primType));
         glTexImage2D(target, 0, format, width, height, 0, dataFormat, primType, image.buffer);
         tempUnbind(oldID);
         
