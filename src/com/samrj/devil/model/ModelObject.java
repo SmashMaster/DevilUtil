@@ -292,7 +292,7 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlockAni
         return Optional.ofNullable(asType(typeClass));
     }
 
-    public Set<ModelObject<?>> getChildren()
+    public Set<ModelObject<? extends DataBlock>> getChildren()
     {
         return children;
     }

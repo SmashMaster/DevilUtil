@@ -226,4 +226,10 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         int format = TexUtil.getFormat(image);
         return download(image, format);
     }
+
+    @Override
+    public String toString()
+    {
+        return getWidth() + "x" + getHeight() + " " + getClass().getSimpleName();
+    }
 }

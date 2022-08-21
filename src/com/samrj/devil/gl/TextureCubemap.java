@@ -101,4 +101,12 @@ public final class TextureCubemap extends Texture<TextureCubemap>
         
         return getThis();
     }
+
+    /**
+     * Returns the size of this Cubemap: the length of its edges in texels.
+     */
+    public int getSize()
+    {
+        return size;
+    }
 }
