@@ -18,7 +18,7 @@ import static org.lwjgl.system.MemoryUtil.*;
  * Class that performs mesh deformation for armatures.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class MeshSkinner
@@ -35,7 +35,7 @@ public class MeshSkinner
     {
         Mesh mesh = object.data.get();
         numGroups = mesh.numGroups;
-        List<String> vertexGroups = mesh.vertexGroups != null ? mesh.vertexGroups : object.vertexGroups;
+        List<String> vertexGroups = mesh.vertexGroups.isEmpty() ? object.vertexGroups : mesh.vertexGroups;
         bones = IOUtil.mapList(vertexGroups, solver::getBone);
         matData = memAllocFloat(bones.size()*16);
     }
