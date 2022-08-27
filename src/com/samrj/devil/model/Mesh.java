@@ -59,21 +59,13 @@ public final class Mesh extends DataBlockAnimatable
             this.vc = start + vc;
         }
     }
-    
-    private static class LoopEdge
+
+    private record LoopEdge(int va, int vb)
     {
-        private final int va, vb;
-        
-        private LoopEdge(int va, int vb)
-        {
-            this.va = va;
-            this.vb = vb;
-        }
-        
         @Override
         public int hashCode()
         {
-            return va^vb;
+            return va*vb;
         }
 
         @Override
