@@ -95,9 +95,11 @@ class Node
     private static final int TYPE_VECTOR_MATH = 116;
     private static final int TYPE_SEPRGB_LEGACY = 120;
     private static final int TYPE_OUTPUT_MATERIAL = 124;
+    private static final int TYPE_MIX_SHADER = 128;
     private static final int TYPE_NEW_GEOMETRY = 141;
     private static final int TYPE_TEX_IMAGE = 143;
     private static final int TYPE_TEX_COORD = 155;
+    private static final int TYPE_BRIGHTCONTRAST = 165;
     private static final int TYPE_NORMAL_MAP = 175;
     private static final int TYPE_SEPXYZ = 188;
     private static final int TYPE_BSDF_PRINCIPLED = 193;
@@ -197,6 +199,26 @@ class Node
             case TYPE_SEPRGB_LEGACY ->
             {
             }
+            case TYPE_MIX_SHADER ->
+            {
+                InputNodeSocket mix = inputs.get("Fac");
+                InputNodeSocket shader1 = inputs.get("Shader1");
+                InputNodeSocket shader2 = inputs.get("Shader2");
+
+                outputs.get("Shader").expression = () ->
+                {
+                    String exp = "float[](";
+
+                    for (int i=0; i<12; i++)
+                    {
+                        exp += "mix(" + shader1.getShader(i) + ", " + shader2.getShader(i) + ", " + mix.getFloat() + ")";
+                        if (i < 11) exp += ", ";
+                        else exp += ")";
+                    }
+
+                    return exp;
+                };
+            }
             case TYPE_NEW_GEOMETRY ->
             {
                 //Some of these may be impractical to implement.
@@ -222,7 +244,8 @@ class Node
                 {
                     case FLAT ->
                     {
-                        outputs.get("Color").expression = () -> "texture(" + imgName + ", vec2(" + vector.getVectorX() + ", " + vector.getVectorY() + "))";
+                        if (vector.connectedFrom == null) outputs.get("Color").expression = () -> "texture(" + imgName + ", v_uv)";
+                        else outputs.get("Color").expression = () -> "texture(" + imgName + ", vec2(" + vector.getVectorX() + ", " + vector.getVectorY() + "))";
                     }
                     case BOX ->
                     {
@@ -261,6 +284,20 @@ class Node
                 outputs.get("Camera").expression = null;
                 outputs.get("Window").expression = null;
                 outputs.get("Reflection").expression = null;
+            }
+            case TYPE_BRIGHTCONTRAST ->
+            {
+                InputNodeSocket color = inputs.get("Color");
+                InputNodeSocket bright = inputs.get("Bright");
+                InputNodeSocket contrast = inputs.get("Contrast");
+
+                String a = varNames.newVarName(); //Normal
+                String b = varNames.newVarName(); //Tangent
+
+                innerExpressions.add(() -> "float " + a + " = 1.0 + " + contrast.getFloat() + ";");
+                innerExpressions.add(() -> "float " + b + " = " + bright.getFloat() + " - " + contrast.getFloat() + "*0.5;");
+
+                outputs.get("Color").expression = () -> "vec4(max(" + a + "*" + color.getRGB() + " + " + b + ", vec3(0.0)), " + color.getAlpha() + ")";
             }
             case TYPE_NORMAL_MAP ->
             {

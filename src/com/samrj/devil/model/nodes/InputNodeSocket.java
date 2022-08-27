@@ -202,4 +202,11 @@ class InputNodeSocket implements Socket
     {
         return getRGBA(3);
     }
+
+    String getShader(int index)
+    {
+        if (type != TYPE_SHADER) throw new UnsupportedOperationException();
+        if (connectedFrom == null) return "0.0";
+        return connectedFrom.varName() + "[" + index + "]";
+    }
 }

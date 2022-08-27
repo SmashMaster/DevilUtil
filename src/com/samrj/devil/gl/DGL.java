@@ -33,6 +33,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -384,7 +385,9 @@ public final class DGL
      */
     public static Image loadImage(Path path) throws IOException
     {
-        BufferedImage bImage = ImageIO.read(path.toFile());
+        File file = path.toFile();
+        if (!file.canRead()) throw new IOException("Cannot read file " + path);
+        BufferedImage bImage = ImageIO.read(file);
 
         if (bImage == null) throw new IOException("Cannot read image from " + path);
 
