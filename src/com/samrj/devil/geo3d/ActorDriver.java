@@ -28,11 +28,7 @@ public final class ActorDriver
      * The shape of this driver used for collision.
      */
     public final Ellipsoid shape = new Ellipsoid();
-    
-    //The geometry that this driver will use for collision detection. Defaults
-    //to null, with collision disabled.
-    public Iterable<GeoMesh> geom;
-    
+
     //The downward acceleration that this driver will experience at all times.
     public float gravity = 9.80665f;
     
@@ -238,7 +234,7 @@ public final class ActorDriver
      * 
      * @param dt The time to step forward by.
      */
-    public void step(float dt)
+    public void step(Iterable<GeoMesh> geom, float dt)
     {
         boolean startOnGround = onGround();
         Vec3 avgVel = new Vec3(vel);
