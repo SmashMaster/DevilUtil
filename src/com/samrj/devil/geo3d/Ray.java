@@ -9,8 +9,17 @@ import com.samrj.devil.math.Vec3;
  * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Ray
+public final class Ray implements Comparable<Ray>
 {
+    public Ray()
+    {
+    }
+
+    public Ray(Ray other)
+    {
+        set(other);
+    }
+
     /**
      * The face that was hit.
      */
@@ -42,12 +51,13 @@ public class Ray
     /**
      * Copies the given result to this.
      */
-    public void set(Ray other)
+    public Ray set(Ray other)
     {
         face = other.face;
         time = other.time;
         point.set(other.point);
         normal.set(other.normal);
+        return this;
     }
 
     /**
@@ -56,6 +66,12 @@ public class Ray
     public boolean hit()
     {
         return Float.isFinite(time);
+    }
+
+    @Override
+    public int compareTo(Ray o)
+    {
+        return Float.compare(time, o.time);
     }
 
     @Override

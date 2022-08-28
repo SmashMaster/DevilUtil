@@ -23,7 +23,7 @@
 package com.samrj.devil.model;
 
 import com.samrj.devil.geo2d.Earcut;
-import com.samrj.devil.geo3d.Geo3DUtil;
+import com.samrj.devil.geo3d.Geo3D;
 import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
@@ -231,7 +231,7 @@ public final class Mesh extends DataBlockAnimatable
             else //Need to triangulate by ear clipping
             {
                 //Project to 2D
-                Mat3 basis = Geo3DUtil.orthonormalBasis(flatNormal);
+                Mat3 basis = Geo3D.orthonormalBasis(flatNormal);
                 basis.g = 0.0f;
                 basis.h = 0.0f;
                 basis.i = 0.0f;

@@ -30,7 +30,7 @@ import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL14C.*;
 import static org.lwjgl.opengl.GL30C.*;
 import static org.lwjgl.opengl.GL33C.*;
-import static org.lwjgl.opengl.GL41C.*;
+import static org.lwjgl.opengl.GL41C.GL_RGB565;
 import static org.lwjgl.opengl.GL42C.*;
 import static org.lwjgl.opengl.GL43C.*;
 

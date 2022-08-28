@@ -4,8 +4,7 @@ import com.samrj.devil.math.Mat3;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.Vec4;
 
-import java.util.ArrayDeque;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * 3D geometry utility methods.
@@ -14,7 +13,7 @@ import java.util.Collection;
  * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class Geo3DUtil
+public final class Geo3D
 {
     /**
      * Returns whether the given barycentric coordinates lie on a triangle.
@@ -293,8 +292,191 @@ public final class Geo3DUtil
         boundingSphere(vecs, result);
         return result;
     }
+
+    /**
+     * Performs an unsorted ray query on this geometry set.
+     */
+    public static List<Ray> ray(Iterable<GeoMesh> meshes, Vec3 p0, Vec3 dp, boolean terminated)
+    {
+        ArrayList<Ray> results = new ArrayList<>();
+        Box3 curBounds = new Box3();
+        Ray curResult = new Ray();
+
+        for (GeoMesh mesh : meshes)
+        {
+            mesh.getBounds(curBounds);
+            if (!Box3.touchingRay(curBounds, p0, dp, terminated)) continue;
+
+            for (Triangle3 triangle : mesh.faces)
+                if (Geo3D.raycast(triangle, p0, dp, terminated, curResult))
+                    results.add(new Ray(curResult));
+        }
+
+        return results;
+    }
+
+    public static List<Ray> raySorted(Iterable<GeoMesh> meshes, Vec3 p0, Vec3 dp, boolean terminated)
+    {
+        List<Ray> results = ray(meshes, p0, dp, terminated);
+        Collections.sort(results);
+        return results;
+    }
+
+    public static Ray rayFirst(Iterable<GeoMesh> meshes, Vec3 p0, Vec3 dp, boolean terminated)
+    {
+        Ray first = new Ray();
+        Box3 curBounds = new Box3();
+        Ray curResult = new Ray();
+
+        for (GeoMesh mesh : meshes)
+        {
+            mesh.getBounds(curBounds);
+            if (!Box3.touchingRay(curBounds, p0, dp, terminated)) continue;
+
+            for (Triangle3 triangle : mesh.faces)
+                if (Geo3D.raycast(triangle, p0, dp, terminated, curResult) && curResult.time < first.time)
+                    first.set(curResult);
+        }
+
+        if (first.hit()) return first;
+        else return null;
+    }
+
+    /**
+     * Performs an unsorted intersection query on this geometry set.
+     */
+    public static List<Isect> isect(Iterable<GeoMesh> meshes, ConvexShape shape)
+    {
+        ArrayList<Isect> results = new ArrayList<>();
+        Box3 shapeBounds = shape.getBounds();
+        Box3 curBounds = new Box3();
+        Isect curResult = new Isect();
+
+        for (GeoMesh mesh : meshes)
+        {
+            mesh.getBounds(curBounds);
+            if (!Box3.touching(curBounds, shapeBounds)) continue;
+
+            for (Vec3 vertex : mesh.verts)
+                if (shape.isect(vertex, curResult))
+                    results.add(new Isect(curResult));
+
+            for (Edge3 edge : mesh.edges)
+                if (shape.isect(edge, curResult))
+                    results.add(new Isect(curResult));
+
+            for (Triangle3 face : mesh.faces)
+                if (shape.isect(face, curResult))
+                    results.add(new Isect(curResult));
+        }
+
+        return results;
+    }
+
+    public static List<Isect> isectSorted(Iterable<GeoMesh> meshes, ConvexShape shape)
+    {
+        List<Isect> results = isect(meshes, shape);
+        Collections.sort(results);
+        return results;
+    }
+
+    public static Isect isectDeepest(Iterable<GeoMesh> meshes, ConvexShape shape)
+    {
+        Isect deepest = new Isect();
+        Box3 shapeBounds = shape.getBounds();
+        Box3 curBounds = new Box3();
+        Isect curResult = new Isect();
+
+        for (GeoMesh mesh : meshes)
+        {
+            mesh.getBounds(curBounds);
+            if (!Box3.touching(curBounds, shapeBounds)) continue;
+
+            for (Vec3 vertex : mesh.verts)
+                if (shape.isect(vertex, curResult) && curResult.depth > deepest.depth)
+                    deepest.set(curResult);
+
+            for (Edge3 edge : mesh.edges)
+                if (shape.isect(edge, curResult) && curResult.depth > deepest.depth)
+                    deepest.set(curResult);
+
+            for (Triangle3 face : mesh.faces)
+                if (shape.isect(face, curResult) && curResult.depth > deepest.depth)
+                    deepest.set(curResult);
+        }
+
+        if (deepest.hit()) return deepest;
+        else return null;
+    }
+
+    /**
+     * Performs an unsorted sweep test on this geometry set.
+     */
+    public static List<Sweep> sweep(Iterable<GeoMesh> meshes, ConvexShape shape, Vec3 dp)
+    {
+        ArrayList<Sweep> results = new ArrayList<>();
+        Box3 shapeBounds = shape.getBounds().sweep(dp);
+        Box3 curBounds = new Box3();
+        Sweep curResult = new Sweep();
+
+        for (GeoMesh mesh : meshes)
+        {
+            mesh.getBounds(curBounds);
+            if (!Box3.touching(curBounds, shapeBounds)) continue;
+
+            for (Vec3 vertex : mesh.verts)
+                if (shape.sweep(dp, vertex, curResult))
+                    results.add(new Sweep(curResult));
+
+            for (Edge3 edge : mesh.edges)
+                if (shape.sweep(dp, edge, curResult))
+                    results.add(new Sweep(curResult));
+
+            for (Triangle3 face : mesh.faces)
+                if (shape.sweep(dp, face, curResult))
+                    results.add(new Sweep(curResult));
+        }
+
+        return results;
+    }
+
+    public static List<Sweep> sweepSorted(Iterable<GeoMesh> meshes, ConvexShape shape, Vec3 dp)
+    {
+        List<Sweep> results = sweep(meshes, shape, dp);
+        Collections.sort(results);
+        return results;
+    }
+
+    public static Sweep sweepFirst(Iterable<GeoMesh> meshes, ConvexShape shape, Vec3 dp)
+    {
+        Sweep first = new Sweep();
+        Box3 shapeBounds = shape.getBounds().sweep(dp);
+        Box3 curBounds = new Box3();
+        Sweep curResult = new Sweep();
+
+        for (GeoMesh mesh : meshes)
+        {
+            mesh.getBounds(curBounds);
+            if (!Box3.touching(curBounds, shapeBounds)) continue;
+
+            for (Vec3 vertex : mesh.verts)
+                if (shape.sweep(dp, vertex, curResult) && curResult.time < first.time)
+                    first.set(curResult);
+
+            for (Edge3 edge : mesh.edges)
+                if (shape.sweep(dp, edge, curResult) && curResult.time < first.time)
+                    first.set(curResult);
+
+            for (Triangle3 face : mesh.faces)
+                if (shape.sweep(dp, face, curResult) && curResult.time < first.time)
+                    first.set(curResult);
+        }
+
+        if (first.hit()) return first;
+        else return null;
+    }
     
-    private Geo3DUtil()
+    private Geo3D()
     {
     }
 }

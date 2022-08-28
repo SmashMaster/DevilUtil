@@ -9,8 +9,17 @@ import com.samrj.devil.math.Vec3;
  * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Isect
+public final class Isect implements Comparable<Isect>
 {
+    public Isect()
+    {
+    }
+
+    public Isect(Isect other)
+    {
+        set(other);
+    }
+
     /**
      * The object that was intersected.
      */
@@ -48,13 +57,14 @@ public class Isect
     /**
      * Copies the given result to this.
      */
-    public void set(Isect other)
+    public Isect set(Isect other)
     {
         object = other.object;
         point.set(other.point);
         surface.set(other.surface);
         depth = other.depth;
         normal.set(other.normal);
+        return this;
     }
 
     /**
@@ -63,6 +73,12 @@ public class Isect
     public boolean hit()
     {
         return Float.isFinite(depth);
+    }
+
+    @Override
+    public int compareTo(Isect o)
+    {
+        return Float.compare(o.depth, depth); //Reversed because deepest should be first.
     }
 
     @Override
