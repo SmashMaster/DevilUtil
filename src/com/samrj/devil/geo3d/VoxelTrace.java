@@ -5,10 +5,10 @@ import com.samrj.devil.math.Vec3i;
 
 /**
  * Incrementally traces through a 3D unit voxel grid, and can be polled for its
- * current position as it goes. Does not handle hit detection against voxels.
+ * current position as it goes. Does not handle hit detection against individual voxels.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2021 Samuel Johnson
+ * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public class VoxelTrace

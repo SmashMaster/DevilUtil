@@ -7,7 +7,7 @@ import com.samrj.devil.math.Vec4;
 import java.util.*;
 
 /**
- * 3D geometry utility methods.
+ * 3D geometry utility methods for ray tracing and collision detection.
  * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2022 Samuel Johnson
@@ -294,7 +294,7 @@ public final class Geo3D
     }
 
     /**
-     * Performs an unsorted ray query on this geometry set.
+     * Performs an unsorted ray query on the given collection of meshes.
      */
     public static List<Ray> ray(Iterable<GeoMesh> meshes, Vec3 p0, Vec3 dp, boolean terminated)
     {
@@ -315,6 +315,10 @@ public final class Geo3D
         return results;
     }
 
+    /**
+     * Performs a sorted ray query on the given collection of meshes. The query is sorted by ascending distance from
+     * the origin.
+     */
     public static List<Ray> raySorted(Iterable<GeoMesh> meshes, Vec3 p0, Vec3 dp, boolean terminated)
     {
         List<Ray> results = ray(meshes, p0, dp, terminated);
@@ -322,6 +326,9 @@ public final class Geo3D
         return results;
     }
 
+    /**
+     * Performs a ray query on the given mesh and returns the first hit, or null if the ray did not hit anything.
+     */
     public static Ray rayFirst(Iterable<GeoMesh> meshes, Vec3 p0, Vec3 dp, boolean terminated)
     {
         Ray first = new Ray();
@@ -343,7 +350,7 @@ public final class Geo3D
     }
 
     /**
-     * Performs an unsorted intersection query on this geometry set.
+     * Performs an unsorted intersection query on the given collection of meshes.
      */
     public static List<Isect> isect(Iterable<GeoMesh> meshes, ConvexShape shape)
     {
@@ -373,6 +380,10 @@ public final class Geo3D
         return results;
     }
 
+    /**
+     * Performs a sorted intersection query on the given collection of meshes. The results are sorted by descending
+     * depth of intersection.
+     */
     public static List<Isect> isectSorted(Iterable<GeoMesh> meshes, ConvexShape shape)
     {
         List<Isect> results = isect(meshes, shape);
@@ -380,6 +391,9 @@ public final class Geo3D
         return results;
     }
 
+    /**
+     * Returns the deepest intersection result with the given collection of meshes, or null if there are none.
+     */
     public static Isect isectDeepest(Iterable<GeoMesh> meshes, ConvexShape shape)
     {
         Isect deepest = new Isect();
@@ -410,7 +424,7 @@ public final class Geo3D
     }
 
     /**
-     * Performs an unsorted sweep test on this geometry set.
+     * Performs an unsorted sweep test on the given collection of meshes.
      */
     public static List<Sweep> sweep(Iterable<GeoMesh> meshes, ConvexShape shape, Vec3 dp)
     {
@@ -440,6 +454,9 @@ public final class Geo3D
         return results;
     }
 
+    /**
+     *  Performs a sorted sweep test on the given collection of meshes. The results are sorted by ascending distance.
+     */
     public static List<Sweep> sweepSorted(Iterable<GeoMesh> meshes, ConvexShape shape, Vec3 dp)
     {
         List<Sweep> results = sweep(meshes, shape, dp);
@@ -447,6 +464,9 @@ public final class Geo3D
         return results;
     }
 
+    /**
+     * Returns the closest sweep result that hit the given collection of meshes, or null if there are none.
+     */
     public static Sweep sweepFirst(Iterable<GeoMesh> meshes, ConvexShape shape, Vec3 dp)
     {
         Sweep first = new Sweep();
