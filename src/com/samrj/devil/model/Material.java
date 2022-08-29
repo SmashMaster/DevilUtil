@@ -19,7 +19,7 @@ public final class Material extends DataBlockAnimatable
     public final float specular;
     public final float roughness;
 
-    public final NodesToGLSL glsl;
+    public final NodesToGLSL nodesGLSL;
     
     Material(Model model, int modelIndex, BlendFile.Pointer bMat) throws IOException
     {
@@ -36,6 +36,6 @@ public final class Material extends DataBlockAnimatable
         specular = bMat.getField("spec").asFloat();
         roughness = bMat.getField("roughness").asFloat();
 
-        glsl = NodesToGLSL.of(bMat);
+        nodesGLSL = NodesToGLSL.of(bMat);
     }
 }
