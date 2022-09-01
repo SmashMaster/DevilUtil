@@ -251,5 +251,11 @@ public class Pose
             transform.lerp(bone.transform, blend);
             return this;
         }
+
+        @Override
+        public String toString()
+        {
+            return "PoseBone{" + "name='" + name + '\'' + ", transform=" + transform + '}';
+        }
     }
 }
