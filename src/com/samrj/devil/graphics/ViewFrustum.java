@@ -95,7 +95,18 @@ public class ViewFrustum
             vSlope = tanFov;
         }
 
-        Mat4.frustum(hSlope*zNear, vSlope*zNear, zNear, zFar, projMat);
+        if (Float.isInfinite(zFar))
+        {
+            //Infinite projection matrix from http://www.terathon.com/gdc07_lengyel.pdf
+            float epsilon = (float)Math.pow(2.0, -22.0);
+            projMat.setZero();
+            projMat.a = 1.0f/hSlope;
+            projMat.f = 1.0f/vSlope;
+            projMat.k = epsilon - 1.0f;
+            projMat.l = (epsilon - 2.0f)*zNear;
+            projMat.o = -1.0f;
+        }
+        else Mat4.frustum(hSlope*zNear, vSlope*zNear, zNear, zFar, projMat);
     }
 
     public void setFOV(int width, int height, float fov)
