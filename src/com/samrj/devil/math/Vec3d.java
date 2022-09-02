@@ -503,15 +503,6 @@ public class Vec3d implements Bufferable, DataStreamable<Vec3d>
         madd(temp, cross(axis, v), sin, temp);
         madd(temp, axis, dot(axis, v)*(1.0 - cos), result);
     }
-
-
-    /**
-     * Stores the translation component of the given matrix into {@code result}. In other words, this is where the
-     * origin will be if transformed by the matrix.
-     *
-     * @param matrix A 4x4 matrix.
-     * @param result The vector in which to store the result.
-     */
     public static final void origin(Mat4d matrix, Vec3d result)
     {
         result.x = matrix.d;
@@ -782,17 +773,6 @@ public class Vec3d implements Bufferable, DataStreamable<Vec3d>
     }
 
     /**
-     * Returns translation component of the given matrix into {@code result}. In other words, returns where the origin
-     * would be if transformed by the matrix.
-     *
-     * @param matrix A 4x4 matrix.
-     */
-    public static final Vec3d origin(Mat4d matrix)
-    {
-        Vec3d result = new Vec3d();
-        origin(matrix, result);
-        return result;
-    }
     // </editor-fold>
     
     public double x, y, z;
@@ -1295,19 +1275,6 @@ public class Vec3d implements Bufferable, DataStreamable<Vec3d>
     public Vec3d rotate(Vec3d axis, double angle)
     {
         rotate(this, axis, angle, this);
-        return this;
-    }
-
-    /**
-     * Sets this to the translation component of the given matrix into {@code result}. In other words, sets this to
-     * where the origin would be if transformed by the matrix.
-     *
-     * @param matrix A 4x4 matrix.
-     * @return This vector.
-     */
-    public Vec3d setOrigin(Mat4d m)
-    {
-        origin(m, this);
         return this;
     }
     // </editor-fold>
