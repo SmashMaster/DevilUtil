@@ -570,6 +570,20 @@ public class Vec3 implements FloatBufferable, DataStreamable<Vec3>
         madd(temp, cross(axis, v), sin, temp);
         madd(temp, axis, dot(axis, v)*(1.0f - cos), result);
     }
+
+    /**
+     * Stores the translation component of the given matrix into {@code result}. In other words, this is where the
+     * origin will be if transformed by the matrix.
+     *
+     * @param matrix A 4x4 matrix.
+     * @param result The vector in which to store the result.
+     */
+    public static final void origin(Mat4 matrix, Vec3 result)
+    {
+        result.x = matrix.d;
+        result.y = matrix.h;
+        result.z = matrix.l;
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
     public static final Vec3 cast(Vec3d v)
@@ -899,6 +913,19 @@ public class Vec3 implements FloatBufferable, DataStreamable<Vec3>
     {
         Vec3 result = new Vec3();
         rotate(v, axis, angle, result);
+        return result;
+    }
+
+    /**
+     * Returns translation component of the given matrix into {@code result}. In other words, returns where the origin
+     * would be if transformed by the matrix.
+     *
+     * @param matrix A 4x4 matrix.
+     */
+    public static final Vec3 origin(Mat4 matrix)
+    {
+        Vec3 result = new Vec3();
+        origin(matrix, result);
         return result;
     }
     // </editor-fold>
@@ -1448,6 +1475,19 @@ public class Vec3 implements FloatBufferable, DataStreamable<Vec3>
     public Vec3 rotate(Vec3 axis, float angle)
     {
         rotate(this, axis, angle, this);
+        return this;
+    }
+
+    /**
+     * Sets this to the translation component of the given matrix into {@code result}. In other words, sets this to
+     * where the origin would be if transformed by the matrix.
+     *
+     * @param matrix A 4x4 matrix.
+     * @return This vector.
+     */
+    public Vec3 setOrigin(Mat4 m)
+    {
+        origin(m, this);
         return this;
     }
     // </editor-fold>
