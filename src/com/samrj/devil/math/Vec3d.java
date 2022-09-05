@@ -503,12 +503,6 @@ public class Vec3d implements Bufferable, DataStreamable<Vec3d>
         madd(temp, cross(axis, v), sin, temp);
         madd(temp, axis, dot(axis, v)*(1.0 - cos), result);
     }
-    public static final void origin(Mat4d matrix, Vec3d result)
-    {
-        result.x = matrix.d;
-        result.y = matrix.h;
-        result.z = matrix.l;
-    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
     /**
@@ -771,8 +765,6 @@ public class Vec3d implements Bufferable, DataStreamable<Vec3d>
         rotate(v, axis, angle, result);
         return result;
     }
-
-    /**
     // </editor-fold>
     
     public double x, y, z;

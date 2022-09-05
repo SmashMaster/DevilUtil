@@ -53,6 +53,11 @@ public class ComboBox extends Form
         this.selection = selection;
         return this;
     }
+
+    public int getSelectionCount()
+    {
+        return options.size();
+    }
     
     public ComboBox clear()
     {
@@ -75,7 +80,14 @@ public class ComboBox extends Form
         for (String option : options) addOption(option);
         return this;
     }
-    
+
+    public ComboBox setOptions(Iterable<String> options)
+    {
+        clear();
+        for (String option : options) addOption(option);
+        return this;
+    }
+
     public ComboBox setDropDownHeight(float dropDownHeight)
     {
         this.dropDownHeight = dropDownHeight;
