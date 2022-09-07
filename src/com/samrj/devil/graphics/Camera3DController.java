@@ -1,7 +1,8 @@
 package com.samrj.devil.graphics;
 
 import com.samrj.devil.geo3d.Ellipsoid;
-import com.samrj.devil.geo3d.Geometry;
+import com.samrj.devil.geo3d.Geo3D;
+import com.samrj.devil.geo3d.GeoMesh;
 import com.samrj.devil.geo3d.Sweep;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
@@ -42,7 +43,7 @@ public final class Camera3DController
     public final Vec3 offset = new Vec3();
     
     private float pitch, yaw;
-    private Geometry blockGeom;
+    private Iterable<GeoMesh> blockGeom;
     private Ellipsoid blockShape;
     
     public Camera3DController(Camera3D camera)
@@ -60,7 +61,7 @@ public final class Camera3DController
      * Allows this camera to clip with world geometry, in the case of a third-
      * person game.
      */
-    public void enableBlocking(Geometry geom, float radius)
+    public void enableBlocking(Iterable<GeoMesh> geom, float radius)
     {
         this.blockGeom = geom;
         blockShape = new Ellipsoid();
@@ -179,7 +180,7 @@ public final class Camera3DController
         if (blockGeom != null && !dp.isZero())
         {
             blockShape.pos.set(camera.pos);
-            Sweep ray = blockGeom.sweepFirst(blockShape, dp);
+            Sweep ray = Geo3D.sweepFirst(blockGeom, blockShape, dp);
             if (ray != null) camera.pos.madd(dp, ray.time);
             else camera.pos.add(dp);
         }

@@ -2,7 +2,7 @@ package com.samrj.devil.graphics;
 
 import com.samrj.devil.geo3d.Box3;
 import com.samrj.devil.geo3d.Ellipsoid;
-import com.samrj.devil.geo3d.Geo3DUtil;
+import com.samrj.devil.geo3d.Geo3D;
 import com.samrj.devil.geo3d.OBox3;
 import com.samrj.devil.gl.DGL;
 import com.samrj.devil.gl.ShaderProgram;
@@ -342,7 +342,7 @@ public final class EZDraw
     {
         stack.push();
         stack.mat.translate(pos);
-        stack.mat.mult(new Mat4(Geo3DUtil.orthonormalBasis(normal).transpose()));
+        stack.mat.mult(new Mat4(Geo3D.orthonormalBasis(normal).transpose()));
         stack.mat.mult(new Vec3(radius, radius, radius));
         circle(segments);
         stack.pop();
@@ -374,7 +374,7 @@ public final class EZDraw
     {
         stack.push();
         stack.mat.translate(pos);
-        stack.mat.mult(new Mat4(Geo3DUtil.orthonormalBasis(normal).transpose()));
+        stack.mat.mult(new Mat4(Geo3D.orthonormalBasis(normal).transpose()));
         stack.mat.mult(new Vec3(radius, radius, radius));
         circleFilled(segments);
         stack.pop();

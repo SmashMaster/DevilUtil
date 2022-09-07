@@ -85,17 +85,32 @@ public final class Property
 
         properties = Collections.unmodifiableList(propsList);
     }
+
+    public boolean isString()
+    {
+        return type == Type.STRING;
+    }
     
     public String getString()
     {
         return type == Type.STRING ? (String)value : null;
+    }
+
+    public boolean isInteger()
+    {
+        return type == Type.INT;
     }
     
     public Integer getInteger()
     {
         return type == Type.INT ? (Integer)value : null;
     }
-    
+
+    public boolean isDouble()
+    {
+        return type == Type.DOUBLE;
+    }
+
     public Double getDouble()
     {
         if (value == null) return null;

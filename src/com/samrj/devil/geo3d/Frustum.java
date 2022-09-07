@@ -14,31 +14,52 @@ import com.samrj.devil.math.Vec3;
  */
 public class Frustum
 {
-    private final Vec3[] normals;
-    private final float[] constants;
-    
-    public Frustum(Mat4 matrix)
+    private final Vec3[] normals = new Vec3[6];
+    private final float[] constants = new float[6];
+
+    /**
+     * Creates an uninitialized frustum.
+     */
+    public Frustum()
     {
-        float m11 = matrix.a, m12 = matrix.b, m13 = matrix.c, m14 = matrix.d;
-        float m21 = matrix.e, m22 = matrix.f, m23 = matrix.g, m24 = matrix.h;
-        float m31 = matrix.i, m32 = matrix.j, m33 = matrix.k, m34 = matrix.l;
-        float m41 = matrix.m, m42 = matrix.n, m43 = matrix.o, m44 = matrix.p;
-        
-        Vec3 leftN = new Vec3(m41 + m11, m42 + m12, m43 + m13);
-        float leftP = m44 + m14;
-        Vec3 rightN = new Vec3(m41 - m11, m42 - m12, m43 - m13);
-        float rightP = m44 - m14;
-        Vec3 bottomN = new Vec3(m41 + m21, m42 + m22, m43 + m23);
-        float bottomP = m44 + m24;
-        Vec3 topN = new Vec3(m41 - m21, m42 - m22, m43 - m23);
-        float topP = m44 - m24;
-        Vec3 nearN = new Vec3(m41 + m31, m42 + m32, m43 + m33);
-        float nearP = m44 + m34;
-        Vec3 farN = new Vec3(m41 - m31, m42 - m32, m43 - m33);
-        float farP = m44 - m34;
-        
-        normals = new Vec3[]{leftN, rightN, bottomN, topN, nearN, farN};
-        constants = new float[]{leftP, rightP, bottomP, topP, nearP, farP};
+        for (int i=0; i<6; i++) normals[i] = new Vec3();
+    }
+
+    /**
+     * Creates a new frustum from the given matrix.
+     *
+     * @param m A view-projection matrix.
+     */
+    public Frustum(Mat4 m)
+    {
+        this();
+        set(m);
+    }
+
+    /**
+     * Sets this frustum to the given view-projection matrix.
+     *
+     * @param m A view-projection matrix.
+     */
+    public void set(Mat4 m)
+    {
+        float m11 = m.a, m12 = m.b, m13 = m.c, m14 = m.d;
+        float m21 = m.e, m22 = m.f, m23 = m.g, m24 = m.h;
+        float m31 = m.i, m32 = m.j, m33 = m.k, m34 = m.l;
+        float m41 = m.m, m42 = m.n, m43 = m.o, m44 = m.p;
+
+        normals[0].set(m41 + m11, m42 + m12, m43 + m13); //Left
+        constants[0] = m44 + m14;
+        normals[1].set(m41 - m11, m42 - m12, m43 - m13); //Right
+        constants[1] = m44 - m14;
+        normals[2].set(m41 + m21, m42 + m22, m43 + m23); //Bottom
+        constants[2] = m44 + m24;
+        normals[3].set(m41 - m21, m42 - m22, m43 - m23); //Top
+        constants[3] = m44 - m24;
+        normals[4].set(m41 + m31, m42 + m32, m43 + m33); //Near
+        constants[4] = m44 + m34;
+        normals[5].set(m41 - m31, m42 - m32, m43 - m33); //Far
+        constants[5] = m44 - m34;
     }
 
     /**

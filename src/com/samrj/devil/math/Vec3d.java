@@ -292,7 +292,7 @@ public class Vec3d implements Bufferable, DataStreamable<Vec3d>
      * @param m The 4x4 matrix to multiply the vector by.
      * @param result The vector in which to store the result.
      */
-    public static final void mult(Vec3d v, Mat4 m, Vec3d result)
+    public static final void mult(Vec3d v, Mat4d m, Vec3d result)
     {
         double x = m.a*v.x + m.b*v.y + m.c*v.z + m.d;
         double y = m.e*v.x + m.f*v.y + m.g*v.z + m.h;
@@ -599,7 +599,7 @@ public class Vec3d implements Bufferable, DataStreamable<Vec3d>
      * @param m The 4x4 matrix to multiply by.
      * @return A new vector containing the result.
      */
-    public static final Vec3d mult(Vec3d v, Mat4 m)
+    public static final Vec3d mult(Vec3d v, Mat4d m)
     {
         Vec3d result = new Vec3d();
         mult(v, m, result);
@@ -1101,7 +1101,7 @@ public class Vec3d implements Bufferable, DataStreamable<Vec3d>
      * @param m The 4x4 matrix to multiply this by.
      * @return This vector.
      */
-    public Vec3d mult(Mat4 m)
+    public Vec3d mult(Mat4d m)
     {
         mult(this, m, this);
         return this;

@@ -3,6 +3,7 @@ package com.samrj.devil.geo3d;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -27,11 +28,7 @@ public final class ActorDriver
      * The shape of this driver used for collision.
      */
     public final Ellipsoid shape = new Ellipsoid();
-    
-    //The geometry that this driver will use for collision detection. Defaults
-    //to null, with collision disabled.
-    public Geometry geom;
-    
+
     //The downward acceleration that this driver will experience at all times.
     public float gravity = 9.80665f;
     
@@ -237,7 +234,7 @@ public final class ActorDriver
      * 
      * @param dt The time to step forward by.
      */
-    public void step(float dt)
+    public void step(Iterable<GeoMesh> geom, float dt)
     {
         boolean startOnGround = onGround();
         Vec3 avgVel = new Vec3(vel);
@@ -291,10 +288,10 @@ public final class ActorDriver
 
                 Vec3 step = new Vec3(0.0f, -2.0f*climbHeight, 0.0f);
 
-                Geometry.Query<Sweep> sweepIt = geom.sweep(shape, step);
-                Sweep sweep = new Sweep(), sweepTemp = new Sweep();
-                while (sweepIt.hasNext())
-                    if (sweepIt.next(sweepTemp) && isValidGround(sweepTemp.normal) && sweepTemp.time < sweep.time)
+                List<Sweep> sweeps = Geo3D.sweep(geom, shape, step);
+                Sweep sweep = new Sweep();
+                for (Sweep sweepTemp : sweeps)
+                    if (isValidGround(sweepTemp.normal) && sweepTemp.time < sweep.time)
                         sweep.set(sweepTemp);
 
                 pos.y = oldY;
@@ -315,7 +312,7 @@ public final class ActorDriver
                 pos.y += climbHeight;
 
                 Vec3 step = new Vec3(0.0f, -2.0f*climbHeight, 0.0f);
-                Sweep sweep = geom.sweepFirst(shape, step);
+                Sweep sweep = Geo3D.sweepFirst(geom, shape, step);
                 
                 pos.y = oldY;
                 
@@ -328,17 +325,12 @@ public final class ActorDriver
             
             //Clip against the level
             Vec3 nudge = new Vec3();
-            Geometry.Query<Isect> isectIt = geom.isect(shape);
-            Isect isect = new Isect();
-            while (isectIt.hasNext())
+            for (Isect isect : Geo3D.isect(geom, shape))
             {
-                isect.reset();
-                if (!isectIt.next(isect)) continue;
-
                 nudge.add(Vec3.sub(isect.point, isect.surface));
                 
                 float height = isect.point.y - pos.y + shape.radii.y;
-                if (height > climbHeight) Geo3DUtil.restrain(vel, isect.normal, vel);
+                if (height > climbHeight) Geo3D.restrain(vel, isect.normal, vel);
 
                 if (isValidGround(isect.normal) && (!onGround() || isect.normal.y > groundNormal.y))
                 {
@@ -353,7 +345,7 @@ public final class ActorDriver
         boolean endOnGround = onGround();
         if (endOnGround)
         {
-            vel.y = Geo3DUtil.restrain(vel, groundNormal).y;
+            vel.y = Geo3D.restrain(vel, groundNormal).y;
         }
 
         //Check for landing

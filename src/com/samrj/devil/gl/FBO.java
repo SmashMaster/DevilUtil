@@ -40,8 +40,8 @@ public final class FBO extends DGLObj
     {
         switch (status)
         {
-            case GL_FRAMEBUFFER_COMPLETE​:
-                return "GL_FRAMEBUFFER_COMPLETE​";
+            case GL_FRAMEBUFFER_COMPLETE:
+                return "GL_FRAMEBUFFER_COMPLETE";
             case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
                 return "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
             case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:

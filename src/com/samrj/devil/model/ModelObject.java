@@ -292,38 +292,8 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlockAni
         return Optional.ofNullable(asType(typeClass));
     }
 
-    public Set<ModelObject<?>> getChildren()
+    public Set<ModelObject<? extends DataBlock>> getChildren()
     {
         return children;
-    }
-
-    /**
-     * These methods do not apply the parent inverse matrix, and cannot work for shearing transformations.
-     */
-
-    @Deprecated
-    public void applyParentTransform(Transform result)
-    {
-        ModelObject<?> parentObj = parent.get();
-        if (parentObj != null)
-        {
-            result.mult(parentObj.transform);
-            parentObj.applyParentTransform(result);
-        }
-    }
-
-    @Deprecated
-    public void getParentedTransform(Transform result)
-    {
-        result.set(transform);
-        applyParentTransform(result);
-    }
-
-    @Deprecated
-    public Transform getParentedTransform()
-    {
-        Transform out = new Transform();
-        getParentedTransform(out);
-        return out;
     }
 }

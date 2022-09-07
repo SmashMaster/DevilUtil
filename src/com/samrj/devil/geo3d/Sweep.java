@@ -9,8 +9,17 @@ import com.samrj.devil.math.Vec3;
  * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Sweep
+public final class Sweep implements Comparable<Sweep>
 {
+    public Sweep()
+    {
+    }
+
+    public Sweep(Sweep other)
+    {
+        set(other);
+    }
+
     /**
      * The object that was intersected.
      */
@@ -62,6 +71,12 @@ public class Sweep
     public boolean hit()
     {
         return Float.isFinite(time);
+    }
+
+    @Override
+    public int compareTo(Sweep o)
+    {
+        return Float.compare(time, o.time);
     }
 
     @Override

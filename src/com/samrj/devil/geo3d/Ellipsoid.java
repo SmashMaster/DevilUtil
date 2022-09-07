@@ -112,7 +112,7 @@ public class Ellipsoid implements ConvexShape
         if (plane.w < -1.0f || Float.isNaN(plane.w)) return false; //Too far apart or NaN.
         
         Vec3 bary = Triangle3.barycentric(f, pos);
-        if (!Geo3DUtil.baryContained(bary)) return false; //Not inside triangle.
+        if (!Geo3D.baryContained(bary)) return false; //Not inside triangle.
         
         if (Util.isZero(plane.w, EPSILON)) return isectCenter(f, result); //Intersected center.
 
@@ -120,7 +120,7 @@ public class Ellipsoid implements ConvexShape
         Triangle3.interpolate(f, bary, result.point);
         Triangle3.interpolate(localTri, bary, result.surface);
         result.surface.div(-plane.w).mult(radii).add(pos);
-        Geo3DUtil.normal(plane, result.normal);
+        Geo3D.normal(plane, result.normal);
         result.normal.div(radii).normalize();
         result.depth = Vec3.dist(result.point, result.surface);
         return true;
@@ -198,13 +198,13 @@ public class Ellipsoid implements ConvexShape
         Triangle3 localTri = new Triangle3(ae, be, ce);
         
         Vec4 plane = Triangle3.plane(localTri);
-        float t = Geo3DUtil.sweepSpherePlane(p0, cDir, plane, 1.0f);
+        float t = Geo3D.sweepSpherePlane(p0, cDir, plane, 1.0f);
         if (Float.isNaN(t) || t <= 0.0f || t >= 1.0f)
             return false; //Moving away or won't get there in time.
         
         Vec3 position = Vec3.madd(pos, dp, t);
         Vec3 bary = Triangle3.barycentric(f, position);
-        if (!Geo3DUtil.baryContained(bary)) return false; //Missed the triangle.
+        if (!Geo3D.baryContained(bary)) return false; //Missed the triangle.
 
         result.object = f;
         result.time = t;
