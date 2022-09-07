@@ -63,20 +63,19 @@ public class Frustum
     }
 
     /**
-     * Returns true if the given box is definitely not inside this frustum. A
-     * false result does not mean that the box is definitely visible.
+     * Returns true if the given box is inside, or touching the edges of this frustum.
      */
-    public boolean cull(Box3 box)
+    public boolean touching(Box3 box)
     {
         boolean inside = true;
         for (int i=0; i<6; i++)
         {
             Vec3 normal = normals[i];
             float d = Math.max(box.min.x*normal.x, box.max.x*normal.x) +
-                      Math.max(box.min.y*normal.y, box.max.y*normal.y) +
-                      Math.max(box.min.z*normal.z, box.max.z*normal.z) + constants[i];
+                    Math.max(box.min.y*normal.y, box.max.y*normal.y) +
+                    Math.max(box.min.z*normal.z, box.max.z*normal.z) + constants[i];
             inside &= d > 0;
         }
-        return !inside;
+        return inside;
     }
 }

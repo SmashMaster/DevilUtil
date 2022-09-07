@@ -291,8 +291,8 @@ class Node
                 InputNodeSocket bright = inputs.get("Bright");
                 InputNodeSocket contrast = inputs.get("Contrast");
 
-                String a = varNames.newVarName(); //Normal
-                String b = varNames.newVarName(); //Tangent
+                String a = varNames.newVarName();
+                String b = varNames.newVarName();
 
                 innerExpressions.add(() -> "float " + a + " = 1.0 + " + contrast.getFloat() + ";");
                 innerExpressions.add(() -> "float " + b + " = " + bright.getFloat() + " - " + contrast.getFloat() + "*0.5;");
