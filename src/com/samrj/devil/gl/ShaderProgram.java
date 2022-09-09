@@ -142,7 +142,19 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
             throw new ShaderException(log);
         }
     }
-    
+
+    public void transformFeedbackVaryings(CharSequence varying, int bufferMode)
+    {
+        if (state != State.NEW) throw new IllegalStateException("Shader program must be unlinked.");
+        glTransformFeedbackVaryings(id, varying, bufferMode);
+    }
+
+    public void transformFeedbackVaryings(CharSequence[] varyings, int bufferMode)
+    {
+        if (state != State.NEW) throw new IllegalStateException("Shader program must be unlinked.");
+        glTransformFeedbackVaryings(id, varyings, bufferMode);
+    }
+
     /**
      * Links this shader program, creating executables that may run on the GPU
      * and compiling a list of input attributes.
@@ -741,16 +753,6 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     public Attribute getAttribute(String name)
     {
         return attMap.get(name);
-    }
-
-    public void transformFeedbackVaryings(CharSequence varying, int bufferMode)
-    {
-        glTransformFeedbackVaryings(id, varying, bufferMode);
-    }
-
-    public void transformFeedbackVaryings(CharSequence[] varyings, int bufferMode)
-    {
-        glTransformFeedbackVaryings(id, varyings, bufferMode);
     }
 
     /**
