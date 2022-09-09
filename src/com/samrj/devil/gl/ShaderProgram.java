@@ -32,6 +32,7 @@ import java.util.*;
 import static org.lwjgl.opengl.GL11C.GL_TRUE;
 import static org.lwjgl.opengl.GL20C.*;
 import static org.lwjgl.opengl.GL30C.glBindFragDataLocation;
+import static org.lwjgl.opengl.GL30C.glTransformFeedbackVaryings;
 import static org.lwjgl.system.MemoryUtil.memASCII;
 import static org.lwjgl.system.MemoryUtil.memByteBuffer;
 
@@ -741,7 +742,17 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     {
         return attMap.get(name);
     }
-    
+
+    public void transformFeedbackVaryings(CharSequence varying, int bufferMode)
+    {
+        glTransformFeedbackVaryings(id, varying, bufferMode);
+    }
+
+    public void transformFeedbackVaryings(CharSequence[] varyings, int bufferMode)
+    {
+        glTransformFeedbackVaryings(id, varyings, bufferMode);
+    }
+
     /**
      * @return The state of this shader program.
      */
