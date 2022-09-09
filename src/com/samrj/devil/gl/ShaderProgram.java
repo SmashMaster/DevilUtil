@@ -32,6 +32,7 @@ import java.util.*;
 import static org.lwjgl.opengl.GL11C.GL_TRUE;
 import static org.lwjgl.opengl.GL20C.*;
 import static org.lwjgl.opengl.GL30C.glBindFragDataLocation;
+import static org.lwjgl.opengl.GL30C.glTransformFeedbackVaryings;
 import static org.lwjgl.system.MemoryUtil.memASCII;
 import static org.lwjgl.system.MemoryUtil.memByteBuffer;
 
@@ -141,7 +142,19 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
             throw new ShaderException(log);
         }
     }
-    
+
+    public void transformFeedbackVaryings(CharSequence varying, int bufferMode)
+    {
+        if (state != State.NEW) throw new IllegalStateException("Shader program must be unlinked.");
+        glTransformFeedbackVaryings(id, varying, bufferMode);
+    }
+
+    public void transformFeedbackVaryings(CharSequence[] varyings, int bufferMode)
+    {
+        if (state != State.NEW) throw new IllegalStateException("Shader program must be unlinked.");
+        glTransformFeedbackVaryings(id, varyings, bufferMode);
+    }
+
     /**
      * Links this shader program, creating executables that may run on the GPU
      * and compiling a list of input attributes.
@@ -741,7 +754,7 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     {
         return attMap.get(name);
     }
-    
+
     /**
      * @return The state of this shader program.
      */

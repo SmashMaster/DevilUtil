@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Sam Johnson
+ * Copyright (c) 2022 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,7 @@ import com.samrj.devil.math.*;
 import com.samrj.devil.util.Bufferable;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Vertex data abstract class. Used to keep track of vertex attributes, indices,
@@ -67,12 +64,14 @@ public abstract class VertexBuilder extends DGLObj implements VertexData
     }
     
     private final ArrayList<AttWriter> attributes;
+    private final List<Attribute> attributesUnmod;
     private final Map<String, AttWriter> attMap;
     private int vertexSize;
     
     VertexBuilder()
     {
         attributes = new ArrayList<>(16);
+        attributesUnmod = Collections.unmodifiableList(attributes);
         attMap = new HashMap<>();
         vertexSize = 0;
     }
@@ -233,9 +232,9 @@ public abstract class VertexBuilder extends DGLObj implements VertexData
     // </editor-fold>
     
     @Override
-    public Iterable<Attribute> attributes()
+    public List<Attribute> attributes()
     {
-        return Collections.unmodifiableCollection(attributes);
+        return attributesUnmod;
     }
     
     @Override

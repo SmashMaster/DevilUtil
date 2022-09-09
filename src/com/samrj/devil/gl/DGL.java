@@ -905,7 +905,16 @@ public final class DGL
         return readFBO == drawFBO ? readFBO : null;
     }
     // </editor-fold>
-    
+    // <editor-fold defaultstate="collapsed" desc="BufferObject methods">
+    /**
+     * @return A newly created buffer.
+     */
+    public static BufferObject genBufferObject(int target)
+    {
+        return gen(new BufferObject(target));
+    }
+    // </editor-fold>
+
     /**
      * Draws the given vertex data using the given primitive mode. A shader must
      * be bound.
