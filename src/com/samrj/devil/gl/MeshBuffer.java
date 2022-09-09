@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Sam Johnson
+ * Copyright (c) 2022 Sam Johnson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,10 +25,7 @@ package com.samrj.devil.gl;
 import com.samrj.devil.model.Mesh;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.samrj.devil.gl.AttributeType.*;
 import static org.lwjgl.opengl.GL11C.glGetInteger;
@@ -205,7 +202,7 @@ public class MeshBuffer extends DGLObj implements VertexData
     }
 
     @Override
-    public Iterable<VertexData.Attribute> attributes()
+    public List<VertexData.Attribute> attributes()
     {
         List<VertexData.Attribute> out = new ArrayList<>(attributes.size());
         for (Attribute att : attributes.values()) if (att.enabled) out.add(att);

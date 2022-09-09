@@ -1,10 +1,14 @@
 package com.samrj.devil.gl;
 
+import com.samrj.devil.util.IOUtil;
+
+import java.util.List;
+
 /**
  * Interface for all vertex data.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2020 Samuel Johnson
+ * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
 public interface VertexData extends VAOBindable
@@ -12,43 +16,51 @@ public interface VertexData extends VAOBindable
     /**
      * @return The OpenGL vertex buffer object for this vertex data.
      */
-    public int vbo();
+    int vbo();
     
     /**
      * @return The OpenGL index buffer object for this vertex data, or 0 if
      *         indexing is not enabled for this vertex data.
      */
-    public int ibo();
-    
+    int ibo();
+
     /**
-     * @return An iterable of every attribute in this vertex data.
+     * @return A list of every attribute in this vertex data.
      */
-    public Iterable<Attribute> attributes();
-    
+    List<Attribute> attributes();
+
+    /**
+     *@return A list of every attribute name in this vertex data.
+     */
+    default List<String> getAttributeNames()
+    {
+        return IOUtil.mapList(attributes(), Attribute::getName);
+    };
+
     /**
      * Returns the attribute with the give name, or null if none exists.
      * 
      * @param name The name of the attribute to find.
      * @return The attribute with the give name, or null if none exists.
      */
-    public Attribute getAttribute(String name);
+    Attribute getAttribute(String name);
     
     /**
      * @return The number of currently uploaded vertices.
      */
-    public int numVertices();
+    int numVertices();
     
     /**
      * @return The number of currently uploaded indices, or -1 if indexing is
      *         not enabled for this vertex data.
      */
-    public int numIndices();
+    int numIndices();
     
-    public interface Attribute
+    interface Attribute
     {
-        public String getName();
-        public AttributeType getType();
-        public int getStride();
-        public int getOffset();
+        String getName();
+        AttributeType getType();
+        int getStride();
+        int getOffset();
     }
 }
