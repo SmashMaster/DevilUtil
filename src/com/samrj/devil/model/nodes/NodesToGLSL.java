@@ -66,10 +66,18 @@ public class NodesToGLSL
 
         StringBuilder builder = new StringBuilder();
         builder.append("""
-                #version 140
+                #version 420
                 
-                uniform float u_z_far;
-                uniform vec2 u_vel_factor;
+                layout (std140, binding = 0) uniform Matrices
+                {
+                    mat4 u_projection_matrix;
+                    mat4 u_prev_view_matrix;
+                    mat4 u_view_matrix;
+                    vec2 u_vel_factor;
+                    float u_z_far;
+                    float u_UNUSED;
+                };
+                
                 """);
         for (String imgName : varNames.imageNames.values()) builder.append("uniform sampler2D " + imgName + ";\n");
         builder.append("""
