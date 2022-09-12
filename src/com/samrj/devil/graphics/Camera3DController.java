@@ -56,6 +56,11 @@ public final class Camera3DController
         if (camera == null) throw new NullPointerException();
         this.camera = camera;
     }
+
+    public Camera3D getCamera()
+    {
+        return camera;
+    }
     
     /**
      * Allows this camera to clip with world geometry, in the case of a third-
