@@ -165,6 +165,15 @@ public final class ActorDriver
         groundObject = VIRTUAL_GROUND;
         groundNormal.set(0.0f, 1.0f, 0.0f);
     }
+
+    /**
+     * Causes this actor to fall immediately.
+     */
+    public void fall()
+    {
+        groundObject = null;
+        fallCallback.run();
+    }
     
     /**
      * Returns whatever geometry object this actor is currently standing on.
