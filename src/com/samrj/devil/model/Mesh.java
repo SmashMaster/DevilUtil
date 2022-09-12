@@ -304,13 +304,15 @@ public final class Mesh extends DataBlockAnimatable
         {
             BlendFile.Pointer dVert = dVerts[vi];
             int totweight = dVert.getField("totweight").asInt();
-            BlendFile.Pointer[] weights = dVert.getField("dw").dereference().asArray(totweight);
-            
-            for (int wi=0; wi<weights.length; wi++)
+            if (totweight > 0)
             {
-                BlendFile.Pointer weight = weights[wi];
-                groupIndices[vi][wi] = weight.getField("def_nr").asInt();
-                groupWeights[vi][wi] = weight.getField("weight").asFloat();
+                BlendFile.Pointer[] weights = dVert.getField("dw").dereference().asArray(totweight);
+                for (int wi = 0; wi < weights.length; wi++)
+                {
+                    BlendFile.Pointer weight = weights[wi];
+                    groupIndices[vi][wi] = weight.getField("def_nr").asInt();
+                    groupWeights[vi][wi] = weight.getField("weight").asFloat();
+                }
             }
         }
         
