@@ -33,9 +33,9 @@ public class RigidBodyProperties
             //Consider a tetrahedron sharing 3 vertices with the triangle, and one at the origin.
             //We can simply sum most of the properties of each of these tetrahedrons.
             
-            double x1 = face.a.x, y1 = face.a.y, z1 = face.a.z;
-            double x2 = face.b.x, y2 = face.b.y, z2 = face.b.z;
-            double x3 = face.c.x, y3 = face.c.y, z3 = face.c.z;
+            double x1 = face.a().x, y1 = face.a().y, z1 = face.a().z;
+            double x2 = face.b().x, y2 = face.b().y, z2 = face.b().z;
+            double x3 = face.c().x, y3 = face.c().y, z3 = face.c().z;
             
             double x1y2 = x1*y2;
             double x3y1 = x3*y1;

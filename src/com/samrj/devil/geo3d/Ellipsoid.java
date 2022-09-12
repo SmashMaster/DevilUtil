@@ -73,8 +73,8 @@ public class Ellipsoid implements ConvexShape
     @Override
     public boolean isect(Edge3 e, Isect result)
     {
-        Vec3 aDir = Vec3.sub(e.a, pos).div(radii);
-        Vec3 eDir = Vec3.sub(e.b, e.a).div(radii);
+        Vec3 aDir = Vec3.sub(e.a(), pos).div(radii);
+        Vec3 eDir = Vec3.sub(e.b(), e.a()).div(radii);
         
         float eLenSq = eDir.squareLength();
         float et = -aDir.dot(eDir)/eLenSq;
@@ -89,7 +89,7 @@ public class Ellipsoid implements ConvexShape
         if (Util.isZero(len, EPSILON)) return isectCenter(e, result); //Intersecting center.
 
         result.object = e;
-        Vec3.lerp(e.a, e.b, et, result.point);
+        Vec3.lerp(e.a(), e.b(), et, result.point);
         Vec3 tmp = Vec3.div(dir, len);
         Vec3.negate(tmp, result.normal);
         result.normal.div(radii).normalize();
@@ -102,10 +102,10 @@ public class Ellipsoid implements ConvexShape
     @Override
     public boolean isect(Triangle3 f, Isect result)
     {
-        Vec3 aDir = Vec3.sub(f.a, pos).div(radii);
-        Vec3 bDir = Vec3.sub(f.b, pos).div(radii);
-        Vec3 cDir = Vec3.sub(f.c, pos).div(radii);
-        Triangle3 localTri = new Triangle3(aDir, bDir, cDir);
+        Vec3 aDir = Vec3.sub(f.a(), pos).div(radii);
+        Vec3 bDir = Vec3.sub(f.b(), pos).div(radii);
+        Vec3 cDir = Vec3.sub(f.c(), pos).div(radii);
+        Triangle3 localTri = new Tri3Direct(aDir, bDir, cDir);
         Vec4 plane = Triangle3.plane(localTri);
         
         if (plane.w > 0.0f) plane.negate();
@@ -155,12 +155,12 @@ public class Ellipsoid implements ConvexShape
         Vec3 dpe = Vec3.div(dp, radii);
         float dpeLen = dpe.squareLength();
         
-        Vec3 ae = Vec3.div(e.a, radii);
-        Vec3 be = Vec3.div(e.b, radii);
+        Vec3 ae = Vec3.div(e.a(), radii);
+        Vec3 be = Vec3.div(e.b(), radii);
 
         Vec3 segDir = Vec3.sub(be, ae);
         float segSqLen = segDir.squareLength();
-        Vec3 aDir = Vec3.sub(e.a, pos).div(radii);
+        Vec3 aDir = Vec3.sub(e.a(), pos).div(radii);
 
         float segDotDP = segDir.dot(dpe);
         float segDotA = segDir.dot(aDir);
@@ -179,7 +179,7 @@ public class Ellipsoid implements ConvexShape
 
         result.object = e;
         result.time = t;
-        Vec3.lerp(e.a, e.b, et, result.point);
+        Vec3.lerp(e.a(), e.b(), et, result.point);
         Vec3.madd(pos, dp, t, result.position);
         Vec3.sub(result.position, result.point, result.normal);
         result.normal.div(radii).div(radii).normalize(); //wtf?
@@ -192,10 +192,10 @@ public class Ellipsoid implements ConvexShape
         Vec3 p0 = Vec3.div(pos, radii);
         Vec3 cDir = Vec3.div(dp, radii);
         
-        Vec3 ae = Vec3.div(f.a, radii);
-        Vec3 be = Vec3.div(f.b, radii);
-        Vec3 ce = Vec3.div(f.c, radii);
-        Triangle3 localTri = new Triangle3(ae, be, ce);
+        Vec3 ae = Vec3.div(f.a(), radii);
+        Vec3 be = Vec3.div(f.b(), radii);
+        Vec3 ce = Vec3.div(f.c(), radii);
+        Triangle3 localTri = new Tri3Direct(ae, be, ce);
         
         Vec4 plane = Triangle3.plane(localTri);
         float t = Geo3D.sweepSpherePlane(p0, cDir, plane, 1.0f);

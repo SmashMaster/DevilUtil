@@ -25,7 +25,10 @@ package com.samrj.devil.gl;
 import com.samrj.devil.model.Mesh;
 
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.samrj.devil.gl.AttributeType.*;
 import static org.lwjgl.opengl.GL11C.glGetInteger;
