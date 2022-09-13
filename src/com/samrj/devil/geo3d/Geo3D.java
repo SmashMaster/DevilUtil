@@ -498,6 +498,21 @@ public final class Geo3D
     }
 
     /**
+     * The vertices in the GeoMesh returned by Geo3D.transform() will be of this type.
+     */
+    public static class TransformVertex extends Vec3
+    {
+        public final Vec3 original;
+
+        private TransformVertex(Vec3 original, Mat4 matrix)
+        {
+            super(original);
+            mult(matrix);
+            this.original = original;
+        }
+    }
+
+    /**
      * Transform the given mesh by the given matrix, and returns it as a new mesh. If the mesh was indexed, the new mesh
      * will share its index arrays.
      */
@@ -506,22 +521,32 @@ public final class Geo3D
         if (geom.faceIndices != null)
         {
             ArrayList<Vec3> verts = new ArrayList<>(geom.verts.size());
-            for (Vec3 vert : geom.verts) verts.add(Vec3.mult(vert, matrix));
+            for (Vec3 vert : geom.verts) verts.add(new TransformVertex(vert, matrix));
             return new GeoMesh(verts, geom.edgeIndices, geom.faceIndices);
         }
         else
         {
             ArrayList<Vec3> verts = new ArrayList<>(geom.verts.size());
-            for (Vec3 vert : geom.verts) verts.add(Vec3.mult(vert, matrix));
+            for (Vec3 vert : geom.verts) verts.add(new TransformVertex(vert, matrix));
             
             ArrayList<Edge3> edges = new ArrayList<>(geom.edges.size());
-            for (Edge3 edge : geom.edges) edges.add(new Edge3Direct(Vec3.mult(edge.a(), matrix), Vec3.mult(edge.b(), matrix)));
+            for (Edge3 edge : geom.edges) edges.add(new Edge3Direct(new TransformVertex(edge.a(), matrix), new TransformVertex(edge.b(), matrix)));
 
             ArrayList<Triangle3> faces = new ArrayList<>(geom.faces.size());
-            for (Triangle3 face : geom.faces) faces.add(new Tri3Direct(Vec3.mult(face.a(), matrix), Vec3.mult(face.b(), matrix), Vec3.mult(face.c(), matrix)));
+            for (Triangle3 face : geom.faces) faces.add(new Tri3Direct(new TransformVertex(face.a(), matrix), new TransformVertex(face.b(), matrix), new TransformVertex(face.c(), matrix)));
 
             return new GeoMesh(verts, edges, faces);
         }
+    }
+
+    /**
+     * Returns the original, untransformed vertex corresponding to the given vertex; if the vertex was returned by
+     * Geo3D.transform().
+     */
+    public static Vec3 getOriginalVertex(Vec3 transformed)
+    {
+        while (transformed instanceof TransformVertex) transformed = ((TransformVertex)transformed).original;
+        return transformed;
     }
     
     private Geo3D()
