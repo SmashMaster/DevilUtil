@@ -99,6 +99,13 @@ public class BufferObject extends DGLObj
         tempUnbind(oldID);
     }
 
+    public void bufferSubData(long offset, ByteBuffer data)
+    {
+        int oldID = tempBind();
+        glBufferSubData(target, offset, data);
+        tempUnbind(oldID);
+    }
+
     @Override
     void delete()
     {

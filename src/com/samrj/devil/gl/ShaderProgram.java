@@ -359,7 +359,23 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
             return true;
         }
     }
-    
+
+    /**
+     * Specifies the value of a uniform variable for this program. Program must
+     * be in use. Returns true if and only if the uniform exists and is active.
+     *
+     * @param name The name of the uniform to specify.
+     * @return Whether or not the uniform exists and is active.
+     */
+    public boolean uniform2i(String name, int x, int y)
+    {
+        if (DGL.currentProgram() != this) throw new IllegalStateException("Program must be in use.");
+        int loc = getUniformLocation(name);
+        if (loc < 0) return false;
+        glUniform2i(loc, x, y);
+        return true;
+    }
+
     /**
      * Specifies the value of a uniform variable for this program. Program must
      * be in use. Returns true if and only if the uniform exists and is active.

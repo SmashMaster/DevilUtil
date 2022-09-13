@@ -1,6 +1,7 @@
 package com.samrj.devil.geo3d;
 
 import com.samrj.devil.math.Mat3;
+import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Vec3;
 import com.samrj.devil.math.Vec4;
 
@@ -89,8 +90,8 @@ public final class Geo3D
      */
     public static boolean raycast(Triangle3 f, Vec3 p0, Vec3 dp, boolean terminated, Ray result)
     {
-        Vec3 ab = Vec3.sub(f.b, f.a);
-        Vec3 ac = Vec3.sub(f.c, f.a);
+        Vec3 ab = Vec3.sub(f.b(), f.a());
+        Vec3 ac = Vec3.sub(f.c(), f.a());
         
         Vec3 n = Vec3.cross(ab, ac);
         float d = -dp.dot(n);
@@ -103,7 +104,7 @@ public final class Geo3D
         }
         
         float ood = 1.0f/d;
-        Vec3 ap = Vec3.sub(p0, f.a);
+        Vec3 ap = Vec3.sub(p0, f.a());
         float t = ap.dot(n)*ood;
         if (t < 0.0f) return false; //Ray behind triangle.
         if (terminated && t > 1.0f) return false; //Triangle too far.
@@ -120,8 +121,8 @@ public final class Geo3D
 
         result.face = f;
         result.time = t;
-        Vec3.mult(f.a, u, result.point);
-        result.point.madd(f.b, v).madd(f.c, w);
+        Vec3.mult(f.a(), u, result.point);
+        result.point.madd(f.b(), v).madd(f.c(), w);
         Vec3.normalize(n, result.normal);
         return true;
     }
@@ -494,6 +495,58 @@ public final class Geo3D
 
         if (first.hit()) return first;
         else return null;
+    }
+
+    /**
+     * The vertices in the GeoMesh returned by Geo3D.transform() will be of this type.
+     */
+    public static class TransformVertex extends Vec3
+    {
+        public final Vec3 original;
+
+        private TransformVertex(Vec3 original, Mat4 matrix)
+        {
+            super(original);
+            mult(matrix);
+            this.original = original;
+        }
+    }
+
+    /**
+     * Transform the given mesh by the given matrix, and returns it as a new mesh. If the mesh was indexed, the new mesh
+     * will share its index arrays.
+     */
+    public static GeoMesh transform(GeoMesh geom, Mat4 matrix)
+    {
+        if (geom.faceIndices != null)
+        {
+            ArrayList<Vec3> verts = new ArrayList<>(geom.verts.size());
+            for (Vec3 vert : geom.verts) verts.add(new TransformVertex(vert, matrix));
+            return new GeoMesh(verts, geom.edgeIndices, geom.faceIndices);
+        }
+        else
+        {
+            ArrayList<Vec3> verts = new ArrayList<>(geom.verts.size());
+            for (Vec3 vert : geom.verts) verts.add(new TransformVertex(vert, matrix));
+            
+            ArrayList<Edge3> edges = new ArrayList<>(geom.edges.size());
+            for (Edge3 edge : geom.edges) edges.add(new Edge3Direct(new TransformVertex(edge.a(), matrix), new TransformVertex(edge.b(), matrix)));
+
+            ArrayList<Triangle3> faces = new ArrayList<>(geom.faces.size());
+            for (Triangle3 face : geom.faces) faces.add(new Tri3Direct(new TransformVertex(face.a(), matrix), new TransformVertex(face.b(), matrix), new TransformVertex(face.c(), matrix)));
+
+            return new GeoMesh(verts, edges, faces);
+        }
+    }
+
+    /**
+     * Returns the original, untransformed vertex corresponding to the given vertex; if the vertex was returned by
+     * Geo3D.transform().
+     */
+    public static Vec3 getOriginalVertex(Vec3 transformed)
+    {
+        while (transformed instanceof TransformVertex) transformed = ((TransformVertex)transformed).original;
+        return transformed;
     }
     
     private Geo3D()

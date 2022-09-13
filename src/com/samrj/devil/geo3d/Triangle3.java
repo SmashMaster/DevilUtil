@@ -5,10 +5,10 @@ import com.samrj.devil.math.Vec4;
 
 /**
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2020 Samuel Johnson
+ * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Triangle3
+public interface Triangle3
 {
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
@@ -19,7 +19,7 @@ public class Triangle3
      */
     public static float area(Triangle3 t)
     {
-        return Vec3.sub(t.b, t.a).cross(Vec3.sub(t.c, t.a)).length()*0.5f;
+        return Vec3.sub(t.b(), t.a()).cross(Vec3.sub(t.c(), t.a())).length()*0.5f;
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static mutator methods">
@@ -32,9 +32,9 @@ public class Triangle3
      */
     public static void copy(Triangle3 source, Triangle3 target)
     {
-        Vec3.copy(source.a, target.a);
-        Vec3.copy(source.b, target.b);
-        Vec3.copy(source.c, target.c);
+        Vec3.copy(source.a(), target.a());
+        Vec3.copy(source.b(), target.b());
+        Vec3.copy(source.c(), target.c());
     }
     
     /**
@@ -47,7 +47,7 @@ public class Triangle3
      */
     public static void barycentric(Triangle3 t, Vec3 p, Vec3 result)
     {
-        Vec3 v0 = Vec3.sub(t.b, t.a), v1 = Vec3.sub(t.c, t.a), v2 = Vec3.sub(p, t.a);
+        Vec3 v0 = Vec3.sub(t.b(), t.a()), v1 = Vec3.sub(t.c(), t.a()), v2 = Vec3.sub(p, t.a());
         float d00 = v0.dot(v0);
         float d01 = v0.dot(v1);
         float d11 = v1.dot(v1);
@@ -70,9 +70,9 @@ public class Triangle3
      */
     public static void interpolate(Triangle3 t, Vec3 bary, Vec3 result)
     {
-        Vec3 out = Vec3.mult(t.a, bary.x); //Temp var in case bary == result
-        Vec3.madd(out, t.b, bary.y, out);
-        Vec3.madd(out, t.c, bary.z, out);
+        Vec3 out = Vec3.mult(t.a(), bary.x); //Temp var in case bary == result
+        Vec3.madd(out, t.b(), bary.y, out);
+        Vec3.madd(out, t.c(), bary.z, out);
         Vec3.copy(out, result);
     }
     
@@ -85,7 +85,7 @@ public class Triangle3
      */
     public static void normal(Triangle3 t, Vec3 result)
     {
-        Vec3 n = Vec3.sub(t.c, t.a).cross(Vec3.sub(t.b, t.a));
+        Vec3 n = Vec3.sub(t.c(), t.a()).cross(Vec3.sub(t.b(), t.a()));
         Vec3.normalize(n, result);
     }
     
@@ -102,7 +102,7 @@ public class Triangle3
         result.x = n.x;
         result.y = n.y;
         result.z = n.z;
-        result.w = t.a.dot(n);
+        result.w = t.a().dot(n);
     }
     // </editor-fold>
     /**
@@ -116,9 +116,9 @@ public class Triangle3
      */
     public static Triangle3 copy(Triangle3 t)
     {
-        return new Triangle3(new Vec3(t.a),
-                             new Vec3(t.b),
-                             new Vec3(t.c));
+        return new Tri3Direct(new Vec3(t.a()),
+                              new Vec3(t.b()),
+                              new Vec3(t.c()));
     }
     
     /**
@@ -179,13 +179,8 @@ public class Triangle3
         return result;
     }
     // </editor-fold>
-    
-    public final Vec3 a, b, c;
-    
-    public Triangle3(Vec3 a, Vec3 b, Vec3 c)
-    {
-        this.a = a;
-        this.b = b;
-        this.c = c;
-    }
+
+    Vec3 a();
+    Vec3 b();
+    Vec3 c();
 }

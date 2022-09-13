@@ -39,9 +39,9 @@ public class Box3
         Vec3 a = Vec3.cross(axis, edge);
         float r = Math.abs(a.x) + Math.abs(a.y) + Math.abs(a.z);
         
-        float p0 = Vec3.dot(a, triangle.a);
-        float p1 = Vec3.dot(a, triangle.b);
-        float p2 = Vec3.dot(a, triangle.c);
+        float p0 = Vec3.dot(a, triangle.a());
+        float p1 = Vec3.dot(a, triangle.b());
+        float p2 = Vec3.dot(a, triangle.c());
         
         float min = Math.min(Math.min(p0, p1), p2);
         if (min > r) return true;
@@ -69,13 +69,13 @@ public class Box3
         
         //Plane intersection test
         Vec3 n = Triangle3.normal(t);
-        float pc = Vec3.dot(n, t.a);
+        float pc = Vec3.dot(n, t.a());
         if (Math.abs(n.x) + Math.abs(n.y) + Math.abs(n.z) < Math.abs(pc)) return false;
         
         //Separating axis tests
-        Vec3 ab = Vec3.sub(t.b, t.a);
-        Vec3 bc = Vec3.sub(t.c, t.b);
-        Vec3 ca = Vec3.sub(t.a, t.c);
+        Vec3 ab = Vec3.sub(t.b(), t.a());
+        Vec3 bc = Vec3.sub(t.c(), t.b());
+        Vec3 ca = Vec3.sub(t.a(), t.c());
         
         if (axisFailTest(t, AXIS_X, ab)) return false;
         if (axisFailTest(t, AXIS_X, bc)) return false;
@@ -102,10 +102,10 @@ public class Box3
         Vec3 center = Vec3.add(box.min, box.max).mult(0.5f);
         Vec3 radius = Vec3.sub(box.max, box.min).mult(0.5f);
         
-        Vec3 a = Vec3.sub(t.a, center).div(radius);
-        Vec3 b = Vec3.sub(t.b, center).div(radius);
-        Vec3 c = Vec3.sub(t.c, center).div(radius);
-        Triangle3 local = new Triangle3(a, b, c);
+        Vec3 a = Vec3.sub(t.a(), center).div(radius);
+        Vec3 b = Vec3.sub(t.b(), center).div(radius);
+        Vec3 c = Vec3.sub(t.c(), center).div(radius);
+        Triangle3 local = new Tri3Direct(a, b, c);
         
         return touchingUnitBox(local);
     }
@@ -170,7 +170,7 @@ public class Box3
      */
     public static boolean touching(Box3 box, Edge3 e)
     {
-        return touchingRay(box, e.a, Vec3.sub(e.b, e.a), true);
+        return touchingRay(box, e.a(), Vec3.sub(e.b(), e.a()), true);
     }
     
     /**
@@ -278,12 +278,12 @@ public class Box3
      */
     public static final void contain(Triangle3 t, Box3 r)
     {
-        r.min.x = Math.min(Math.min(t.a.x, t.b.x), t.c.x);
-        r.max.x = Math.max(Math.max(t.a.x, t.b.x), t.c.x);
-        r.min.y = Math.min(Math.min(t.a.y, t.b.y), t.c.y);
-        r.max.y = Math.max(Math.max(t.a.y, t.b.y), t.c.y);
-        r.min.z = Math.min(Math.min(t.a.z, t.b.z), t.c.z);
-        r.max.z = Math.max(Math.max(t.a.z, t.b.z), t.c.z);
+        r.min.x = Math.min(Math.min(t.a().x, t.b().x), t.c().x);
+        r.max.x = Math.max(Math.max(t.a().x, t.b().x), t.c().x);
+        r.min.y = Math.min(Math.min(t.a().y, t.b().y), t.c().y);
+        r.max.y = Math.max(Math.max(t.a().y, t.b().y), t.c().y);
+        r.min.z = Math.min(Math.min(t.a().z, t.b().z), t.c().z);
+        r.max.z = Math.max(Math.max(t.a().z, t.b().z), t.c().z);
     }
     
     /**
@@ -295,12 +295,12 @@ public class Box3
      */
     public static final void contain(Edge3 e, Box3 r)
     {
-        r.min.x = Math.min(e.a.x, e.b.x);
-        r.max.x = Math.max(e.a.x, e.b.x);
-        r.min.y = Math.min(e.a.y, e.b.y);
-        r.max.y = Math.max(e.a.y, e.b.y);
-        r.min.z = Math.min(e.a.z, e.b.z);
-        r.max.z = Math.max(e.a.z, e.b.z);
+        r.min.x = Math.min(e.a().x, e.b().x);
+        r.max.x = Math.max(e.a().x, e.b().x);
+        r.min.y = Math.min(e.a().y, e.b().y);
+        r.max.y = Math.max(e.a().y, e.b().y);
+        r.min.z = Math.min(e.a().z, e.b().z);
+        r.max.z = Math.max(e.a().z, e.b().z);
     }
     
     /**
@@ -323,15 +323,15 @@ public class Box3
     
     public static final void expand(Box3 b, Edge3 e, Box3 r)
     {
-        expand(b, e.a, r);
-        expand(b, e.b, r);
+        expand(b, e.a(), r);
+        expand(b, e.b(), r);
     }
     
     public static final void expand(Box3 b, Triangle3 f, Box3 r)
     {
-        expand(b, f.a, r);
-        expand(b, f.b, r);
-        expand(b, f.b, r);
+        expand(b, f.a(), r);
+        expand(b, f.b(), r);
+        expand(b, f.c(), r);
     }
     
     /**
