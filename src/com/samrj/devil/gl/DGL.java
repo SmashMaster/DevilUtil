@@ -146,6 +146,11 @@ public final class DGL
 
     // <editor-fold defaultstate="collapsed" desc="Shader methods">
 
+    public static GLSLPreprocessor genGLSLPreprocessor()
+    {
+        return gen(new GLSLPreprocessor());
+    }
+
     /**
      * Generates a new OpenGL shader. Shader will not have any associated
      * sources or be compiled.

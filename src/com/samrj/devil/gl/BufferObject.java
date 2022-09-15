@@ -105,6 +105,7 @@ public class BufferObject extends DGLObj
         glBufferSubData(target, offset, data);
         tempUnbind(oldID);
     }
+
     public void bufferData(int[] data, int usage)
     {
         int oldID = tempBind();
