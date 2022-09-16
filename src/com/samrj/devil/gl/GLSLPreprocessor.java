@@ -124,6 +124,14 @@ public final class GLSLPreprocessor extends DGLObj
         return getSource(Path.of(path));
     }
 
+    public Map<Path, String> getSources()
+    {
+        Map<Path, String> map = new HashMap<>(sources.size());
+        for (Map.Entry<Path, Source> e : sources.entrySet())
+            map.put(e.getKey(), e.getValue().string);
+        return map;
+    }
+
     @Override
     void delete()
     {
