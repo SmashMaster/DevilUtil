@@ -136,21 +136,24 @@ public class Console<T extends GameMode>
         if (atBottom) scrollBox.setScrollY(scrollBox.getScrollY() + newHeight - oldHeight);
         
         historyChoice = null;
-        
-        History hCmd = new History(command);
-        if (lastCommand != null) lastCommand.next = hCmd;
-        hCmd.prev = lastCommand;
-        lastCommand = hCmd;
-        
-        if (firstCommand == null) firstCommand = hCmd;
-        
-        if (historyLength == MAX_HISTORY_LENGTH)
+
+        if (lastCommand == null || !command.equals(lastCommand.command))
         {
-            History newFirst = firstCommand.next;
-            firstCommand = newFirst;
-            newFirst.prev = null;
+            History hCmd = new History(command);
+            if (lastCommand != null) lastCommand.next = hCmd;
+            hCmd.prev = lastCommand;
+            lastCommand = hCmd;
+
+            if (firstCommand == null) firstCommand = hCmd;
+
+            if (historyLength == MAX_HISTORY_LENGTH)
+            {
+                History newFirst = firstCommand.next;
+                firstCommand = newFirst;
+                newFirst.prev = null;
+            }
+            else historyLength++;
         }
-        else historyLength++;
     }
     
     private static class History
