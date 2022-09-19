@@ -62,6 +62,8 @@ public final class GLSLPreprocessor extends DGLObj
             {
                 Path directory = filePath.getParent();
 
+                int lineNo = 1;
+
                 while (reader.ready())
                 {
                     String line = reader.readLine();
@@ -74,8 +76,11 @@ public final class GLSLPreprocessor extends DGLObj
                         Include include = new Include(includePath);
                         lines.add(include);
                         includes.add(include);
+                        lines.add("#line " + (lineNo + 1)); //Maintains line numbers for more legible errors.
                     }
                     else lines.add(line);
+
+                    lineNo++;
                 }
             }
             catch (Exception e)
