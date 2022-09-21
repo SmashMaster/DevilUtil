@@ -12,9 +12,15 @@ import java.util.*;
 public final class GLSLPreprocessor extends DGLObj
 {
     private final Map<URI, Source> sources = new HashMap<>();
+    private boolean lineDirectivesEnabled = true;
 
     GLSLPreprocessor()
     {
+    }
+
+    public void setLineDirectivesEnabled(boolean enabled)
+    {
+        lineDirectivesEnabled = enabled;
     }
 
     public void load(URI uri) throws IOException
@@ -58,16 +64,27 @@ public final class GLSLPreprocessor extends DGLObj
                 while (reader.ready())
                 {
                     String line = reader.readLine();
-                    if (line.startsWith("#") && line.toLowerCase().startsWith("#include"))
+                    if (line.startsWith("#"))
                     {
-                        int begin = line.indexOf('<');
-                        int end = line.indexOf('>');
-                        String pathStr = line.substring(begin + 1, end);
-                        URI includePath = uri.resolve(pathStr);
-                        Include include = new Include(includePath);
-                        lines.add(include);
-                        includes.add(include);
-                        lines.add("#line " + (lineNo + 1)); //Maintains line numbers for more legible errors.
+                        String lower = line.toLowerCase();
+                        if (lower.startsWith("#include"))
+                        {
+                            int begin = line.indexOf('<');
+                            int end = line.indexOf('>');
+                            String pathStr = line.substring(begin + 1, end);
+                            URI includePath = uri.resolve(pathStr);
+                            Include include = new Include(includePath);
+                            includes.add(include);
+                            if (lineDirectivesEnabled) lines.add("#line " + 1);
+                            lines.add(include);
+                            if (lineDirectivesEnabled) lines.add("#line " + (lineNo + 1)); //Maintains line numbers for more legible errors.
+                        }
+                        else if (lineDirectivesEnabled && lower.startsWith("#version"))
+                        {
+                            lines.add(line);
+                            lines.add("#line " + (lineNo + 1));
+                        }
+                        else lines.add(line);
                     }
                     else lines.add(line);
 
