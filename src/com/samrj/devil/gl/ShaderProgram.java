@@ -76,7 +76,7 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
         shaders = Collections.newSetFromMap(new IdentityHashMap<>());
         state = State.NEW;
     }
-    
+
     /**
      * Attaches the given shader to this program.
      * 
@@ -256,7 +256,16 @@ public final class ShaderProgram extends DGLObj implements VAOBindable
     {
         return glGetAttribLocation(id, name);
     }
-    
+
+    /**
+     * Sets this to the current shader program. Equivalent to calling DGL.useProgram(this), except it returns this.
+     */
+    public ShaderProgram use()
+    {
+        DGL.useProgram(this);
+        return this;
+    }
+
     // <editor-fold defaultstate="collapsed" desc="Uniform methods">
     /**
      * Returns the location of the uniform with the given name, or -1 if none
