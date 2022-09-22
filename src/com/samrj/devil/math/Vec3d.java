@@ -277,7 +277,7 @@ public class Vec3d implements Bufferable, DataStreamable<Vec3d>
      * @param m The 3x3 matrix to multiply the vector by.
      * @param result The vector in which to store the result.
      */
-    public static final void mult(Vec3d v, Mat3 m, Vec3d result)
+    public static final void mult(Vec3d v, Mat3d m, Vec3d result)
     {
         double x = m.a*v.x + m.b*v.y + m.c*v.z;
         double y = m.d*v.x + m.e*v.y + m.f*v.z;
@@ -310,7 +310,7 @@ public class Vec3d implements Bufferable, DataStreamable<Vec3d>
     public static final void mult(Vec3d v, Transform t, Vec3d result)
     {
         mult(v, new Vec3d(t.sca), result);
-        mult(result, t.rot, result);
+        mult(result, new Quatd(t.rot), result);
         add(result, new Vec3d(t.pos), result);
     }
     
@@ -322,7 +322,7 @@ public class Vec3d implements Bufferable, DataStreamable<Vec3d>
      * @param q The quaternion to rotate by.
      * @param result The vector in which to store the result.
      */
-    public static final void mult(Vec3d v, Quat q, Vec3d result)
+    public static final void mult(Vec3d v, Quatd q, Vec3d result)
     {
         Vec3d temp1 = new Vec3d(q.x, q.y, q.z);
         Vec3d temp2 = cross(temp1, v);
@@ -585,7 +585,7 @@ public class Vec3d implements Bufferable, DataStreamable<Vec3d>
      * @param m The 3x3 matrix to multiply by.
      * @return A new vector containing the result.
      */
-    public static final Vec3d mult(Vec3d v, Mat3 m)
+    public static final Vec3d mult(Vec3d v, Mat3d m)
     {
         Vec3d result = new Vec3d();
         mult(v, m, result);
@@ -628,7 +628,7 @@ public class Vec3d implements Bufferable, DataStreamable<Vec3d>
      * @param q The quaternion to rotate by.
      * @return A new vector containing the result.
      */
-    public static final Vec3d mult(Vec3d v, Quat q)
+    public static final Vec3d mult(Vec3d v, Quatd q)
     {
         Vec3d result = new Vec3d();
         mult(v, q, result);
@@ -1089,7 +1089,7 @@ public class Vec3d implements Bufferable, DataStreamable<Vec3d>
      * @param m The 3x3 matrix to multiply this by.
      * @return This vector.
      */
-    public Vec3d mult(Mat3 m)
+    public Vec3d mult(Mat3d m)
     {
         mult(this, m, this);
         return this;
@@ -1125,7 +1125,7 @@ public class Vec3d implements Bufferable, DataStreamable<Vec3d>
      * @param q The quaternion to rotate by.
      * @return This vector.
      */
-    public Vec3d mult(Quat q)
+    public Vec3d mult(Quatd q)
     {
         mult(this, q, this);
         return this;

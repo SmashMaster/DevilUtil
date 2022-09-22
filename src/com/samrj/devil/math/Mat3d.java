@@ -22,23 +22,23 @@
 
 package com.samrj.devil.math;
 
+import com.samrj.devil.util.Bufferable;
 import com.samrj.devil.util.DataStreamable;
-import com.samrj.devil.util.FloatBufferable;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
+import java.util.Objects;
 
 /**
  * 3x3 matrix class.
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
+public class Mat3d implements Bufferable, DataStreamable<Mat3d>
 {
-    private static final float SQRT_2 = (float)Math.sqrt(2.0);
+    private static final double SQRT_2 = Math.sqrt(2.0);
     
     /**
      * Returns the determinant of the given matrix.
@@ -46,7 +46,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param m The matrix to calculate the determinant of.
      * @return The determinant of the given matrix.
      */
-    public static final float determinant(Mat3 m)
+    public static final double determinant(Mat3d m)
     {
         return m.a*(m.e*m.i - m.f*m.h) +
                m.b*(m.f*m.g - m.d*m.i) +
@@ -60,11 +60,11 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param s The matrix to copy from.
      * @param r The matrix to copy into.
      */
-    public static final void copy(Mat2 s, Mat3 r)
+    public static final void copy(Mat2 s, Mat3d r)
     {
-        r.a = s.a; r.b = s.b; r.c = 0.0f;
-        r.d = s.c; r.e = s.d; r.f = 0.0f;
-        r.g = 0.0f; r.h = 0.0f; r.i = 1.0f;
+        r.a = s.a; r.b = s.b; r.c = 0.0;
+        r.d = s.c; r.e = s.d; r.f = 0.0;
+        r.g = 0.0; r.h = 0.0; r.i = 1.0;
     }
     
     /**
@@ -73,7 +73,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param s The matrix to copy from.
      * @param r The matrix to copy into.
      */
-    public static final void copy(Mat3 s, Mat3 r)
+    public static final void copy(Mat3d s, Mat3d r)
     {
         r.a = s.a; r.b = s.b; r.c = s.c;
         r.d = s.d; r.e = s.e; r.f = s.f;
@@ -86,7 +86,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param s The matrix to copy from.
      * @param r The matrix to copy into.
      */
-    public static final void copy(Mat4 s, Mat3 r)
+    public static final void copy(Mat4 s, Mat3d r)
     {
         r.a = s.a; r.b = s.b; r.c = s.c;
         r.d = s.e; r.e = s.f; r.f = s.g;
@@ -100,10 +100,10 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param t The transform to convert.
      * @param r The matrix in which to store the result.
      */
-    public static final void transform(Transform t, Mat3 r)
+    public static final void transform(Transform t, Mat3d r)
     {
-        rotation(t.rot, r);
-        mult(r, t.sca, r);
+        rotation(new Quatd(t.rot), r);
+        mult(r, new Vec3d(t.sca), r);
     }
     
     /**
@@ -111,11 +111,11 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * 
      * @param r The matrix to set to zero.
      */
-    public static final void zero(Mat3 r)
+    public static final void zero(Mat3d r)
     {
-        r.a = 0.0f; r.b = 0.0f; r.c = 0.0f;
-        r.d = 0.0f; r.e = 0.0f; r.f = 0.0f;
-        r.g = 0.0f; r.h = 0.0f; r.i = 0.0f;
+        r.a = 0.0; r.b = 0.0; r.c = 0.0;
+        r.d = 0.0; r.e = 0.0; r.f = 0.0;
+        r.g = 0.0; r.h = 0.0; r.i = 0.0;
     }
     
     /**
@@ -123,9 +123,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * 
      * @param r The matrix to set to the identity matrix.
      */
-    public static final void identity(Mat3 r)
+    public static final void identity(Mat3d r)
     {
-        scaling(1.0f, r);
+        scaling(1.0, r);
     }
     
     /**
@@ -136,11 +136,11 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param height The half-height of the prism.
      * @param r The matrix in which to store the result.
      */
-    public static final void orthographic(float width, float height, Mat3 r)
+    public static final void orthographic(double width, double height, Mat3d r)
     {
-        r.a = 1.0f/width; r.b = 0.0f; r.c = 0.0f;
-        r.d = 0.0f; r.e = 1.0f/height; r.f = 0.0f;
-        r.g = 0.0f; r.h = 0.0f; r.i = 1.0f;
+        r.a = 1.0/width; r.b = 0.0; r.c = 0.0;
+        r.d = 0.0; r.e = 1.0/height; r.f = 0.0;
+        r.g = 0.0; r.h = 0.0; r.i = 1.0;
     }
     
     /**
@@ -153,14 +153,14 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param top The upper bound of the prism.
      * @param r The matrix in which to store the result.
      */
-    public static final void orthographic(float left, float right, float bottom, float top, Mat3 r)
+    public static final void orthographic(double left, double right, double bottom, double top, Mat3d r)
     {
-        final float rml = right - left;
-        final float tmb = top - bottom;
+        final double rml = right - left;
+        final double tmb = top - bottom;
         
-        r.a = 2.0f/rml; r.b = 0.0f; r.c = -(right + left)/rml;
-        r.d = 0.0f; r.e = 2.0f/tmb; r.f = -(top + bottom)/tmb;
-        r.g = 0.0f; r.h = 0.0f; r.i = 1.0f;
+        r.a = 2.0/rml; r.b = 0.0; r.c = -(right + left)/rml;
+        r.d = 0.0; r.e = 2.0/tmb; r.f = -(top + bottom)/tmb;
+        r.g = 0.0; r.h = 0.0; r.i = 1.0;
     }
     
     /**
@@ -170,11 +170,11 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param v The vector to scale by.
      * @param r The matrix in which to store the result.
      */
-    public static final void scaling(Vec3 v, Mat3 r)
+    public static final void scaling(Vec3d v, Mat3d r)
     {
-        r.a = v.x; r.b = 0.0f; r.c = 0.0f;
-        r.d = 0.0f; r.e = v.y; r.f = 0.0f;
-        r.g = 0.0f; r.h = 0.0f; r.i = v.z;
+        r.a = v.x; r.b = 0.0; r.c = 0.0;
+        r.d = 0.0; r.e = v.y; r.f = 0.0;
+        r.g = 0.0; r.h = 0.0; r.i = v.z;
     }
     
     /**
@@ -184,11 +184,11 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param v The vector to scale by.
      * @param r The matrix in which to store the result.
      */
-    public static final void scaling(Vec2 v, Mat3 r)
+    public static final void scaling(Vec2 v, Mat3d r)
     {
-        r.a = v.x; r.b = 0.0f; r.c = 0.0f;
-        r.d = 0.0f; r.e = v.y; r.f = 0.0f;
-        r.g = 0.0f; r.h = 0.0f; r.i = 1.0f;
+        r.a = v.x; r.b = 0.0; r.c = 0.0;
+        r.d = 0.0; r.e = v.y; r.f = 0.0;
+        r.g = 0.0; r.h = 0.0; r.i = 1.0;
     }
     
     /**
@@ -197,11 +197,11 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param s The scalar to scale by.
      * @param r The matrix in which to store the result.
      */
-    public static final void scaling(float s, Mat3 r)
+    public static final void scaling(double s, Mat3d r)
     {
-        r.a = s; r.b = 0.0f; r.c = 0.0f;
-        r.d = 0.0f; r.e = s; r.f = 0.0f;
-        r.g = 0.0f; r.h = 0.0f; r.i = s;
+        r.a = s; r.b = 0.0; r.c = 0.0;
+        r.d = 0.0; r.e = s; r.f = 0.0;
+        r.g = 0.0; r.h = 0.0; r.i = s;
     }
     
     /**
@@ -212,29 +212,29 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param angle The angle to rotate by.
      * @param r The matrix in which to store the result.
      */
-    public static final void rotation(Vec3 axis, float angle, Mat3 r)
+    public static final void rotation(Vec3d axis, double angle, Mat3d r)
     {
-        float cos = (float)Math.cos(angle);
-        float sin = (float)Math.sin(angle);
-        float omcos = 1.0f - cos;
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+        double omcos = 1.0 - cos;
         
-        float xsq = axis.x*axis.x, ysq = axis.y*axis.y, zsq = axis.z*axis.z;
+        double xsq = axis.x*axis.x, ysq = axis.y*axis.y, zsq = axis.z*axis.z;
         
-        float xyomcos = axis.x*axis.y*omcos, zsin = axis.z*sin;
-        float xzomcos = axis.x*axis.z*omcos, ysin = axis.y*sin;
-        float yzomcos = axis.y*axis.z*omcos, xsin = axis.x*sin;
+        double xyomcos = axis.x*axis.y*omcos, zsin = axis.z*sin;
+        double xzomcos = axis.x*axis.z*omcos, ysin = axis.y*sin;
+        double yzomcos = axis.y*axis.z*omcos, xsin = axis.x*sin;
         
-        r.a = xsq + (1.0f - xsq)*cos;
+        r.a = xsq + (1.0 - xsq)*cos;
         r.b = xyomcos - zsin;
         r.c = xzomcos + ysin;
         
         r.d = xyomcos + zsin;
-        r.e = ysq + (1.0f - ysq)*cos;
+        r.e = ysq + (1.0 - ysq)*cos;
         r.f = yzomcos - xsin;
         
         r.g = xzomcos - ysin;
         r.h = yzomcos + xsin;
-        r.i = zsq + (1.0f - zsq)*cos;
+        r.i = zsq + (1.0 - zsq)*cos;
     }
     
     /**
@@ -244,17 +244,17 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param q The quaternion to represent as a matrix.
      * @param r The matrix in which to store the result.
      */
-    public static final void rotation(Quat q, Mat3 r)
+    public static final void rotation(Quatd q, Mat3d r)
     {
-        float q0 = SQRT_2*q.w, q1 = SQRT_2*q.x, q2 = SQRT_2*q.y, q3 = SQRT_2*q.z;
+        double q0 = SQRT_2*q.w, q1 = SQRT_2*q.x, q2 = SQRT_2*q.y, q3 = SQRT_2*q.z;
 
-	float qda = q0*q1, qdb = q0*q2, qdc = q0*q3;
-	float qaa = q1*q1, qab = q1*q2, qac = q1*q3;
-	float qbb = q2*q2, qbc = q2*q3, qcc = q3*q3;
+	double qda = q0*q1, qdb = q0*q2, qdc = q0*q3;
+	double qaa = q1*q1, qab = q1*q2, qac = q1*q3;
+	double qbb = q2*q2, qbc = q2*q3, qcc = q3*q3;
         
-        r.a = 1.0f - qbb - qcc; r.b = -qdc + qab; r.c = qdb + qac;
-        r.d = qdc + qab; r.e = 1.0f - qaa - qcc; r.f = -qda + qbc;
-        r.g = -qdb + qac; r.h = qda + qbc; r.i = 1.0f - qaa - qbb;
+        r.a = 1.0 - qbb - qcc; r.b = -qdc + qab; r.c = qdb + qac;
+        r.d = qdc + qab; r.e = 1.0 - qaa - qcc; r.f = -qda + qbc;
+        r.g = -qdb + qac; r.h = qda + qbc; r.i = 1.0 - qaa - qbb;
     }
     
     /**
@@ -263,11 +263,11 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param v The vector to translate by.
      * @param r The matrix in which to store the result.
      */
-    public static final void translation(Vec2 v, Mat3 r)
+    public static final void translation(Vec2 v, Mat3d r)
     {
-        r.a = 1.0f; r.b = 0.0f; r.c = v.x;
-        r.d = 0.0f; r.e = 1.0f; r.f = v.y;
-        r.g = 0.0f; r.h = 0.0f; r.i = 1.0f;
+        r.a = 1.0; r.b = 0.0; r.c = v.x;
+        r.d = 0.0; r.e = 1.0; r.f = v.y;
+        r.g = 0.0; r.h = 0.0; r.i = 1.0;
     }
     
     /**
@@ -280,9 +280,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param angle The angle to rotate by.
      * @param r The matrix in which to store the result.
      */
-    public static final void rotate(Mat3 m, Vec3 axis, float angle, Mat3 r)
+    public static final void rotate(Mat3d m, Vec3d axis, double angle, Mat3d r)
     {
-        Mat3 temp = rotation(axis, angle); //Could probably be improved.
+        Mat3d temp = rotation(axis, angle); //Could probably be improved.
         mult(m, temp, r);
     }
     
@@ -293,9 +293,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param q The quaternion to rotate by.
      * @param r The matrix in which to store the result.
      */
-    public static final void rotate(Mat3 m, Quat q, Mat3 r)
+    public static final void rotate(Mat3d m, Quatd q, Mat3d r)
     {
-        Mat3 temp = rotation(q); //Could probably be improved, as above
+        Mat3d temp = rotation(q); //Could probably be improved, as above
         mult(m, temp, r);
     }
     
@@ -307,7 +307,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param v The vector to translate by.
      * @param r The matrix in which to store the result.
      */
-    public static final void translate(Mat3 m, Vec2 v, Mat3 r)
+    public static final void translate(Mat3d m, Vec2 v, Mat3d r)
     {
         r.a = m.a; r.b = m.b; r.c = m.a*v.x + m.b*v.y + m.c;
         r.d = m.d; r.e = m.e; r.f = m.d*v.x + m.e*v.y + m.f;
@@ -322,19 +322,19 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param m1 The right-hand matrix to multiply by.
      * @param r The matrix in which to store the result.
      */
-    public static final void mult(Mat3 m0, Mat3 m1, Mat3 r)
+    public static final void mult(Mat3d m0, Mat3d m1, Mat3d r)
     {
-        float a = m0.a*m1.a + m0.b*m1.d + m0.c*m1.g;
-        float b = m0.a*m1.b + m0.b*m1.e + m0.c*m1.h;
-        float c = m0.a*m1.c + m0.b*m1.f + m0.c*m1.i;
+        double a = m0.a*m1.a + m0.b*m1.d + m0.c*m1.g;
+        double b = m0.a*m1.b + m0.b*m1.e + m0.c*m1.h;
+        double c = m0.a*m1.c + m0.b*m1.f + m0.c*m1.i;
         
-        float d = m0.d*m1.a + m0.e*m1.d + m0.f*m1.g;
-        float e = m0.d*m1.b + m0.e*m1.e + m0.f*m1.h;
-        float f = m0.d*m1.c + m0.e*m1.f + m0.f*m1.i;
+        double d = m0.d*m1.a + m0.e*m1.d + m0.f*m1.g;
+        double e = m0.d*m1.b + m0.e*m1.e + m0.f*m1.h;
+        double f = m0.d*m1.c + m0.e*m1.f + m0.f*m1.i;
         
-        float g = m0.g*m1.a + m0.h*m1.d + m0.i*m1.g;
-        float h = m0.g*m1.b + m0.h*m1.e + m0.i*m1.h;
-        float i = m0.g*m1.c + m0.h*m1.f + m0.i*m1.i;
+        double g = m0.g*m1.a + m0.h*m1.d + m0.i*m1.g;
+        double h = m0.g*m1.b + m0.h*m1.e + m0.i*m1.h;
+        double i = m0.g*m1.c + m0.h*m1.f + m0.i*m1.i;
         
         r.a = a; r.b = b; r.c = c;
         r.d = d; r.e = e; r.f = f;
@@ -349,10 +349,10 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param t The right-hand transform to multiply by.
      * @param r The matrix in which to store the result.
      */
-    public static final void mult(Mat3 m, Transform t, Mat3 r)
+    public static final void mult(Mat3d m, Transform t, Mat3d r)
     {
-        rotate(m, t.rot, r);
-        mult(r, t.sca, r);
+        rotate(m, new Quatd(t.rot), r);
+        mult(r, new Vec3d(t.sca), r);
     }
     
     /**
@@ -362,7 +362,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param v The vector to multiply by.
      * @param r The matrix in which to store the result.
      */
-    public static final void mult(Mat3 m, Vec3 v, Mat3 r)
+    public static final void mult(Mat3d m, Vec3d v, Mat3d r)
     {
         r.a = m.a*v.x; r.b = m.b*v.y; r.c = m.c*v.z;
         r.d = m.d*v.x; r.e = m.e*v.y; r.f = m.f*v.z;
@@ -376,7 +376,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param v The vector to multiply by.
      * @param r The matrix in which to store the result.
      */
-    public static final void mult(Mat3 m, Vec2 v, Mat3 r)
+    public static final void mult(Mat3d m, Vec2 v, Mat3d r)
     {
         r.a = m.a*v.x; r.b = m.b*v.y; r.c = m.c;
         r.d = m.d*v.x; r.e = m.e*v.y; r.f = m.f;
@@ -390,7 +390,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param s The scalar to multiply by.
      * @param r The matrix in which to store the result.
      */
-    public static final void mult(Mat3 m, float s, Mat3 r)
+    public static final void mult(Mat3d m, double s, Mat3d r)
     {
         r.a = m.a*s; r.b = m.b*s; r.c = m.c*s;
         r.d = m.d*s; r.e = m.e*s; r.f = m.f*s;
@@ -404,7 +404,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param s The scalar to divide by.
      * @param r The matrix in which to store the result.
      */
-    public static final void div(Mat3 m, float s, Mat3 r)
+    public static final void div(Mat3d m, double s, Mat3d r)
     {
         r.a = m.a/s; r.b = m.b/s; r.c = m.c/s;
         r.d = m.d/s; r.e = m.e/s; r.f = m.f/s;
@@ -417,9 +417,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param m The matrix to compute the transpose of.
      * @param r The matrix in which to store the result.
      */
-    public static final void transpose(Mat3 m, Mat3 r)
+    public static final void transpose(Mat3d m, Mat3d r)
     {
-        float tb = m.b, tc = m.c, tf = m.f;
+        double tb = m.b, tc = m.c, tf = m.f;
         r.a = m.a; r.b = m.d; r.c = m.g;
         r.d = tb;  r.e = m.e; r.f = m.h;
         r.g = tc;  r.h = tf;  r.i = m.i;
@@ -430,21 +430,21 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * 
      * @param m The matrix to compute the inverse of.
      * @param r The matrix in which to store the result.
-     * @throws com.samrj.devil.math.SingularMatrixException If {@code m} is
+     * @throws SingularMatrixException If {@code m} is
      *         a singular matrix. (Its determinant is zero.)
      */
-    public static final void invert(Mat3 m, Mat3 r)
+    public static final void invert(Mat3d m, Mat3d r)
     {
-        float a = m.e*m.i - m.f*m.h;
-        float d = m.f*m.g - m.d*m.i;
-        float g = m.d*m.h - m.e*m.g;
+        double a = m.e*m.i - m.f*m.h;
+        double d = m.f*m.g - m.d*m.i;
+        double g = m.d*m.h - m.e*m.g;
         
-        float det = m.a*a + m.b*d + m.c*g;
-        if (det == 0.0f) throw new SingularMatrixException();
+        double det = m.a*a + m.b*d + m.c*g;
+        if (det == 0.0) throw new SingularMatrixException();
         
-        float b = m.c*m.h - m.b*m.i, c = m.b*m.f - m.c*m.e;
-        float e = m.a*m.i - m.c*m.g, f = m.c*m.d - m.a*m.f;
-        float h = m.g*m.b - m.a*m.h, i = m.a*m.e - m.b*m.d;
+        double b = m.c*m.h - m.b*m.i, c = m.b*m.f - m.c*m.e;
+        double e = m.a*m.i - m.c*m.g, f = m.c*m.d - m.a*m.f;
+        double h = m.g*m.b - m.a*m.h, i = m.a*m.e - m.b*m.d;
         
         r.a = a/det; r.b = b/det; r.c = c/det;
         r.d = d/det; r.e = e/det; r.f = f/det;
@@ -457,16 +457,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * 
      * @return A new 3x3 identity matrix.
      */
-    public static final Mat3 identity()
+    public static final Mat3d identity()
     {
-        return scaling(1.0f);
-    }
-
-    public static final Mat3 cast(Mat3d m)
-    {
-        return new Mat3((float)m.a, (float)m.b, (float)m.c,
-                        (float)m.d, (float)m.e, (float)m.f,
-                        (float)m.g, (float)m.h, (float)m.i);
+        return scaling(1.0);
     }
 
     /**
@@ -475,9 +468,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param transform The transform to convert.
      * @return A new matrix containing the result.
      */
-    public static final Mat3 transform(Transform transform)
+    public static final Mat3d transform(Transform transform)
     {
-        Mat3 m = new Mat3();
+        Mat3d m = new Mat3d();
         transform(transform, m);
         return m;
     }
@@ -490,9 +483,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param height The half-height of the prism.
      * @return A new matrix containing the result.
      */
-    public static final Mat3 orthographic(float width, float height)
+    public static final Mat3d orthographic(double width, double height)
     {
-        Mat3 m = new Mat3();
+        Mat3d m = new Mat3d();
         orthographic(width, height, m);
         return m;
     }
@@ -506,9 +499,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param top The upper bound of the prism.
      * @return A new matrix containing the result.
      */
-    public static final Mat3 orthographic(float left, float right, float bottom, float top)
+    public static final Mat3d orthographic(double left, double right, double bottom, double top)
     {
-        Mat3 m = new Mat3();
+        Mat3d m = new Mat3d();
         orthographic(left, right, bottom, top, m);
         return m;
     }
@@ -519,9 +512,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param v The vector to scale by.
      * @return A new scaling matrix.
      */
-    public static final Mat3 scaling(Vec3 v)
+    public static final Mat3d scaling(Vec3d v)
     {
-        Mat3 m = new Mat3();
+        Mat3d m = new Mat3d();
         m.a = v.x;
         m.e = v.y;
         m.i = v.z;
@@ -534,9 +527,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param v The vector to scale by.
      * @return A new scaling matrix.
      */
-    public static final Mat3 scaling(Vec2 v)
+    public static final Mat3d scaling(Vec2 v)
     {
-        Mat3 m = new Mat3();
+        Mat3d m = new Mat3d();
         m.a = v.x;
         m.e = v.y;
         return m;
@@ -548,9 +541,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param s The scaling factor.
      * @return A new scaling matrix.
      */
-    public static final Mat3 scaling(float s)
+    public static final Mat3d scaling(double s)
     {
-        Mat3 m = new Mat3();
+        Mat3d m = new Mat3d();
         m.a = s;
         m.e = s;
         m.i = s;
@@ -565,9 +558,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param angle The angle to rotate by.
      * @return A new rotation matrix.
      */
-    public static final Mat3 rotation(Vec3 axis, float angle)
+    public static final Mat3d rotation(Vec3d axis, double angle)
     {
-        Mat3 m = new Mat3();
+        Mat3d m = new Mat3d();
         rotation(axis, angle, m);
         return m;
     }
@@ -578,9 +571,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param q The quaternion to represent as a matrix.
      * @return A new rotation matrix.
      */
-    public static final Mat3 rotation(Quat q)
+    public static final Mat3d rotation(Quatd q)
     {
-        Mat3 m = new Mat3();
+        Mat3d m = new Mat3d();
         rotation(q, m);
         return m;
     }
@@ -591,9 +584,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param v The vector to translate by.
      * @return A new translation matrix.
      */
-    public static final Mat3 translation(Vec2 v)
+    public static final Mat3d translation(Vec2 v)
     {
-        Mat3 m = identity();
+        Mat3d m = identity();
         m.c = v.x;
         m.f = v.y;
         return m;
@@ -606,9 +599,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param m1 The right-hand matrix to multiply by.
      * @return A new matrix containing the result.
      */
-    public static final Mat3 mult(Mat3 m0, Mat3 m1)
+    public static final Mat3d mult(Mat3d m0, Mat3d m1)
     {
-        Mat3 result = new Mat3();
+        Mat3d result = new Mat3d();
         mult(m0, m1, result);
         return result;
     }
@@ -620,9 +613,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param t The right-hand transform to multiply by.
      * @return A new matrix containing the result.
      */
-    public static final Mat3 mult(Mat3 m, Transform t)
+    public static final Mat3d mult(Mat3d m, Transform t)
     {
-        Mat3 result = new Mat3();
+        Mat3d result = new Mat3d();
         mult(m, t, result);
         return result;
     }
@@ -634,9 +627,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param v The vector to multiply by.
      * @return A new matrix containing the result.
      */
-    public static final Mat3 mult(Mat3 m, Vec3 v)
+    public static final Mat3d mult(Mat3d m, Vec3d v)
     {
-        Mat3 result = new Mat3();
+        Mat3d result = new Mat3d();
         mult(m, v, result);
         return result;
     }
@@ -648,9 +641,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param v The vector to multiply by.
      * @return A new matrix containing the result.
      */
-    public static final Mat3 mult(Mat3 m, Vec2 v)
+    public static final Mat3d mult(Mat3d m, Vec2 v)
     {
-        Mat3 result = new Mat3();
+        Mat3d result = new Mat3d();
         mult(m, v, result);
         return result;
     }
@@ -662,9 +655,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param s The scalar to multiply by.
      * @return A new matrix containing the result.
      */
-    public static final Mat3 mult(Mat3 m, float s)
+    public static final Mat3d mult(Mat3d m, double s)
     {
-        Mat3 result = new Mat3();
+        Mat3d result = new Mat3d();
         mult(m, s, result);
         return result;
     }
@@ -676,9 +669,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param s The scalar to divide by.
      * @return A new matrix containing the result.
      */
-    public static final Mat3 div(Mat3 m, float s)
+    public static final Mat3d div(Mat3d m, double s)
     {
-        Mat3 result = new Mat3();
+        Mat3d result = new Mat3d();
         div(m, s, result);
         return result;
     }
@@ -689,9 +682,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param m The matrix to compute the transpose of.
      * @return A new matrix containing the result.
      */
-    public static final Mat3 transpose(Mat3 m)
+    public static final Mat3d transpose(Mat3d m)
     {
-        Mat3 result = new Mat3();
+        Mat3d result = new Mat3d();
         transpose(m, result);
         return result;
     }
@@ -701,18 +694,18 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * 
      * @param m The matrix to compute the inverse of.
      * @return A new matrix containing the result.
-     * @throws com.samrj.devil.math.SingularMatrixException If {@code m} is
+     * @throws SingularMatrixException If {@code m} is
      *         a singular matrix. (Its determinant is zero.)
      */
-    public static final Mat3 invert(Mat3 m)
+    public static final Mat3d invert(Mat3d m)
     {
-        Mat3 result = new Mat3();
+        Mat3d result = new Mat3d();
         invert(m, result);
         return result;
     }
     // </editor-fold>
     
-    public float a, b, c,
+    public double a, b, c,
                  d, e, f,
                  g, h, i;
     
@@ -721,16 +714,16 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * Creates a new 3x3 zero matrix, NOT an identity matrix. Use identity() to
      * create an identity matrix.
      */
-    public Mat3()
+    public Mat3d()
     {
     }
     
     /**
      * Creates a new 3x3 matrix with the given values.
      */
-    public Mat3(float a, float b, float c,
-                float d, float e, float f,
-                float g, float h, float i)
+    public Mat3d(double a, double b, double c,
+                 double d, double e, double f,
+                 double g, double h, double i)
     {
         this.a = a; this.b = b; this.c = c;
         this.d = d; this.e = e; this.f = f;
@@ -742,11 +735,11 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * 
      * @param mat The matrix to copy.
      */
-    public Mat3(Mat2 mat)
+    public Mat3d(Mat2 mat)
     {
         a = mat.a; b = mat.b;
         d = mat.c; e = mat.d;
-        i = 1.0f;
+        i = 1.0;
     }
     
     /**
@@ -754,19 +747,33 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * 
      * @param mat The matrix to copy.
      */
-    public Mat3(Mat3 mat)
+    public Mat3d(Mat3d mat)
     {
         a = mat.a; b = mat.b; c = mat.c;
         d = mat.d; e = mat.e; f = mat.f;
         g = mat.g; h = mat.h; i = mat.i;
     }
-    
+
+    public Mat3d(Mat3 mat)
+    {
+        a = mat.a; b = mat.b; c = mat.c;
+        d = mat.d; e = mat.e; f = mat.f;
+        g = mat.g; h = mat.h; i = mat.i;
+    }
+
     /**
      * Contracts and copies the given 4x4 matrix.
      * 
      * @param mat The matrix to copy.
      */
-    public Mat3(Mat4 mat)
+    public Mat3d(Mat4 mat)
+    {
+        a = mat.a; b = mat.b; c = mat.c;
+        d = mat.e; e = mat.f; f = mat.g;
+        g = mat.i; h = mat.j; i = mat.k;
+    }
+
+    public Mat3d(Mat4d mat)
     {
         a = mat.a; b = mat.b; c = mat.c;
         d = mat.e; e = mat.f; f = mat.g;
@@ -778,9 +785,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      *
      * @param buffer The buffer to read from.
      */
-    public Mat3(ByteBuffer buffer)
+    public Mat3d(ByteBuffer buffer)
     {
-        Mat3.this.read(buffer);
+        Mat3d.this.read(buffer);
     }
 
     /**
@@ -789,9 +796,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param in The input stream to read from.
      * @throws IOException If an io error occurred.
      */
-    public Mat3(DataInputStream in) throws IOException
+    public Mat3d(DataInputStream in) throws IOException
     {
-        Mat3.this.read(in);
+        Mat3d.this.read(in);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Instance accessor methods">
@@ -802,7 +809,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param column A column of this matrix.
      * @return The entry at the given row and column.
      */
-    public float getEntry(int row, int column)
+    public double getEntry(int row, int column)
     {
         switch (row)
         {
@@ -838,7 +845,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param mat The matrix to set this to.
      * @return This matrix.
      */
-    public Mat3 set(Mat2 mat)
+    public Mat3d set(Mat2 mat)
     {
         copy(mat, this);
         return this;
@@ -850,7 +857,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param mat The matrix to set this to.
      * @return This matrix.
      */
-    public Mat3 set(Mat3 mat)
+    public Mat3d set(Mat3d mat)
     {
         copy(mat, this);
         return this;
@@ -862,7 +869,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param mat The matrix to set this to.
      * @return This matrix.
      */
-    public Mat3 set(Mat4 mat)
+    public Mat3d set(Mat4 mat)
     {
         copy(mat, this);
         return this;
@@ -873,9 +880,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * 
      * @return This matrix.
      */
-    public Mat3 set(float a, float b, float c,
-                    float d, float e, float f,
-                    float g, float h, float i)
+    public Mat3d set(double a, double b, double c,
+                     double d, double e, double f,
+                     double g, double h, double i)
     {
         this.a = a; this.b = b; this.c = c;
         this.d = d; this.e = e; this.f = f;
@@ -884,14 +891,14 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
     }
     
     /**
-     * Sets the entry at the given position in this matrix to the given float.
+     * Sets the entry at the given position in this matrix to the given double.
      * 
      * @param row A row of this matrix.
      * @param column A column of this matrix.
      * @param v The value to set the entry to.
      * @return This matrix.
      */
-    public Mat3 setEntry(int row, int column, float v)
+    public Mat3d setEntry(int row, int column, double v)
     {
         switch (row)
         {
@@ -927,7 +934,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param row The row of the matrix to copy to.
      * @return This matrix.
      */
-    public Mat3 setRow(Vec3 v, int row)
+    public Mat3d setRow(Vec3d v, int row)
     {
         switch (row)
         {
@@ -951,7 +958,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param column The column of the matrix to copy to.
      * @return This matrix.
      */
-    public Mat3 setColumn(Vec3 v, int column)
+    public Mat3d setColumn(Vec3d v, int column)
     {
         switch (column)
         {
@@ -973,7 +980,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * 
      * @return This matrix.
      */
-    public Mat3 setZero()
+    public Mat3d setZero()
     {
         zero(this);
         return this;
@@ -984,7 +991,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * 
      * @return This matrix.
      */
-    public Mat3 setIdentity()
+    public Mat3d setIdentity()
     {
         identity(this);
         return this;
@@ -996,7 +1003,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param transform The transform to convert.
      * @return This matrix. 
      */
-    public Mat3 setTransform(Transform transform)
+    public Mat3d setTransform(Transform transform)
     {
         transform(transform, this);
         return this;
@@ -1010,7 +1017,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param height The half-height of the prism.
      * @return This matrix.
      */
-    public Mat3 setOrthographic(float width, float height)
+    public Mat3d setOrthographic(double width, double height)
     {
         orthographic(width, height, this);
         return this;
@@ -1025,7 +1032,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param top The upper bound of the prism.
      * @return This matrix.
      */
-    public Mat3 setOrthographic(float left, float right, float bottom, float top)
+    public Mat3d setOrthographic(double left, double right, double bottom, double top)
     {
         orthographic(left, right, bottom, top, this);
         return this;
@@ -1037,7 +1044,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param vec The vector to scale by.
      * @return This matrix.
      */
-    public Mat3 setScaling(Vec3 vec)
+    public Mat3d setScaling(Vec3d vec)
     {
         scaling(vec, this);
         return this;
@@ -1049,7 +1056,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param vec The vector to scale by.
      * @return This matrix.
      */
-    public Mat3 setScaling(Vec2 vec)
+    public Mat3d setScaling(Vec2 vec)
     {
         scaling(vec, this);
         return this;
@@ -1061,7 +1068,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param sca The scalar to scale by.
      * @return This matrix.
      */
-    public Mat3 setScaling(float sca)
+    public Mat3d setScaling(double sca)
     {
         scaling(sca, this);
         return this;
@@ -1075,7 +1082,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param angle The angle to rotate by.
      * @return This matrix.
      */
-    public Mat3 setRotation(Vec3 axis, float angle)
+    public Mat3d setRotation(Vec3d axis, double angle)
     {
         rotation(axis, angle, this);
         return this;
@@ -1086,7 +1093,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * 
      * @return This matrix.
      */
-    public Mat3 setRotation(Quat quat)
+    public Mat3d setRotation(Quatd quat)
     {
         rotation(quat, this);
         return this;
@@ -1098,7 +1105,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param vec The vector to translate by.
      * @return This matrix.
      */
-    public Mat3 setTranslation(Vec2 vec)
+    public Mat3d setTranslation(Vec2 vec)
     {
         translation(vec, this);
         return this;
@@ -1112,7 +1119,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param angle The angle to rotate by.
      * @return This matrix.
      */
-    public Mat3 rotate(Vec3 axis, float angle)
+    public Mat3d rotate(Vec3d axis, double angle)
     {
         rotate(this, axis, angle, this);
         return this;
@@ -1124,7 +1131,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param quat The quaternion to rotate by.
      * @return This matrix.
      */
-    public Mat3 rotate(Quat quat)
+    public Mat3d rotate(Quatd quat)
     {
         rotate(this, quat, this);
         return this;
@@ -1136,7 +1143,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param vec The vector to translate by.
      * @return This matrix.
      */
-    public Mat3 translate(Vec2 vec)
+    public Mat3d translate(Vec2 vec)
     {
         c += a*vec.x + b*vec.y;
         f += d*vec.x + e*vec.y;
@@ -1150,7 +1157,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param mat The right-hand matrix to multiply by.
      * @return This matrix.
      */
-    public Mat3 mult(Mat3 mat)
+    public Mat3d mult(Mat3d mat)
     {
         mult(this, mat, this);
         return this;
@@ -1162,7 +1169,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param transform The transform to multiply by.
      * @return This matrix.
      */
-    public Mat3 mult(Transform transform)
+    public Mat3d mult(Transform transform)
     {
         mult(this, transform, this);
         return this;
@@ -1174,7 +1181,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param vec The matrix to multiply by.
      * @return This matrix.
      */
-    public Mat3 mult(Vec3 vec)
+    public Mat3d mult(Vec3d vec)
     {
         mult(this, vec, this);
         return this;
@@ -1186,7 +1193,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param vec The matrix to multiply by.
      * @return This matrix.
      */
-    public Mat3 mult(Vec2 vec)
+    public Mat3d mult(Vec2 vec)
     {
         mult(this, vec, this);
         return this;
@@ -1199,7 +1206,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param sca The scalar to multiply by.
      * @return This matrix.
      */
-    public Mat3 mult(float sca)
+    public Mat3d mult(double sca)
     {
         mult(this, sca, this);
         return this;
@@ -1211,7 +1218,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * @param sca The scalar to divide by.
      * @return This matrix.
      */
-    public Mat3 div(float sca)
+    public Mat3d div(double sca)
     {
         div(this, sca, this);
         return this;
@@ -1222,7 +1229,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
      * 
      * @return This matrix.
      */
-    public Mat3 transpose()
+    public Mat3d transpose()
     {
         transpose(this, this); //Could be optimized.
         return this;
@@ -1231,11 +1238,11 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
     /**
      * Inverts this matrix.
      * 
-     * @throws com.samrj.devil.math.SingularMatrixException If this matrix is
+     * @throws SingularMatrixException If this matrix is
      *         singular. (Its determinant is zero.)
      * @return This matrix.
      */
-    public Mat3 invert()
+    public Mat3d invert()
     {
         invert(this, this);
         return this;
@@ -1248,59 +1255,43 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
     @Override
     public void read(ByteBuffer buffer)
     {
-        a = buffer.getFloat(); d = buffer.getFloat(); g = buffer.getFloat();
-        b = buffer.getFloat(); e = buffer.getFloat(); h = buffer.getFloat();
-        c = buffer.getFloat(); f = buffer.getFloat(); i = buffer.getFloat();
+        a = buffer.getDouble(); d = buffer.getDouble(); g = buffer.getDouble();
+        b = buffer.getDouble(); e = buffer.getDouble(); h = buffer.getDouble();
+        c = buffer.getDouble(); f = buffer.getDouble(); i = buffer.getDouble();
     }
 
     @Override
     public void write(ByteBuffer buffer)
     {
-        buffer.putFloat(a); buffer.putFloat(d); buffer.putFloat(g);
-        buffer.putFloat(b); buffer.putFloat(e); buffer.putFloat(h);
-        buffer.putFloat(c); buffer.putFloat(f); buffer.putFloat(i);
-    }
-    
-    @Override
-    public void read(FloatBuffer buffer)
-    {
-        a = buffer.get(); d = buffer.get(); g = buffer.get();
-        b = buffer.get(); e = buffer.get(); h = buffer.get();
-        c = buffer.get(); f = buffer.get(); i = buffer.get();
-    }
-    
-    @Override
-    public void write(FloatBuffer buffer)
-    {
-        buffer.put(a); buffer.put(d); buffer.put(g);
-        buffer.put(b); buffer.put(e); buffer.put(h);
-        buffer.put(c); buffer.put(f); buffer.put(i);
+        buffer.putDouble(a); buffer.putDouble(d); buffer.putDouble(g);
+        buffer.putDouble(b); buffer.putDouble(e); buffer.putDouble(h);
+        buffer.putDouble(c); buffer.putDouble(f); buffer.putDouble(i);
     }
     
     @Override
     public int bufferSize()
     {
-        return 9*4;
+        return 9*8;
     }
     
     /**
      * Written to/read from stream in row-major format.
      */
     @Override
-    public Mat3 read(DataInputStream in) throws IOException
+    public Mat3d read(DataInputStream in) throws IOException
     {
-        a = in.readFloat(); b = in.readFloat(); c = in.readFloat();
-        d = in.readFloat(); e = in.readFloat(); f = in.readFloat();
-        g = in.readFloat(); h = in.readFloat(); i = in.readFloat();
+        a = in.readDouble(); b = in.readDouble(); c = in.readDouble();
+        d = in.readDouble(); e = in.readDouble(); f = in.readDouble();
+        g = in.readDouble(); h = in.readDouble(); i = in.readDouble();
         return this;
     }
 
     @Override
-    public Mat3 write(DataOutputStream out) throws IOException
+    public Mat3d write(DataOutputStream out) throws IOException
     {
-        out.writeFloat(a); out.writeFloat(b); out.writeFloat(c);
-        out.writeFloat(d); out.writeFloat(e); out.writeFloat(f);
-        out.writeFloat(g); out.writeFloat(h); out.writeFloat(i);
+        out.writeDouble(a); out.writeDouble(b); out.writeDouble(c);
+        out.writeDouble(d); out.writeDouble(e); out.writeDouble(f);
+        out.writeDouble(g); out.writeDouble(h); out.writeDouble(i);
         return this;
     }
     
@@ -1312,7 +1303,7 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
                "[" + g + ", " + h + ", " + i + "]";
     }
     
-    public boolean equals(Mat3 mat)
+    public boolean equals(Mat3d mat)
     {
         if (mat == null) return false;
         
@@ -1327,24 +1318,14 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
         if (this == o) return true;
         if (o == null) return false;
         if (getClass() != o.getClass()) return false;
-        final Mat3 mat = (Mat3)o;
+        final Mat3d mat = (Mat3d)o;
         return equals(mat);
     }
-    
+
     @Override
     public int hashCode()
     {
-        int hash = 7;
-        hash = 31*hash + Float.floatToIntBits(a);
-        hash = 31*hash + Float.floatToIntBits(b);
-        hash = 31*hash + Float.floatToIntBits(c);
-        hash = 31*hash + Float.floatToIntBits(d);
-        hash = 31*hash + Float.floatToIntBits(e);
-        hash = 31*hash + Float.floatToIntBits(f);
-        hash = 31*hash + Float.floatToIntBits(g);
-        hash = 31*hash + Float.floatToIntBits(h);
-        hash = 31*hash + Float.floatToIntBits(i);
-        return hash;
+        return Objects.hash(a, b, c, d, e, f, g, h, i);
     }
     // </editor-fold>
 }

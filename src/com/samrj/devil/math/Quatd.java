@@ -22,23 +22,23 @@
 
 package com.samrj.devil.math;
 
+import com.samrj.devil.util.Bufferable;
 import com.samrj.devil.util.DataStreamable;
-import com.samrj.devil.util.FloatBufferable;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
+import java.util.Objects;
 
 /**
  * Quaternion class.
  * 
  * @author Samuel Johnson (SmashMaster)
  */
-public class Quat implements FloatBufferable, DataStreamable<Quat>
+public class Quatd implements DataStreamable<Quatd>, Bufferable
 {
-    private static final float EPSILON = 1.0f/65536.0f;
+    private static final double EPSILON = 1.0/65536.0;
     
     // <editor-fold defaultstate="collapsed" desc="Static accessor methods">
     /**
@@ -48,7 +48,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q1 The second quaternion to multiply.
      * @return The dot product of the two given quaternions.
      */
-    public static final float dot(Quat q0, Quat q1)
+    public static final double dot(Quatd q0, Quatd q1)
     {
         return q0.w*q1.w + q0.x*q1.x + q0.y*q1.y + q0.z*q1.z;
     }
@@ -60,7 +60,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q A quaternion.
      * @return The dot product of the given quaternion.
      */
-    public static final float squareLength(Quat q)
+    public static final double squareLength(Quatd q)
     {
         return q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z;
     }
@@ -71,15 +71,15 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q A quaternion.
      * @return The length of the given quaternion.
      */
-    public static final float length(Quat q)
+    public static final double length(Quatd q)
     {
-        return (float)Math.sqrt(squareLength(q));
+        return Math.sqrt(squareLength(q));
     }
 
     /**
      * Returns the specified component of the given quaternion.
      */
-    public static final float getComponent(Quat q, int component)
+    public static final double getComponent(Quatd q, int component)
     {
         return switch(component)
         {
@@ -98,7 +98,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param source The quaternion to copy.
      * @param target The quaternion to copy into.
      */
-    public static final void copy(Quat source, Quat target)
+    public static final void copy(Quatd source, Quatd target)
     {
         target.w = source.w;
         target.x = source.x;
@@ -109,7 +109,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
     /**
      * Sets the specified component of the given quaternion to the given value.
      */
-    public static final void setComponent(Quat q, int component, float value)
+    public static final void setComponent(Quatd q, int component, double value)
     {
         switch(component)
         {
@@ -126,12 +126,12 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * 
      * @param result The quaternion in which to store the result.
      */
-    public static final void identity(Quat result)
+    public static final void identity(Quatd result)
     {
-        result.w = 1.0f;
-        result.x = 0.0f;
-        result.y = 0.0f;
-        result.z = 0.0f;
+        result.w = 1.0;
+        result.x = 0.0;
+        result.y = 0.0;
+        result.z = 0.0;
     }
     
     /**
@@ -142,12 +142,12 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param angle The angle to rotate by.
      * @param result The quaternion in which to store the result.
      */
-    public static final void rotation(Vec3 axis, float angle, Quat result)
+    public static final void rotation(Vec3d axis, double angle, Quatd result)
     {
-        float a = angle*.5f;
-        float sin = (float)Math.sin(a);
+        double a = angle*0.5;
+        double sin = Math.sin(a);
         
-        result.w = (float)Math.cos(a);
+        result.w = Math.cos(a);
         result.x = axis.x*sin;
         result.y = axis.y*sin;
         result.z = axis.z*sin;
@@ -161,7 +161,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param end The end direction.
      * @param result The quaternion in which to store the result.
      */
-    public static final void rotation(Vec3 start, Vec3 end, Quat result)
+    public static final void rotation(Vec3d start, Vec3d end, Quatd result)
     {
         if (start.isZero() || end.isZero())
         {
@@ -169,11 +169,11 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
             return;
         }
         
-        Vec3 v0 = Vec3.normalize(start);
-        Vec3 v1 = Vec3.normalize(end);
+        Vec3d v0 = Vec3d.normalize(start);
+        Vec3d v1 = Vec3d.normalize(end);
 
-        float dot = v0.dot(v1);
-        if (Util.equals(dot, 1.0f, EPSILON)) //this and v have same direction.
+        double dot = v0.dot(v1);
+        if (Util.equals(dot, 1.0, EPSILON)) //this and v have same direction.
         {
             result.setIdentity();
             return;
@@ -181,19 +181,19 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
         
         //this and v have opposite direction. Rotate 180 degrees about an
         //arbitrary axis normal to this.
-        if (Util.equals(dot, -1.0f, EPSILON))
+        if (Util.equals(dot, -1.0, EPSILON))
         {
-            Vec3 axis = new Vec3(1.0f, 0.0f, 0.0f).cross(v0);
+            Vec3d axis = new Vec3d(1.0, 0.0, 0.0).cross(v0);
             //this lies along X axis and v is our opposite, so we can optimize.
-            if (axis.x == 0.0f && axis.y == 0.0f && axis.z == 0.0f)
-                result.set(0.0f, 0.0f, 0.0f, -1.0f);
+            if (axis.x == 0.0 && axis.y == 0.0 && axis.z == 0.0)
+                result.set(0.0, 0.0, 0.0, -1.0);
             else result.setRotation(axis.normalize(), Util.PI);
             return;
         }
         
         v0.cross(v1);
-        float s = (float)Math.sqrt(2f + dot*2f);
-        result.set(s*0.5f, v0.x/s, v0.y/s, v0.z/s).normalize();
+        double s = Math.sqrt(2.0 + dot*2.0);
+        result.set(s*0.5, v0.x/s, v0.y/s, v0.z/s).normalize();
     }
     
     /**
@@ -202,36 +202,36 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param m A rotation matrix.
      * @param result The quaternion in which to store the result.
      */
-    public static final void rotation(Mat3 m, Quat result)
+    public static final void rotation(Mat3d m, Quatd result)
     {
-        float[] tr = {m.a + m.e + m.i,
+        double[] tr = {m.a + m.e + m.i,
                       m.a - m.e - m.i,
                       m.e - m.a - m.i,
                       m.i - m.a - m.e};
         
         int i = Util.maxdex(tr);
-        float s = 2.0f*(float)Math.sqrt(1.0f + tr[i]);
+        double s = 2.0*Math.sqrt(1.0 + tr[i]);
         switch(i)
         {
-            case 0: result.w = 0.25f*s;
+            case 0: result.w = 0.25*s;
                     result.x = (m.h - m.f)/s;
                     result.y = (m.c - m.g)/s;
                     result.z = (m.d - m.b)/s;
                     return;
             case 1: result.w = (m.h - m.f)/s;
-                    result.x = 0.25f*s;
+                    result.x = 0.25*s;
                     result.y = (m.b + m.d)/s;
                     result.z = (m.c + m.g)/s;
                     return;
             case 2: result.w = (m.c - m.g)/s;
                     result.x = (m.b + m.d)/s;
-                    result.y = 0.25f*s;
+                    result.y = 0.25*s;
                     result.z = (m.f + m.h)/s;
                     return;
             case 3: result.w = (m.d - m.b)/s;
                     result.x = (m.c + m.g)/s;
                     result.y = (m.f + m.h)/s;
-                    result.z = 0.25f*s;
+                    result.z = 0.25*s;
         }
     }
     
@@ -245,9 +245,9 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param angle The angle to rotate by.
      * @param result The matrix in which to store the result.
      */
-    public static final void rotate(Quat q, Vec3 axis, float angle, Quat result)
+    public static final void rotate(Quatd q, Vec3d axis, double angle, Quatd result)
     {
-        Quat temp = rotation(axis, angle);
+        Quatd temp = rotation(axis, angle);
         mult(q, temp, result);
     }
     
@@ -258,7 +258,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q1 The second quaternion to add.
      * @param result The quaternion in which to store the result.
      */
-    public static final void add(Quat q0, Quat q1, Quat result)
+    public static final void add(Quatd q0, Quatd q1, Quatd result)
     {
         result.w = q0.w + q1.w;
         result.x = q0.x + q1.x;
@@ -273,7 +273,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q1 The quaternion to subtract by.
      * @param result The quaternion in which to store the result.
      */
-    public static final void sub(Quat q0, Quat q1, Quat result)
+    public static final void sub(Quatd q0, Quatd q1, Quatd result)
     {
         result.w = q0.w - q1.w;
         result.x = q0.x - q1.x;
@@ -288,12 +288,12 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q1 The right-hand quaternion to multiply by.
      * @param result The quaternion in which to store the result.
      */
-    public static final void mult(Quat q0, Quat q1, Quat result)
+    public static final void mult(Quatd q0, Quatd q1, Quatd result)
     {
-        float w = q0.w*q1.w - q0.x*q1.x - q0.y*q1.y - q0.z*q1.z;
-        float x = q0.w*q1.x + q0.x*q1.w + q0.y*q1.z - q0.z*q1.y;
-        float y = q0.w*q1.y - q0.x*q1.z + q0.y*q1.w + q0.z*q1.x;
-        float z = q0.w*q1.z + q0.x*q1.y - q0.y*q1.x + q0.z*q1.w;
+        double w = q0.w*q1.w - q0.x*q1.x - q0.y*q1.y - q0.z*q1.z;
+        double x = q0.w*q1.x + q0.x*q1.w + q0.y*q1.z - q0.z*q1.y;
+        double y = q0.w*q1.y - q0.x*q1.z + q0.y*q1.w + q0.z*q1.x;
+        double z = q0.w*q1.z + q0.x*q1.y - q0.y*q1.x + q0.z*q1.w;
         
         result.w = w; result.x = x; result.y = y; result.z = z;
     }
@@ -307,7 +307,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param s The scalar by which to multiply {@code q1}.
      * @param result The quaternion in which to store the result.
      */
-    public static final void madd(Quat v0, Quat v1, float s, Quat result)
+    public static final void madd(Quatd v0, Quatd v1, double s, Quatd result)
     {
         result.w = v0.w + v1.w*s;
         result.x = v0.x + v1.x*s;
@@ -323,7 +323,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param s The scalar to multiply by.
      * @param result The quaternion in which to store the result.
      */
-    public static final void mult(Quat q, float s, Quat result)
+    public static final void mult(Quatd q, double s, Quatd result)
     {
         result.w = q.w*s;
         result.x = q.x*s;
@@ -339,7 +339,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param s The scalar to multiply by.
      * @param result The quaternion in which to store the result.
      */
-    public static final void div(Quat q, float s, Quat result)
+    public static final void div(Quatd q, double s, Quatd result)
     {
         result.w = q.w/s;
         result.x = q.x/s;
@@ -353,7 +353,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q The quaternion to negate.
      * @param result The quaternion in which to store the result.
      */
-    public static final void negate(Quat q, Quat result)
+    public static final void negate(Quatd q, Quatd result)
     {
         result.w = -q.w;
         result.x = -q.x;
@@ -368,7 +368,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q The quaternion to conjugate.
      * @param result The quaternion in which to store the result.
      */
-    public static final void conjugate(Quat q, Quat result)
+    public static final void conjugate(Quatd q, Quatd result)
     {
         result.w = q.w;
         result.x = -q.x;
@@ -382,7 +382,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q The quaternion to normalize.
      * @param result The quaternion in which to store the result. 
      */
-    public static final void normalize(Quat q, Quat result)
+    public static final void normalize(Quatd q, Quatd result)
     {
         div(q, length(q), result);
     }
@@ -393,7 +393,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q The quaternion to invert.
      * @param result The quaternion in which to store the result.
      */
-    public static final void invert(Quat q, Quat result)
+    public static final void invert(Quatd q, Quatd result)
     {
         conjugate(q, result);
         div(result, squareLength(result), result);
@@ -408,7 +408,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param t The scalar interpolant, between zero and one (inclusive).
      * @param result The vector in which to store the result.
      */
-    public static final void lerp(Quat q0, Quat q1, float t, Quat result)
+    public static final void lerp(Quatd q0, Quatd q1, double t, Quatd result)
     {
         result.w = Util.lerp(q0.w, q1.w, t);
         result.x = Util.lerp(q0.x, q1.x, t);
@@ -427,21 +427,21 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param t The scalar interpolant, between zero and one (inclusive).
      * @param result The quaternion in which to store the result.
      */
-    public static final void slerp(Quat q0, Quat q1, float t, Quat result)
+    public static final void slerp(Quatd q0, Quatd q1, double t, Quatd result)
     {
-        float dot = dot(q0, q1);
+        double dot = dot(q0, q1);
         if (dot < 0.0)
         {
             dot = -dot;
             q0 = negate(q0);
         }
         
-        if (dot > 0.9995f) lerp(q0, q1, t, result);
+        if (dot > 0.9995) lerp(q0, q1, t, result);
         else
         {
-            float ang = (float)Math.acos(dot);
-            mult(q0, (float)Math.sin((1.0f - t)*ang), result);
-            madd(result, q1, (float)Math.sin(t*ang), result);
+            double ang = Math.acos(dot);
+            mult(q0, Math.sin((1.0 - t)*ang), result);
+            madd(result, q1, Math.sin(t*ang), result);
         }
         
         normalize(result, result);
@@ -454,11 +454,11 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q The quaternion whose angles to calculate.
      * @param result The vector in which to store the result.
      */
-    public static final void angles(Quat q, Vec3 result)
+    public static final void angles(Quatd q, Vec3d result)
     {
-        result.x = (float)Math.atan2(2.0f*(q.w*q.x - q.y*q.z), 1.0f - 2.0f*(q.z*q.z + q.x*q.x));
-        result.y = (float)Math.atan2(2.0f*(q.w*q.y - q.z*q.x), 1.0f - 2.0f*(q.y*q.y + q.z*q.z));
-        result.z = (float)Math.asin(2.0f*(q.x*q.y - q.w*q.z));
+        result.x = Math.atan2(2.0*(q.w*q.x - q.y*q.z), 1.0 - 2.0*(q.z*q.z + q.x*q.x));
+        result.y = Math.atan2(2.0*(q.w*q.y - q.z*q.x), 1.0 - 2.0*(q.y*q.y + q.z*q.z));
+        result.z = Math.asin(2.0*(q.x*q.y - q.w*q.z));
     }
     
     /**
@@ -466,9 +466,9 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * stores the result in the given vector. The axis is the direction of the
      * vector, and the angle, in radians, is the length of the vector.
      */
-    public static final void axisAngle(Quat q, Vec3 result)
+    public static final void axisAngle(Quatd q, Vec3d result)
     {
-        float norm = (float)Math.sqrt(q.x*q.x + q.y*q.y + q.z*q.z);
+        double norm = Math.sqrt(q.x*q.x + q.y*q.y + q.z*q.z);
         if (norm < EPSILON)
         {
             result.set();
@@ -476,8 +476,8 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
         }
         
         result.set(q.x, q.y, q.z);
-        float angle = (float)(2.0*Math.atan2(norm, q.w));
-        Vec3.mult(result, angle/norm, result);
+        double angle = (2.0*Math.atan2(norm, q.w));
+        Vec3d.mult(result, angle/norm, result);
     }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Static factory methods">
@@ -486,20 +486,10 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * 
      * @return A new quaternion containing the result.
      */
-    public static final Quat identity()
+    public static final Quatd identity()
     {
-        Quat result = new Quat();
-        result.w = 1.0f;
-        return result;
-    }
-
-    public static final Quat cast(Quatd quat)
-    {
-        Quat result = new Quat();
-        result.w = (float)quat.w;
-        result.x = (float)quat.x;
-        result.y = (float)quat.y;
-        result.z = (float)quat.z;
+        Quatd result = new Quatd();
+        result.w = 1.0;
         return result;
     }
     
@@ -510,9 +500,9 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param angle The angle to rotate by.
      * @return A new quaternion containing the result.
      */
-    public static final Quat rotation(Vec3 axis, float angle)
+    public static final Quatd rotation(Vec3d axis, double angle)
     {
-        Quat result = new Quat();
+        Quatd result = new Quatd();
         rotation(axis, angle, result);
         return result;
     }
@@ -525,9 +515,9 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param end The end direction.
      * @return A new quaternion containing the result.
      */
-    public static final Quat rotation(Vec3 start, Vec3 end)
+    public static final Quatd rotation(Vec3d start, Vec3d end)
     {
-        Quat result = new Quat();
+        Quatd result = new Quatd();
         rotation(start, end, result);
         return result;
     }
@@ -538,9 +528,9 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param m A rotation matrix.
      * @return A new quaternion containing the result.
      */
-    public static final Quat rotation(Mat3 m)
+    public static final Quatd rotation(Mat3d m)
     {
-        Quat result = new Quat();
+        Quatd result = new Quatd();
         rotation(m, result);
         return result;
     }
@@ -555,9 +545,9 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param angle The angle to rotate by.
      * @return A new quaternion containing the result.
      */
-    public static final Quat rotate(Quat q, Vec3 axis, float angle)
+    public static final Quatd rotate(Quatd q, Vec3d axis, double angle)
     {
-        Quat result = new Quat();
+        Quatd result = new Quatd();
         rotate(q, axis, angle, result);
         return result;
     }
@@ -570,9 +560,9 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q1 The second quaternion to add.
      * @return A new quaternion containing the result.
      */
-    public static final Quat add(Quat q0, Quat q1)
+    public static final Quatd add(Quatd q0, Quatd q1)
     {
-        Quat result = new Quat();
+        Quatd result = new Quatd();
         add(q0, q1, result);
         return result;
     }
@@ -585,9 +575,9 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q1 The quaternion to subtract by.
      * @return A new quaternion containing the result.
      */
-    public static final Quat sub(Quat q0, Quat q1)
+    public static final Quatd sub(Quatd q0, Quatd q1)
     {
-        Quat result = new Quat();
+        Quatd result = new Quatd();
         sub(q0, q1, result);
         return result;
     }
@@ -600,9 +590,9 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q1 The right-hand quaternion to multiply by.
      * @return A new quaternion containing the result.
      */
-    public static final Quat mult(Quat q0, Quat q1)
+    public static final Quatd mult(Quatd q0, Quatd q1)
     {
-        Quat result = new Quat();
+        Quatd result = new Quatd();
         mult(q0, q1, result);
         return result;
     }
@@ -616,9 +606,9 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param s The scalar by which to multiply {@code q1}.
      * @return A new quaternion containing the result.
      */
-    public static final Quat madd(Quat q0, Quat q1, float s)
+    public static final Quatd madd(Quatd q0, Quatd q1, double s)
     {
-        Quat result = new Quat();
+        Quatd result = new Quatd();
         madd(q0, q1, s, result);
         return result;
     }
@@ -631,9 +621,9 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param s The scalar to multiply by.
      * @return A new quaternion containing the result.
      */
-    public static final Quat mult(Quat q, float s)
+    public static final Quatd mult(Quatd q, double s)
     {
-        Quat result = new Quat();
+        Quatd result = new Quatd();
         mult(q, s, result);
         return result;
     }
@@ -646,9 +636,9 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param s The scalar to multiply by.
      * @return A new quaternion containing the result.
      */
-    public static final Quat div(Quat q, float s)
+    public static final Quatd div(Quatd q, double s)
     {
-        Quat result = new Quat();
+        Quatd result = new Quatd();
         div(q, s, result);
         return result;
     }
@@ -659,9 +649,9 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q The quaternion to negate.
      * @return A new quaternion containing the result.
      */
-    public static final Quat negate(Quat q)
+    public static final Quatd negate(Quatd q)
     {
-        Quat result = new Quat();
+        Quatd result = new Quatd();
         negate(q, result);
         return result;
     }
@@ -673,9 +663,9 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q The quaternion to conjugate.
      * @return A new quaternion containing the result.
      */
-    public static final Quat conjugate(Quat q)
+    public static final Quatd conjugate(Quatd q)
     {
-        Quat result = new Quat();
+        Quatd result = new Quatd();
         conjugate(q, result);
         return result;
     }
@@ -686,9 +676,9 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q The quaternion to normalize.
      * @return A new quaternion containing the result.
      */
-    public static final Quat normalize(Quat q)
+    public static final Quatd normalize(Quatd q)
     {
-        Quat result = new Quat();
+        Quatd result = new Quatd();
         normalize(q, result);
         return result;
     }
@@ -699,9 +689,9 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q The quaternion to invert.
      * @return A new quaternion containing the result.
      */
-    public static final Quat invert(Quat q)
+    public static final Quatd invert(Quatd q)
     {
-        Quat result = new Quat();
+        Quatd result = new Quatd();
         invert(q, result);
         return result;
     }
@@ -715,9 +705,9 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param t The scalar interpolant, between zero and one (inclusive).
      * @return A new quaternion containing the result.
      */
-    public static final Quat lerp(Quat q0, Quat q1, float t)
+    public static final Quatd lerp(Quatd q0, Quatd q1, double t)
     {
-        Quat result = new Quat();
+        Quatd result = new Quatd();
         lerp(q0, q1, t, result);
         return result;
     }
@@ -731,9 +721,9 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param t The scalar interpolant, between zero and one (inclusive).
      * @return A new quaternion containing the result.
      */
-    public static final Quat slerp(Quat q0, Quat q1, float t)
+    public static final Quatd slerp(Quatd q0, Quatd q1, double t)
     {
-        Quat result = new Quat();
+        Quatd result = new Quatd();
         slerp(q0, q1, t, result);
         return result;
     }
@@ -745,42 +735,46 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q The quaternion whose angles to calculate.
      * @return A new vector containing the result.
      */
-    public static final Vec3 angles(Quat q)
+    public static final Vec3d angles(Quatd q)
     {
-        Vec3 result = new Vec3();
+        Vec3d result = new Vec3d();
         angles(q, result);
         return result;
     }
     // </editor-fold>
     
-    public float w, x, y, z;
+    public double w, x, y, z;
     
     /**
      * Creates a zero quaternion. NOT the identity quaternion.
      */
-    public Quat()
+    public Quatd()
     {
     }
     
-    public Quat(float w, float x, float y, float z)
+    public Quatd(double w, double x, double y, double z)
     {
         this.w = w; this.x = x; this.y = y; this.z = z;
     }
     
-    public Quat(Quat q)
+    public Quatd(Quatd q)
     {
         w = q.w; x = q.x; y = q.y; z = q.z;
     }
 
+    public Quatd(Quat q)
+    {
+        w = q.w; x = q.x; y = q.y; z = q.z;
+    }
 
     /**
      * Loads a new quaternion from the given buffer.
      *
      * @param buffer The buffer to read from.
      */
-    public Quat(ByteBuffer buffer)
+    public Quatd(ByteBuffer buffer)
     {
-        Quat.this.read(buffer);
+        Quatd.this.read(buffer);
     }
 
     /**
@@ -789,16 +783,16 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param in The input stream to read from.
      * @throws IOException If an io error occurred.
      */
-    public Quat(DataInputStream in) throws IOException
+    public Quatd(DataInputStream in) throws IOException
     {
-        Quat.this.read(in);
+        Quatd.this.read(in);
     }
     
     // <editor-fold defaultstate="collapsed" desc="Instance accessor methods">
     /**
      * Return the specified component of this quaternion.
      */
-    public float getComponent(int component)
+    public double getComponent(int component)
     {
         return getComponent(this, component);
     }
@@ -809,7 +803,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q The quaternion with which to calculate the dot product.
      * @return The dot product of this and the given quaternion.
      */
-    public float dot(Quat q)
+    public double dot(Quatd q)
     {
         return dot(this, q);
     }
@@ -819,7 +813,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * 
      * @return The square length of this quaternion.
      */
-    public float squareLength()
+    public double squareLength()
     {
         return squareLength(this);
     }
@@ -829,7 +823,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * 
      * @return The length of this quaternion.
      */
-    public float length()
+    public double length()
     {
         return length(this);
     }
@@ -839,7 +833,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * 
      * @return THe Tait-Bryan angles of this quaternion.
      */
-    public Vec3 angles()
+    public Vec3d angles()
     {
         return angles(this);
     }
@@ -851,7 +845,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q The quaternion to set this to.
      * @return This quaternion.
      */
-    public Quat set(Quat q)
+    public Quatd set(Quatd q)
     {
         copy(q, this);
         return this;
@@ -862,7 +856,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * 
      * @return This quaternion.
      */
-    public Quat set(float w, float x, float y, float z)
+    public Quatd set(double w, double x, double y, double z)
     {
         this.w = w; this.x = x; this.y = y; this.z = z;
         return this;
@@ -873,16 +867,16 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * 
      * @return This quaternion.
      */
-    public Quat set()
+    public Quatd set()
     {
-        x = 0.0f; y = 0.0f; z = 0.0f;
+        x = 0.0; y = 0.0; z = 0.0;
         return this;
     }
     
     /**
-     * Sets the component specified by the given index to the given float.
+     * Sets the component specified by the given index to the given double.
      */
-    public Quat setComponent(int component, float value)
+    public Quatd setComponent(int component, double value)
     {
         setComponent(this, component, value);
         return this;
@@ -893,7 +887,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * 
      * @return This quaternion.
      */
-    public Quat setIdentity()
+    public Quatd setIdentity()
     {
         identity(this);
         return this;
@@ -906,7 +900,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param angle The angle to rotate by.
      * @return This quaternion.
      */
-    public Quat setRotation(Vec3 axis, float angle)
+    public Quatd setRotation(Vec3d axis, double angle)
     {
         rotation(axis, angle, this);
         return this;
@@ -920,7 +914,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param end The end direction vector.
      * @return This quaternion.
      */
-    public Quat setRotation(Vec3 start, Vec3 end)
+    public Quatd setRotation(Vec3d start, Vec3d end)
     {
         rotation(start, end, this);
         return this;
@@ -932,7 +926,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param mat A rotation matrix.
      * @return This quaternion.
      */
-    public Quat setRotation(Mat3 mat)
+    public Quatd setRotation(Mat3d mat)
     {
         rotation(mat, this);
         return this;
@@ -945,7 +939,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param angle The angle to rotate by.
      * @return This quaternion.
      */
-    public Quat rotate(Vec3 axis, float angle)
+    public Quatd rotate(Vec3d axis, double angle)
     {
         rotate(this, axis, angle, this);
         return this;
@@ -957,7 +951,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q The quaternion to add.
      * @return This quaternion.
      */
-    public Quat add(Quat q)
+    public Quatd add(Quatd q)
     {
         add(this, q, this);
         return this;
@@ -969,7 +963,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q The quaternion to subtract.
      * @return This quaternion.
      */
-    public Quat sub(Quat q)
+    public Quatd sub(Quatd q)
     {
         sub(this, q, this);
         return this;
@@ -981,7 +975,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param q The right-hand quaternion to multiply by.
      * @return This quaternion.
      */
-    public Quat mult(Quat q)
+    public Quatd mult(Quatd q)
     {
         mult(this, q, this);
         return this;
@@ -995,7 +989,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param s The scalar to multiply {@code v} by.
      * @return This quaternion.
      */
-    public Quat madd(Quat v, float s)
+    public Quatd madd(Quatd v, double s)
     {
         madd(this, v, s, this);
         return this;
@@ -1007,7 +1001,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param s The given scalar to multiply by.
      * @return This quaternion.
      */
-    public Quat mult(float s)
+    public Quatd mult(double s)
     {
         mult(this, s, this);
         return this;
@@ -1019,7 +1013,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param s The given scalar to divide by.
      * @return This quaternion.
      */
-    public Quat div(float s)
+    public Quatd div(double s)
     {
         div(this, s, this);
         return this;
@@ -1030,7 +1024,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * 
      * @return This quaternion.
      */
-    public Quat negate()
+    public Quatd negate()
     {
         negate(this, this);
         return this;
@@ -1041,7 +1035,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * 
      * @return This quaternion.
      */
-    public Quat conjugate()
+    public Quatd conjugate()
     {
         conjugate(this, this);
         return this;
@@ -1052,7 +1046,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * 
      * @return This quaternion.
      */
-    public Quat normalize()
+    public Quatd normalize()
     {
         normalize(this, this);
         return this;
@@ -1063,7 +1057,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * 
      * @return This quaternion.
      */
-    public Quat invert()
+    public Quatd invert()
     {
         invert(this, this);
         return this;
@@ -1077,7 +1071,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param t The scalar interpolant, between zero and one (inclusive).
      * @return This quaternion.
      */
-    public Quat lerp(Quat q, float t)
+    public Quatd lerp(Quatd q, double t)
     {
         lerp(this, q, t, this);
         return this;
@@ -1091,7 +1085,7 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
      * @param t The scalar interpolant, between zero and one (inclusive).
      * @return This quaternion.
      */
-    public Quat slerp(Quat q, float t)
+    public Quatd slerp(Quatd q, double t)
     {
         slerp(this, q, t, this);
         return this;
@@ -1104,62 +1098,44 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
     @Override
     public void read(ByteBuffer buffer)
     {
-        x = buffer.getFloat();
-        y = buffer.getFloat();
-        z = buffer.getFloat();
-        w = buffer.getFloat();
+        x = buffer.getDouble();
+        y = buffer.getDouble();
+        z = buffer.getDouble();
+        w = buffer.getDouble();
     }
 
     @Override
     public void write(ByteBuffer buffer)
     {
-        buffer.putFloat(x);
-        buffer.putFloat(y);
-        buffer.putFloat(z);
-        buffer.putFloat(w);
-    }
-    
-    @Override
-    public void read(FloatBuffer buffer)
-    {
-        x = buffer.get();
-        y = buffer.get();
-        z = buffer.get();
-        w = buffer.get();
+        buffer.putDouble(x);
+        buffer.putDouble(y);
+        buffer.putDouble(z);
+        buffer.putDouble(w);
     }
 
-    @Override
-    public void write(FloatBuffer buffer)
-    {
-        buffer.put(x);
-        buffer.put(y);
-        buffer.put(z);
-        buffer.put(w);
-    }
-    
     @Override
     public int bufferSize()
     {
-        return 4*4;
+        return 8*4;
     }
 
     @Override
-    public Quat read(DataInputStream in) throws IOException
+    public Quatd read(DataInputStream in) throws IOException
     {
-        w = in.readFloat();
-        x = in.readFloat();
-        y = in.readFloat();
-        z = in.readFloat();
+        w = in.readDouble();
+        x = in.readDouble();
+        y = in.readDouble();
+        z = in.readDouble();
         return this;
     }
 
     @Override
-    public Quat write(DataOutputStream out) throws IOException
+    public Quatd write(DataOutputStream out) throws IOException
     {
-        out.writeFloat(w);
-        out.writeFloat(x);
-        out.writeFloat(y);
-        out.writeFloat(z);
+        out.writeDouble(w);
+        out.writeDouble(x);
+        out.writeDouble(y);
+        out.writeDouble(z);
         return this;
     }
     
@@ -1174,17 +1150,14 @@ public class Quat implements FloatBufferable, DataStreamable<Quat>
     {
         if (o == null) return false;
         if (o.getClass() != this.getClass()) return false;
-        final Quat q = (Quat)o;
+        final Quatd q = (Quatd)o;
         return q.w == w && q.x == x && q.y == y && q.z == z;
     }
-    
+
     @Override
     public int hashCode()
     {
-        int hash = 177 + Float.floatToIntBits(this.w);
-        hash = 59*hash + Float.floatToIntBits(this.x);
-        hash = 59*hash + Float.floatToIntBits(this.y);
-        return 59*hash + Float.floatToIntBits(this.z);
+        return Objects.hash(w, x, y, z);
     }
     // </editor-fold>
 }
