@@ -84,6 +84,36 @@ public class Euler
         }
     }
 
+    public static void toQuatd(Euler rot, Quatd result)
+    {
+        int i = rot.order.axis0, j = rot.order.axis1, k = rot.order.axis2;
+
+        double ti = getAxis(rot, i)*0.5;
+        double tj = getAxis(rot, j)*(rot.order.parity ? -0.5 : 0.5);
+        double th = getAxis(rot, k)*0.5;
+
+        double ci = Math.cos(ti);
+        double cj = Math.cos(tj);
+        double ch = Math.cos(th);
+        double si = Math.sin(ti);
+        double sj = Math.sin(tj);
+        double sh = Math.sin(th);
+
+        double cc = ci*ch;
+        double cs = ci*sh;
+        double sc = si*ch;
+        double ss = si*sh;
+
+        result.w = cj*cc + sj*ss;
+        result.x = cj*sc - sj*cs;
+        result.y = cj*ss + sj*cc;
+        result.z = cj*cs - sj*sc;
+
+        if (rot.order.parity) {
+            result.setComponent(j + 1, -result.getComponent(j + 1));
+        }
+    }
+
     public static Quat toQuat(Euler rot)
     {
         Quat result = new Quat();
@@ -130,10 +160,56 @@ public class Euler
         result.setEntry(k, k, (float)(cj * ci));
     }
 
+    public static void toMat3d(Euler rot, Mat3d result)
+    {
+        int i = rot.order.axis0, j = rot.order.axis1, k = rot.order.axis2;
+
+        float ti, tj, th;
+        if (rot.order.parity) {
+            ti = -rot.getAxis(i);
+            tj = -rot.getAxis(j);
+            th = -rot.getAxis(k);
+        }
+        else {
+            ti = rot.getAxis(i);
+            tj = rot.getAxis(j);
+            th = rot.getAxis(k);
+        }
+
+        double ci = Math.cos(ti);
+        double cj = Math.cos(tj);
+        double ch = Math.cos(th);
+        double si = Math.sin(ti);
+        double sj = Math.sin(tj);
+        double sh = Math.sin(th);
+
+        double cc = ci*ch;
+        double cs = ci*sh;
+        double sc = si*ch;
+        double ss = si*sh;
+
+        result.setEntry(i, i, cj * ch);
+        result.setEntry(i, j, sj * sc - cs);
+        result.setEntry(i, k, sj * cc + ss);
+        result.setEntry(j, i, cj * sh);
+        result.setEntry(j, j, sj * ss + cc);
+        result.setEntry(j, k, sj * cs - sc);
+        result.setEntry(k, i, -sj);
+        result.setEntry(k, j, cj * si);
+        result.setEntry(k, k, cj * ci);
+    }
+
     public static Mat3 toMat3(Euler rot)
     {
         Mat3 result = new Mat3();
         toMat3(rot, result);
+        return result;
+    }
+
+    public static Mat3d toMat3d(Euler rot)
+    {
+        Mat3d result = new Mat3d();
+        toMat3d(rot, result);
         return result;
     }
 
