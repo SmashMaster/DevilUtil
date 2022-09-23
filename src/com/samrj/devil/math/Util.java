@@ -358,6 +358,24 @@ public final class Util
         return index;
     }
 
+    public static int maxdex(double... values)
+    {
+        int index = 0;
+        double max = values[0];
+
+        for (int i=1; i<values.length; i++)
+        {
+            double value = values[i];
+            if (value > max)
+            {
+                max = value;
+                index = i;
+            }
+        }
+
+        return index;
+    }
+
     /**
      * Loops the given value into the given range.
      * 
@@ -759,7 +777,12 @@ public final class Util
     {
         return Math.abs(f0 - f1) <= threshold;
     }
-    
+
+    public static boolean equals(double f0, double f1, double threshold)
+    {
+        return Math.abs(f0 - f1) <= threshold;
+    }
+
     /**
      * Checks if {@code f} is close to zero. Threshold needs to be managed by
      * the user, because floats are arbitrarily precise near zero and there's no

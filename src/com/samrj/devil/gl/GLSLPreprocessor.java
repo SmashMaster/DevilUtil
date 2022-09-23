@@ -2,44 +2,40 @@ package com.samrj.devil.gl;
 
 import com.samrj.devil.math.topo.DAG;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.io.*;
+import java.net.URI;
+import java.util.*;
 
 /**
  * Allows usage of the #include directive in GLSL source files.
  */
 public final class GLSLPreprocessor extends DGLObj
 {
-    private final Map<Path, Source> sources = new HashMap<>();
+    private final Map<URI, Source> sources = new HashMap<>();
+    private boolean lineDirectivesEnabled = true;
 
     GLSLPreprocessor()
     {
     }
 
-    public void load(Path filePath) throws IOException
+    public void setLineDirectivesEnabled(boolean enabled)
     {
-        sources.put(filePath, new Source(filePath));
+        lineDirectivesEnabled = enabled;
     }
 
-    public void load(String filePath) throws IOException
+    public void load(URI uri) throws IOException
     {
-        load(Path.of(filePath));
+        sources.put(uri, new Source(uri));
     }
 
     private class Include
     {
-        private final Path path;
+        private final URI uri;
         private Source source;
 
-        private Include(Path path)
+        private Include(URI uri)
         {
-            this.path = path;
+            this.uri = uri;
         }
 
         @Override
@@ -51,32 +47,44 @@ public final class GLSLPreprocessor extends DGLObj
 
     private class Source
     {
+        private final URI uri;
         private final ArrayList<Object> lines = new ArrayList<>();
         private final ArrayList<Include> includes = new ArrayList<>();
 
         private String string;
 
-        private Source(Path filePath) throws IOException
+        private Source(URI uri) throws IOException
         {
-            try (BufferedReader reader = new BufferedReader(new FileReader(filePath.toFile())))
-            {
-                Path directory = filePath.getParent();
+            this.uri = uri;
 
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(uri.toURL().openStream())))
+            {
                 int lineNo = 1;
 
                 while (reader.ready())
                 {
                     String line = reader.readLine();
-                    if (line.startsWith("#") && line.toLowerCase().startsWith("#include"))
+                    if (line.startsWith("#"))
                     {
-                        int begin = line.indexOf('<');
-                        int end = line.indexOf('>');
-                        String pathStr = line.substring(begin + 1, end);
-                        Path includePath = directory.resolve(pathStr);
-                        Include include = new Include(includePath);
-                        lines.add(include);
-                        includes.add(include);
-                        lines.add("#line " + (lineNo + 1)); //Maintains line numbers for more legible errors.
+                        String lower = line.toLowerCase();
+                        if (lower.startsWith("#include"))
+                        {
+                            int begin = line.indexOf('<');
+                            int end = line.indexOf('>');
+                            String pathStr = line.substring(begin + 1, end);
+                            URI includePath = uri.resolve(pathStr);
+                            Include include = new Include(includePath);
+                            includes.add(include);
+                            if (lineDirectivesEnabled) lines.add("#line " + 1);
+                            lines.add(include);
+                            if (lineDirectivesEnabled) lines.add("#line " + (lineNo + 1)); //Maintains line numbers for more legible errors.
+                        }
+                        else if (lineDirectivesEnabled && lower.startsWith("#version"))
+                        {
+                            lines.add(line);
+                            lines.add("#line " + (lineNo + 1));
+                        }
+                        else lines.add(line);
                     }
                     else lines.add(line);
 
@@ -85,7 +93,7 @@ public final class GLSLPreprocessor extends DGLObj
             }
             catch (Exception e)
             {
-                throw new IOException("In shader " + filePath, e);
+                throw new IOException("In shader " + uri, e);
             }
         }
     }
@@ -97,13 +105,13 @@ public final class GLSLPreprocessor extends DGLObj
         for (Source source : sources.values()) dag.add(source);
         for (Source source : sources.values()) for (Include include : source.includes) try
         {
-            include.source = sources.get(include.path);
-            if (include.source == null) throw new NoSuchElementException(include.path.toString());
+            include.source = sources.get(include.uri);
+            if (include.source == null) throw new NoSuchElementException(include.uri.toString());
             dag.addEdgeSafe(include.source, source);
         }
         catch (Exception e)
         {
-            throw new RuntimeException("In shader " + source, e);
+            throw new RuntimeException("In shader " + source.uri, e);
         }
 
         //Build source strings.
@@ -119,20 +127,15 @@ public final class GLSLPreprocessor extends DGLObj
         }
     }
 
-    public String getSource(Path path)
+    public String getSource(URI uri)
     {
-        return sources.get(path).string;
+        return sources.get(uri).string;
     }
 
-    public String getSource(String path)
+    public Map<URI, String> getSources()
     {
-        return getSource(Path.of(path));
-    }
-
-    public Map<Path, String> getSources()
-    {
-        Map<Path, String> map = new HashMap<>(sources.size());
-        for (Map.Entry<Path, Source> e : sources.entrySet())
+        Map<URI, String> map = new HashMap<>(sources.size());
+        for (Map.Entry<URI, Source> e : sources.entrySet())
             map.put(e.getKey(), e.getValue().string);
         return map;
     }

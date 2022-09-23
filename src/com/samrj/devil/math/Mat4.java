@@ -645,7 +645,16 @@ public class Mat4 implements FloatBufferable, DataStreamable<Mat4>
     {
         return scaling(1.0f);
     }
-    
+
+    public static final Mat4 cast(Mat4d m)
+    {
+        Mat4 r = new Mat4();
+        r.a = (float)m.a; r.b = (float)m.b; r.c = (float)m.c; r.d = (float)m.d;
+        r.e = (float)m.e; r.f = (float)m.f; r.g = (float)m.g; r.h = (float)m.h;
+        r.i = (float)m.i; r.j = (float)m.j; r.k = (float)m.k; r.l = (float)m.l;
+        r.m = (float)m.m; r.n = (float)m.n; r.o = (float)m.o; r.p = (float)m.p;
+        return r;
+    }
     /**
      * Returns a new 4x4 transformation matrix equal to the given transform.
      * 

@@ -38,7 +38,7 @@ import java.util.Objects;
  */
 public class Mat4d implements DataStreamable<Mat4d>
 {
-    private static final double SQRT_2 = (double)Math.sqrt(2.0);
+    private static final double SQRT_2 = Math.sqrt(2.0);
 
     /**
      * Returns the determinant of the given matrix.
@@ -63,10 +63,10 @@ public class Mat4d implements DataStreamable<Mat4d>
      */
     public static final void copy(Mat2 s, Mat4d r)
     {
-        r.a = s.a; r.b = s.b; r.c = 0.0f; r.d = 0.0f;
-        r.e = s.c; r.f = s.d; r.g = 0.0f; r.h = 0.0f;
-        r.i = 0.0f; r.j = 0.0f; r.k = 1.0f; r.l = 0.0f;
-        r.m = 0.0f; r.n = 0.0f; r.o = 0.0f; r.p = 1.0f;
+        r.a = s.a; r.b = s.b; r.c = 0.0; r.d = 0.0;
+        r.e = s.c; r.f = s.d; r.g = 0.0; r.h = 0.0;
+        r.i = 0.0; r.j = 0.0; r.k = 1.0; r.l = 0.0;
+        r.m = 0.0; r.n = 0.0; r.o = 0.0; r.p = 1.0;
     }
 
     /**
@@ -77,10 +77,18 @@ public class Mat4d implements DataStreamable<Mat4d>
      */
     public static final void copy(Mat3 s, Mat4d r)
     {
-        r.a = s.a; r.b = s.b; r.c = s.c; r.d = 0.0f;
-        r.e = s.d; r.f = s.e; r.g = s.f; r.h = 0.0f;
-        r.i = s.g; r.j = s.h; r.k = s.i; r.l = 0.0f;
-        r.m = 0.0f; r.n = 0.0f; r.o = 0.0f; r.p = 1.0f;
+        r.a = s.a; r.b = s.b; r.c = s.c; r.d = 0.0;
+        r.e = s.d; r.f = s.e; r.g = s.f; r.h = 0.0;
+        r.i = s.g; r.j = s.h; r.k = s.i; r.l = 0.0;
+        r.m = 0.0; r.n = 0.0; r.o = 0.0; r.p = 1.0;
+    }
+    
+    public static final void copy(Mat3d s, Mat4d r)
+    {
+        r.a = s.a; r.b = s.b; r.c = s.c; r.d = 0.0;
+        r.e = s.d; r.f = s.e; r.g = s.f; r.h = 0.0;
+        r.i = s.g; r.j = s.h; r.k = s.i; r.l = 0.0;
+        r.m = 0.0; r.n = 0.0; r.o = 0.0; r.p = 1.0;
     }
 
     /**
@@ -98,20 +106,6 @@ public class Mat4d implements DataStreamable<Mat4d>
     }
 
     /**
-     * Casts the source matrix into the target matrix.
-     *
-     * @param s The matrix to copy from.
-     * @param r The matrix to copy into.
-     */
-    public static final void cast(Mat4d s, Mat4 r)
-    {
-        r.a = (float)s.a; r.b = (float)s.b; r.c = (float)s.c; r.d = (float)s.d;
-        r.e = (float)s.e; r.f = (float)s.f; r.g = (float)s.g; r.h = (float)s.h;
-        r.i = (float)s.i; r.j = (float)s.j; r.k = (float)s.k; r.l = (float)s.l;
-        r.m = (float)s.m; r.n = (float)s.n; r.o = (float)s.o; r.p = (float)s.p;
-    }
-
-    /**
      * Sets the given matrix to the transformation matrix equal to the given
      * transform.
      *
@@ -120,19 +114,19 @@ public class Mat4d implements DataStreamable<Mat4d>
      */
     public static final void transform(Transform t, Mat4d r)
     {
-        translation(t.pos, r);
-        rotate(r, t.rot, r);
-        mult(r, t.sca, r);
+        translation(new Vec3d(t.pos), r);
+        rotate(r, new Quatd(t.rot), r);
+        mult(r, new Vec3d(t.sca), r);
     }
 
     /**
      * Sets the given matrix to the transformation created by the given position, Euler rotation, and scale.
      */
-    public static final void transform(Vec3 pos, Euler rot, Vec3 sca, Mat4d r)
+    public static final void transform(Vec3d pos, Euler rot, Vec3d sca, Mat4d r)
     {
-        Mat3 rotMat = Euler.toMat3(rot);
-        Mat3 scaMat = Mat3.scaling(sca);
-        Mat3 tempMat = Mat3.mult(rotMat, scaMat);
+        Mat3d rotMat = Euler.toMat3d(rot);
+        Mat3d scaMat = Mat3d.scaling(sca);
+        Mat3d tempMat = Mat3d.mult(rotMat, scaMat);
 
         r.set(tempMat);
         r.setEntry(0, 3, pos.x);
@@ -147,10 +141,10 @@ public class Mat4d implements DataStreamable<Mat4d>
      */
     public static final void zero(Mat4d r)
     {
-        r.a = 0.0f; r.b = 0.0f; r.c = 0.0f; r.d = 0.0f;
-        r.e = 0.0f; r.f = 0.0f; r.g = 0.0f; r.h = 0.0f;
-        r.i = 0.0f; r.j = 0.0f; r.k = 0.0f; r.l = 0.0f;
-        r.m = 0.0f; r.n = 0.0f; r.o = 0.0f; r.p = 0.0f;
+        r.a = 0.0; r.b = 0.0; r.c = 0.0; r.d = 0.0;
+        r.e = 0.0; r.f = 0.0; r.g = 0.0; r.h = 0.0;
+        r.i = 0.0; r.j = 0.0; r.k = 0.0; r.l = 0.0;
+        r.m = 0.0; r.n = 0.0; r.o = 0.0; r.p = 0.0;
     }
 
     /**
@@ -160,7 +154,7 @@ public class Mat4d implements DataStreamable<Mat4d>
      */
     public static final void identity(Mat4d r)
     {
-        scaling(1.0f, r);
+        scaling(1.0, r);
     }
 
     /**
@@ -177,12 +171,12 @@ public class Mat4d implements DataStreamable<Mat4d>
     public static final void frustum(double width, double height, double near, double far, Mat4d r)
     {
         double fmn = far - near;
-        double n2 = near*2.0f;
+        double n2 = near*2.0;
 
-        r.a = near/width; r.b = 0.0f; r.c = 0.0f; r.d = 0.0f;
-        r.e = 0.0f; r.f = near/height; r.g = 0.0f; r.h = 0.0f;
-        r.i = 0.0f; r.j = 0.0f; r.k = -(far + near)/fmn; r.l = (-far*n2)/fmn;
-        r.m = 0.0f; r.n = 0.0f; r.o = -1.0f; r.p = 0.0f;
+        r.a = near/width; r.b = 0.0; r.c = 0.0; r.d = 0.0;
+        r.e = 0.0; r.f = near/height; r.g = 0.0; r.h = 0.0;
+        r.i = 0.0; r.j = 0.0; r.k = -(far + near)/fmn; r.l = (-far*n2)/fmn;
+        r.m = 0.0; r.n = 0.0; r.o = -1.0; r.p = 0.0;
     }
 
     /**
@@ -203,12 +197,12 @@ public class Mat4d implements DataStreamable<Mat4d>
         double rml = right - left;
         double tmb = top - bottom;
         double fmn = far - near;
-        double n2 = near*2.0f;
+        double n2 = near*2.0;
 
-        r.a = n2/rml; r.b = 0.0f; r.c = (right + left)/rml; r.d = 0.0f;
-        r.e = 0.0f; r.f = n2/tmb; r.g = (top + bottom)/tmb; r.h = 0.0f;
-        r.i = 0.0f; r.j = 0.0f; r.k = -(far + near)/fmn; r.l = (-far*n2)/fmn;
-        r.m = 0.0f; r.n = 0.0f; r.o = -1.0f; r.p = 0.0f;
+        r.a = n2/rml; r.b = 0.0; r.c = (right + left)/rml; r.d = 0.0;
+        r.e = 0.0; r.f = n2/tmb; r.g = (top + bottom)/tmb; r.h = 0.0;
+        r.i = 0.0; r.j = 0.0; r.k = -(far + near)/fmn; r.l = (-far*n2)/fmn;
+        r.m = 0.0; r.n = 0.0; r.o = -1.0; r.p = 0.0;
     }
 
     /**
@@ -226,10 +220,10 @@ public class Mat4d implements DataStreamable<Mat4d>
      */
     public static final void perspective(double fov, double aspect, double near, double far, Mat4d r)
     {
-        double greaterDimension = Math.abs(near)*(double)Math.tan(fov*0.5f);
+        double greaterDimension = Math.abs(near)*Math.tan(fov*0.5);
 
         double w, h;
-        if (aspect <= 1.0f) //Width is greater or equal to height.
+        if (aspect <= 1.0) //Width is greater or equal to height.
         {
             w = greaterDimension;
             h = w*aspect;
@@ -258,10 +252,10 @@ public class Mat4d implements DataStreamable<Mat4d>
     {
         double fmn = far - near;
 
-        r.a = 1.0f/width; r.b = 0.0f; r.c = 0.0f; r.d = 0.0f;
-        r.e = 0.0f; r.f = 1.0f/height; r.g = 0.0f; r.h = 0.0f;
-        r.i = 0.0f; r.j = 0.0f; r.k = -2.0f/fmn; r.l = -(far + near)/fmn;
-        r.m = 0.0f; r.n = 0.0f; r.o = 0.0f; r.p = 1.0f;
+        r.a = 1.0/width; r.b = 0.0; r.c = 0.0; r.d = 0.0;
+        r.e = 0.0; r.f = 1.0/height; r.g = 0.0; r.h = 0.0;
+        r.i = 0.0; r.j = 0.0; r.k = -2.0/fmn; r.l = -(far + near)/fmn;
+        r.m = 0.0; r.n = 0.0; r.o = 0.0; r.p = 1.0;
     }
 
     /**
@@ -283,10 +277,10 @@ public class Mat4d implements DataStreamable<Mat4d>
         final double tmb = top - bottom;
         final double fmn = far - near;
 
-        r.a = 2.0f/rml; r.b = 0.0f; r.c = 0.0f; r.d = -(right + left)/rml;
-        r.e = 0.0f; r.f = 2.0f/tmb; r.g = 0.0f; r.h = -(top + bottom)/tmb;
-        r.i = 0.0f; r.j = 0.0f; r.k = -2.0f/fmn; r.l = -(far + near)/fmn;
-        r.m = 0.0f; r.n = 0.0f; r.o = 0.0f; r.p = 1.0f;
+        r.a = 2.0/rml; r.b = 0.0; r.c = 0.0; r.d = -(right + left)/rml;
+        r.e = 0.0; r.f = 2.0/tmb; r.g = 0.0; r.h = -(top + bottom)/tmb;
+        r.i = 0.0; r.j = 0.0; r.k = -2.0/fmn; r.l = -(far + near)/fmn;
+        r.m = 0.0; r.n = 0.0; r.o = 0.0; r.p = 1.0;
     }
 
     /**
@@ -298,10 +292,10 @@ public class Mat4d implements DataStreamable<Mat4d>
      */
     public static final void scaling(Vec4 v, Mat4d r)
     {
-        r.a = v.x; r.b = 0.0f; r.c = 0.0f; r.d = 0.0f;
-        r.e = 0.0f; r.f = v.y; r.g = 0.0f; r.h = 0.0f;
-        r.i = 0.0f; r.j = 0.0f; r.k = v.z; r.l = 0.0f;
-        r.m = 0.0f; r.n = 0.0f; r.o = 0.0f; r.p = v.w;
+        r.a = v.x; r.b = 0.0; r.c = 0.0; r.d = 0.0;
+        r.e = 0.0; r.f = v.y; r.g = 0.0; r.h = 0.0;
+        r.i = 0.0; r.j = 0.0; r.k = v.z; r.l = 0.0;
+        r.m = 0.0; r.n = 0.0; r.o = 0.0; r.p = v.w;
     }
 
     /**
@@ -311,12 +305,12 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param v The vector to scale by.
      * @param r The matrix in which to store the result.
      */
-    public static final void scaling(Vec3 v, Mat4d r)
+    public static final void scaling(Vec3d v, Mat4d r)
     {
-        r.a = v.x; r.b = 0.0f; r.c = 0.0f; r.d = 0.0f;
-        r.e = 0.0f; r.f = v.y; r.g = 0.0f; r.h = 0.0f;
-        r.i = 0.0f; r.j = 0.0f; r.k = v.z; r.l = 0.0f;
-        r.m = 0.0f; r.n = 0.0f; r.o = 0.0f; r.p = 1.0f;
+        r.a = v.x; r.b = 0.0; r.c = 0.0; r.d = 0.0;
+        r.e = 0.0; r.f = v.y; r.g = 0.0; r.h = 0.0;
+        r.i = 0.0; r.j = 0.0; r.k = v.z; r.l = 0.0;
+        r.m = 0.0; r.n = 0.0; r.o = 0.0; r.p = 1.0;
     }
 
     /**
@@ -327,10 +321,10 @@ public class Mat4d implements DataStreamable<Mat4d>
      */
     public static final void scaling(double s, Mat4d r)
     {
-        r.a = s; r.b = 0.0f; r.c = 0.0f; r.d = 0.0f;
-        r.e = 0.0f; r.f = s; r.g = 0.0f; r.h = 0.0f;
-        r.i = 0.0f; r.j = 0.0f; r.k = s; r.l = 0.0f;
-        r.m = 0.0f; r.n = 0.0f; r.o = 0.0f; r.p = s;
+        r.a = s; r.b = 0.0; r.c = 0.0; r.d = 0.0;
+        r.e = 0.0; r.f = s; r.g = 0.0; r.h = 0.0;
+        r.i = 0.0; r.j = 0.0; r.k = s; r.l = 0.0;
+        r.m = 0.0; r.n = 0.0; r.o = 0.0; r.p = s;
     }
 
     /**
@@ -341,11 +335,11 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param angle The angle to rotate by.
      * @param r The matrix in which to store the result.
      */
-    public static final void rotation(Vec3 axis, double angle, Mat4d r)
+    public static final void rotation(Vec3d axis, double angle, Mat4d r)
     {
-        double cos = (double)Math.cos(angle);
-        double sin = (double)Math.sin(angle);
-        double omcos = 1.0f - cos;
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+        double omcos = 1.0 - cos;
 
         double xsq = axis.x*axis.x, ysq = axis.y*axis.y, zsq = axis.z*axis.z;
 
@@ -353,22 +347,22 @@ public class Mat4d implements DataStreamable<Mat4d>
         double xzomcos = axis.x*axis.z*omcos, ysin = axis.y*sin;
         double yzomcos = axis.y*axis.z*omcos, xsin = axis.x*sin;
 
-        r.a = xsq + (1.0f - xsq)*cos;
+        r.a = xsq + (1.0 - xsq)*cos;
         r.b = xyomcos - zsin;
         r.c = xzomcos + ysin;
-        r.d = 0.0f;
+        r.d = 0.0;
 
         r.e = xyomcos + zsin;
-        r.f = ysq + (1.0f - ysq)*cos;
+        r.f = ysq + (1.0 - ysq)*cos;
         r.g = yzomcos - xsin;
-        r.h = 0.0f;
+        r.h = 0.0;
 
         r.i = xzomcos - ysin;
         r.j = yzomcos + xsin;
-        r.k = zsq + (1.0f - zsq)*cos;
-        r.l = 0.0f;
+        r.k = zsq + (1.0 - zsq)*cos;
+        r.l = 0.0;
 
-        r.m = 0.0f; r.n = 0.0f; r.o = 0.0f; r.p = 1.0f;
+        r.m = 0.0; r.n = 0.0; r.o = 0.0; r.p = 1.0;
     }
 
     /**
@@ -378,7 +372,7 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param q The quaternion to represent as a matrix.
      * @param r The matrix in which to store the result.
      */
-    public static final void rotation(Quat q, Mat4d r)
+    public static final void rotation(Quatd q, Mat4d r)
     {
         double q0 = SQRT_2*q.w, q1 = SQRT_2*q.x, q2 = SQRT_2*q.y, q3 = SQRT_2*q.z;
 
@@ -386,10 +380,10 @@ public class Mat4d implements DataStreamable<Mat4d>
 	double qaa = q1*q1, qab = q1*q2, qac = q1*q3;
 	double qbb = q2*q2, qbc = q2*q3, qcc = q3*q3;
 
-        r.a = 1.0f - qbb - qcc; r.b = -qdc + qab; r.c = qdb + qac; r.d = 0.0f;
-        r.e = qdc + qab; r.f = 1.0f - qaa - qcc; r.g = -qda + qbc; r.h = 0.0f;
-        r.i = -qdb + qac; r.j = qda + qbc; r.k = 1.0f - qaa - qbb; r.l = 0.0f;
-        r.m = 0.0f; r.n = 0.0f; r.o = 0.0f; r.p = 1.0f;
+        r.a = 1.0 - qbb - qcc; r.b = -qdc + qab; r.c = qdb + qac; r.d = 0.0;
+        r.e = qdc + qab; r.f = 1.0 - qaa - qcc; r.g = -qda + qbc; r.h = 0.0;
+        r.i = -qdb + qac; r.j = qda + qbc; r.k = 1.0 - qaa - qbb; r.l = 0.0;
+        r.m = 0.0; r.n = 0.0; r.o = 0.0; r.p = 1.0;
     }
 
     /**
@@ -398,12 +392,12 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param v The vector to translate by.
      * @param r The matrix in which to store the result.
      */
-    public static final void translation(Vec3 v, Mat4d r)
+    public static final void translation(Vec3d v, Mat4d r)
     {
-        r.a = 1.0f; r.b = 0.0f; r.c = 0.0f; r.d = v.x;
-        r.e = 0.0f; r.f = 1.0f; r.g = 0.0f; r.h = v.y;
-        r.i = 0.0f; r.j = 0.0f; r.k = 1.0f; r.l = v.z;
-        r.m = 0.0f; r.n = 0.0f; r.o = 0.0f; r.p = 1.0f;
+        r.a = 1.0; r.b = 0.0; r.c = 0.0; r.d = v.x;
+        r.e = 0.0; r.f = 1.0; r.g = 0.0; r.h = v.y;
+        r.i = 0.0; r.j = 0.0; r.k = 1.0; r.l = v.z;
+        r.m = 0.0; r.n = 0.0; r.o = 0.0; r.p = 1.0;
     }
 
     /**
@@ -413,16 +407,16 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param d The plane constant.
      * @param r The matrix in which to store the result.
      */
-    public static final void reflection(Vec3 n, double d, Mat4d r)
+    public static final void reflection(Vec3d n, double d, Mat4d r)
     {
-        double ab = -2.0f*n.x*n.y;
-        double ac = -2.0f*n.x*n.z;
-        double bc = -2.0f*n.y*n.z;
+        double ab = -2.0*n.x*n.y;
+        double ac = -2.0*n.x*n.z;
+        double bc = -2.0*n.y*n.z;
 
-        r.a = 1.0f - 2.0f*n.x*n.x; r.b = ab; r.c = ac; r.d = -2.0f*n.x*d;
-        r.e = ab; r.f = 1.0f - 2.0f*n.y*n.y; r.g = bc; r.h = -2.0f*n.y*d;
-        r.i = ac; r.j = bc; r.k = 1.0f - 2.0f*n.z*n.z; r.l = -2.0f*n.z*d;
-        r.m = 0.0f; r.n = 0.0f; r.o = 0.0f; r.p = 1.0f;
+        r.a = 1.0 - 2.0*n.x*n.x; r.b = ab; r.c = ac; r.d = -2.0*n.x*d;
+        r.e = ab; r.f = 1.0 - 2.0*n.y*n.y; r.g = bc; r.h = -2.0*n.y*d;
+        r.i = ac; r.j = bc; r.k = 1.0 - 2.0*n.z*n.z; r.l = -2.0*n.z*d;
+        r.m = 0.0; r.n = 0.0; r.o = 0.0; r.p = 1.0;
     }
 
     /**
@@ -435,7 +429,7 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param angle The angle to rotate by.
      * @param r The matrix in which to store the result.
      */
-    public static final void rotate(Mat4d x, Vec3 axis, double angle, Mat4d r)
+    public static final void rotate(Mat4d x, Vec3d axis, double angle, Mat4d r)
     {
         Mat4d temp = rotation(axis, angle); //Could probably be improved.
         mult(x, temp, r);
@@ -448,7 +442,7 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param q The quaternion to rotate by.
      * @param r The matrix in which to store the result.
      */
-    public static final void rotate(Mat4d x, Quat q, Mat4d r)
+    public static final void rotate(Mat4d x, Quatd q, Mat4d r)
     {
         Mat4d temp = rotation(q); //Could probably be improved, as above
         mult(x, temp, r);
@@ -462,7 +456,7 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param v The vector to translate by.
      * @param r The matrix in which to store the result.
      */
-    public static final void translate(Mat4d x, Vec3 v, Mat4d r)
+    public static final void translate(Mat4d x, Vec3d v, Mat4d r)
     {
         r.a = x.a; r.b = x.b; r.c = x.c; r.d = x.a*v.x + x.b*v.y + x.c*v.z + x.d;
         r.e = x.e; r.f = x.f; r.g = x.g; r.h = x.e*v.x + x.f*v.y + x.g*v.z + x.h;
@@ -516,9 +510,9 @@ public class Mat4d implements DataStreamable<Mat4d>
      */
     public static final void mult(Mat4d m, Transform t, Mat4d r)
     {
-        translate(m, t.pos, r);
-        rotate(r, t.rot, r);
-        mult(r, t.sca, r);
+        translate(m, new Vec3d(t.pos), r);
+        rotate(r, new Quatd(t.rot), r);
+        mult(r, new Vec3d(t.sca), r);
     }
 
     /**
@@ -543,7 +537,7 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param v The vector to multiply by.
      * @param r The matrix in which to store the result.
      */
-    public static final void mult(Mat4d x, Vec3 v, Mat4d r)
+    public static final void mult(Mat4d x, Vec3d v, Mat4d r)
     {
         r.a = x.a*v.x; r.b = x.b*v.y; r.c = x.c*v.z; r.d = x.d;
         r.e = x.e*v.x; r.f = x.f*v.y; r.g = x.g*v.z; r.h = x.h;
@@ -614,7 +608,7 @@ public class Mat4d implements DataStreamable<Mat4d>
         double m = x.e*x.k*x.n + x.f*x.i*x.o + x.g*x.j*x.m - x.e*x.j*x.o - x.f*x.k*x.m - x.g*x.i*x.n;
 
         double det = x.a*a + x.b*e + x.c*i + x.d*m;
-        if (det == 0.0f) throw new SingularMatrixException();
+        if (det == 0.0) throw new SingularMatrixException();
 
         double b = x.b*x.l*x.o + x.c*x.j*x.p + x.d*x.k*x.n - x.b*x.k*x.p - x.c*x.l*x.n - x.d*x.j*x.o;
         double c = x.b*x.g*x.p + x.c*x.h*x.n + x.d*x.f*x.o - x.b*x.h*x.o - x.c*x.f*x.p - x.d*x.g*x.n;
@@ -643,7 +637,7 @@ public class Mat4d implements DataStreamable<Mat4d>
      */
     public static final Mat4d identity()
     {
-        return scaling(1.0f);
+        return scaling(1.0);
     }
 
     /**
@@ -662,7 +656,7 @@ public class Mat4d implements DataStreamable<Mat4d>
     /**
      * Returns a new
      */
-    public static final Mat4d transform(Vec3 pos, Euler rot, Vec3 sca)
+    public static final Mat4d transform(Vec3d pos, Euler rot, Vec3d sca)
     {
         Mat4d m = new Mat4d();
         transform(pos, rot, sca, m);
@@ -787,13 +781,13 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param v The vector to scale by.
      * @return A new scaling matrix.
      */
-    public static final Mat4d scaling(Vec3 v)
+    public static final Mat4d scaling(Vec3d v)
     {
         Mat4d m = new Mat4d();
         m.a = v.x;
         m.f = v.y;
         m.k = v.z;
-        m.p = 1.0f;
+        m.p = 1.0;
         return m;
     }
 
@@ -821,7 +815,7 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param angle The angle to rotate by.
      * @return A new rotation matrix.
      */
-    public static final Mat4d rotation(Vec3 axis, double angle)
+    public static final Mat4d rotation(Vec3d axis, double angle)
     {
         Mat4d m = new Mat4d();
         rotation(axis, angle, m);
@@ -834,7 +828,7 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param q The quaternion to represent as a matrix.
      * @return A new rotation matrix.
      */
-    public static final Mat4d rotation(Quat q)
+    public static final Mat4d rotation(Quatd q)
     {
         Mat4d m = new Mat4d();
         rotation(q, m);
@@ -847,7 +841,7 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param v The vector to translate by.
      * @return A new translation matrix.
      */
-    public static final Mat4d translation(Vec3 v)
+    public static final Mat4d translation(Vec3d v)
     {
         Mat4d m = identity();
         m.d = v.x;
@@ -862,7 +856,7 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param constant The plane constant.
      * @return A new reflection matrix.
      */
-    public static final Mat4d reflection(Vec3 normal, double constant)
+    public static final Mat4d reflection(Vec3d normal, double constant)
     {
         Mat4d m = new Mat4d();
         reflection(normal, constant, m);
@@ -918,7 +912,7 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param v The vector to multiply by.
      * @return A new matrix containing the result.
      */
-    public static final Mat4d mult(Mat4d m, Vec3 v)
+    public static final Mat4d mult(Mat4d m, Vec3d v)
     {
         Mat4d result = new Mat4d();
         mult(m, v, result);
@@ -1019,7 +1013,7 @@ public class Mat4d implements DataStreamable<Mat4d>
     {
         a = x.a; b = x.b;
         e = x.c; f = x.d;
-        k = 1.0f; p = 1.0f;
+        k = 1.0; p = 1.0;
     }
 
     /**
@@ -1027,12 +1021,20 @@ public class Mat4d implements DataStreamable<Mat4d>
      *
      * @param x The matrix to copy.
      */
+    public Mat4d(Mat3d x)
+    {
+        a = x.a; b = x.b; c = x.c;
+        e = x.d; f = x.e; g = x.f;
+        i = x.g; j = x.h; k = x.i;
+        p = 1.0;
+    }
+
     public Mat4d(Mat3 x)
     {
         a = x.a; b = x.b; c = x.c;
         e = x.d; f = x.e; g = x.f;
         i = x.g; j = x.h; k = x.i;
-        p = 1.0f;
+        p = 1.0;
     }
 
     /**
@@ -1154,7 +1156,13 @@ public class Mat4d implements DataStreamable<Mat4d>
         copy(mat, this);
         return this;
     }
-    
+
+    public Mat4d set(Mat3d mat)
+    {
+        copy(mat, this);
+        return this;
+    }
+
     /**
      * Sets this to the given matrix.
      * 
@@ -1437,7 +1445,7 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param vec The vector to scale by.
      * @return This matrix.
      */
-    public Mat4d setScaling(Vec3 vec)
+    public Mat4d setScaling(Vec3d vec)
     {
         scaling(vec, this);
         return this;
@@ -1463,7 +1471,7 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param angle The angle to rotate by.
      * @return This matrix.
      */
-    public Mat4d setRotation(Vec3 axis, double angle)
+    public Mat4d setRotation(Vec3d axis, double angle)
     {
         rotation(axis, angle, this);
         return this;
@@ -1474,7 +1482,7 @@ public class Mat4d implements DataStreamable<Mat4d>
      * 
      * @return This matrix.
      */
-    public Mat4d setRotation(Quat quat)
+    public Mat4d setRotation(Quatd quat)
     {
         rotation(quat, this);
         return this;
@@ -1486,7 +1494,7 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param vec The vector to translate by.
      * @return This matrix.
      */
-    public Mat4d setTranslation(Vec3 vec)
+    public Mat4d setTranslation(Vec3d vec)
     {
         translation(vec, this);
         return this;
@@ -1499,7 +1507,7 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param constant The plane constant.
      * @return This matrix.
      */
-    public Mat4d setReflection(Vec3 normal, double constant)
+    public Mat4d setReflection(Vec3d normal, double constant)
     {
         reflection(normal, constant, this);
         return this;
@@ -1513,7 +1521,7 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param angle The angle to rotate by.
      * @return This matrix.
      */
-    public Mat4d rotate(Vec3 axis, double angle)
+    public Mat4d rotate(Vec3d axis, double angle)
     {
         rotate(this, axis, angle, this);
         return this;
@@ -1525,7 +1533,7 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param quat The quaternion to rotate by.
      * @return This matrix.
      */
-    public Mat4d rotate(Quat quat)
+    public Mat4d rotate(Quatd quat)
     {
         rotate(this, quat, this);
         return this;
@@ -1537,7 +1545,7 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param vec The vector to translate by.
      * @return This matrix.
      */
-    public Mat4d translate(Vec3 vec)
+    public Mat4d translate(Vec3d vec)
     {
         d += a*vec.x + b*vec.y + c*vec.z;
         h += e*vec.x + f*vec.y + g*vec.z;
@@ -1588,7 +1596,7 @@ public class Mat4d implements DataStreamable<Mat4d>
      * @param vec The matrix to multiply by.
      * @return This matrix.
      */
-    public Mat4d mult(Vec3 vec)
+    public Mat4d mult(Vec3d vec)
     {
         mult(this, vec, this);
         return this;
