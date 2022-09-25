@@ -248,9 +248,9 @@ public class Mat3 implements FloatBufferable, DataStreamable<Mat3>
     {
         float q0 = SQRT_2*q.w, q1 = SQRT_2*q.x, q2 = SQRT_2*q.y, q3 = SQRT_2*q.z;
 
-	float qda = q0*q1, qdb = q0*q2, qdc = q0*q3;
-	float qaa = q1*q1, qab = q1*q2, qac = q1*q3;
-	float qbb = q2*q2, qbc = q2*q3, qcc = q3*q3;
+        float qda = q0*q1, qdb = q0*q2, qdc = q0*q3;
+        float qaa = q1*q1, qab = q1*q2, qac = q1*q3;
+        float qbb = q2*q2, qbc = q2*q3, qcc = q3*q3;
         
         r.a = 1.0f - qbb - qcc; r.b = -qdc + qab; r.c = qdb + qac;
         r.d = qdc + qab; r.e = 1.0f - qaa - qcc; r.f = -qda + qbc;

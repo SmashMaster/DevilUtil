@@ -72,6 +72,15 @@ public final class FBO extends DGLObj
         if (deleted) throw new IllegalStateException("FBO deleted.");
         if (DGL.currentFBO() != this) throw new IllegalStateException("FBO not bound.");
     }
+
+    /**
+     * Binds this FBO. Equivalent to calling DGL.bind(this), but returns this.
+     */
+    public FBO bind()
+    {
+        DGL.bindFBO(this);
+        return this;
+    }
     
     void bind(int target)
     {

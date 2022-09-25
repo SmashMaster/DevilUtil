@@ -103,6 +103,21 @@ public final class TextureCubemap extends Texture<TextureCubemap>
     }
 
     /**
+     * Downloads the OpenGL data for this texture into the given image.
+     */
+    public TextureCubemap download(int face, Image image, int format)
+    {
+        int dataFormat = TexUtil.getBaseFormat(format);
+        int primType = TexUtil.getPrimitiveType(format);
+        int oldID = tempBind();
+        image.buffer.clear();
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, dataFormat, primType, image.buffer);
+        tempUnbind(oldID);
+        return getThis();
+    }
+
+    /**
      * Returns the size of this Cubemap: the length of its edges in texels.
      */
     public int getSize()

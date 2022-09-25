@@ -186,7 +186,14 @@ public final class Util
         if (x > max) return max;
         return x; //Implicitly handles NaN and the infinites.
     }
-    
+
+    public static double clamp(double x, double min, double max)
+    {
+        if (x < min) return min;
+        if (x > max) return max;
+        return x; //Implicitly handles NaN and the infinites.
+    }
+
     /**
      * Clamps the given value to between zero and one (inclusive) and returns
      * the result.

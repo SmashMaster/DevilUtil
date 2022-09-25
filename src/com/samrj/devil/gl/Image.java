@@ -259,7 +259,7 @@ public final class Image extends DGLObj
     {
         if (deleted) throw new IllegalStateException("Image buffer deleted.");
         if (type != PrimType.BYTE) throw new IllegalStateException("Image buffer must be in byte format.");
-        if (bands != 3 && bands != 4) throw new IllegalStateException("Image must have 4 or fewer bands.");
+        if (bands != 3 && bands != 4) throw new IllegalStateException("Image must have 3 or 4 bands.");
         
         int biType = bands == 3 ? BufferedImage.TYPE_INT_RGB : BufferedImage.TYPE_INT_ARGB;
         BufferedImage out = new BufferedImage(width, height, biType);
