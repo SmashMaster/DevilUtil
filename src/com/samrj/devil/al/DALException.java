@@ -41,4 +41,9 @@ public class DALException extends RuntimeException
     {
         super("DevilUtil (DAL) - " + getString(errorCode) + ": " + getDescription(errorCode));
     }
+
+    DALException(DALException e, String message)
+    {
+        super(message, e);
+    }
 }

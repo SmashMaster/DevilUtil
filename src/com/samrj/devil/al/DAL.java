@@ -274,7 +274,19 @@ public class DAL
             if (errorCode != AL_NO_ERROR) throw new DALException(errorCode);
         }
     }
-    
+
+    public static void checkError(Object message)
+    {
+        try
+        {
+            checkError();
+        }
+        catch (DALException e)
+        {
+            throw new DALException(e, message.toString());
+        }
+    }
+
     /**
      * Deletes each DevilGL object in the given array.
      * 

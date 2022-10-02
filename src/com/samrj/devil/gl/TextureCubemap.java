@@ -87,9 +87,10 @@ public final class TextureCubemap extends Texture<TextureCubemap>
         int bands = TexUtil.getBands(dataFormat);
         
         for (Image image : images)
-            if (image.width != size || image.height != size ||
-                    image.bands != bands || image.type != type)
-                throw new IllegalArgumentException();
+        {
+            if (image.width != size || image.height != size) throw new IllegalArgumentException("Image size mismatch.");
+            if (image.bands != bands || image.type != type) throw new IllegalArgumentException("Image format mismatch.");
+        }
         
         int oldID = tempBind();
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);

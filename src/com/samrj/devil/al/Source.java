@@ -1,5 +1,6 @@
 package com.samrj.devil.al;
 
+import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 
 import java.util.HashSet;
@@ -48,11 +49,18 @@ public class Source extends DALObj
         DAL.checkError();
         return this;
     }
+
+    public Source setMaxGain(float f)
+    {
+        alSourcef(id, AL_MAX_GAIN, f);
+        DAL.checkError(f);
+        return this;
+    }
     
     public Source setGain(float f)
     {
         alSourcef(id, AL_GAIN, f);
-        DAL.checkError();
+        DAL.checkError(f);
         return this;
     }
     
