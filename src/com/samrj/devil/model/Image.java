@@ -21,7 +21,7 @@ public class Image extends DataBlock
         String filepath = filepathPtr != null ? filepathPtr.asString() : null;
         if (filepath != null && filepath.startsWith("//")) //Only support relative paths for now.
         {
-            relativePath = Path.of(filepath.substring(2)).normalize();
+            relativePath = Path.of(filepath.substring(2).replace('\\', '/')).normalize();
             path = model.path.getParent().resolve(relativePath).normalize();
         }
         else
