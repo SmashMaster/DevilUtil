@@ -8,6 +8,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.Objects;
 
 /**
  * Basic 3D integer vector class.
@@ -319,8 +320,6 @@ public class Vec3i implements Bufferable, DataStreamable<Vec3i>
     @Override
     public int hashCode()
     {
-        int hash = 57 + this.x;
-        hash = 19*hash + this.y;
-        return 19*hash + this.z;
+        return Objects.hash(x, y, z);
     }
 }

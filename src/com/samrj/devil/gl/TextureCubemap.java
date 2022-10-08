@@ -104,7 +104,7 @@ public final class TextureCubemap extends Texture<TextureCubemap>
     }
 
     /**
-     * Downloads the OpenGL data for this texture into the given image.
+     * Downloads one face of this cubemap into the given image.
      */
     public TextureCubemap download(int face, Image image, int format)
     {
@@ -116,6 +116,15 @@ public final class TextureCubemap extends Texture<TextureCubemap>
         glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, dataFormat, primType, image.buffer);
         tempUnbind(oldID);
         return getThis();
+    }
+
+    /**
+     * Downloads the OpenGL data for this cubemap into the given image.
+     */
+    public TextureCubemap download(ImageCubemap image, int format)
+    {
+        for (int i=0; i<6; i++) download(i, image.images[i], format);
+        return this;
     }
 
     /**

@@ -155,6 +155,24 @@ public final class Image extends DGLObj
             default: throw new IllegalArgumentException();
         }
     }
+
+    /**
+     * Returns the value for a given pixel and band between 0 and 1.
+     */
+    public float getFloat(int x, int y, int b)
+    {
+        int index = index(x, y, b);
+        switch (type)
+        {
+            case BYTE: return Byte.toUnsignedInt(buffer.get(index))/255.0f;
+            case CHAR: return buffer.getChar(index)/65536.0f;
+            //TODO: Implement these others later.
+//            case SHORT: return buffer.getShort(index)/32768.0f;
+//            case INT: return buffer.getInt(index);
+//            case FLOAT: return buffer.getFloat(index);
+            default: throw new IllegalArgumentException();
+        }
+    }
     
     /**
      * Buffers the given image raster into this. Throws an exception if the
@@ -300,7 +318,7 @@ public final class Image extends DGLObj
      * Functional interface for any per-pixel-per-channel operation.
      */
     @FunctionalInterface
-    public static interface Sampler
+    public interface Sampler
     {
         void sample(int x, int y, int b);
     }
@@ -309,7 +327,7 @@ public final class Image extends DGLObj
      * Functional interface for any per-pixel-per-channel write operation.
      */
     @FunctionalInterface
-    public static interface Shader
+    public interface Shader
     {
         double shade(int x, int y, int b);
     }
