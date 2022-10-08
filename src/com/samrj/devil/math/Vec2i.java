@@ -8,6 +8,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.Objects;
 
 /**
  * Basic 2D integer vector class.
@@ -18,6 +19,11 @@ import java.nio.IntBuffer;
  */
 public class Vec2i implements Bufferable, DataStreamable<Vec2i>
 {
+    public static Vec2i add(Vec2i a, Vec2i b)
+    {
+        return new Vec2i(a.x + b.x, a.y + b.y);
+    }
+
     public int x, y;
     
     public Vec2i()
@@ -115,14 +121,11 @@ public class Vec2i implements Bufferable, DataStreamable<Vec2i>
     {
         return "(" + x + ", " + y + ")";
     }
-    
+
     @Override
     public int hashCode()
     {
-        int hash = 5;
-        hash = 19 * hash + this.x;
-        hash = 19 * hash + this.y;
-        return hash;
+        return Objects.hash(x, y);
     }
 
     @Override

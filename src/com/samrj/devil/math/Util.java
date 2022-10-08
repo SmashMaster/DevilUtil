@@ -212,6 +212,12 @@ public final class Util
         return clamp(x, 0.0f, 1.0f);
     }
 
+    public static float step(float edge, float x)
+    {
+        if (x >= edge) return 1.0f;
+        else return 0.0f;
+    }
+
     /**
      * Returns a value between 0 and 1, linearly interpolated when'
      * edge1 > x > edge0.
@@ -450,6 +456,14 @@ public final class Util
         
         int t = x%max;
         return t < 0 ? t + max : t;
+    }
+
+    /**
+     * Returns the fractional component of the given float.
+     */
+    public static float fract(float x)
+    {
+        return loop(x, 1.0f);
     }
     
     /**
