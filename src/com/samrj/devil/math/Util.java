@@ -186,7 +186,20 @@ public final class Util
         if (x > max) return max;
         return x; //Implicitly handles NaN and the infinites.
     }
-    
+
+    public static double clamp(double x, double min, double max)
+    {
+        if (x < min) return min;
+        if (x > max) return max;
+        return x; //Implicitly handles NaN and the infinites.
+    }
+
+    public static void limitLength(Vec3 v, float maxLength)
+    {
+        float length = v.length();
+        if (length > maxLength) v.mult(maxLength/length);
+    }
+
     /**
      * Clamps the given value to between zero and one (inclusive) and returns
      * the result.
@@ -198,7 +211,7 @@ public final class Util
     {
         return clamp(x, 0.0f, 1.0f);
     }
-    
+
     /**
      * Returns a value between 0 and 1, linearly interpolated when'
      * edge1 > x > edge0.

@@ -79,7 +79,14 @@ public class Mat3d implements Bufferable, DataStreamable<Mat3d>
         r.d = s.d; r.e = s.e; r.f = s.f;
         r.g = s.g; r.h = s.h; r.i = s.i;
     }
-    
+
+    public static final void cast(Mat3d s, Mat3 r)
+    {
+        r.a = (float)s.a; r.b = (float)s.b; r.c = (float)s.c;
+        r.d = (float)s.d; r.e = (float)s.e; r.f = (float)s.f;
+        r.g = (float)s.g; r.h = (float)s.h; r.i = (float)s.i;
+    }
+
     /**
      * Contracts and copies the source matrix into the target matrix. 
      * 

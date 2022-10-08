@@ -75,7 +75,7 @@ public class NodesToGLSL
                     mat4 u_view_matrix;
                     vec2 u_vel_factor;
                     float u_z_far;
-                    float u_UNUSED;
+                    float u_UNUSED_MATRICES_1;
                 };
                 
                 """);

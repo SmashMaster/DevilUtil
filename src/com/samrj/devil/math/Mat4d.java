@@ -105,6 +105,14 @@ public class Mat4d implements DataStreamable<Mat4d>
         r.m = s.m; r.n = s.n; r.o = s.o; r.p = s.p;
     }
 
+    public static final void cast(Mat4d s, Mat4 r)
+    {
+        r.a = (float)s.a; r.b = (float)s.b; r.c = (float)s.c; r.d = (float)s.d;
+        r.e = (float)s.e; r.f = (float)s.f; r.g = (float)s.g; r.h = (float)s.h;
+        r.i = (float)s.i; r.j = (float)s.j; r.k = (float)s.k; r.l = (float)s.l;
+        r.m = (float)s.m; r.n = (float)s.n; r.o = (float)s.o; r.p = (float)s.p;
+    }
+
     /**
      * Sets the given matrix to the transformation matrix equal to the given
      * transform.

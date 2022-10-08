@@ -418,6 +418,16 @@ public final class DGL
     }
 
     /**
+     * Loads all of the provided image paths and returns an array of images in the same order.
+     */
+    public static Image[] loadImages(String... path) throws IOException
+    {
+        Image[] result = new Image[path.length];
+        for (int i=0; i<path.length; i++) result[i] = loadImage(path[i]);
+        return result;
+    }
+
+    /**
      * Creates a new image from the current read framebuffer and viewport.
      * Useful for taking screenshots.
      *

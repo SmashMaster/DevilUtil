@@ -106,6 +106,14 @@ public class Quatd implements DataStreamable<Quatd>, Bufferable
         target.z = source.z;
     }
 
+    public static final void copy(Quat source, Quatd target)
+    {
+        target.w = source.w;
+        target.x = source.x;
+        target.y = source.y;
+        target.z = source.z;
+    }
+
     /**
      * Sets the specified component of the given quaternion to the given value.
      */
@@ -850,7 +858,13 @@ public class Quatd implements DataStreamable<Quatd>, Bufferable
         copy(q, this);
         return this;
     }
-    
+
+    public Quatd set(Quat q)
+    {
+        copy(q, this);
+        return this;
+    }
+
     /**
      * Sets the coordinates of this quaternion.
      * 

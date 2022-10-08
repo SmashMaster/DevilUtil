@@ -87,9 +87,10 @@ public final class TextureCubemap extends Texture<TextureCubemap>
         int bands = TexUtil.getBands(dataFormat);
         
         for (Image image : images)
-            if (image.width != size || image.height != size ||
-                    image.bands != bands || image.type != type)
-                throw new IllegalArgumentException();
+        {
+            if (image.width != size || image.height != size) throw new IllegalArgumentException("Image size mismatch.");
+            if (image.bands != bands || image.type != type) throw new IllegalArgumentException("Image format mismatch.");
+        }
         
         int oldID = tempBind();
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -99,6 +100,21 @@ public final class TextureCubemap extends Texture<TextureCubemap>
         
         setVRAMUsage(TexUtil.getBits(format)*size*size*6);
         
+        return getThis();
+    }
+
+    /**
+     * Downloads the OpenGL data for this texture into the given image.
+     */
+    public TextureCubemap download(int face, Image image, int format)
+    {
+        int dataFormat = TexUtil.getBaseFormat(format);
+        int primType = TexUtil.getPrimitiveType(format);
+        int oldID = tempBind();
+        image.buffer.clear();
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, dataFormat, primType, image.buffer);
+        tempUnbind(oldID);
         return getThis();
     }
 
