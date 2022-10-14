@@ -10,7 +10,7 @@ import static org.lwjgl.opengl.GL12C.*;
  * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public final class Texture3D extends Texture3DAbstract
+public final class Texture3D extends Texture3DAbstract<Texture3D>
 {
     Texture3D()
     {
@@ -26,7 +26,7 @@ public final class Texture3D extends Texture3DAbstract
     }
     
     @Override
-    Texture getThis()
+    Texture3D getThis()
     {
         return this;
     }
