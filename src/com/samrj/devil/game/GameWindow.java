@@ -425,6 +425,25 @@ public final class GameWindow
     {
         destroyCallback = callback;
     }
+
+    /**
+     * Sets every callback (except init, where this is intended to be called) to its corresponding method
+     * in the given GameWindowMode. Overrides any existing callbacks.
+     */
+    public static void setCallbacks(GameWindowMode mode)
+    {
+        beforeInput(mode::beforeInput);
+        afterInput(mode::afterInput);
+        onResize(mode::resize);
+        onMouseMoved(mode::mouseMoved);
+        onMouseButton(mode::mouseButton);
+        onMouseScroll(mode::mouseScroll);
+        onKey(mode::key);
+        onCharacter(mode::character);
+        onStep(mode::step);
+        onRender(mode::render);
+        onDestroy(mode::destroy);
+    }
     // </editor-fold>
     
     /**
