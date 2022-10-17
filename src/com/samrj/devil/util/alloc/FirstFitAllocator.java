@@ -7,15 +7,15 @@ import java.util.Objects;
  * @author angle
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class FirstFitFreeListAllocator implements Allocator {
-    private final AllocatorRegion first;
-    AllocatorRegion last;
+public class FirstFitAllocator implements Allocator {
+    private final FirstFitAllocation first;
+    FirstFitAllocation last;
     private int capacity;
     private final int alignment;
-    private IncreaseCapacityCallback<FirstFitFreeListAllocator> callback;
+    private final IncreaseCapacityCallback<FirstFitAllocator> callback;
     
-    public FirstFitFreeListAllocator(int capacity, int alignment, IncreaseCapacityCallback<FirstFitFreeListAllocator> callback) {
-        this.first = new AllocatorRegion(this, 0, capacity, null, null);
+    public FirstFitAllocator(int capacity, int alignment, IncreaseCapacityCallback<FirstFitAllocator> callback) {
+        this.first = new FirstFitAllocation(this, 0, capacity, null, null);
         this.capacity = capacity;
         this.alignment = alignment;
         this.callback = callback;
@@ -24,6 +24,7 @@ public class FirstFitFreeListAllocator implements Allocator {
     /**
      * @return the capacity
      */
+    @Override
     public int getCapacity() {
         return capacity;
     }
@@ -31,6 +32,7 @@ public class FirstFitFreeListAllocator implements Allocator {
     /**
      * @return the alignment
      */
+    @Override
     public int getAlignment() {
         return alignment;
     }
@@ -38,7 +40,7 @@ public class FirstFitFreeListAllocator implements Allocator {
     /**
      * @param last the last to set
      */
-    void setLast(AllocatorRegion last) {
+    void setLast(FirstFitAllocation last) {
         this.last = last;
     }
     
@@ -50,19 +52,19 @@ public class FirstFitFreeListAllocator implements Allocator {
     }
     
     @Override
-    public synchronized AllocatorRegion allocateRegion(int size) {
+    public synchronized Allocation allocateRegion(int size) {
         size = sizeToAlignment(size);
         
         if (size > getCapacity()) increaseCapacity(size);
         
-        AllocatorRegion currentRegion = first;
+        FirstFitAllocation currentRegion = first;
         
         while (true) {
             if (!currentRegion.isAllocated() && currentRegion.getLength() >= size) {
                 currentRegion.allocate(size);
                 return currentRegion;
             }
-            AllocatorRegion nextRegion = currentRegion.getNext();
+            FirstFitAllocation nextRegion = currentRegion.getNext();
             if (Objects.isNull(nextRegion))
                 increaseCapacity(size);
             else

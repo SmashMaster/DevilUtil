@@ -19,5 +19,5 @@ public interface Allocator {
     
     public void increaseCapacity(int increaseNeeded);
     
-    public AllocatorRegion allocateRegion(int size);
+    public Allocation allocateRegion(int size);
 }

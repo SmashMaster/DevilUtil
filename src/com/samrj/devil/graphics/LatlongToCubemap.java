@@ -76,35 +76,86 @@ public class LatlongToCubemap
 
     private static final String[] FACE_NAMES = {"_pos_x", "_neg_x", "_pos_y", "_neg_y", "_pos_z", "_neg_z"};
 
-    public static void convert(Path path, String outputFilename, int resolution) throws IOException
+    private static boolean isInit;
+    private static FBO fbo;
+    private static VertexBuffer fsq;
+    private static ShaderProgram shader;
+
+    public static void init()
     {
-        Texture2D tex = DGL.loadTex2D(path).bind();
-        tex.parami(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        tex.generateMipmap();
+        if (isInit) throw new IllegalStateException();
 
-        TextureCubemap cube = DGL.genTextureCubemap();
-        cube.image(resolution, GL_RGBA8);
-
-        FBO fbo = DGL.genFBO().bind();
+        fbo = DGL.genFBO().bind();
         fbo.drawBuffers(GL_COLOR_ATTACHMENT0);
+        fsq = DGLUtil.makeFSQ("in_pos");
+        shader = DGL.loadProgram(VERT, FRAG);
+        isInit = true;
+    }
 
-        VertexBuffer fsq = DGLUtil.makeFSQ("in_pos");
-        ShaderProgram shader = DGL.loadProgram(VERT, FRAG).use();
+    public static void destroy()
+    {
+        if (!isInit) throw new IllegalStateException();
 
-        glViewport(0, 0,  resolution, resolution);
+        DGL.delete(fbo, fsq, shader);
+        fbo = null;
+        fsq = null;
+        shader = null;
+        isInit = false;
+    }
 
-        for (int face=0; face<6; face++)
-        {
-            fbo.textureCubemap(cube, face, GL_COLOR_ATTACHMENT0);
-            shader.uniform1i("u_face", face);
-            DGL.draw(fsq, GL_TRIANGLES);
-        }
+    public static TextureCubemap convert(Path path, int resolution) throws IOException
+    {
+        boolean startedInit = isInit;
+        if (!isInit) init();
 
-        Image image = DGL.genImage(resolution, resolution, 4, Util.PrimType.BYTE);
-        image.buffer.clear();
-
+        Texture2D tex = null;
+        TextureCubemap cube = null;
         try
         {
+            tex = DGL.loadTex2D(path).bind();
+            tex.parami(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            tex.generateMipmap();
+
+            cube = DGL.genTextureCubemap();
+            cube.image(resolution, GL_RGBA8);
+
+            glViewport(0, 0,  resolution, resolution);
+
+            DGL.useProgram(shader);
+            for (int face=0; face<6; face++)
+            {
+                fbo.textureCubemap(cube, face, GL_COLOR_ATTACHMENT0);
+                shader.uniform1i("u_face", face);
+                DGL.draw(fsq, GL_TRIANGLES);
+            }
+            return cube;
+        }
+        catch (Throwable t)
+        {
+            DGL.delete(cube);
+            throw t;
+        }
+        finally
+        {
+            DGL.delete(tex);
+            if (!startedInit) destroy();
+        }
+    }
+
+    public static void convert(Path path, String outputFilename, int resolution) throws IOException
+    {
+        boolean startedInit = isInit;
+        if (!isInit) init();
+
+        TextureCubemap cube = null;
+        Image image = null;
+        try
+        {
+            cube = convert(path, resolution);
+
+            image = DGL.genImage(resolution, resolution, 4, Util.PrimType.BYTE);
+            image.buffer.clear();
+
             Path directory = path.toAbsolutePath().getParent();
 
             for (int face = 0; face < 6; face++)
@@ -118,7 +169,8 @@ public class LatlongToCubemap
         }
         finally
         {
-            DGL.delete(tex, cube, fbo, fsq, shader, image);
+            DGL.delete(cube, image);
+            if (!startedInit) destroy();
         }
     }
 
