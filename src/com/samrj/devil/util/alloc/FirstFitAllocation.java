@@ -7,14 +7,15 @@ import java.util.Objects;
  * @author angle
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class AllocatorRegion {
-    private final FirstFitFreeListAllocator parent;
+public class FirstFitAllocation implements Allocation
+{
+    private final FirstFitAllocator parent;
     private final int offset;
     private int length;
-    private AllocatorRegion prev, next;
+    private FirstFitAllocation prev, next;
     private boolean allocated = false;
 
-    AllocatorRegion(FirstFitFreeListAllocator parent, int offset, int length, AllocatorRegion prev, AllocatorRegion next) {
+    FirstFitAllocation(FirstFitAllocator parent, int offset, int length, FirstFitAllocation prev, FirstFitAllocation next) {
         this.parent = parent;
         this.offset = offset;
         this.length = length;
@@ -25,6 +26,7 @@ public class AllocatorRegion {
     /**
      * @return the offset
      */
+    @Override
     public int getOffset() {
         return offset;
     }
@@ -32,6 +34,7 @@ public class AllocatorRegion {
     /**
      * @return the length
      */
+    @Override
     public int getLength() {
         return length;
     }
@@ -46,20 +49,21 @@ public class AllocatorRegion {
     /**
      * @return the prev
      */
-    AllocatorRegion getPrev() {
+    FirstFitAllocation getPrev() {
         return prev;
     }
 
     /**
      * @return the next
      */
-    AllocatorRegion getNext() {
+    FirstFitAllocation getNext() {
         return next;
     }
 
     /**
      * @return if this region is allocated
      */
+    @Override
     public boolean isAllocated() {
         return allocated;
     }
@@ -79,7 +83,7 @@ public class AllocatorRegion {
         }
         
         if (size < getLength()) {
-            AllocatorRegion newRegion = new AllocatorRegion(parent, getOffset() + size, getLength() - size, this, getNext());
+            FirstFitAllocation newRegion = new FirstFitAllocation(parent, getOffset() + size, getLength() - size, this, getNext());
             if (Objects.nonNull(getNext()))
                 next.prev = newRegion;
             else 
@@ -101,6 +105,7 @@ public class AllocatorRegion {
             absorbNext();
     }
     
+    @Override
     public void deallocate() {
         synchronized (parent) {
             if (!isAllocated())
