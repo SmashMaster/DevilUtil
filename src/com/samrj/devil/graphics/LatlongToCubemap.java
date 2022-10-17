@@ -7,6 +7,7 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL30C.GL_COLOR_ATTACHMENT0;
@@ -103,65 +104,117 @@ public class LatlongToCubemap
         isInit = false;
     }
 
+    /**
+     * Loads a cubemap given any one of its faces. Finds the other faces in the same directory using these postfixes:
+     *
+     * "_pos_x", "_neg_x", "_pos_y", "_neg_y", "_pos_z", "_neg_z"
+     */
+    public static TextureCubemap load(Path path) throws IOException
+    {
+        String filename = path.getFileName().toString();
+
+        //Strip extension.
+        int extIndex = filename.lastIndexOf('.');
+        if (extIndex < 0) throw new IOException("Filename " + filename + " has no extension.");
+        String extension = filename.substring(extIndex);
+        String noExtension = filename.substring(0, extIndex);
+
+        //Strip postfix.
+        String noPostfix = null;
+        for (String postfix : FACE_NAMES)
+        {
+            int index = noExtension.indexOf(postfix);
+            if (index >= 0)
+            {
+                noPostfix = noExtension.substring(0, index);
+                break;
+            }
+        }
+        if (noPostfix == null) throw new IOException("Filename " + filename + " does not end with one of valid postfixes:\n" + Arrays.toString(FACE_NAMES));
+
+        Path directory = path.toAbsolutePath().getParent();
+
+        Image[] images = new Image[6];
+        TextureCubemap result = null;
+        try
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                Path facePath = directory.resolve(noPostfix + FACE_NAMES[i] + extension);
+                if (!facePath.toFile().canRead()) throw new IOException("Cannot read file " + facePath);
+                images[i] = DGL.loadImage(facePath);
+            }
+
+            result = DGL.genTextureCubemap().bind();
+            result.image(images, GL_RGBA8);
+            result.parami(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            result.generateMipmap();
+            return result;
+        }
+        catch (Throwable t)
+        {
+            DGL.delete(result);
+            throw t;
+        }
+        finally
+        {
+            DGL.delete(images);
+        }
+    }
+
     public static TextureCubemap convert(Path path, int resolution) throws IOException
     {
         boolean startedInit = isInit;
         if (!isInit) init();
 
-        Texture2D tex = null;
-        TextureCubemap cube = null;
+        Texture2D latlongTex = null;
+        TextureCubemap cubemap = null;
         try
         {
-            tex = DGL.loadTex2D(path).bind();
-            tex.parami(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-            tex.generateMipmap();
+            latlongTex = DGL.loadTex2D(path).bind();
+            latlongTex.parami(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            latlongTex.generateMipmap();
 
-            cube = DGL.genTextureCubemap();
-            cube.image(resolution, GL_RGBA8);
+            cubemap = DGL.genTextureCubemap();
+            cubemap.image(resolution, GL_RGBA8);
 
             glViewport(0, 0,  resolution, resolution);
 
             DGL.useProgram(shader);
             for (int face=0; face<6; face++)
             {
-                fbo.textureCubemap(cube, face, GL_COLOR_ATTACHMENT0);
+                fbo.textureCubemap(cubemap, face, GL_COLOR_ATTACHMENT0);
                 shader.uniform1i("u_face", face);
                 DGL.draw(fsq, GL_TRIANGLES);
             }
-            return cube;
+            return cubemap;
         }
         catch (Throwable t)
         {
-            DGL.delete(cube);
+            DGL.delete(cubemap);
             throw t;
         }
         finally
         {
-            DGL.delete(tex);
+            DGL.delete(latlongTex);
             if (!startedInit) destroy();
         }
     }
 
-    public static void convert(Path path, String outputFilename, int resolution) throws IOException
+    public static void save(TextureCubemap cubemap, Path outputDirectory, String outputFilename) throws IOException
     {
-        boolean startedInit = isInit;
-        if (!isInit) init();
+        int resolution = cubemap.getSize();
 
-        TextureCubemap cube = null;
         Image image = null;
         try
         {
-            cube = convert(path, resolution);
-
             image = DGL.genImage(resolution, resolution, 4, Util.PrimType.BYTE);
             image.buffer.clear();
 
-            Path directory = path.toAbsolutePath().getParent();
-
             for (int face = 0; face < 6; face++)
             {
-                cube.download(face, image, GL_RGBA8);
-                Path outPath = directory.resolve(outputFilename + FACE_NAMES[face] + ".png");
+                cubemap.download(face, image, GL_RGBA8);
+                Path outPath = outputDirectory.resolve(outputFilename + FACE_NAMES[face] + ".png");
                 File outFile = outPath.toFile();
                 outFile.createNewFile();
                 ImageIO.write(image.toBufferedImage(), "PNG", outFile);
@@ -169,8 +222,22 @@ public class LatlongToCubemap
         }
         finally
         {
-            DGL.delete(cube, image);
-            if (!startedInit) destroy();
+            DGL.delete(image);
+        }
+    }
+
+    public static void convert(Path path, String outputFilename, int resolution) throws IOException
+    {
+        TextureCubemap cubemap = null;
+        Image image = null;
+        try
+        {
+            cubemap = convert(path, resolution);
+            save(cubemap, path.toAbsolutePath().getParent(), outputFilename);
+        }
+        finally
+        {
+            DGL.delete(cubemap, image);
         }
     }
 
