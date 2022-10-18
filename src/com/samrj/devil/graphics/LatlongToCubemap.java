@@ -147,8 +147,6 @@ public class LatlongToCubemap
 
             result = DGL.genTextureCubemap().bind();
             result.image(images, GL_RGBA8);
-            result.parami(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-            result.generateMipmap();
             return result;
         }
         catch (Throwable t)
