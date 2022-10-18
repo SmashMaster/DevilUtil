@@ -61,6 +61,7 @@ public final class TextureCubemap extends Texture<TextureCubemap>
         int oldID = tempBind();
         for (int i=0; i<6; i++) nglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                 0, format, size, size, 0, baseFormat, primType, NULL);
+        internalFormat = format;
         tempUnbind(oldID);
         
         setVRAMUsage(TexUtil.getBits(format)*size*size*6);
@@ -96,6 +97,7 @@ public final class TextureCubemap extends Texture<TextureCubemap>
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         for (int i=0; i<6; i++) glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                 0, format, size, size, 0, dataFormat, primType, images[i].buffer);
+        internalFormat = format;
         tempUnbind(oldID);
         
         setVRAMUsage(TexUtil.getBits(format)*size*size*6);
@@ -119,12 +121,28 @@ public final class TextureCubemap extends Texture<TextureCubemap>
     }
 
     /**
+     * Downloads one face of this cubemap into the given image.
+     */
+    public TextureCubemap download(int face, Image image)
+    {
+        return download(face, image, internalFormat);
+    }
+
+    /**
      * Downloads the OpenGL data for this cubemap into the given image.
      */
     public TextureCubemap download(ImageCubemap image, int format)
     {
         for (int i=0; i<6; i++) download(i, image.images[i], format);
         return this;
+    }
+
+    /**
+     * Downloads the OpenGL data for this cubemap into the given image.
+     */
+    public TextureCubemap download(ImageCubemap image)
+    {
+        return download(image, internalFormat);
     }
 
     /**

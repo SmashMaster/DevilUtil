@@ -82,8 +82,8 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         int primType = TexUtil.getPrimitiveType(format);
         
         int oldID = tempBind();
-        nglTexImage2D(target, 0, format, width, height, 0,
-                baseFormat, primType, NULL);
+        nglTexImage2D(target, 0, format, width, height, 0, baseFormat, primType, NULL);
+        internalFormat = format;
         tempUnbind(oldID);
         
         setVRAMUsage(TexUtil.getBits(format)*width*height);
@@ -115,6 +115,7 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         int oldID = tempBind();
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexImage2D(target, 0, format, width, height, 0, dataFormat, primType, image.buffer);
+        internalFormat = format;
         tempUnbind(oldID);
         
         setVRAMUsage(TexUtil.getBits(format)*width*height);
@@ -153,8 +154,8 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         height = image.height;
         
         int oldID = tempBind();
-        nglCompressedTexImage2D(target, 0, image.format, width, height, 0,
-                image.size(), image.address());
+        nglCompressedTexImage2D(target, 0, image.format, width, height, 0, image.size(), image.address());
+        internalFormat = image.format;
         tempUnbind(oldID);
         
         setVRAMUsage(image.size());
@@ -172,6 +173,9 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
      */
     public T subimage(Image image, int format)
     {
+        if (format != internalFormat)
+            throw new IllegalArgumentException("Illegal format " + TexUtil.formatToString(format) + ", expected " + TexUtil.formatToString(internalFormat));
+
         if (image.deleted()) throw new IllegalStateException("Image is deleted.");
         
         int dataFormat = TexUtil.getBaseFormat(format);
@@ -188,7 +192,7 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         tempUnbind(oldID);
         return getThis();
     }
-    
+
     /**
      * Overwrites the stored image for this texture with the given image. This
      * texture must already have allocated storage.
@@ -199,8 +203,9 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
     public T subimage(Image image)
     {
         int format = TexUtil.getFormat(image);
-        if (format == -1) throw new IllegalArgumentException("Illegal image format.");
-        return subimage(image, format);
+        if (format != internalFormat)
+            throw new IllegalArgumentException("Illegal format " + TexUtil.formatToString(format) + ", expected " + TexUtil.formatToString(internalFormat));
+        return subimage(image, internalFormat);
     }
     
     /**
@@ -208,6 +213,9 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
      */
     public T download(Image image, int format)
     {
+        if (format != internalFormat)
+            throw new IllegalArgumentException("Illegal format " + TexUtil.formatToString(format) + ", expected " + TexUtil.formatToString(internalFormat));
+
         int dataFormat = TexUtil.getBaseFormat(format);
         int primType = TexUtil.getPrimitiveType(format);
         int oldID = tempBind();
@@ -217,14 +225,13 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         tempUnbind(oldID);
         return getThis();
     }
-    
+
     /**
      * Downloads the OpenGL data for this texture into the given image.
      */
     public T download(Image image)
     {
-        int format = TexUtil.getFormat(image);
-        return download(image, format);
+        return download(image, internalFormat);
     }
 
     @Override

@@ -233,7 +233,7 @@ public class TexUtil
                 break;
         }
         
-        return -1;
+        return GL_NONE;
     }
     
     /**
@@ -254,6 +254,7 @@ public class TexUtil
      */
     public static String formatToString(int format)
     {
+        if (format == 0) return "GL_NONE";
         return "GL_" + getFormat(format);
     }
 
@@ -308,7 +309,7 @@ public class TexUtil
             case 2: return GL_RG;
             case 3: return GL_RGB;
             case 4: return GL_RGBA;
-            default: return -1;
+            default: return GL_NONE;
         }
     }
 
@@ -363,7 +364,7 @@ public class TexUtil
             case 16: return GL_DEPTH_COMPONENT16;
             case 24: return GL_DEPTH_COMPONENT24;
             case 32: return GL_DEPTH_COMPONENT32;
-            default: return -1;
+            default: return GL_NONE;
         }
     }
     
