@@ -83,8 +83,7 @@ public final class Window implements Hoverable
     }
     
     /**
-     * Aligns this window to the viewport. Useful for centering, or putting in
-     * a corner or against an edge.
+     * Aligns this window to the viewport. Useful for centering, or putting in a corner or against an edge.
      */
     public Window setPosAlignToViewport(Vec2 alignment)
     {
@@ -96,6 +95,14 @@ public final class Window implements Hoverable
         y0 = aligned.y;
         y1 = y0 + size.y;
         return this;
+    }
+
+    /**
+     * Aligns this window to the viewport. Useful for centering, or putting in a corner or against an edge.
+     */
+    public Window setPosAlignToViewport(Align alignment)
+    {
+        return setPosAlignToViewport(alignment.vector());
     }
     
     /**
@@ -208,6 +215,11 @@ public final class Window implements Hoverable
     {
         this.alignment.set(alignment);
         return this;
+    }
+
+    public Window setAlignment(Align alignment)
+    {
+        return setAlignment(alignment.vector());
     }
     
     public Window setPadding(float padding)

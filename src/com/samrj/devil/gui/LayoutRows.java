@@ -25,15 +25,20 @@ public class LayoutRows extends Form
         forms.clear();
         return this;
     }
-    
+
     public LayoutRows(Vec2 defaultAlignment)
     {
         this.defaultAlignment = Objects.requireNonNull(defaultAlignment);
     }
-    
+
+    public LayoutRows(Align defaultAlignment)
+    {
+        this(defaultAlignment.vector());
+    }
+
     public LayoutRows()
     {
-        this(Align.NW.vector());
+        this(Align.NW);
     }
     
     public LayoutRows add(Form form, Vec2 alignment)
@@ -42,7 +47,12 @@ public class LayoutRows extends Form
         alignments.add(Objects.requireNonNull(alignment));
         return this;
     }
-    
+
+    public LayoutRows add(Form form, Align alignment)
+    {
+        return add(form, alignment.vector());
+    }
+
     public LayoutRows add(Form form)
     {
         return add(form, defaultAlignment);

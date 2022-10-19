@@ -8,76 +8,87 @@ import java.util.function.Consumer;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 /**
- * A simple button.
+ * A toggle button or checkbox.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Button extends Form
+public class Toggle extends Form
 {
     private String text;
     private final Vec2 alignment = Align.C.vector();
     private float padding = 3.0f;
-    private Consumer<Button> onActivate;
-    
-    public Button(String text)
+    private Consumer<Toggle> onActivate;
+    private boolean value = false;
+
+    public Toggle(String text)
     {
         this.text = Objects.requireNonNull(text);
     }
 
-    public Button()
+    public Toggle()
     {
         this("");
     }
 
-    public Button setText(String text)
+    public boolean getValue()
+    {
+        return value;
+    }
+
+    public void setValue(boolean value)
+    {
+        this.value = value;
+    }
+
+    public Toggle setText(String text)
     {
         this.text = Objects.requireNonNull(text);
         return this;
     }
 
-    public Button setSize(float width, float height)
+    public Toggle setSize(float width, float height)
     {
         this.width = width;
         this.height = height;
         return this;
     }
-    
-    public Button setSize(float width)
+
+    public Toggle setSize(float width)
     {
         this.width = width;
         this.height = DUI.font().getHeight() + padding*2.0f;
         return this;
     }
-    
-    public Button setSizeFromText()
+
+    public Toggle setSizeFromText()
     {
         Font font = DUI.font();
         width = font.getWidth(text) + padding*2.0f;
         height = font.getHeight() + padding*2.0f;
         return this;
     }
-    
-    public Button setAlignment(Vec2 alignment)
+
+    public Toggle setAlignment(Vec2 alignment)
     {
         this.alignment.set(alignment);
         return this;
     }
-    
-    public Button setPadding(float padding)
+
+    public Toggle setPadding(float padding)
     {
         if (padding < 0.0f) throw new IllegalArgumentException();
         this.padding = padding;
         return this;
     }
-    
-    public Button setCallback(Consumer<Button> onActivate)
+
+    public Toggle setCallback(Consumer<Toggle> onActivate)
     {
         this.onActivate = onActivate;
         return this;
     }
-    
+
     @Override
     protected Form hover(float x, float y)
     {
@@ -89,6 +100,7 @@ public class Button extends Form
     protected boolean activate(int button)
     {
         if (button != GLFW_MOUSE_BUTTON_LEFT) return false;
+        value = !value;
         if (onActivate != null) onActivate.accept(this);
         return false;
     }
@@ -102,6 +114,11 @@ public class Button extends Form
         
         drawer.color(0.25f, 0.25f, 0.25f, 1.0f);
         drawer.rectFill(x0, x1, y0, y1);
+        if (value)
+        {
+            drawer.color(0.5f, 0.5f, 0.5f, 1.0f);
+            drawer.rectFill(x0 + padding, x1 - padding, y0 + padding, y1 - padding);
+        }
         drawer.color(outline, outline, outline, 1.0f);
         drawer.rect(x0, x1, y0, y1);
         
