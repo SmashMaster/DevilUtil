@@ -2,12 +2,13 @@ package com.samrj.devil.graphics;
 
 import com.samrj.devil.gl.*;
 import com.samrj.devil.math.Util;
+import com.samrj.devil.math.Vec2;
+import com.samrj.devil.math.Vec3;
 
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
 
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL30C.GL_COLOR_ATTACHMENT0;
@@ -19,9 +20,9 @@ import static org.lwjgl.opengl.GL30C.GL_COLOR_ATTACHMENT0;
  * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class LatlongToCubemap
+public class CubemapUtil
 {
-    private static final String VERT = """
+    private static final String LATLONG_TO_CUBEMAP_VERT = """
             #version 140
                         
             in vec2 in_pos;
@@ -35,7 +36,7 @@ public class LatlongToCubemap
             }
             """;
 
-    private static final String FRAG = """
+    private static final String LATLOVE_TO_CUBEMAP_FRAG = """
             #version 140
                         
             uniform sampler2D u_latlong;
@@ -75,12 +76,27 @@ public class LatlongToCubemap
             }
             """;
 
-    private static final String[] FACE_NAMES = {"_pos_x", "_neg_x", "_pos_y", "_neg_y", "_pos_z", "_neg_z"};
+    public enum Face
+    {
+        POS_X("_pos_x"),
+        NEG_X("_neg_x"),
+        POS_Y("_pos_y"),
+        NEG_Y("_neg_y"),
+        POS_Z("_pos_z"),
+        NEG_Z("_neg_z");
+
+        public final String postFix;
+
+        Face(String postFix)
+        {
+            this.postFix = postFix;
+        }
+    }
 
     private static boolean isInit;
     private static FBO fbo;
     private static VertexBuffer fsq;
-    private static ShaderProgram shader;
+    private static ShaderProgram latlongToCubemapShader;
 
     public static void init()
     {
@@ -89,7 +105,7 @@ public class LatlongToCubemap
         fbo = DGL.genFBO().bind();
         fbo.drawBuffers(GL_COLOR_ATTACHMENT0);
         fsq = DGLUtil.makeFSQ("in_pos");
-        shader = DGL.loadProgram(VERT, FRAG);
+        latlongToCubemapShader = DGL.loadProgram(LATLONG_TO_CUBEMAP_VERT, LATLOVE_TO_CUBEMAP_FRAG);
         isInit = true;
     }
 
@@ -97,11 +113,96 @@ public class LatlongToCubemap
     {
         if (!isInit) throw new IllegalStateException();
 
-        DGL.delete(fbo, fsq, shader);
+        DGL.delete(fbo, fsq, latlongToCubemapShader);
         fbo = null;
         fsq = null;
-        shader = null;
+        latlongToCubemapShader = null;
         isInit = false;
+    }
+
+    /**
+     * Converts the provided direction to a face UV coordinates, and stores the result in result. Returns the face.
+     */
+    public static Face getUV(Vec3 dir, Vec2 result)
+    {
+        float absX = Math.abs(dir.x);
+        float absY = Math.abs(dir.y);
+        float absZ = Math.abs(dir.z);
+
+        float max, u, v;
+        Face face;
+
+        if (absX >= absY && absX >= absZ)
+        {
+            max = absX;
+            if (dir.x > 0) // POSITIVE X
+            {
+                u = -dir.z;
+                v = dir.y;
+                face = Face.POS_X;
+            }
+            else // NEGATIVE X
+            {
+                u = dir.z;
+                v = dir.y;
+                face = Face.NEG_X;
+            }
+        }
+        else if (absY >= absX && absY >= absZ)
+        {
+            max = absY;
+            if (dir.y > 0) // POSITIVE Y
+            {
+                u = dir.x;
+                v = -dir.z;
+                face = Face.POS_Y;
+            }
+            else // NEGATIVE Y
+            {
+                u = dir.x;
+                v = dir.z;
+                face = Face.NEG_Y;
+            }
+        }
+        else
+        {
+            max = absZ;
+            if (dir.z > 0) // POSITIVE Z
+            {
+                u = dir.x;
+                v = dir.y;
+                face = Face.POS_Z;
+            }
+            else // NEGATIVE Z
+            {
+                u = -dir.x;
+                v = dir.y;
+                face = Face.NEG_Z;
+            }
+        }
+
+        result.set(0.5f*(u/max + 1.0f), 0.5f*(v/max + 1.0f));
+        return face;
+    }
+
+    /**
+     * Converts the given face and UV coordinates into its direction on this cubemap. The result is not normalized.
+     */
+    public static void getDir(Vec2 uv, Face face, Vec3 result)
+    {
+        float u = uv.x*2.0f - 1.0f;
+        float v = uv.y*2.0f - 1.0f;
+
+        switch (face)
+        {
+            case POS_X -> result.set(1.0f, -v, -u);
+            case NEG_X -> result.set(-1.0f, -v, u);
+            case POS_Y -> result.set(u, 1.0f, v);
+            case NEG_Y -> result.set(u, -1.0f, -v);
+            case POS_Z -> result.set(u, -v, 1.0f);
+            case NEG_Z -> result.set(-u, -v, -1.0f);
+            default -> throw new NullPointerException();
+        }
     }
 
     /**
@@ -121,16 +222,16 @@ public class LatlongToCubemap
 
         //Strip postfix.
         String noPostfix = null;
-        for (String postfix : FACE_NAMES)
+        for (Face face : Face.values())
         {
-            int index = noExtension.indexOf(postfix);
+            int index = noExtension.indexOf(face.postFix);
             if (index >= 0)
             {
                 noPostfix = noExtension.substring(0, index);
                 break;
             }
         }
-        if (noPostfix == null) throw new IOException("Filename " + filename + " does not end with one of valid postfixes:\n" + Arrays.toString(FACE_NAMES));
+        if (noPostfix == null) throw new IOException("Filename " + filename + " does not end with one of valid cubemap face postfixes.");
 
         Path directory = path.toAbsolutePath().getParent();
 
@@ -138,11 +239,11 @@ public class LatlongToCubemap
         TextureCubemap result = null;
         try
         {
-            for (int i = 0; i < 6; i++)
+            for (int face = 0; face < 6; face++)
             {
-                Path facePath = directory.resolve(noPostfix + FACE_NAMES[i] + extension);
+                Path facePath = directory.resolve(noPostfix + Face.values()[face].postFix + extension);
                 if (!facePath.toFile().canRead()) throw new IOException("Cannot read file " + facePath);
-                images[i] = DGL.loadImage(facePath);
+                images[face] = DGL.loadImage(facePath);
             }
 
             result = DGL.genTextureCubemap().bind();
@@ -160,7 +261,10 @@ public class LatlongToCubemap
         }
     }
 
-    public static TextureCubemap convert(Path path, int resolution) throws IOException
+    /**
+     * Converts the equirectangular projection image at the given path to a cubemap with the given resolution.
+     */
+    public static TextureCubemap convertFromLatlong(Path path, int resolution) throws IOException
     {
         boolean startedInit = isInit;
         if (!isInit) init();
@@ -178,11 +282,11 @@ public class LatlongToCubemap
 
             glViewport(0, 0,  resolution, resolution);
 
-            DGL.useProgram(shader);
+            DGL.useProgram(latlongToCubemapShader);
             for (int face=0; face<6; face++)
             {
                 fbo.textureCubemap(cubemap, face, GL_COLOR_ATTACHMENT0);
-                shader.uniform1i("u_face", face);
+                latlongToCubemapShader.uniform1i("u_face", face);
                 DGL.draw(fsq, GL_TRIANGLES);
             }
             return cubemap;
@@ -199,6 +303,9 @@ public class LatlongToCubemap
         }
     }
 
+    /**
+     * Saves the given cubemap as 6 PNG files at the given directory, with the given filename prefix.
+     */
     public static void save(TextureCubemap cubemap, Path outputDirectory, String outputFilename) throws IOException
     {
         int resolution = cubemap.getSize();
@@ -212,7 +319,7 @@ public class LatlongToCubemap
             for (int face = 0; face < 6; face++)
             {
                 cubemap.download(face, image, GL_RGBA8);
-                Path outPath = outputDirectory.resolve(outputFilename + FACE_NAMES[face] + ".png");
+                Path outPath = outputDirectory.resolve(outputFilename + Face.values()[face].postFix + ".png");
                 File outFile = outPath.toFile();
                 outFile.createNewFile();
                 ImageIO.write(image.toBufferedImage(), "PNG", outFile);
@@ -224,13 +331,17 @@ public class LatlongToCubemap
         }
     }
 
-    public static void convert(Path path, String outputFilename, int resolution) throws IOException
+    /**
+     * Converts the equirectangular projection image at the given path to a cubemap with the given resolution, and
+     * saves it as 6 PNGs with the given filename prefix in the same directory.
+     */
+    public static void convertFromLatlong(Path path, String outputFilename, int resolution) throws IOException
     {
         TextureCubemap cubemap = null;
         Image image = null;
         try
         {
-            cubemap = convert(path, resolution);
+            cubemap = convertFromLatlong(path, resolution);
             save(cubemap, path.toAbsolutePath().getParent(), outputFilename);
         }
         finally
@@ -239,12 +350,16 @@ public class LatlongToCubemap
         }
     }
 
-    public static void convert(String path, String outputFilename, int resolution) throws IOException
+    /**
+     * Converts the equirectangular projection image at the given path to a cubemap with the given resolution, and
+     * saves it as 6 PNGs with the given filename prefix in the same directory.
+     */
+    public static void convertFromLatlong(String path, String outputFilename, int resolution) throws IOException
     {
-        convert(Path.of(path), outputFilename, resolution);
+        convertFromLatlong(Path.of(path), outputFilename, resolution);
     }
 
-    private LatlongToCubemap()
+    private CubemapUtil()
     {
     }
 }

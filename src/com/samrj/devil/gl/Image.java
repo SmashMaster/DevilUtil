@@ -315,7 +315,7 @@ public final class Image extends DGLObj
     }
     
     /**
-     * Functional interface for any per-pixel-per-channel operation.
+     * Functional interface for any per-pixel operation.
      */
     @FunctionalInterface
     public interface Sampler
@@ -324,7 +324,7 @@ public final class Image extends DGLObj
     }
     
     /**
-     * Functional interface for any per-pixel-per-channel write operation.
+     * Functional interface for any per-pixel write operation.
      */
     @FunctionalInterface
     public interface Shader
