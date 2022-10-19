@@ -195,14 +195,24 @@ public class CubemapUtil
 
         switch (face)
         {
-            case POS_X -> result.set(1.0f, -v, -u);
-            case NEG_X -> result.set(-1.0f, -v, u);
-            case POS_Y -> result.set(u, 1.0f, v);
-            case NEG_Y -> result.set(u, -1.0f, -v);
-            case POS_Z -> result.set(u, -v, 1.0f);
-            case NEG_Z -> result.set(-u, -v, -1.0f);
+            case POS_X -> result.set(1.0f, v, -u);
+            case NEG_X -> result.set(-1.0f, v, u);
+            case POS_Y -> result.set(u, 1.0f, -v);
+            case NEG_Y -> result.set(u, -1.0f, v);
+            case POS_Z -> result.set(u, v, 1.0f);
+            case NEG_Z -> result.set(-u, v, -1.0f);
             default -> throw new NullPointerException();
         }
+    }
+
+    /**
+     * Converts the given face and UV coordinates into its direction on this cubemap. The result is not normalized.
+     */
+    public static Vec3 getDir(Vec2 uv, Face face)
+    {
+        Vec3 result = new Vec3();
+        getDir(uv, face, result);
+        return result;
     }
 
     /**

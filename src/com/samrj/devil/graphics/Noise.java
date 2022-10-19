@@ -17,10 +17,8 @@ public class Noise
     /**
      * Returns 3D Worley (cellular) noise.
      */
-    public static final float worley3d(Random random, long seed, int tiles, int resolution, int pixelX, int pixelY, int pixelZ)
+    public static final float worley3d(Random random, long seed, int tiles, Vec3 coord)
     {
-        Vec3 coord = new Vec3(pixelX + 0.5f, pixelY + 0.5f, pixelZ + 0.5f).mult(((float)tiles)/resolution);
-
         Vec3i iCoord = new Vec3i(Util.floor(coord.x), Util.floor(coord.y), Util.floor(coord.z));
         Vec3 fCoord = new Vec3(Util.fract(coord.x), Util.fract(coord.y), Util.fract(coord.z));
 
@@ -48,12 +46,19 @@ public class Noise
     }
 
     /**
+     * Returns 3D Worley (cellular) noise.
+     */
+    public static final float worley3d(Random random, long seed, int tiles, int resolution, int pixelX, int pixelY, int pixelZ)
+    {
+        Vec3 coord = new Vec3(pixelX + 0.5f, pixelY + 0.5f, pixelZ + 0.5f).mult(((float)tiles)/resolution);
+        return worley3d(random, seed, tiles, coord);
+    }
+
+    /**
      * Returns 2D Worley (cellular) noise.
      */
-    private static final float worley2d(Random random, long seed, int tiles, int resolution, int pixelX, int pixelY)
+    private static final float worley2d(Random random, long seed, int tiles, Vec2 coord)
     {
-        Vec2 coord = new Vec2(pixelX + 0.5f, pixelY + 0.5f).mult(((float)tiles)/resolution);
-
         Vec2i iCoord = new Vec2i(Util.floor(coord.x), Util.floor(coord.y));
         Vec2 fCoord = new Vec2(Util.fract(coord.x), Util.fract(coord.y));
 
@@ -77,5 +82,14 @@ public class Noise
         }
 
         return minDist;
+    }
+
+    /**
+     * Returns 2D Worley (cellular) noise.
+     */
+    private static final float worley2d(Random random, long seed, int tiles, int resolution, int pixelX, int pixelY)
+    {
+        Vec2 coord = new Vec2(pixelX + 0.5f, pixelY + 0.5f).mult(((float)tiles)/resolution);
+        return worley2d(random, seed, tiles, coord);
     }
 }
