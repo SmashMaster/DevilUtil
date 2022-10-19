@@ -129,20 +129,13 @@ public final class TextureCubemap extends Texture<TextureCubemap>
     }
 
     /**
-     * Downloads the OpenGL data for this cubemap into the given image.
+     * Downloads the OpenGL data for this cubemap into the given images.
      */
-    public TextureCubemap download(ImageCubemap image, int format)
+    public TextureCubemap download(Image[] images, int format)
     {
-        for (int i=0; i<6; i++) download(i, image.images[i], format);
+        if (images.length != 6) throw new IllegalArgumentException("Expected array of 6 images, got " + images.length);
+        for (int i=0; i<6; i++) download(i, images[i], format);
         return this;
-    }
-
-    /**
-     * Downloads the OpenGL data for this cubemap into the given image.
-     */
-    public TextureCubemap download(ImageCubemap image)
-    {
-        return download(image, internalFormat);
     }
 
     /**
