@@ -1,9 +1,14 @@
 package com.samrj.devil.graphics;
 
 import com.samrj.devil.math.*;
+import com.samrj.devil.math.zorder.ZOrderCurve;
 
+import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.Random;
+import java.util.random.RandomGenerator;
+
+import static org.lwjgl.system.MemoryUtil.*;
 
 /**
  * Utility methods for noise generation.
@@ -12,7 +17,7 @@ import java.util.Random;
  * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Noise
+public class WorleyNoise3D
 {
     /**
      * Returns 3D Worley (cellular) noise.
@@ -24,22 +29,20 @@ public class Noise
 
         float minDist = 1.0f;
 
-        for (int z=-1; z<=1; z++) for (int y=-1; y<=1; y++) for (int x=-1; x<=1; x++)
+        Vec3i n = new Vec3i();
+        Vec3i nLoop = new Vec3i();
+        Vec3 point = new Vec3(), diff = new Vec3();
+        for (n.z=-1; n.z<=1; n.z++) for (n.y=-1; n.y<=1; n.y++) for (n.x=-1; n.x<=1; n.x++)
         {
-            Vec3i neighbor = new Vec3i(x, y, z);
-
-            Vec3i neighborLoop = Vec3i.add(iCoord, neighbor);
-            neighborLoop.x = Util.loop(neighborLoop.x, tiles);
-            neighborLoop.y = Util.loop(neighborLoop.y, tiles);
-            neighborLoop.z = Util.loop(neighborLoop.z, tiles);
-            random.setSeed(Objects.hash(seed, neighborLoop));
+            Vec3i.add(iCoord, n, nLoop);
+            Util.loop(nLoop, tiles);
+            random.setSeed(Objects.hash(seed, nLoop));
             //Random must be 'warmed up' or its first float will always be the same.
             random.nextLong();
-            random.nextLong();
-            Vec3 point = new Vec3(random.nextFloat(), random.nextFloat(), random.nextFloat());
-            Vec3 diff = new Vec3(neighbor).add(point).sub(fCoord);
+            point.set(random.nextFloat(), random.nextFloat(), random.nextFloat());
+            diff.set(n).add(point).sub(fCoord);
             float dist = diff.length();
-            minDist = Math.min(minDist, dist);
+            minDist = Util.min(minDist, dist);
         }
 
         return minDist;
@@ -74,7 +77,6 @@ public class Noise
             random.setSeed(Objects.hash(seed, neighborLoop));
             //Random must be 'warmed up' or its first float will always be the same.
             random.nextLong();
-            random.nextLong();
             Vec2 point = new Vec2(random.nextFloat(), random.nextFloat());
             Vec2 diff = new Vec2(neighbor).add(point).sub(fCoord);
             float dist = diff.length();
@@ -91,5 +93,44 @@ public class Noise
     {
         Vec2 coord = new Vec2(pixelX + 0.5f, pixelY + 0.5f).mult(((float)tiles)/resolution);
         return worley2d(random, seed, tiles, coord);
+    }
+
+    private final int size, size2;
+    private final float[] cellData;
+
+    public WorleyNoise3D(int size, RandomGenerator random)
+    {
+        if (size <= 0) throw new IllegalArgumentException();
+        if (size > 1023) throw new IllegalArgumentException("Grid sizes above 1023 not supported.");
+        this.size = size;
+        size2 = size*size;
+
+        int floats = size*size*size*3;
+        cellData = new float[floats];
+        for (int i=0; i<floats; i++) cellData[i] = random.nextFloat();
+    }
+
+    public float getMinDist(Vec3 coord)
+    {
+        Vec3i iCoord = new Vec3i(Util.floor(coord.x), Util.floor(coord.y), Util.floor(coord.z));
+        Vec3 fCoord = new Vec3(Util.fract(coord.x), Util.fract(coord.y), Util.fract(coord.z));
+
+        Vec3i n = new Vec3i();
+        Vec3i nLoop = new Vec3i();
+        Vec3 point = new Vec3(), diff = new Vec3();
+        float minDist = 1.0f;
+        for (n.z=-1; n.z<=1; n.z++) for (n.y=-1; n.y<=1; n.y++) for (n.x=-1; n.x<=1; n.x++)
+        {
+            Vec3i.add(iCoord, n, nLoop);
+            Util.loop(nLoop, size);
+            int index = (nLoop.x*size2 + nLoop.y*size + nLoop.z)*3;
+            point.set(cellData[index], cellData[index+1], cellData[index+2]);
+
+            diff.set(n).add(point).sub(fCoord);
+            float dist = diff.length();
+            minDist = Util.min(minDist, dist);
+        }
+
+        return minDist;
     }
 }
