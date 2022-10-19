@@ -405,9 +405,6 @@ public final class Util
      */
     public static float loop(float x, float min, float max)
     {
-        if (x >= min && x < max) return x;
-        if (min >= max) return min;
-        
         float t = (x - min)%(max - min);
         return t < 0.0f ? t + max : t + min;
     }
@@ -421,8 +418,6 @@ public final class Util
      */
     public static float loop(float x, float max)
     {
-        if (x >= 0.0f && x < max) return x;
-        
         float t = x%max;
         return t < 0.0f ? t + max : t;
     }
@@ -437,8 +432,6 @@ public final class Util
      */
     public static int loop(int x, int min, int max)
     {
-        if (x >= min && x < max) return x;
-        
         int t = (x - min)%(max - min);
         return t < 0 ? t + max : t + min;
     }
@@ -452,10 +445,16 @@ public final class Util
      */
     public static int loop(int x, int max)
     {
-        if (x >= 0 && x < max) return x;
-        
         int t = x%max;
         return t < 0 ? t + max : t;
+    }
+
+
+    public static void loop(Vec3i v, int max)
+    {
+        v.x = loop(v.x, max);
+        v.y = loop(v.y, max);
+        v.z = loop(v.z, max);
     }
 
     /**
@@ -464,6 +463,13 @@ public final class Util
     public static float fract(float x)
     {
         return loop(x, 1.0f);
+    }
+
+    public static void fract(Vec3 v)
+    {
+        v.x = fract(v.x);
+        v.y = fract(v.y);
+        v.z = fract(v.z);
     }
     
     /**
