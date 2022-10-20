@@ -70,8 +70,7 @@ public final class TextureCubemap extends Texture<TextureCubemap>
     }
     
     /**
-     * Uploads each of 6 images to the corresponding face on this cubemap. Each
-     * image must have exactly the same width, height, and format.
+     * Uploads each of 6 images to the corresponding face on this cubemap. Each must have the same size, and format.
      * 
      * @param images An array of 6 images to upload.
      * @param format The texture format to upload each image as.
@@ -90,7 +89,8 @@ public final class TextureCubemap extends Texture<TextureCubemap>
         for (Image image : images)
         {
             if (image.width != size || image.height != size) throw new IllegalArgumentException("Image size mismatch.");
-            if (image.bands != bands || image.type != type) throw new IllegalArgumentException("Image format mismatch.");
+            if (image.bands != bands) throw new IllegalArgumentException("Image bands mismatch. Expected " + bands + ", got " + image.bands);
+            if (image.type != type) throw new IllegalArgumentException("Image type mismatch. Expected " + type + ", got " + image.type);
         }
         
         int oldID = tempBind();
@@ -103,6 +103,19 @@ public final class TextureCubemap extends Texture<TextureCubemap>
         setVRAMUsage(TexUtil.getBits(format)*size*size*6);
         
         return getThis();
+    }
+
+    /**
+     * Uploads each of 6 images to the corresponding face on this cubemap. Each must have the same size, and format.
+     *
+     * @param images An array of 6 images to upload.
+     * @return This texture.
+     */
+    public TextureCubemap image(Image[] images)
+    {
+        int format = TexUtil.getFormat(images[0]);
+        if (format == -1) throw new IllegalArgumentException("Illegal image format.");
+        return image(images, format);
     }
 
     /**

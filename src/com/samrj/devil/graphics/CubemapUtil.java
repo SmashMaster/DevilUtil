@@ -257,7 +257,7 @@ public class CubemapUtil
             }
 
             result = DGL.genTextureCubemap().bind();
-            result.image(images, GL_RGBA8);
+            result.image(images);
             return result;
         }
         catch (Throwable t)
