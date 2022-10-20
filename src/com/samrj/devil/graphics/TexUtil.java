@@ -23,6 +23,7 @@
 package com.samrj.devil.graphics;
 
 import com.samrj.devil.gl.Image;
+import com.samrj.devil.math.Util;
 
 import java.util.HashMap;
 
@@ -319,9 +320,22 @@ public class TexUtil
      * @param format an OpenGL texture format.
      * @return the primitive data type associated with the given OpenGL format.
      */
-    public static int getPrimitiveType(int format)
+    public static int getGLPrimitiveType(int format)
     {
         return getFormat(format).type;
+    }
+
+    public static Util.PrimType getPrimitiveType(int format)
+    {
+        return switch(getFormat(format).type)
+        {
+            case GL_BYTE, GL_UNSIGNED_BYTE -> Util.PrimType.BYTE;
+            case GL_SHORT, GL_UNSIGNED_SHORT-> Util.PrimType.SHORT;
+            case GL_INT, GL_UNSIGNED_INT -> Util.PrimType.INT;
+            case GL_FLOAT -> Util.PrimType.FLOAT;
+            case GL_DOUBLE -> Util.PrimType.DOUBLE;
+            default -> null;
+        };
     }
 
     /**

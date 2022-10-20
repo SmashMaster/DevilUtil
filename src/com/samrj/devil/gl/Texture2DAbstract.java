@@ -79,7 +79,7 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         
         this.width = width;
         this.height = height;
-        int primType = TexUtil.getPrimitiveType(format);
+        int primType = TexUtil.getGLPrimitiveType(format);
         
         int oldID = tempBind();
         nglTexImage2D(target, 0, format, width, height, 0, baseFormat, primType, NULL);
@@ -110,7 +110,7 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         
         width = image.width;
         height = image.height;
-        int primType = TexUtil.getPrimitiveType(format);
+        int primType = TexUtil.getGLPrimitiveType(format);
         
         int oldID = tempBind();
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -185,7 +185,7 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
         if (image.width != width || image.height != height)
             throw new IllegalArgumentException("Incompatible image dimensions.");
         
-        int primType = TexUtil.getPrimitiveType(format);
+        int primType = TexUtil.getGLPrimitiveType(format);
         int oldID = tempBind();
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexSubImage2D(target, 0, 0, 0, width, height, dataFormat, primType, image.buffer);
@@ -217,7 +217,7 @@ abstract class Texture2DAbstract<T extends Texture2DAbstract<T>> extends Texture
             throw new IllegalArgumentException("Illegal format " + TexUtil.formatToString(format) + ", expected " + TexUtil.formatToString(internalFormat));
 
         int dataFormat = TexUtil.getBaseFormat(format);
-        int primType = TexUtil.getPrimitiveType(format);
+        int primType = TexUtil.getGLPrimitiveType(format);
         int oldID = tempBind();
         image.buffer.clear();
         glPixelStorei(GL_PACK_ALIGNMENT, 1);

@@ -60,7 +60,7 @@ public final class Texture1D extends Texture<Texture1D>
             throw new IllegalArgumentException("Incompatible format bands.");
         
         width = image.width*image.height;
-        int primType = TexUtil.getPrimitiveType(format);
+        int primType = TexUtil.getGLPrimitiveType(format);
         
         int oldID = tempBind();
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);

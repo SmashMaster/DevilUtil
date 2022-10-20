@@ -55,7 +55,7 @@ public final class TextureCubemap extends Texture<TextureCubemap>
         int baseFormat = TexUtil.getBaseFormat(format);
         if (baseFormat == -1) throw new IllegalArgumentException("Illegal image format.");
         
-        int primType = TexUtil.getPrimitiveType(format);
+        int primType = TexUtil.getGLPrimitiveType(format);
         this.size = size;
         
         int oldID = tempBind();
@@ -82,7 +82,7 @@ public final class TextureCubemap extends Texture<TextureCubemap>
         
         size = images[0].width;
         PrimType type = images[0].type;
-        int primType = TexUtil.getPrimitiveType(format);
+        int primType = TexUtil.getGLPrimitiveType(format);
         int dataFormat = TexUtil.getBaseFormat(format);
         int bands = TexUtil.getBands(dataFormat);
         
@@ -124,7 +124,7 @@ public final class TextureCubemap extends Texture<TextureCubemap>
     public TextureCubemap download(int face, Image image, int format)
     {
         int dataFormat = TexUtil.getBaseFormat(format);
-        int primType = TexUtil.getPrimitiveType(format);
+        int primType = TexUtil.getGLPrimitiveType(format);
         int oldID = tempBind();
         image.buffer.clear();
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
