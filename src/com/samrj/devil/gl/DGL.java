@@ -935,19 +935,33 @@ public final class DGL
      * be bound.
      * 
      * @param vData The vertex data to render.
+     * @param first The first vertex to draw.
+     * @param count The number of vertices to draw.
+     * @param mode An OpenGL primitive draw mode.
+     */
+    public static void draw(VertexData vData, int first, int count, int mode)
+    {
+        if (boundProgram == null) throw new IllegalStateException("No shader program is in use.");
+
+        int inds = vData.numIndices();
+        VAO vao = VAO.bind(null, vData, boundProgram);
+        if (inds < 0) glDrawArrays(mode, first, count);
+        else glDrawElements(mode, count, GL_UNSIGNED_INT, first);
+        vao.unbind();
+    }
+
+    /**
+     * Draws the given vertex data using the given primitive mode. A shader must
+     * be bound.
+     *
+     * @param vData The vertex data to render.
      * @param mode An OpenGL primitive draw mode.
      */
     public static void draw(VertexData vData, int mode)
     {
-        if (boundProgram == null) throw new IllegalStateException("No shader program is in use.");
-        
-        int verts = vData.numVertices();
         int inds = vData.numIndices();
-        
-        VAO vao = VAO.bind(null, vData, boundProgram);
-        if (inds < 0) glDrawArrays(mode, 0, verts);
-        else glDrawElements(mode, inds, GL_UNSIGNED_INT, 0);
-        vao.unbind();
+        int count = inds < 0 ? vData.numVertices() : inds;
+        draw(vData, 0, count, mode);
     }
     
     /**
