@@ -176,7 +176,7 @@ public final class DUIDrawer
     }
     
     /**
-     * Draws a rectangle outline at the given position.
+     * Draws a rectangular outline at the given position.
      */
     public DUIDrawer rect(float x0, float x1, float y0, float y1)
     {
@@ -191,24 +191,34 @@ public final class DUIDrawer
         
         return this;
     }
-    
+
     /**
-     * Draws a rectangle outline at the given position.
+     * Draws a rectangle at the given position filled with the given image.
      */
-    public DUIDrawer rectFill(float x0, float x1, float y0, float y1)
+    public DUIDrawer rectImage(float x0, float x1, float y0, float y1, Texture2D texture)
     {
+        if (texture == null) texture = nullTexture;
+
         pos.set(x0, y0); texCoord.set(0.0f, 0.0f); stream.vertex();
         pos.set(x0, y1); texCoord.set(0.0f, 1.0f); stream.vertex();
         pos.set(x1, y1); texCoord.set(1.0f, 1.0f); stream.vertex();
         pos.set(x1, y0); texCoord.set(1.0f, 0.0f); stream.vertex();
-        
+
         stream.upload();
-        nullTexture.bind(GL_TEXTURE0);
+        texture.bind(GL_TEXTURE0);
         DGL.draw(stream, GL_TRIANGLE_FAN);
-        
         return this;
     }
-    
+
+    /**
+     * Draws a filled rectangle at the given position.
+     */
+    public DUIDrawer rectFill(float x0, float x1, float y0, float y1)
+    {
+        return rectImage(x0, x1, y0, y1, null);
+    }
+
+
     /**
      * Draws text at the specified position as the upper-left corner, using the
      * given font and string.

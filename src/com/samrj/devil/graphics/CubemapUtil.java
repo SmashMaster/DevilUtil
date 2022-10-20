@@ -4,6 +4,7 @@ import com.samrj.devil.gl.*;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
+import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
 
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -285,10 +286,11 @@ public class CubemapUtil
         {
             latlongTex = DGL.loadTex2D(path).bind();
             latlongTex.parami(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            latlongTex.paramf(EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT, 16.0f);
             latlongTex.generateMipmap();
 
             cubemap = DGL.genTextureCubemap();
-            cubemap.image(resolution, GL_RGBA8);
+            cubemap.image(resolution, latlongTex.getInternalFormat());
 
             glViewport(0, 0,  resolution, resolution);
 
@@ -323,12 +325,16 @@ public class CubemapUtil
         Image image = null;
         try
         {
-            image = DGL.genImage(resolution, resolution, 4, Util.PrimType.BYTE);
+            int format = cubemap.getInternalFormat();
+            int bands = TexUtil.getBands(TexUtil.getBaseFormat(format));
+            Util.PrimType primType = TexUtil.getPrimitiveType(format);
+
+            image = DGL.genImage(resolution, resolution, bands, primType);
             image.buffer.clear();
 
             for (int face = 0; face < 6; face++)
             {
-                cubemap.download(face, image, GL_RGBA8);
+                cubemap.download(face, image, format);
                 Path outPath = outputDirectory.resolve(outputFilename + Face.values()[face].postFix + ".png");
                 File outFile = outPath.toFile();
                 outFile.createNewFile();

@@ -59,6 +59,10 @@ public class FirstFitAllocation implements Allocation
     FirstFitAllocation getNext() {
         return next;
     }
+    
+    void setNext(FirstFitAllocation newNext) {
+        next = newNext;
+    }
 
     /**
      * @return if this region is allocated

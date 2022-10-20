@@ -28,6 +28,9 @@ import com.samrj.devil.util.Bufferable;
 import java.nio.ByteBuffer;
 import java.util.*;
 
+import static org.lwjgl.system.MemoryUtil.memAddress0;
+import static org.lwjgl.system.MemoryUtil.memByteBuffer;
+
 /**
  * Vertex data abstract class. Used to keep track of vertex attributes, indices,
  * etc. and prepare vertex data for OpenGL rendering.
@@ -36,6 +39,15 @@ import java.util.*;
  */
 public abstract class VertexBuilder extends DGLObj implements VertexData
 {
+    public static ByteBuffer viewBuffer(ByteBuffer buffer)
+    {
+        if (buffer == null) return null;
+        ByteBuffer viewBuffer = memByteBuffer(memAddress0(buffer), buffer.capacity());
+        viewBuffer.position(buffer.position());
+        viewBuffer.limit(buffer.limit());
+        return viewBuffer;
+    }
+
     public static enum State
     {
         /**
@@ -75,7 +87,10 @@ public abstract class VertexBuilder extends DGLObj implements VertexData
         attMap = new HashMap<>();
         vertexSize = 0;
     }
-    
+
+    public abstract ByteBuffer newVertexBufferView();
+    public abstract ByteBuffer newIndexBufferView();
+
     /**
      * @return The state of this vertex data.
      */

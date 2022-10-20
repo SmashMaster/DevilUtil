@@ -67,7 +67,7 @@ abstract class Texture3DAbstract<T extends Texture3DAbstract<T>> extends Texture
         int baseFormat = TexUtil.getBaseFormat(format);
         if (baseFormat == -1) throw new IllegalArgumentException("Illegal image format.");
         
-        int primType = TexUtil.getPrimitiveType(format);
+        int primType = TexUtil.getGLPrimitiveType(format);
         
         this.width = width;
         this.height = height;
@@ -105,7 +105,7 @@ abstract class Texture3DAbstract<T extends Texture3DAbstract<T>> extends Texture
         if (image.width != width || image.height != height)
             throw new IllegalArgumentException("Incompatible image dimensions.");
         
-        int primType = TexUtil.getPrimitiveType(format);
+        int primType = TexUtil.getGLPrimitiveType(format);
         int oldID = tempBind();
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexSubImage3D(target, 0, 0, 0, depth, width, height, 1, dataFormat, primType, image.buffer);

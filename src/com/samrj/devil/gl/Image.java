@@ -268,18 +268,20 @@ public final class Image extends DGLObj
     }
     
     /**
-     * Creates a new buffered image for this image data. This image data must be
-     * in a byte format, and have 3 or 4 bands.
+     * Creates a new buffered image for this image data.
      * 
      * @return A new BufferedImage.
      */
     public BufferedImage toBufferedImage()
     {
         if (deleted) throw new IllegalStateException("Image buffer deleted.");
-        if (type != PrimType.BYTE) throw new IllegalStateException("Image buffer must be in byte format.");
-        if (bands != 3 && bands != 4) throw new IllegalStateException("Image must have 3 or 4 bands.");
-        
-        int biType = bands == 3 ? BufferedImage.TYPE_INT_RGB : BufferedImage.TYPE_INT_ARGB;
+
+        int biType;
+        if (type == PrimType.SHORT && bands == 1) biType = BufferedImage.TYPE_USHORT_GRAY;
+        else if (type == PrimType.BYTE && bands == 3) biType = BufferedImage.TYPE_INT_RGB;
+        else if (type == PrimType.BYTE && bands == 4) biType = BufferedImage.TYPE_INT_ARGB;
+        else throw new IllegalArgumentException("Unsupported image type: " + bands + " bands of " + type);
+
         BufferedImage out = new BufferedImage(width, height, biType);
         write(out.getRaster());
         return out;

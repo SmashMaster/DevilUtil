@@ -22,12 +22,13 @@
 
 package com.samrj.devil.gl;
 
+import org.lwjgl.system.MemoryUtil;
+
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.opengl.GL11C.glGetInteger;
 import static org.lwjgl.opengl.GL15C.*;
-import static org.lwjgl.system.MemoryUtil.memAlloc;
-import static org.lwjgl.system.MemoryUtil.memFree;
+import static org.lwjgl.system.MemoryUtil.*;
 
 /**
  * Vertex data for unmodifiable vertex data. Suitable for data that is built
@@ -57,7 +58,19 @@ public final class VertexBuffer extends VertexBuilder
         this.maxIndices = maxIndices;
         state = State.NEW;
     }
-    
+
+    @Override
+    public ByteBuffer newVertexBufferView()
+    {
+        return viewBuffer(vertexBuffer);
+    }
+
+    @Override
+    public ByteBuffer newIndexBufferView()
+    {
+        return viewBuffer(indexBuffer);
+    }
+
     @Override
     public State getState()
     {
