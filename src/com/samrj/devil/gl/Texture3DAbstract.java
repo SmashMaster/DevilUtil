@@ -73,8 +73,8 @@ abstract class Texture3DAbstract<T extends Texture3DAbstract<T>> extends Texture
         this.height = height;
         this.depth = depth;
         int oldID = tempBind();
-        nglTexImage3D(target, 0, format, width, height, depth, 0,
-                baseFormat, primType, NULL);
+        nglTexImage3D(target, 0, format, width, height, depth, 0, baseFormat, primType, NULL);
+        internalFormat = format;
         tempUnbind(oldID);
         
         setVRAMUsage(TexUtil.getBits(format)*width*height*depth);
@@ -109,6 +109,7 @@ abstract class Texture3DAbstract<T extends Texture3DAbstract<T>> extends Texture
         int oldID = tempBind();
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexSubImage3D(target, 0, 0, 0, depth, width, height, 1, dataFormat, primType, image.buffer);
+        internalFormat = format;
         tempUnbind(oldID);
         return getThis();
     }
@@ -123,7 +124,8 @@ abstract class Texture3DAbstract<T extends Texture3DAbstract<T>> extends Texture
     public T subimage(Image image, int depth)
     {
         int format = TexUtil.getFormat(image);
-        if (format == -1) throw new IllegalArgumentException("Illegal image format.");
+        if (format != internalFormat)
+            throw new IllegalArgumentException("Illegal format " + TexUtil.formatToString(format) + ", expected " + TexUtil.formatToString(internalFormat));
         return subimage(image, depth, format);
     }
 }

@@ -64,6 +64,7 @@ public class Texture2DMultisample extends Texture<Texture2DMultisample>
         
         int oldID = tempBind();
         glTexImage2DMultisample(target, samples, format, width, height, fixedSampleLocations);
+        internalFormat = format;
         tempUnbind(oldID);
         
         setVRAMUsage(TexUtil.getBits(format)*width*height*samples);

@@ -24,10 +24,15 @@ public class LayoutColumns extends Form
     {
         this.defaultAlignment = Objects.requireNonNull(defaultAlignment);
     }
-    
+
+    public LayoutColumns(Align defaultAlignment)
+    {
+        this(defaultAlignment.vector());
+    }
+
     public LayoutColumns()
     {
-        this(Align.NW.vector());
+        this(Align.NW);
     }
     
     public LayoutColumns clear()
@@ -42,7 +47,12 @@ public class LayoutColumns extends Form
         alignments.add(Objects.requireNonNull(alignment));
         return this;
     }
-    
+
+    public LayoutColumns add(Form form, Align alignment)
+    {
+        return add(form, alignment.vector());
+    }
+
     public LayoutColumns add(Form form)
     {
         return add(form, defaultAlignment);

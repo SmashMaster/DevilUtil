@@ -35,6 +35,7 @@ import static org.lwjgl.opengl.GL30C.glGenerateMipmap;
 public abstract class Texture<T extends Texture<T>> extends DGLObj
 {
     public final int id, target, binding;
+    int internalFormat = GL_NONE;
     private boolean deleted;
     private boolean hasMipmaps;
     private long vramUsage;
@@ -77,6 +78,14 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
         if (hasMipmaps) bits *= 2;
         Profiler.addUsedVRAM(bits - vramUsage);
         vramUsage = bits;
+    }
+
+    /**
+     * Returns the OpenGL format of this uploaded texture, or GL_NONE if it has no storage.
+     */
+    public final int getInternalFormat()
+    {
+        return internalFormat;
     }
     
     /**

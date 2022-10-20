@@ -65,6 +65,7 @@ public final class Texture1D extends Texture<Texture1D>
         int oldID = tempBind();
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexImage1D(target, 0, format, width, 0, dataFormat, primType, image.buffer);
+        internalFormat = format;
         tempUnbind(oldID);
         
         setVRAMUsage(TexUtil.getBits(format)*width);
