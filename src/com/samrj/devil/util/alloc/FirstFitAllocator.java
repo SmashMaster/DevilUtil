@@ -19,6 +19,7 @@ public class FirstFitAllocator implements Allocator {
         this.capacity = capacity;
         this.alignment = alignment;
         this.callback = callback;
+        last = first;
     }
 
     /**
@@ -47,7 +48,12 @@ public class FirstFitAllocator implements Allocator {
     @Override
     public void increaseCapacity(int increaseNeeded) {
         int newCapacity = callback.increaseCapacity(this, increaseNeeded);
-        last.setLength(last.getLength() + newCapacity - getCapacity());
+        if (last.isAllocated()) {
+            FirstFitAllocation newRegion = new FirstFitAllocation(this, capacity, increaseNeeded, last, null);
+            last.setNext(newRegion);
+            setLast(newRegion);
+        } else
+            last.setLength(last.getLength() + newCapacity - getCapacity());
         capacity = newCapacity;
     }
     
