@@ -57,6 +57,18 @@ public final class VertexStream extends VertexBuilder
     }
 
     @Override
+    public ByteBuffer newVertexBufferView()
+    {
+        return viewBuffer(vertexBuffer);
+    }
+
+    @Override
+    public ByteBuffer newIndexBufferView()
+    {
+        return viewBuffer(indexBuffer);
+    }
+
+    @Override
     public State getState()
     {
         return state;
