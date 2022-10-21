@@ -208,7 +208,7 @@ public class TexUtil
                     case 4: return GL_RGBA8;
                 }
                 break;
-            case CHAR: switch (image.bands)
+            case CHAR: case SHORT: switch (image.bands)
                 {
                     case 1: return GL_R16;
                     case 2: return GL_RG16;
