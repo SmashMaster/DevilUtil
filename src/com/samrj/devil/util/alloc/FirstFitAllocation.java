@@ -102,11 +102,13 @@ public class FirstFitAllocation implements Allocation
     }
     
     private void absorbNext() {
-        setLength(length + getNext().getLength());
-        next = getNext().getNext();
-        next.prev = this;
-        if (getNext() != null && !next.isAllocated())
-            absorbNext();
+        setLength(length + next.getLength());
+        next = next.next;
+        if (Objects.nonNull(next)) {
+            next.prev = this;
+            if (!next.isAllocated())
+                absorbNext();
+        }
     }
     
     @Override
@@ -115,10 +117,10 @@ public class FirstFitAllocation implements Allocation
             if (!isAllocated())
                 throw new IllegalStateException("Cannot deallocate unallocated region: " + this);
             
-            if (getPrev() != null && !prev.isAllocated())
-                getPrev().absorbNext();
+            if (Objects.nonNull(prev) && prev.next == this && !prev.isAllocated())
+                prev.absorbNext();
             else {
-                if (getNext() != null && !next.isAllocated())
+                if (Objects.nonNull(next) && !next.isAllocated())
                     absorbNext();
                 allocated = false;
             }
