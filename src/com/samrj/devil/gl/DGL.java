@@ -946,7 +946,7 @@ public final class DGL
         int inds = vData.numIndices();
         VAO vao = VAO.bind(null, vData, boundProgram);
         if (inds < 0) glDrawArrays(mode, first, count);
-        else glDrawElements(mode, count, GL_UNSIGNED_INT, first);
+        else glDrawElements(mode, count, GL_UNSIGNED_INT, first*4);
         vao.unbind();
     }
 

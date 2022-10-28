@@ -258,7 +258,7 @@ public abstract class VertexBuilder extends DGLObj implements VertexData
         return attMap.get(name);
     }
     
-    int vertexSize()
+    public int vertexSize()
     {
         return vertexSize;
     }
