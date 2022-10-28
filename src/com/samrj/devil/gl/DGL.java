@@ -943,10 +943,9 @@ public final class DGL
     {
         if (boundProgram == null) throw new IllegalStateException("No shader program is in use.");
 
-        int inds = vData.numIndices();
         VAO vao = VAO.bind(null, vData, boundProgram);
-        if (inds < 0) glDrawArrays(mode, first, count);
-        else glDrawElements(mode, count, GL_UNSIGNED_INT, first*4);
+        if (vData.isIndexed()) glDrawElements(mode, count, GL_UNSIGNED_INT, first*4);
+        else glDrawArrays(mode, first, count);
         vao.unbind();
     }
 
@@ -959,8 +958,7 @@ public final class DGL
      */
     public static void draw(VertexData vData, int mode)
     {
-        int inds = vData.numIndices();
-        int count = inds < 0 ? vData.numVertices() : inds;
+        int count = vData.isIndexed() ? vData.numIndices() : vData.numVertices();
         draw(vData, 0, count, mode);
     }
     
@@ -976,13 +974,10 @@ public final class DGL
     public static void drawInstanced(VertexData vData, int mode, int primcount)
     {
         if (boundProgram == null) throw new IllegalStateException("No shader program is in use.");
-        
-        int verts = vData.numVertices();
-        int inds = vData.numIndices();
-        
+
         VAO vao = VAO.bind(null, vData, boundProgram);
-        if (inds < 0) glDrawArraysInstanced(mode, 0, verts, primcount);
-        else glDrawElementsInstanced(mode, inds, GL_UNSIGNED_INT, 0, primcount);
+        if (vData.isIndexed()) glDrawElementsInstanced(mode, vData.numIndices(), GL_UNSIGNED_INT, 0, primcount);
+        else glDrawArraysInstanced(mode, 0, vData.numVertices(), primcount);
         vao.unbind();
     }
     
@@ -1001,13 +996,11 @@ public final class DGL
     {
         if (boundProgram == null) throw new IllegalStateException("No shader program is in use.");
         
-        int primcount = iData.numVertices();
-        int verts = vData.numVertices();
-        int inds = vData.numIndices();
+        int instanceCount = iData.numVertices();
         
         VAO vao = VAO.bind(iData, vData, boundProgram);
-        if (inds < 0) glDrawArraysInstanced(mode, 0, verts, primcount);
-        else glDrawElementsInstanced(mode, inds, GL_UNSIGNED_INT, 0, primcount);
+        if (vData.isIndexed()) glDrawElementsInstanced(mode, vData.numIndices(), GL_UNSIGNED_INT, 0, instanceCount);
+        else glDrawArraysInstanced(mode, 0, vData.numVertices(), instanceCount);
         vao.unbind();
     }
     
