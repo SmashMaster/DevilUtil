@@ -55,6 +55,11 @@ public interface VertexData extends VAOBindable
      *         not enabled for this vertex data.
      */
     int numIndices();
+
+    default boolean isIndexed()
+    {
+        return numIndices() >= 0;
+    }
     
     interface Attribute
     {

@@ -46,6 +46,7 @@ import static org.lwjgl.opengl.GL30C.*;
 import static org.lwjgl.opengl.GL31C.glDrawArraysInstanced;
 import static org.lwjgl.opengl.GL31C.glDrawElementsInstanced;
 import static org.lwjgl.opengl.GL43C.GL_CONTEXT_FLAG_DEBUG_BIT;
+import static org.lwjgl.opengl.GL43C.glMultiDrawElementsIndirect;
 import static org.lwjgl.system.MemoryUtil.memGetInt;
 
 /**
@@ -931,6 +932,35 @@ public final class DGL
     // </editor-fold>
 
     /**
+     * Runs the given draw command, automatically binding the correct VAO for the given instance/vertex data, and the
+     * currently bound shader program.
+     *
+     * @param iData The instance data to bind.
+     * @param vData The vertex data to bind.
+     * @param command The draw command to run.
+     */
+    public static void draw(VertexData iData, VertexData vData, Runnable command)
+    {
+        if (boundProgram == null) throw new IllegalStateException("No shader program is in use.");
+        VAO vao = VAO.bind(iData, vData, boundProgram);
+        command.run();
+        vao.unbind();
+    }
+
+    /**
+     * Runs the given draw command, automatically binding the correct VAO for the given instance/vertex data, and the
+     * currently bound shader program.
+     *
+     * @param vData The vertex data to bind.
+     * @param command The draw command to run.
+     */
+    public static void draw(VertexData vData, Runnable command)
+    {
+        draw(null, vData, command);
+    }
+
+
+    /**
      * Draws the given vertex data using the given primitive mode. A shader must
      * be bound.
      * 
@@ -941,13 +971,11 @@ public final class DGL
      */
     public static void draw(VertexData vData, int first, int count, int mode)
     {
-        if (boundProgram == null) throw new IllegalStateException("No shader program is in use.");
-
-        int inds = vData.numIndices();
-        VAO vao = VAO.bind(null, vData, boundProgram);
-        if (inds < 0) glDrawArrays(mode, first, count);
-        else glDrawElements(mode, count, GL_UNSIGNED_INT, first*4);
-        vao.unbind();
+        draw(vData, () ->
+        {
+            if (vData.isIndexed()) glDrawElements(mode, count, GL_UNSIGNED_INT, first*4);
+            else glDrawArrays(mode, first, count);
+        });
     }
 
     /**
@@ -959,8 +987,7 @@ public final class DGL
      */
     public static void draw(VertexData vData, int mode)
     {
-        int inds = vData.numIndices();
-        int count = inds < 0 ? vData.numVertices() : inds;
+        int count = vData.isIndexed() ? vData.numIndices() : vData.numVertices();
         draw(vData, 0, count, mode);
     }
     
@@ -975,15 +1002,11 @@ public final class DGL
      */
     public static void drawInstanced(VertexData vData, int mode, int primcount)
     {
-        if (boundProgram == null) throw new IllegalStateException("No shader program is in use.");
-        
-        int verts = vData.numVertices();
-        int inds = vData.numIndices();
-        
-        VAO vao = VAO.bind(null, vData, boundProgram);
-        if (inds < 0) glDrawArraysInstanced(mode, 0, verts, primcount);
-        else glDrawElementsInstanced(mode, inds, GL_UNSIGNED_INT, 0, primcount);
-        vao.unbind();
+        draw(vData, () ->
+        {
+            if (vData.isIndexed()) glDrawElementsInstanced(mode, vData.numIndices(), GL_UNSIGNED_INT, 0, primcount);
+            else glDrawArraysInstanced(mode, 0, vData.numVertices(), primcount);
+        });
     }
     
     /**
@@ -999,18 +1022,14 @@ public final class DGL
      */
     public static void drawInstanced(VertexData iData, VertexData vData, int mode)
     {
-        if (boundProgram == null) throw new IllegalStateException("No shader program is in use.");
-        
-        int primcount = iData.numVertices();
-        int verts = vData.numVertices();
-        int inds = vData.numIndices();
-        
-        VAO vao = VAO.bind(iData, vData, boundProgram);
-        if (inds < 0) glDrawArraysInstanced(mode, 0, verts, primcount);
-        else glDrawElementsInstanced(mode, inds, GL_UNSIGNED_INT, 0, primcount);
-        vao.unbind();
+        draw(iData, vData, () ->
+        {
+            int instanceCount = iData.numVertices();
+            if (vData.isIndexed()) glDrawElementsInstanced(mode, vData.numIndices(), GL_UNSIGNED_INT, 0, instanceCount);
+            else glDrawArraysInstanced(mode, 0, vData.numVertices(), instanceCount);
+        });
     }
-    
+
     /**
      * Deletes each DevilGL object in the given array, freeing any native
      * resources associated with those objects.
