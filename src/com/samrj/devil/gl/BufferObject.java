@@ -73,6 +73,12 @@ public class BufferObject extends DGLObj
         glBindBufferBase(target, binding, id);
     }
 
+    public void bindBufferBase(int target, int binding)
+    {
+        if (deleted) throw new IllegalStateException("Cannot bind deleted buffer.");
+        glBindBufferBase(target, binding, id);
+    }
+
     public void bindBuffer()
     {
         if (deleted) throw new IllegalStateException("Cannot bind deleted buffer.");
