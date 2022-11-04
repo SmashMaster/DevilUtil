@@ -12,6 +12,7 @@ import static org.lwjgl.opengl.GL30C.glBindBufferBase;
 import static org.lwjgl.opengl.GL30C.glGenBuffers;
 import static org.lwjgl.opengl.GL42C.*;
 import static org.lwjgl.opengl.GL43C.*;
+import static org.lwjgl.system.MemoryUtil.memAddress0;
 
 /**
  * Class for miscellaneous buffer types.
@@ -109,6 +110,13 @@ public class BufferObject extends DGLObj
     {
         int oldID = tempBind();
         glBufferSubData(target, offset, data);
+        tempUnbind(oldID);
+    }
+
+    public void bufferSubData(long offset, int length, ByteBuffer data)
+    {
+        int oldID = tempBind();
+        nglBufferSubData(target, offset, length, memAddress0(data));
         tempUnbind(oldID);
     }
 
