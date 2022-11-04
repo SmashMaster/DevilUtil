@@ -50,15 +50,6 @@ public class Plotter implements GameWindowMode
             GameWindow.setResolution(768, 768);
             GameWindow.onInit(() ->
             {
-                try
-                {
-                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
-
                 glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
                 glClearDepth(1.0);
                 glEnable(GL_MULTISAMPLE);

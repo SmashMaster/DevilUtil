@@ -45,7 +45,7 @@ public class Vec3d implements Bufferable, DataStreamable<Vec3d>
      * @param i The component to get.
      * @return The component of the vector.
      */
-    public double getComponent(Vec3d v, int i)
+    public static double getComponent(Vec3d v, int i)
     {
         switch (i)
         {

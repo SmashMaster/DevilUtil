@@ -2,6 +2,7 @@ package com.samrj.devil.geo3d;
 
 import com.samrj.devil.math.Mat4;
 import com.samrj.devil.math.Vec3;
+import com.samrj.devil.math.Vec4;
 
 /**
  * Allows a frustum to be derived from any 4x4 projection matrix; whether it is
@@ -60,6 +61,20 @@ public class Frustum
         constants[4] = m44 + m34;
         normals[5].set(m41 - m31, m42 - m32, m43 - m33); //Far
         constants[5] = m44 - m34;
+    }
+
+    /**
+     * Returns all 6 planes of this Frustum as Vec4s: (plane normal.xyz, plane constant)
+     */
+    public Vec4[] getPlanes()
+    {
+        return new Vec4[]{
+                new Vec4(normals[0], constants[0]),
+                new Vec4(normals[1], constants[1]),
+                new Vec4(normals[2], constants[2]),
+                new Vec4(normals[3], constants[3]),
+                new Vec4(normals[4], constants[4]),
+                new Vec4(normals[5], constants[5])};
     }
 
     /**
