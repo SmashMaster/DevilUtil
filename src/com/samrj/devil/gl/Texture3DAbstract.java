@@ -128,4 +128,56 @@ abstract class Texture3DAbstract<T extends Texture3DAbstract<T>> extends Texture
             throw new IllegalArgumentException("Illegal format " + TexUtil.formatToString(format) + ", expected " + TexUtil.formatToString(internalFormat));
         return subimage(image, depth, format);
     }
+
+    /**
+     * Overwrites the stored image layer with the given image. This texture must
+     * already have allocated storage.
+     *
+     * @param image The image to overwrite the
+     * @param xoffset The xoffset to the image layer to overwrite.
+     * @param yoffset The yoffset to the image layer to overwrite.
+     * @param zoffset The image layer to overwrite.
+     * @param format The texture format to store the image as.
+     * @return This texture.
+     */
+    public T subimage(Image image, int xoffset, int yoffset, int zoffset, int format)
+    {
+        if (image.deleted()) throw new IllegalStateException("Image is deleted.");
+
+        int dataFormat = TexUtil.getBaseFormat(format);
+        if (image.bands != TexUtil.getBands(dataFormat))
+            throw new IllegalArgumentException("Incompatible format bands.");
+
+        if (xoffset < 0 || xoffset >= this.width)
+            throw new IllegalArgumentException("Illegal xoffset specified.");
+
+        if (yoffset < 0 || yoffset >= this.height)
+            throw new IllegalArgumentException("Illegal yoffset specified.");
+
+        if (zoffset < 0 || zoffset >= this.depth)
+            throw new IllegalArgumentException("Illegal zoffset specified.");
+
+        int primType = TexUtil.getGLPrimitiveType(format);
+        int oldID = tempBind();
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glTexSubImage3D(target, 0, xoffset, yoffset, zoffset, image.width, image.height, 1, dataFormat, primType, image.buffer);
+        internalFormat = format;
+        tempUnbind(oldID);
+        return getThis();
+    }
+
+    /**
+     * Overwrites the stored image layer with the given image. This texture must
+     * already have allocated storage.
+     *
+     * @param image The image to overwrite the
+     * @param depth The image layer to overwrite.
+     */
+    public T subimage(Image image, int xoffset, int yoffset, int depth)
+    {
+        int format = TexUtil.getFormat(image);
+        if (format != internalFormat)
+            throw new IllegalArgumentException("Illegal format " + TexUtil.formatToString(format) + ", expected " + TexUtil.formatToString(internalFormat));
+        return subimage(image, xoffset, yoffset, depth, format);
+    }
 }
