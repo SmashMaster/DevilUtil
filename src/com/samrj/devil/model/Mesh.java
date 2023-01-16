@@ -117,6 +117,11 @@ public final class Mesh extends DataBlockAnimatable
         {
             //Need special handling because mats is an array of pointers.
             BlendFile.Pointer mat = mats.add(mats.getAddressSize()*i).dereference();
+            if (mat == null)
+            {
+                materials[i] = null;
+                continue;
+            }
             String matName = mat.getField(0).getField("name").asString().substring(2);
             materials[i] = new DataPointer<>(model, Type.MATERIAL, matName);
         }

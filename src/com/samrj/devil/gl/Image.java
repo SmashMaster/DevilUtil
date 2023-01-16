@@ -22,7 +22,11 @@
 
 package com.samrj.devil.gl;
 
+import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Util.PrimType;
+import com.samrj.devil.math.Vec2;
+import com.samrj.devil.math.Vec3;
+import com.samrj.devil.math.Vec4;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
@@ -76,7 +80,40 @@ public final class Image extends DGLObj
             default: return false;
         }
     }
-    
+
+    /**
+     * Samples the given 3D image using trilinear filtering, and returns the RGBA result.
+     */
+    public static Vec4 sample3DFiltered(Image[] images, float u, float v, float w, boolean repeat)
+    {
+        float z = w*images.length - 0.5f;
+
+        int z0 = Util.floor(z);
+        int z1 = z0 + 1;
+        float tz = Util.fract(z);
+
+        if (repeat)
+        {
+            z0 = Util.loop(z0, images.length);
+            z1 = Util.loop(z1, images.length);
+        }
+        else
+        {
+            z0 = Util.clamp(z0, 0, images.length - 1);
+            z1 = Util.clamp(z1, 0, images.length - 1);
+        }
+
+        Vec4 cZ0 = images[z0].getSampleFiltered(u, v, repeat);
+        Vec4 cZ1 = images[z1].getSampleFiltered(u, v, repeat);
+
+        return Vec4.lerp(cZ0, cZ1, tz);
+    }
+
+    public static Vec4 sample3DFiltered(Image[] images, Vec3 uvw, boolean repeat)
+    {
+        return sample3DFiltered(images, uvw.x, uvw.y, uvw.z, repeat);
+    }
+
     public final int width, height, bands;
     public final PrimType type;
     public final int size;
@@ -172,6 +209,66 @@ public final class Image extends DGLObj
 //            case FLOAT: return buffer.getFloat(index);
             default: throw new IllegalArgumentException();
         }
+    }
+
+    /**
+     * Returns the RGBA value between 0 and 1 for the given pixel.
+     */
+    public Vec4 getSample(int x, int y)
+    {
+        Vec4 result = new Vec4();
+        for (int i=0; i<bands; i++) result.setComponent(i, getFloat(x, y, i));
+        return result;
+    }
+
+    /**
+     * Returns the RGBA value at the given spot, between 0 and 1, on this image using bilinear filtering.
+     */
+    public Vec4 getSampleFiltered(float u, float v, boolean repeat)
+    {
+        v = 1.0f - v; //Confusing. Because images are flipped vertically in memory?
+
+        float x = u*width - 0.5f;
+        float y = v*height - 0.5f;
+
+        int x0 = Util.floor(x);
+        int x1 = x0 + 1;
+        float tx = Util.fract(x);
+
+        int y0 = Util.floor(y);
+        int y1 = y0 + 1;
+        float ty = Util.fract(y);
+
+        if (repeat)
+        {
+            x0 = Util.loop(x0, width);
+            x1 = Util.loop(x1, width);
+            y0 = Util.loop(y0, height);
+            y1 = Util.loop(y1, height);
+        }
+        else
+        {
+            x0 = Util.clamp(x0, 0, width - 1);
+            x1 = Util.clamp(x1, 0, width - 1);
+            y0 = Util.clamp(y0, 0, height - 1);
+            y1 = Util.clamp(y1, 0, height - 1);
+        }
+
+        Vec4 c00 = getSample(x0, y0);
+        Vec4 c01 = getSample(x0, y1);
+        Vec4 c11 = getSample(x1, y1);
+        Vec4 c10 = getSample(x1, y0);
+
+        Vec4 cY0 = Vec4.lerp(c00, c10, tx);
+        Vec4 cY1 = Vec4.lerp(c01, c11, tx);
+
+        return Vec4.lerp(cY0, cY1, ty);
+    }
+
+
+    public Vec4 getSampleFiltered(Vec2 uv, boolean repeat)
+    {
+        return getSampleFiltered(uv.x, uv.y, repeat);
     }
     
     /**

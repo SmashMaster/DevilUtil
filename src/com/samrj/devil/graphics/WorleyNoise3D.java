@@ -42,7 +42,7 @@ public class WorleyNoise3D
         for (n.z=-1; n.z<=1; n.z++) for (n.y=-1; n.y<=1; n.y++) for (n.x=-1; n.x<=1; n.x++)
         {
             Vec3i.add(iCoord, n, nLoop);
-            Util.loop(nLoop, size);
+            Util.loop(nLoop, size, nLoop);
             int index = (nLoop.x*size2 + nLoop.y*size + nLoop.z)*3;
             point.set(cellData[index], cellData[index+1], cellData[index+2]);
 

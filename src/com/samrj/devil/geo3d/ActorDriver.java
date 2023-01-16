@@ -3,6 +3,7 @@ package com.samrj.devil.geo3d;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec3;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -50,8 +51,8 @@ public final class ActorDriver
     public float groundFloatDecay = 32.0f;
     
     //An exponential rate of decay determining how quickly this driver will be
-    //nudged out of geometry it is interescting with.
-    public float intersectionDecay = 128.0f;
+    //nudged out of geometry it is intersecting with.
+    public float intersectionDecay = 256.0f;
     
     //The maximum speed at which this driver can move.
     public float maxSpeed = 3.0f;
@@ -333,11 +334,12 @@ public final class ActorDriver
             }
             
             //Clip against the level
-            Vec3 nudge = new Vec3();
-            for (Isect isect : Geo3D.isect(geom, shape))
+            List<Isect> isects = Geo3D.isect(geom, shape);
+            List<Vec3> nudges = new ArrayList(isects.size());
+            for (Isect isect : isects)
             {
-                nudge.add(Vec3.sub(isect.point, isect.surface));
-                
+                nudges.add(Vec3.sub(isect.point, isect.surface));
+
                 float height = isect.point.y - pos.y + shape.radii.y;
                 if (height > climbHeight) Geo3D.restrain(vel, isect.normal, vel);
 
@@ -347,7 +349,11 @@ public final class ActorDriver
                     groundNormal.set(isect.normal);
                 }
             }
-            
+
+            //Just take average of nudges, prevent teleporting when intersecting with multiple surfaces.
+            Vec3 nudge = new Vec3();
+            for (Vec3 subnudge : nudges) nudge.add(subnudge);
+            if (nudges.size() > 0) nudge.div(nudges.size());
             pos.madd(nudge, 1.0f - (float)Math.pow(0.5f, dt*intersectionDecay));
         }
         

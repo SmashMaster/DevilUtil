@@ -254,6 +254,19 @@ public final class Util
         float t = linstep(edge0, edge1, x);
         return t*t*(3.0f - 2.0f*t);
     }
+
+    /**
+     * Performs linear light blending (as seen in Photoshop). Adds to target if blend is above 0.5, subtracts if is
+     * below, and returns target if blend is 0.5. Clamps in the 0-1 range.
+     *
+     * @param target The value to modify.
+     * @param blend The modifying value.
+     * @return The blended result.
+     */
+    public static float linearLight(float target, float blend)
+    {
+        return clamp(target + 2.0f*blend - 1.0f, 0.0f, 1.0f);
+    }
     
     /**
      * Returns a value between zero and one (inclusive) depending on the given
@@ -466,11 +479,18 @@ public final class Util
     }
 
 
-    public static void loop(Vec3i v, int max)
+    public static void loop(Vec3i v, int max, Vec3i result)
     {
-        v.x = loop(v.x, max);
-        v.y = loop(v.y, max);
-        v.z = loop(v.z, max);
+        result.x = loop(v.x, max);
+        result.y = loop(v.y, max);
+        result.z = loop(v.z, max);
+    }
+
+    public static Vec3i loop(Vec3i v, int max)
+    {
+        Vec3i result = new Vec3i();
+        loop(v, max, result);
+        return result;
     }
 
     /**
@@ -481,11 +501,21 @@ public final class Util
         return loop(x, 1.0f);
     }
 
-    public static void fract(Vec3 v)
+    public static void fract(Vec3 v, Vec3 result)
     {
-        v.x = fract(v.x);
-        v.y = fract(v.y);
-        v.z = fract(v.z);
+        result.x = fract(v.x);
+        result.y = fract(v.y);
+        result.z = fract(v.z);
+    }
+
+    /**
+     * Loops each component of the given vector into the [0-1] range and returns the result in a new vector.
+     */
+    public static Vec3 fract(Vec3 v)
+    {
+        Vec3 result = new Vec3();
+        fract(v, result);
+        return result;
     }
     
     /**

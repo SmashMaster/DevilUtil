@@ -4,6 +4,7 @@ import com.samrj.devil.gl.*;
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
 import com.samrj.devil.math.Vec3;
+import com.samrj.devil.math.Vec4;
 import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
 
 import javax.imageio.ImageIO;
@@ -139,13 +140,13 @@ public class CubemapUtil
             if (dir.x > 0) // POSITIVE X
             {
                 u = -dir.z;
-                v = dir.y;
+                v = -dir.y;
                 face = Face.POS_X;
             }
             else // NEGATIVE X
             {
                 u = dir.z;
-                v = dir.y;
+                v = -dir.y;
                 face = Face.NEG_X;
             }
         }
@@ -155,13 +156,13 @@ public class CubemapUtil
             if (dir.y > 0) // POSITIVE Y
             {
                 u = dir.x;
-                v = -dir.z;
+                v = dir.z;
                 face = Face.POS_Y;
             }
             else // NEGATIVE Y
             {
                 u = dir.x;
-                v = dir.z;
+                v = -dir.z;
                 face = Face.NEG_Y;
             }
         }
@@ -171,13 +172,13 @@ public class CubemapUtil
             if (dir.z > 0) // POSITIVE Z
             {
                 u = dir.x;
-                v = dir.y;
+                v = -dir.y;
                 face = Face.POS_Z;
             }
             else // NEGATIVE Z
             {
                 u = -dir.x;
-                v = dir.y;
+                v = -dir.y;
                 face = Face.NEG_Z;
             }
         }
@@ -191,17 +192,32 @@ public class CubemapUtil
      */
     public static void getDir(Vec2 uv, Face face, Vec3 result)
     {
+        /**
+         *
+         vec2 uv = coord*2.0 - 1.0;
+         switch(face)
+         {
+         case 0: return vec3(  1.0, -uv.y, -uv.x); //+ X
+         case 1: return vec3( -1.0, -uv.y,  uv.x); //- X
+         case 2: return vec3( uv.x,   1.0,  uv.y); //+ Y
+         case 3: return vec3( uv.x,  -1.0, -uv.y); //- Y
+         case 4: return vec3( uv.x, -uv.y,   1.0); //+ Z
+         case 5: return vec3(-uv.x, -uv.y,  -1.0); //- Z
+         }
+         return vec3(0.0);
+         */
+
         float u = uv.x*2.0f - 1.0f;
         float v = uv.y*2.0f - 1.0f;
 
         switch (face)
         {
-            case POS_X -> result.set(1.0f, v, -u);
-            case NEG_X -> result.set(-1.0f, v, u);
-            case POS_Y -> result.set(u, 1.0f, -v);
-            case NEG_Y -> result.set(u, -1.0f, v);
-            case POS_Z -> result.set(u, v, 1.0f);
-            case NEG_Z -> result.set(-u, v, -1.0f);
+            case POS_X -> result.set(1.0f, -v, -u);
+            case NEG_X -> result.set(-1.0f, -v, u);
+            case POS_Y -> result.set(u, 1.0f, v);
+            case NEG_Y -> result.set(u, -1.0f, -v);
+            case POS_Z -> result.set(u, -v, 1.0f);
+            case NEG_Z -> result.set(-u, -v, -1.0f);
             default -> throw new NullPointerException();
         }
     }
@@ -373,6 +389,16 @@ public class CubemapUtil
     public static void convertFromLatlong(String path, String outputFilename, int resolution) throws IOException
     {
         convertFromLatlong(Path.of(path), outputFilename, resolution);
+    }
+
+    /**
+     * Returns the RGBA values (normalized from 0 to 1) of the given cubemap image in the given direction.
+     */
+    public static Vec4 sample(Image[] images, Vec3 direction)
+    {
+        Vec2 uv = new Vec2();
+        Face f = getUV(direction, uv);
+        return images[f.ordinal()].getSampleFiltered(uv.x, uv.y, false);
     }
 
     private CubemapUtil()
