@@ -274,7 +274,7 @@ public class TextField extends Form
                 break;
             case GLFW_KEY_ENTER:
             case GLFW_KEY_KP_ENTER:
-                if (onConfirm != null) onConfirm.accept(this);
+                if (action == GLFW_PRESS && onConfirm != null) onConfirm.accept(this);
                 break;
             case GLFW_KEY_Z: break; //Undo
             case GLFW_KEY_Y: break; //Redo
