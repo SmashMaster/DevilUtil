@@ -18,7 +18,7 @@ public class Console
     private static final float WIDTH = 512.0f, HEIGHT = 384.0f;
     private static final int MAX_HISTORY_LENGTH = 128;
 
-    private final Window window;
+    public final Window window;
     private final ScrollBox scrollBox;
     private final Paragraph paragraph;
     private final TextField textField;
