@@ -37,6 +37,7 @@ import org.lwjgl.glfw.GLFWVidMode;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.function.Function;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11C.*;
@@ -85,7 +86,7 @@ public final class Game<T extends GameMode>
         private FontSupplier fontSupplier = () -> null;
         private SettingsMenu.Layout settingsLayout;
         private String consoleControlName;
-        private Console.Callback consoleCallback;
+        private Function<String, String> consoleCallback;
         private Font font;
         private Game<T> game;
 
@@ -141,7 +142,7 @@ public final class Game<T extends GameMode>
             return this;
         }
 
-        public Builder<T> setConsoleCallback(Console.Callback callback)
+        public Builder<T> setConsoleCallback(Function<String, String> callback)
         {
             state.requireNew();
             consoleCallback = callback;
@@ -273,7 +274,7 @@ public final class Game<T extends GameMode>
 
     public final Config config;
     public final Input input;
-    public final Console<T> console;
+    public final Console console;
 
     private final String consoleControlName;
     private final SettingsMenu settings;
@@ -305,7 +306,8 @@ public final class Game<T extends GameMode>
 
         input = new Input(builder.state, config, this::input);
         settings = new SettingsMenu(config, builder.settingsLayout);
-        console = new Console(this, builder.consoleCallback);
+        console = new Console();
+        console.setCallback(builder.consoleCallback);
         consoleControlName = builder.consoleControlName;
         fpsCounter = new FPSCounter(resolution, config);
     }
