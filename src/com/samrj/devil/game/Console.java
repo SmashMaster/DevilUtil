@@ -2,6 +2,8 @@ package com.samrj.devil.game;
 
 import com.samrj.devil.gui.*;
 
+import java.util.function.Function;
+
 import static org.lwjgl.glfw.GLFW.*;
 
 /**
@@ -11,35 +13,25 @@ import static org.lwjgl.glfw.GLFW.*;
  * @copyright 2022 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Console<T extends GameMode>
+public class Console
 {
-    @FunctionalInterface
-    public interface Callback<T extends GameMode>
-    {
-        String accept(Game<T> game, String command);
-    }
-
     private static final float WIDTH = 512.0f, HEIGHT = 384.0f;
     private static final int MAX_HISTORY_LENGTH = 128;
 
-    private final Game<T> game;
-    private final Callback callback;
     private final Window window;
     private final ScrollBox scrollBox;
     private final Paragraph paragraph;
     private final TextField textField;
-    
+
+    private Function<String, String> callback;
     private History firstCommand, lastCommand;
     private int historyLength;
     private History historyChoice;
     
     private boolean justOpened;
     
-    Console(Game<T> game, Callback<T> callback)
+    public Console()
     {
-        this.game = game;
-        this.callback = callback;
-
         window = new Window()
                 .setTitle("Developer Console")
                 .setContent(new LayoutRows()
@@ -57,6 +49,11 @@ public class Console<T extends GameMode>
                 .setSizeFromContent();
         
         scrollBox.setScrollBottom();
+    }
+
+    public void setCallback(Function<String, String> callback)
+    {
+        this.callback = callback;
     }
     
     public void setVisible(boolean visible)
@@ -128,7 +125,7 @@ public class Console<T extends GameMode>
         String command = textField.get();
         
         paragraph.println("> " + command);
-        String result = callback != null ? callback.accept(game, command) : null;
+        String result = callback != null ? callback.apply(command) : null;
         if (result != null) paragraph.println(result);
         
         textField.clear();
