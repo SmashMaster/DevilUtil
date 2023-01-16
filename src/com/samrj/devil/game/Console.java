@@ -123,6 +123,7 @@ public class Console
         float oldHeight = paragraph.getSize().y;
         
         String command = textField.get();
+        if (command.isEmpty()) return;
         
         paragraph.println("> " + command);
         String result = callback != null ? callback.apply(command) : null;
