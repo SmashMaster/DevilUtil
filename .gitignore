@@ -9,3 +9,6 @@ out/
 
 #Error logs
 hs_err_pid*
+/.gradle/
+/target/
+/build/
