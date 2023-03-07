@@ -19,7 +19,7 @@ public class TextWithFont extends Text {
     }
     
     @Override
-    protected void updateSizeToContent()
+    protected void updateSize()
     {
         width = font.getWidth(getText());
         height = font.getHeight();
