@@ -182,7 +182,7 @@ public class Paragraph extends Form
         }
         else dragStartIndex = getIndex(x, y);
         
-        if (x < this.x0 || x > this.x0 + width || y < this.y0 || y > this.y0 + height) return null;
+        if (!contains(x, y)) return null;
         return this;
     }
 

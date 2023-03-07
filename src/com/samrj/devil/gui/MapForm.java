@@ -118,7 +118,7 @@ public class MapForm extends Form {
             pan(new Vec2(x, y).sub(prevMouse));
             prevMouse.set(x, y);
         } else {
-            if (x < this.x0 || x > this.x0 + width || y < this.y0 || y > this.y0 + height) return null;
+            if (!contains(x, y)) return null;
             else for (Form form : forms) {
                 Form result = form.hover(x, y);
                 if (result != null) return result;
