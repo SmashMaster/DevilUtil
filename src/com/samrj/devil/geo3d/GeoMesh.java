@@ -43,9 +43,9 @@ public class GeoMesh
     {
         edgeIndices = null;
         faceIndices = null;
-        this.verts = Objects.requireNonNull(verts);
-        this.edges = Objects.requireNonNull(edges);
-        this.faces = Objects.requireNonNull(faces);
+        this.verts = verts != null ? verts : List.of();
+        this.edges = edges != null ? edges : List.of();
+        this.faces = faces != null ? faces : List.of();
     }
 
     public void getBounds(Box3 result)

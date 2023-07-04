@@ -70,8 +70,7 @@ public final class ActorDriver
     //Settable callback functions for jumping, falling, and landing.
     public Runnable jumpCallback, fallCallback;
     public Consumer<Vec3> landCallback;
-    
-    private final Vec3 displacement = new Vec3();
+
     private final Vec3 groundNormal = new Vec3(0.0f, 1.0f, 0.0f);
     private final Vec3 slideNormal = new Vec3(0.0f, 1.0f, 0.0f);
     private Object groundObject, slideObject;
@@ -282,8 +281,7 @@ public final class ActorDriver
         
         //Integrate
         avgVel.add(vel).mult(0.5f);
-        Vec3.mult(avgVel, dt, displacement);
-        pos.add(displacement);
+        pos.madd(avgVel, dt);
         
         applyGravity = true;
         groundObject = null;

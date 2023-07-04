@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 import static org.lwjgl.glfw.GLFW.*;
 
 /**
- * A multiple-line read-only text form.
+ * A multiple-line text form.
  * 
  * @author Samuel Johnson (SmashMaster)
  * @copyright 2019 Samuel Johnson
@@ -19,67 +19,75 @@ import static org.lwjgl.glfw.GLFW.*;
 public class Paragraph extends Form
 {
     private String rawText = "";
+    private int textLength;
     private final TreeMap<Integer, Line> lines = new TreeMap<>();
     
     private final Vec2 alignment = Align.NW.vector();
     private float linePadding = 0.0f;
+    private boolean editable;
     private int caret, select;
-    private Consumer<Paragraph> onFocus, onLoseFocus;
-    
+    private Consumer<Paragraph> onFocus, onLoseFocus, onChanged;
+
     private int dragStartIndex; //For drag selection
     private boolean dragged;
     
     public Paragraph()
     {
     }
-    
+
     private void addLine(String lineText, float lineWidth)
     {
-        int index = rawText.length();
-        Line line = new Line(index, lineText, lineWidth);
-        lines.put(index, line);
-        rawText += lineText;
-        
+        Line line = new Line(textLength, lineText, lineWidth);
+        lines.put(textLength, line);
+        textLength += lineText.length() + 1;
         height = lines.size()*DUI.font().getHeight() + Util.max((lines.size() - 1)*linePadding, 0.0f);
+    }
+
+    private void addLines(String... lineArray)
+    {
+        for (String line : lineArray)
+        {
+            float lineWidth = DUI.font().getWidth(line);
+
+            while (lineWidth > width)
+            {
+                //need to split line.
+                int overlapIndex = DUI.font().getCaret(line, width);
+                int splitIndex = Math.min(overlapIndex, line.length() - 1);
+                while (splitIndex > 0 && !Character.isWhitespace(line.charAt(splitIndex))) splitIndex--;
+
+                if (splitIndex == 0) break;
+
+                String splitStr = line.substring(0, splitIndex);
+                float splitWidth = DUI.font().getWidth(splitStr);
+                addLine(splitStr, splitWidth);
+
+                lineWidth -= splitWidth;
+                line = line.substring(splitIndex + 1);
+            }
+
+            addLine(line, lineWidth);
+        }
     }
     
     public Paragraph println(String text)
     {
-        String[] lineArray = text.split("\n", -1);
-        
-        for (int i=0; i<lineArray.length; i++)
-        {
-            String lineStr = lineArray[i];
-            
-            float lineWidth = DUI.font().getWidth(lineStr);
-            
-            while (lineWidth > width)
-            {
-                //need to split line.
-                int overlapIndex = DUI.font().getCaret(lineStr, width);
-                int splitIndex = Math.min(overlapIndex, lineStr.length() - 1);
-                while (splitIndex > 0 && !Character.isWhitespace(lineStr.charAt(splitIndex))) splitIndex--;
-                
-                if (splitIndex == 0) break;
-                
-                String splitStr = lineStr.substring(0, splitIndex);
-                float splitWidth = DUI.font().getWidth(splitStr);
-                addLine(splitStr, splitWidth);
-                
-                lineWidth -= splitWidth;
-                lineStr = lineStr.substring(splitIndex + 1);
-            }
-            
-            addLine(lineStr, lineWidth);
-            rawText += '\n';
-        }
-        
+        addLines(text.split("\n", -1));
+
+        rawText += text + '\n';
         caret = rawText.length();
         select = caret;
         DUI.resetCaretBlinkTimer();
         return this;
     }
-    
+
+    private void updateLines()
+    {
+        lines.clear();
+        textLength = 0;
+        addLines(rawText.split("\n", -1));
+    }
+
     public Paragraph clear()
     {
         rawText = "";
@@ -101,6 +109,12 @@ public class Paragraph extends Form
         this.alignment.set(alignment);
         return this;
     }
+
+    public Paragraph setEditable(boolean editable)
+    {
+        this.editable = editable;
+        return this;
+    }
     
     public Paragraph setLinePadding(float linePadding)
     {
@@ -120,7 +134,13 @@ public class Paragraph extends Form
         this.onLoseFocus = onLoseFocus;
         return this;
     }
-    
+
+    public Paragraph setChangedCallback(Consumer<Paragraph> onChanged)
+    {
+        this.onChanged = onChanged;
+        return this;
+    }
+
     public Paragraph selectAll()
     {
         caret = rawText.length();
@@ -141,7 +161,9 @@ public class Paragraph extends Form
     protected void layout(Window window, float x, float y)
     {
         super.layout(window, x, y);
-        
+
+        updateLines();
+
         float fontHeight = DUI.font().getHeight();
         float lineY = y0 + height - fontHeight;
         for (Line line : lines.values())
@@ -193,6 +215,25 @@ public class Paragraph extends Form
     }
 
     @Override
+    protected void character(char character, int codepoint)
+    {
+        if (!editable) return;
+
+        int s0 = Math.min(caret, select);
+        int s1 = Math.max(caret, select);
+
+        int oldCaret = caret;
+
+        rawText = rawText.substring(0, s0) + character + rawText.substring(s1);
+        caret = s0 + 1;
+        select = caret;
+
+        updateLines();
+        if (onChanged != null) onChanged.accept(this);
+        if (caret != oldCaret) DUI.resetCaretBlinkTimer();
+    }
+
+    @Override
     protected boolean activate(int button)
     {
         if (button != GLFW_MOUSE_BUTTON_LEFT) return false;
@@ -230,7 +271,14 @@ public class Paragraph extends Form
         Line newLine = offsetEntry.getValue();
         caret = newLine.index + font.getCaret(newLine.text, x - newLine.x0);
     }
-    
+
+    private void delete(int s0, int s1)
+    {
+        rawText = rawText.substring(0, s0) + rawText.substring(s1);
+        caret = s0;
+        select = s0;
+    }
+
     @Override
     protected void key(int key, int action, int mods)
     {
@@ -246,6 +294,24 @@ public class Paragraph extends Form
         
         switch (key)
         {
+            case GLFW_KEY_BACKSPACE:
+                if (!editable) break;
+                if (s1 != s0) delete(s0, s1);
+                else if (caret > 0)
+                {
+                    rawText = rawText.substring(0, caret - 1) + rawText.substring(caret);
+                    caret--;
+                    select = caret;
+                }
+                updateLines();
+                break;
+            case GLFW_KEY_DELETE:
+                if (!editable) break;
+                if (s1 != s0) delete(s0, s1);
+                else if (caret < rawText.length())
+                    rawText = rawText.substring(0, caret) + rawText.substring(caret + 1);
+                updateLines();
+                break;
             case GLFW_KEY_LEFT:
                 if (caret > 0)
                 {
@@ -284,6 +350,30 @@ public class Paragraph extends Form
                 }
                 break;
             case GLFW_KEY_C: if (control && s0 != s1) glfwSetClipboardString(0, rawText.substring(s0, s1)); break;
+            case GLFW_KEY_X:
+                if (control && s0 != s1)
+                {
+                    glfwSetClipboardString(0, rawText.substring(s0, s1));
+                    if (editable)
+                    {
+                        delete(s0, s1);
+                        updateLines();
+                    }
+                }
+                break;
+            case GLFW_KEY_V:
+                if (editable && control)
+                {
+                    String str = glfwGetClipboardString(0);
+                    rawText = rawText.substring(0, s0) + str + rawText.substring(s1);
+                    caret = s0 + str.length();
+                    select = caret;
+                    updateLines();
+                }
+                break;
+            case GLFW_KEY_ENTER: character('\n', 0); break;
+            case GLFW_KEY_Z: break; //Undo
+            case GLFW_KEY_Y: break; //Redo
             default: return;
         }
         

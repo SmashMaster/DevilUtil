@@ -60,22 +60,22 @@ public final class Mesh extends DataBlockAnimatable
         }
     }
 
-    private record LoopEdge(int va, int vb)
+private record LoopEdge(int va, int vb)
+{
+    @Override
+    public int hashCode()
     {
-        @Override
-        public int hashCode()
-        {
-            return va*vb;
-        }
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            if (!(obj instanceof LoopEdge)) return false;
-            LoopEdge edge = (LoopEdge)obj;
-            return (va == edge.va && vb == edge.vb) || (va == edge.vb && vb == edge.va);
-        }
+        return va*vb;
     }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (!(obj instanceof LoopEdge)) return false;
+        LoopEdge edge = (LoopEdge)obj;
+        return (va == edge.va && vb == edge.vb) || (va == edge.vb && vb == edge.va);
+    }
+}
 
     public final boolean hasTangents;
     public final int numGroups; //Maximum number of groups per vertex, not total number of groups.

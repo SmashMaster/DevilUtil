@@ -181,7 +181,7 @@ public class TextField extends Form
         String oldText = text;
         int oldCaret = caret;
         
-        text = text.substring(0, s0) + character + text.substring(s1, text.length());
+        text = text.substring(0, s0) + character + text.substring(s1);
         caret = s0 + 1;
         select = caret;
         
@@ -191,7 +191,7 @@ public class TextField extends Form
     
     private void delete(int s0, int s1)
     {
-        text = text.substring(0, s0) + text.substring(s1, text.length());
+        text = text.substring(0, s0) + text.substring(s1);
         caret = s0;
         select = s0;
     }
@@ -216,7 +216,7 @@ public class TextField extends Form
                 if (s1 != s0) delete(s0, s1);
                 else if (caret > 0)
                 {
-                    text = text.substring(0, caret - 1) + text.substring(caret, text.length());
+                    text = text.substring(0, caret - 1) + text.substring(caret);
                     caret--;
                     select = caret;
                 }
@@ -267,7 +267,7 @@ public class TextField extends Form
                 if (control)
                 {
                     String str = glfwGetClipboardString(0);
-                    text = text.substring(0, s0) + str + text.substring(s1, text.length());
+                    text = text.substring(0, s0) + str + text.substring(s1);
                     caret = s0 + str.length();
                     select = caret;
                 }
