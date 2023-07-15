@@ -60,7 +60,7 @@ public class Slider extends Form
         }
         else dragStartX = boxX - x;
         
-        if (x < x0 || x > x0 + width || y < y0 || y > y0 + height) return null;
+        if (!contains(x, y)) return null;
         
         float bx0 = boxX - boxW;
         float bx1 = boxX + boxW;
