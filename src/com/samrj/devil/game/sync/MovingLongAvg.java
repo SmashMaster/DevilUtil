@@ -41,7 +41,21 @@ public final class MovingLongAvg
     {
         return full ? window.length : index;
     }
-        
+
+    public boolean isEmpty()
+    {
+        return !full && index == 0;
+    }
+
+    public void clear()
+    {
+        full = false;
+        index = 0;
+        sum = 0;
+        sumOfSquares = 0;
+        mean = 0;
+        deviation = 0;
+    }
     
     /**
      * Pushes a new value onto the current window. If the window is full, the
