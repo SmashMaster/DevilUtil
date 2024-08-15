@@ -153,6 +153,14 @@ public final class DGL
     }
 
     /**
+     * Loads all shader sources in the given path, recursively, so that #import directives will work across them.
+     */
+    public static ShaderManager genShaderManager(Path basePath) throws IOException
+    {
+        return gen(new ShaderManager(basePath));
+    }
+
+    /**
      * Generates a new OpenGL shader. Shader will not have any associated
      * sources or be compiled.
      *
