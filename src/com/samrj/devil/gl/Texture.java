@@ -164,6 +164,18 @@ public abstract class Texture<T extends Texture<T>> extends DGLObj
         glTexParameterf(target, param, value);
         return getThis();
     }
+
+    /**
+     * Sets the given parameter to the given float for this texture. The texture
+     * must be bound.
+     *
+     */
+    public final T paramfv(int param, float... values)
+    {
+        if (!isBound()) throw new IllegalStateException("Texture must be bound.");
+        glTexParameterfv(target, param, values);
+        return getThis();
+    }
     
     /**
      * Generates mipmaps for this texture.
