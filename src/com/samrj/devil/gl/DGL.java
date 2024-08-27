@@ -397,13 +397,12 @@ public final class DGL
     /**
      * Loads an image from the given file path, and returns it in a newly allocated Image buffer.
      */
-    public static Image loadImage(Path path) throws IOException
+    public static Image loadImage(File file) throws IOException
     {
-        File file = path.toFile();
-        if (!file.canRead()) throw new IOException("Cannot read file " + path);
+        if (!file.canRead()) throw new IOException("Cannot read file " + file);
         BufferedImage bImage = ImageIO.read(file);
 
-        if (bImage == null) throw new IOException("Cannot read image from " + path);
+        if (bImage == null) throw new IOException("Cannot read image from " + file);
 
         if (bImage.getType() == BufferedImage.TYPE_BYTE_INDEXED)
         {
@@ -418,12 +417,17 @@ public final class DGL
         return loadImage(bImage.getRaster());
     }
 
+    public static Image loadImage(Path path) throws IOException
+    {
+        return loadImage(path.toFile());
+    }
+
     /**
      * Loads an image from the given file path, and returns it in a newly allocated Image buffer.
      */
     public static Image loadImage(String path) throws IOException
     {
-        return loadImage(Path.of(path));
+        return loadImage(new File(path));
     }
 
     /**
