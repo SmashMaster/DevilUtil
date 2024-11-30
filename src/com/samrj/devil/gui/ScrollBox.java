@@ -154,7 +154,7 @@ public class ScrollBox extends Form
         
         scrollBarHovered = false;
         
-        if (x < this.x0 || x > this.x0 + width || y < this.y0 || y > this.y0 + height) return null;
+        if (!contains(x, y)) return null;
         
         float sbX0 = x0 + width - SCROLLBAR_WIDTH;
         float sbY1 = y0 + height - scrollY*sbRatio;
@@ -201,7 +201,7 @@ public class ScrollBox extends Form
     @Override
     protected Form findScrollBox(float x, float y)
     {
-        if (x < this.x0 || x > this.x0 + width || y < this.y0 || y > this.y0 + height) return null;
+        if (!contains(x, y)) return null;
         
         if (content != null)
         {

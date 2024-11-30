@@ -46,6 +46,10 @@ public abstract class Form implements Hoverable
         return new Vec2(width, height);
     }
     
+    public boolean contains(float x, float y) {
+        return x >= x0 && x <= x0 + width && y >= y0 && y <= y0 + height;
+    }
+    
     public final Window getWindow()
     {
         return window;
