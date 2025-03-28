@@ -38,8 +38,13 @@ public enum Align
         return new Vec2(toEdge(size.x, edgeX, alignment.x),
                         toEdge(size.y, edgeY, alignment.y));
     }
+
+    public static Vec2 opposite(Vec2 align)
+    {
+        return new Vec2(1.0f - align.x, 1.0f - align.y);
+    }
     
-    private Align(float x, float y)
+    Align(float x, float y)
     {
         this.x = x; this.y = y;
     }

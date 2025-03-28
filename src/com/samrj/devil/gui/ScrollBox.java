@@ -3,6 +3,7 @@ package com.samrj.devil.gui;
 
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
+import com.samrj.devil.math.Vec4;
 
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 import static org.lwjgl.opengl.GL11C.*;
@@ -14,7 +15,7 @@ import static org.lwjgl.opengl.GL11C.*;
  * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class ScrollBox extends Form
+public class ScrollBox extends FormColor
 {
     public static final float SCROLLBAR_WIDTH = 20.0f;
     
@@ -218,21 +219,21 @@ public class ScrollBox extends Form
         float x1 = x0 + width, y1 = y0 + height;
         float scrollBarX = x1 - SCROLLBAR_WIDTH;
         
-        drawer.color(0.75f, 0.75f, 0.75f, 1.0f);
+        drawer.color(lineColor);
         drawer.rect(x0, x1, y0, y1);
-        drawer.color(0.75f, 0.75f, 0.75f, 1.0f);
+        drawer.color(lineColor);
         drawer.line(scrollBarX, scrollBarX, y0, y1);
         
         float cHeight = content != null ? content.height + padding*2.0f : 0.0f;
         if (height < cHeight)
         {
-            float sbColor = (scrollBarDragged || (DUI.getHoveredForm() == this && scrollBarHovered)) ? 1.0f : 0.75f;
+            Vec4 sbColor = (scrollBarDragged || (DUI.getHoveredForm() == this && scrollBarHovered)) ? activeColor : lineColor;
             float sbRatio = height/cHeight;
             float sbY1 = y1 - scrollY*sbRatio;
             float sbY0 = sbY1 - height*sbRatio;
-            drawer.color(0.375f, 0.375f, 0.375f, 1.0f);
+            drawer.color(foregroundColor);
             drawer.rectFill(scrollBarX, x1, sbY0, sbY1);
-            drawer.color(sbColor, sbColor, sbColor, 1.0f);
+            drawer.color(sbColor);
             drawer.rect(scrollBarX, x1, sbY0, sbY1);
         }
         

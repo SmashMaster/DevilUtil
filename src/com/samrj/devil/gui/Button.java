@@ -11,10 +11,10 @@ import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
  * A simple button.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2025 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Button extends Form
+public class Button extends FormColor
 {
     private String text;
     private final Vec2 alignment = Align.C.vector();
@@ -97,14 +97,12 @@ public class Button extends Form
     protected void render(DUIDrawer drawer)
     {
         float x1 = x0 + width, y1 = y0 + height;
-        
-        float outline = DUI.getHoveredForm() == this ? 1.0f : 0.75f;
-        
-        drawer.color(0.25f, 0.25f, 0.25f, 1.0f);
+
+        drawer.color(backgroundColor);
         drawer.rectFill(x0, x1, y0, y1);
-        drawer.color(outline, outline, outline, 1.0f);
+        drawer.color(DUI.getHoveredForm() == this ? activeColor : lineColor);
         drawer.rect(x0, x1, y0, y1);
-        
+
         Font font = DUI.font();
         Vec2 aligned = Align.insideBounds(font.getSize(text), x0 + padding, x1 - padding, y0 + padding, y1 - padding, alignment);
         drawer.text(text, font, aligned.x, aligned.y);

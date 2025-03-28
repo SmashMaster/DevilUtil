@@ -11,10 +11,10 @@ import java.util.Collections;
  * layout.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2025 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class FixedRow extends Form
+public class FixedRow extends FormColorable
 {
     private final ArrayList<Float> positions = new ArrayList<>();
     private final ArrayList<Form> forms = new ArrayList<>();
@@ -128,6 +128,8 @@ public class FixedRow extends Form
     @Override
     protected void render(DUIDrawer drawer)
     {
+        super.render(drawer);
+
         for (Form form : forms) form.render(drawer);
     }
 }

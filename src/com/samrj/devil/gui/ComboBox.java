@@ -1,6 +1,7 @@
 package com.samrj.devil.gui;
 
 import com.samrj.devil.math.Vec2;
+import com.samrj.devil.math.Vec4;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
@@ -8,14 +9,13 @@ import java.util.function.Consumer;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 /**
- * A combo box allows for the selection of one of many options, by using a drop
- * down menu.
+ * A combo box allows for the selection of one of many options, by using a drop-down menu.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2025 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class ComboBox extends Form
+public class ComboBox extends FormColor
 {
     private static final float ICON_W = 0.40f;
     private static final float ICON_H = 0.20f;
@@ -167,12 +167,12 @@ public class ComboBox extends Form
     protected void render(DUIDrawer drawer)
     {
         float x1 = x0 + width, y1 = y0 + height;
-        
-        float outline = DUI.getHoveredForm() == this ? 1.0f : 0.75f;
-        
-        drawer.color(0.25f, 0.25f, 0.25f, 1.0f);
+
+        Vec4 outlineColor = DUI.getHoveredForm() == this ? activeColor : lineColor;
+
+        drawer.color(backgroundColor);
         drawer.rectFill(x0, x1, y0, y1);
-        drawer.color(outline, outline, outline, 1.0f);
+        drawer.color(outlineColor);
         drawer.rect(x0, x1, y0, y1);
         
         float iconW = height*ICON_W;
@@ -233,21 +233,16 @@ public class ComboBox extends Form
         @Override
         protected void render(DUIDrawer drawer)
         {
-            float outline;
-            
             if (DUI.getHoveredForm() == this)
             {
                 Vec2 ddp = dropDown.getPos();
                 Vec2 dds = dropDown.getSize();
                 float spacing = rows.getSpacing()*0.5f;
-                drawer.color(0.5f, 0.5f, 0.5f, 1.0f);
+                drawer.color(selectionColor);
                 drawer.rectFill(ddp.x, ddp.x + dds.x, y0 - spacing, y0 + height + spacing);
-                
-                outline = 1.0f;
             }
-            else outline = 0.75f;
             
-            drawer.color(outline, outline, outline, 1.0f);
+            drawer.color(DUI.getHoveredForm() == this ? activeColor : lineColor);
             drawer.text(getText(), DUI.font(), x0, y0);
         }
     }

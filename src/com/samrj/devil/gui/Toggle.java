@@ -1,6 +1,7 @@
 package com.samrj.devil.gui;
 
 import com.samrj.devil.math.Vec2;
+import com.samrj.devil.math.Vec4;
 
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -11,10 +12,10 @@ import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
  * A toggle button or checkbox.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2022 Samuel Johnson
+ * @copyright 2025 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Toggle extends Form
+public class Toggle extends FormColor
 {
     private String text;
     private final Vec2 alignment = Align.C.vector();
@@ -110,16 +111,16 @@ public class Toggle extends Form
     {
         float x1 = x0 + width, y1 = y0 + height;
         
-        float outline = DUI.getHoveredForm() == this ? 1.0f : 0.75f;
+        Vec4 outlineColor = DUI.getHoveredForm() == this ? activeColor : lineColor;
         
-        drawer.color(0.25f, 0.25f, 0.25f, 1.0f);
+        drawer.color(backgroundColor);
         drawer.rectFill(x0, x1, y0, y1);
         if (value)
         {
-            drawer.color(0.5f, 0.5f, 0.5f, 1.0f);
+            drawer.color(selectionColor);
             drawer.rectFill(x0 + padding, x1 - padding, y0 + padding, y1 - padding);
         }
-        drawer.color(outline, outline, outline, 1.0f);
+        drawer.color(outlineColor);
         drawer.rect(x0, x1, y0, y1);
         
         Font font = DUI.font();

@@ -2,6 +2,7 @@ package com.samrj.devil.gui;
 
 import com.samrj.devil.math.Util;
 import com.samrj.devil.math.Vec2;
+import com.samrj.devil.math.Vec4;
 
 import java.util.function.Consumer;
 
@@ -45,7 +46,27 @@ public final class Window implements Hoverable
     private boolean draggable = true, resizable = false;
     private boolean leftResizeHovered, topResizeHovered, rightResizeHovered, bottomResizeHovered;
     private boolean closeButtonVisible = true, closeButtonHovered, closeButtonPressed;
-    
+
+    /**
+     * The color of this window, behind all other elements.
+     */
+    public final Vec4 backgroundColor = new Vec4(DUI.defaultBackgroundColor);
+
+    /**
+     * The color of raised elements such as scrollbars.
+     */
+    public final Vec4 foregroundColor = new Vec4(DUI.defaultForegroundColor);
+
+    /**
+     * The color of outlines and text.
+     */
+    public final Vec4 lineColor = new Vec4(DUI.defaultLineColor);
+
+    /**
+     * The color of outlines and text, when interactive forms such as buttons are hovered.
+     */
+    public final Vec4 activeColor = new Vec4(DUI.defaultActiveColor);
+
     public Window()
     {
     }
@@ -415,20 +436,20 @@ public final class Window implements Hoverable
     
     void render(DUIDrawer drawer)
     {
-        drawer.color(0.25f, 0.25f, 0.25f, 1.0f);
+        drawer.color(backgroundColor);
         drawer.rectFill(x0, x1, y0, y1);
-        drawer.color(0.75f, 0.75f, 0.75f, 1.0f);
+        drawer.color(lineColor);
         drawer.rect(x0, x1, y0, y1);
         
         if (content != null) content.render(drawer);
         
         if (titleBarVisible)
         {
-            float titleBarColor = (titleBarHovered && draggable) ? 1.0f : 0.75f;
+            Vec4 titleBarLineColor = (titleBarHovered && draggable) ? activeColor : lineColor;
             
-            drawer.color(0.375f, 0.375f, 0.375f, 1.0f);
+            drawer.color(foregroundColor);
             drawer.rectFill(x0, x1, y1 - titleBarHeight(), y1);
-            drawer.color(titleBarColor, titleBarColor, titleBarColor, 1.0f);
+            drawer.color(titleBarLineColor);
             drawer.rect(x0, x1, y1 - titleBarHeight(), y1);
             
             if (title != null)
@@ -447,9 +468,8 @@ public final class Window implements Hoverable
                 float bx0 = bx1 - CLOSE_BUTTON_WIDTH;
                 float by1 = y1 - CLOSE_BUTTON_PADDING;
                 float by0 = by1 - CLOSE_BUTTON_WIDTH;
-                
-                float closeButtonColor = closeButtonHovered ? 1.0f : 0.75f;
-                drawer.color(closeButtonColor, closeButtonColor, closeButtonColor, 1.0f);
+
+                drawer.color(closeButtonHovered ? activeColor : lineColor);
                 drawer.rect(bx0, bx1, by0, by1);
                 drawer.line(bx0 + CLOSE_BUTTON_CROSS_PADDING, bx1 - CLOSE_BUTTON_CROSS_PADDING, by0 + CLOSE_BUTTON_CROSS_PADDING, by1 - CLOSE_BUTTON_CROSS_PADDING);
                 drawer.line(bx0 + CLOSE_BUTTON_CROSS_PADDING, bx1 - CLOSE_BUTTON_CROSS_PADDING, by1 - CLOSE_BUTTON_CROSS_PADDING, by0 + CLOSE_BUTTON_CROSS_PADDING);

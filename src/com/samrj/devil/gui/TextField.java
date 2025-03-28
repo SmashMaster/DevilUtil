@@ -1,6 +1,7 @@
 package com.samrj.devil.gui;
 
 import com.samrj.devil.math.Vec2;
+import com.samrj.devil.math.Vec4;
 
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -11,10 +12,10 @@ import static org.lwjgl.glfw.GLFW.*;
  * A single-line text editor.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2025 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class TextField extends Form
+public class TextField extends FormColor
 {
     private static int CHAR_LIMIT = 128;
     
@@ -296,13 +297,13 @@ public class TextField extends Form
     {
         float x1 = x0 + width, y1 = y0 + height;
         
-        float outline = (DUI.getFocusedForm() == this || DUI.getHoveredForm() == this) ? 1.0f : 0.75f;
+        Vec4 outlineColor = (DUI.getFocusedForm() == this || DUI.getHoveredForm() == this) ? activeColor : lineColor;
         
         if (text.length() > CHAR_LIMIT) setText(text.substring(0, CHAR_LIMIT));
         
-        drawer.color(0.1875f, 0.1875f, 0.1875f, 1.0f);
+        drawer.color(insetColor);
         drawer.rectFill(x0, x1, y0, y1);
-        drawer.color(outline, outline, outline, 1.0f);
+        drawer.color(outlineColor);
         drawer.rect(x0, x1, y0, y1);
         
         Font font = DUI.font();
@@ -319,9 +320,9 @@ public class TextField extends Form
             float alignX0 = aligned.x + font.getWidth(text0);
             float alignX1 = alignX0 + font.getWidth(text1);
             
-            drawer.color(0.5f, 0.5f, 0.5f, 1.0f);
+            drawer.color(selectionColor);
             drawer.rectFill(alignX0, alignX1, aligned.y, aligned.y + size.y);
-            drawer.color(1.0f, 1.0f, 1.0f, 1.0f);
+            drawer.color(activeColor);
             drawer.text(text, font, aligned.x, aligned.y);
             
             if (DUI.getCaretBlink())
@@ -333,13 +334,13 @@ public class TextField extends Form
         else if (!text.isEmpty())
         {
             Vec2 aligned = Align.insideBounds(font.getSize(text), x0 + padding, x1 - padding, y0 + padding, y1 - padding, alignment);
-            drawer.color(outline, outline, outline, 1.0f);
+            drawer.color(outlineColor);
             drawer.text(text, font, aligned.x, aligned.y);
         }
         else if (previewText != null)
         {
             Vec2 aligned = Align.insideBounds(font.getSize(previewText), x0 + padding, x1 - padding, y0 + padding, y1 - padding, alignment);
-            drawer.color(outline*0.5f, outline*0.5f, outline*0.5f, 1.0f);
+            drawer.color(outlineColor.x, outlineColor.y, outlineColor.z, 0.5f);
             drawer.text(previewText, font, aligned.x, aligned.y);
         }
     }

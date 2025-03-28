@@ -16,7 +16,7 @@ import static org.lwjgl.glfw.GLFW.*;
  * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Paragraph extends Form
+public class Paragraph extends FormColor
 {
     private String rawText = "";
     private int textLength;
@@ -414,7 +414,7 @@ public class Paragraph extends Form
             
             if (s0 != s1)
             { 
-                drawer.color(0.5f, 0.5f, 0.5f, 1.0f);
+                drawer.color(selectionColor);
                 if (line0 == line1)
                     drawer.rectFill(alignX0, alignX1, line0.y0, line0.y0 + fontHeight);
                 else for (Line line : lines.subMap(e0.getKey(), true, e1.getKey(), true).values())
@@ -427,20 +427,20 @@ public class Paragraph extends Form
             
             for (Line line : lines.values())
             {
-                drawer.color(0.75f, 0.75f, 0.75f, 1.0f);
+                drawer.color(lineColor);
                 drawer.text(line.text, font, line.x0, line.y0);
             }
             
             if (DUI.getCaretBlink())
             {
-                drawer.color(1.0f, 1.0f, 1.0f, 1.0f);
+                drawer.color(activeColor);
                 if (caret > select) drawer.line(alignX1, alignX1, line1.y0, line1.y0 + fontHeight);
                 else drawer.line(alignX0, alignX0, line0.y0, line0.y0 + fontHeight);
             }
         }
         else for (Line line : lines.values())
         {
-            drawer.color(0.75f, 0.75f, 0.75f, 1.0f);
+            drawer.color(lineColor);
             drawer.text(line.text, font, line.x0, line.y0);
         }
     }

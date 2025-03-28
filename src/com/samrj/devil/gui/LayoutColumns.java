@@ -13,7 +13,7 @@ import java.util.Objects;
  * @copyright 2019 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class LayoutColumns extends Form
+public class LayoutColumns extends FormColorable implements LayoutAligned<LayoutColumns>
 {
     private final ArrayList<Form> forms = new ArrayList<>();
     private final ArrayList<Vec2> alignments = new ArrayList<>();
@@ -38,6 +38,7 @@ public class LayoutColumns extends Form
     public LayoutColumns clear()
     {
         forms.clear();
+        alignments.clear();
         return this;
     }
     
@@ -135,6 +136,7 @@ public class LayoutColumns extends Form
     @Override
     protected void render(DUIDrawer drawer)
     {
+        super.render(drawer);
         for (Form form : forms) form.render(drawer);
     }
 }

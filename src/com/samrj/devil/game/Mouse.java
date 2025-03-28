@@ -112,7 +112,7 @@ public final class Mouse
     {
         return glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
     }
-    
+
     void destroy()
     {
         glfwSetCursorPosCallback(window, null).free();

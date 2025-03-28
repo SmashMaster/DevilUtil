@@ -168,6 +168,12 @@ public final class Camera3DController
     {
         deltaAngles(dy*sensitivity, dx*sensitivity);
     }
+
+    public void printPosition()
+    {
+        System.out.println("camController.target.set(" + target.x + "f, " + target.y + "f, " + target.z + "f);");
+        System.out.println("camController.setAngles(" + pitch + "f, " + yaw + "f);");
+    }
     
     /**
      * Updates this camera controller and the underlying camera.

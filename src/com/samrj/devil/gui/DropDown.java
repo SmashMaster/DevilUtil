@@ -1,6 +1,7 @@
 package com.samrj.devil.gui;
 
 import com.samrj.devil.math.Vec2;
+import com.samrj.devil.math.Vec4;
 
 /**
  * A DropDown can cover up other parts of a window or even extend out of the
@@ -19,7 +20,10 @@ public final class DropDown implements Hoverable
     private float x0 = 128.0f, y0 = 128.0f, width, height;
     private final Vec2 alignment = Align.NW.vector();
     private float padding = 0.0f;
-    
+
+    public final Vec4 backgroundColor = new Vec4(DUI.defaultBackgroundColor);
+    public final Vec4 lineColor = new Vec4(DUI.defaultLineColor);
+
     public DropDown(Form parent)
     {
         this.parent = parent;
@@ -118,9 +122,9 @@ public final class DropDown implements Hoverable
     {
         float x1 = x0 + width, y1 = y0 + height;
         
-        drawer.color(0.25f, 0.25f, 0.25f, 1.0f);
+        drawer.color(backgroundColor);
         drawer.rectFill(x0, x1, y0, y1);
-        drawer.color(0.75f, 0.75f, 0.75f, 1.0f);
+        drawer.color(lineColor);
         drawer.rect(x0, x1, y0, y1);
         
         if (content != null) content.render(drawer);

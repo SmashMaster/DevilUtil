@@ -24,6 +24,7 @@ package com.samrj.devil.gui;
 
 import com.samrj.devil.game.GameWindow;
 import com.samrj.devil.math.Vec2;
+import com.samrj.devil.math.Vec4;
 
 import java.util.Objects;
 
@@ -55,7 +56,37 @@ public final class DUI
     private static DropDown dropDown;
     private static boolean dropDownHovered;
     private static Form background;
-    
+
+    /**
+     * The background color of newly created Forms.
+     */
+    public static final Vec4 defaultBackgroundColor = new Vec4(0.25f, 0.25f, 0.25f, 1.0f);
+
+    /**
+     * The inset color of newly created Forms. For inset elements such as text boxes.
+     */
+    public static final Vec4 defaultInsetColor = new Vec4(0.1875f, 0.1875f, 0.1875f, 1.0f);
+
+    /**
+     * The foreground color of newly created Forms. For raised items such as scrollbars and title bars.
+     */
+    public static final Vec4 defaultForegroundColor = new Vec4(0.375f, 0.375f, 0.375f, 1.0f);
+
+    /**
+     * The foreground color of newly created Forms. For selected elements like text and enabled toggle buttons.
+     */
+    public static final Vec4 defaultSelectionColor = new Vec4(0.5f, 0.5f, 0.5f, 1.0f);
+
+    /**
+     * The text and outline color of newly created Forms.
+     */
+    public static final Vec4 defaultLineColor = new Vec4(0.75f, 0.75f, 0.75f, 1.0f);
+
+    /**
+     * The text and outline color of newly created Forms. Applies when interactive forms such as buttons are hovered.
+     */
+    public static final Vec4 defaultActiveColor = new Vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
     /**
      * Initializes DevilUI.
      */
@@ -282,6 +313,7 @@ public final class DUI
         }
         
         DUI.background = background;
+        mouseMoved(mouseX, mouseY);
     }
     
     /**

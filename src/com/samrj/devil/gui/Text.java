@@ -6,10 +6,10 @@ import java.util.Objects;
  * Simple text.
  * 
  * @author Samuel Johnson (SmashMaster)
- * @copyright 2019 Samuel Johnson
+ * @copyright 2025 Samuel Johnson
  * @license https://github.com/SmashMaster/DevilUtil/blob/master/LICENSE
  */
-public class Text extends Form
+public class Text extends FormColor
 {
     private String text;
     
@@ -40,7 +40,7 @@ public class Text extends Form
     @Override
     protected void render(DUIDrawer drawer)
     {
-        drawer.color(0.75f, 0.75f, 0.75f, 1.0f);
+        drawer.color(lineColor);
         drawer.text(text, DUI.font(), x0, y0);
     }
 }
