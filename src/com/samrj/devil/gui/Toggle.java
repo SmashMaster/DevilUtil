@@ -93,7 +93,7 @@ public class Toggle extends FormColor
     @Override
     protected Form hover(float x, float y)
     {
-        if (x < this.x0 || x > this.x0 + width || y < this.y0 || y > this.y0 + height) return null;
+        if (!contains(x, y)) return null;
         return this;
     }
 
