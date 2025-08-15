@@ -39,6 +39,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.glfwHideWindow;
 import static org.lwjgl.opengl.GL11C.GL_FALSE;
 import static org.lwjgl.opengl.GL11C.glViewport;
 import static org.lwjgl.system.MemoryUtil.NULL;
@@ -196,7 +197,39 @@ public final class GameWindow
         if (running) return glfwGetWindowMonitor(window) != NULL;
         else return fullscreen;
     }
-    
+
+    /**
+     * Returns whether the game has input focus or not.
+     */
+    public static boolean hasFocus()
+    {
+        return glfwGetWindowAttrib(window, GLFW_FOCUSED) == GLFW_TRUE;
+    }
+
+    /**
+     * Returns whether the game window is visible.
+     */
+    public static boolean isVisible()
+    {
+        return glfwGetWindowAttrib(window, GLFW_VISIBLE) == GLFW_TRUE;
+    }
+
+    /**
+     * Hides the game window.
+     */
+    public static void hide()
+    {
+        glfwHideWindow(window);
+    }
+
+    /**
+     * Un-hides the game window.
+     */
+    public static void show()
+    {
+        glfwShowWindow(window);
+    }
+
     /**
      * This sets whether or not vsync is enabled. If it is enabled, each new
      * frame will be displayed precisely when the monitor refreshes, preventing
@@ -282,7 +315,18 @@ public final class GameWindow
      */
     public static void pauseFrames(int frames)
     {
+        if (frames < 0) throw new IllegalArgumentException();
         pauseFrameCounter += frames;
+    }
+
+    /**
+     * Same as pauseFrames but limits the number of frames to the given maximum.
+     */
+    public static void pauseFramesMax(int frames, int max)
+    {
+        if (max < 0) throw new IllegalArgumentException();
+        pauseFrames(frames);
+        if (pauseFrameCounter > max) pauseFrameCounter = max;
     }
     
     /**
