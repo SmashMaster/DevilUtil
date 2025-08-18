@@ -444,6 +444,9 @@ public final class DGL
      * Creates a new image from the current read framebuffer and viewport.
      * Useful for taking screenshots.
      *
+     * TODO: This method causes a memory access violation if the framebuffer format is not GL_RGB. Fix this.
+     * Should automatically determine the format from the current read framebuffer.
+     *
      * @return A newly allocated image.
      */
     public static Image screenshotImage()
