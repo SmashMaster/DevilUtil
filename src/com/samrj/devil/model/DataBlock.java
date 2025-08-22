@@ -17,6 +17,7 @@ public abstract class DataBlock
         LIBRARY,
         ACTION,
         ARMATURE,
+        CAMERA,
         CURVE,
         LAMP,
         MATERIAL,

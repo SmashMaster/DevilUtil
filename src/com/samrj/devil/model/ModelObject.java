@@ -227,9 +227,14 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlockAni
                 BlendFile.Pointer bArmature = bObject.getField("data").cast("bArmature").dereference();
                 dataName = bArmature.getField(0).getField("name").asString().substring(2);
                 break;
+            case TYPE_CAMERA:
+                dataType = Type.CAMERA;
+                BlendFile.Pointer bCamera = bObject.getField("data").cast("Camera").dereference();
+                dataName = bCamera.getField(0).getField("name").asString().substring(2);
+                break;
 
             //Unimplemented types:
-            case TYPE_EMPTY, TYPE_SURF, TYPE_FONT, TYPE_MBALL, TYPE_CAMERA, TYPE_SPEAKER, TYPE_LIGHTPROBE,
+            case TYPE_EMPTY, TYPE_SURF, TYPE_FONT, TYPE_MBALL, TYPE_SPEAKER, TYPE_LIGHTPROBE,
                     TYPE_LATTICE, TYPE_GPENCIL, TYPE_CURVES, TYPE_POINTCLOUD, TYPE_VOLUME:
             default: break;
         }
@@ -286,10 +291,18 @@ public final class ModelObject<DATA_TYPE extends DataBlock> extends DataBlockAni
     {
         return typeClass.isInstance(data.get()) ? (ModelObject<T>)this : null;
     }
-    
+
     public <T extends DataBlock> Optional<ModelObject<T>> optionalType(Class<T> typeClass)
     {
         return Optional.ofNullable(asType(typeClass));
+    }
+
+    public <T extends DataBlock> ModelObject<T> requireType(Class<T> typeClass)
+    {
+        Object dataObj = data.get();
+        if (dataObj == null) throw new NullPointerException();
+        if (!typeClass.isInstance(dataObj)) throw new IllegalArgumentException("Required model type " + typeClass + " but found " + dataObj.getClass());
+        return (ModelObject<T>)this;
     }
 
     public Set<ModelObject<? extends DataBlock>> getChildren()

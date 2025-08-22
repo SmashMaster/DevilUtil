@@ -23,6 +23,7 @@ public final class Model
     public final ArrayMap<Library> libraries;
     public final ArrayMap<Action> actions;
     public final ArrayMap<Armature> armatures;
+    public final ArrayMap<Camera> cameras;
     public final ArrayMap<Curve> curves;
     public final ArrayMap<Lamp> lamps;
     public final ArrayMap<Material> materials;
@@ -56,7 +57,12 @@ public final class Model
             for (BlendFile.Pointer bArm : blend.getLibrary("bArmature"))
                 armatures.put(new Armature(this, bArm));
             arraymaps.put(Type.ARMATURE, armatures);
-            
+
+            cameras = new ArrayMap<>();
+            for (BlendFile.Pointer bCamera : blend.getLibrary("Camera"))
+                cameras.put(new Camera(this, bCamera));
+            arraymaps.put(Type.CAMERA, cameras);
+
             curves = new ArrayMap<>();
             for (BlendFile.Pointer bCurve : blend.getLibrary("Curve"))
                 curves.put(new Curve(this, bCurve));
