@@ -50,7 +50,7 @@ public class ConditionalForm extends Form
     }
     
     @Override
-    protected void layout(Window window, float x, float y)
+    public void layout(Window window, float x, float y)
     {
         super.layout(window, x, y);
         if (form != null) form.layout(window, x, y);

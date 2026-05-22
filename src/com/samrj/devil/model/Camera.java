@@ -44,11 +44,14 @@ public class Camera extends DataBlockAnimatable
      */
 
     public final float focalLength;
+    public final float sensorWidth, sensorHeight;
 
     Camera(Model model, BlendFile.Pointer bCamera)
     {
         super(model, bCamera);
 
         focalLength = bCamera.getField("lens").asFloat();
+        sensorWidth = bCamera.getField("sensor_x").asFloat();
+        sensorHeight = bCamera.getField("sensor_y").asFloat();
     }
 }

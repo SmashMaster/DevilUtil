@@ -76,7 +76,7 @@ public class LayoutManual extends Form
     }
 
     @Override
-    protected void layout(Window window, float x0, float y0)
+    public void layout(Window window, float x0, float y0)
     {
         super.layout(window, x0, y0);
 

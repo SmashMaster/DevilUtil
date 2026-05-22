@@ -92,7 +92,7 @@ public class LayoutRows extends FormColorable implements LayoutAligned<LayoutRow
     }
 
     @Override
-    protected void layout(Window window, float x0, float y0)
+    public void layout(Window window, float x0, float y0)
     {
         super.layout(window, x0, y0);
         float x1 = x0 + width;

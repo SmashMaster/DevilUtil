@@ -88,7 +88,7 @@ public class FixedRow extends FormColorable
     }
     
     @Override
-    protected void layout(Window window, float x, float y)
+    public void layout(Window window, float x, float y)
     {
         super.layout(window, x, y);
         float y1 = y0 + height;

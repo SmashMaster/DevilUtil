@@ -92,7 +92,7 @@ public class LayoutColumns extends FormColorable implements LayoutAligned<Layout
     }
 
     @Override
-    protected void layout(Window window, float x0, float y0)
+    public void layout(Window window, float x0, float y0)
     {
         super.layout(window, x0, y0);
         float x = x0;

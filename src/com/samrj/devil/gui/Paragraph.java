@@ -158,7 +158,7 @@ public class Paragraph extends FormColor
     }
     
     @Override
-    protected void layout(Window window, float x, float y)
+    public void layout(Window window, float x, float y)
     {
         super.layout(window, x, y);
 

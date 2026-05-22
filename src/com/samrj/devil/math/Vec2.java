@@ -101,7 +101,7 @@ public class Vec2 implements FloatBufferable, DataStreamable<Vec2>
      */
     public static final float length(Vec2 v)
     {
-        return (float)Math.sqrt(squareLength(v));
+        return (float)Math.hypot(v.x, v.y);
     }
     
     /**
@@ -127,7 +127,7 @@ public class Vec2 implements FloatBufferable, DataStreamable<Vec2>
      */
     public static final float dist(Vec2 v0, Vec2 v1)
     {
-        return (float)Math.sqrt(squareDist(v0, v1));
+        return (float)Math.hypot(v1.x - v0.x, v1.y - v0.y);
     }
     
     /**

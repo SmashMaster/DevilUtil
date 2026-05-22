@@ -52,7 +52,7 @@ public final class Game<T extends GameMode>
 {
     public static <T extends GameMode> Builder<T> builder()
     {
-        return new Builder();
+        return new Builder<>();
     }
 
     @FunctionalInterface

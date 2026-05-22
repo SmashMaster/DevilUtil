@@ -62,7 +62,7 @@ public abstract class Form implements Hoverable
      * Sets the southwest (or bottom-left) position of this form to the given
      * coordinates, and updates all of its children recursively.
      */
-    protected void layout(Window window, float x, float y)
+    public void layout(Window window, float x, float y)
     {
         this.window = window;
         x0 = x; y0 = y;
