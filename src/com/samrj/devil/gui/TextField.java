@@ -141,7 +141,7 @@ public class TextField extends FormColor
         }
         else dragStartX = x - x0;
         
-        if (x < this.x0 || x > this.x0 + width || y < this.y0 || y > this.y0 + height) return null;
+        if (!contains(x, y)) return null;
         return this;
     }
 

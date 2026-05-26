@@ -143,7 +143,7 @@ public class ComboBox extends FormColor
     @Override
     protected Form hover(float x, float y)
     {
-        if (x < this.x0 || x > this.x0 + width || y < this.y0 || y > this.y0 + height) return null;
+        if (!contains(x, y)) return null;
         return this;
     }
     
@@ -151,7 +151,7 @@ public class ComboBox extends FormColor
     protected ScrollBox findScrollBox(float x, float y)
     {
         if (DUI.getDropDown() != dropDown) return null;
-        if (x < this.x0 || x > this.x0 + width || y < this.y0 || y > this.y0 + height) return null;
+        if (!contains(x, y)) return null;
         return scroll;
     }
     
